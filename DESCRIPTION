@@ -1,12 +1,17 @@
 Package: ino
-Title: What the Package Does (One Line, Title Case)
+Title: Initialization of Numerical Optimization
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Lennart", "Oelschl\u00e4ger", 
+           email = "lennart.oelschlaeger@uni-bielefeld.de", 
+           role = c("aut", "cre")),
+    person("Marius", "\u00d6etting", 
+           email = "marius.oetting@uni-bielefeld.de", 
+           role = c("aut", "cre"))
+Description: Implementation of several initialization strategies for the 
+    numerical optimization of real-valued functions, in particular likelihood
+    functions of statistical models.
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
