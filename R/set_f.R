@@ -10,6 +10,10 @@
 #' f <- function(x) x
 #' set_f(f, 1)
 set_f <- function(f, npar) {
+  if(class(f) != "function")
+    stop("'f' must be of class function.")
+  if(!is.numeric(npar) || npar%%1 != 0 || npar < 1)
+    stop("'npar' must be a number.")
   out <- list(f = f, npar = npar)
   class(out) <- "ino_f"
   return(out)
