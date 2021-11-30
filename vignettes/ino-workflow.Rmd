@@ -1,0 +1,105 @@
+---
+title: "Workflow for using ino"
+author: "Lennart Oelschläger"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Workflow for using ino}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.dim = c(8, 6),
+  out.width = "100%"
+)
+```
+
+This vignette describes the workflow for using ino.
+
+### 0. Load ino
+
+```{r, setup}
+# install.packages("ino")
+library(ino)
+library(magrittr) # Used for better code readability.
+```
+
+### 1. Introduce your function to ino
+
+Say we want to numerically optimize a version of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function).
+
+```{r, define function}
+himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
+```
+
+For `c <- -11` and `y <- -7`, the function is known to have one local maximum and four identical local minima, so it is worth putting a thought on the initialization.
+
+```{r, visualize function, fig.cap = "Contour plot of the Himmelblau's function"}
+x <- y <- seq(-5,5,0.1)
+z <- outer(x, y, Vectorize(function(x,y) himmelblau(c(x,y), c = -11, d = -7)))
+contour(x, y, z)
+```
+<!-- TODO: Add better visualization. Perheps own visualization function? -->
+
+We introduce the function to ino via:
+
+```{r, introduce f}
+analysis <- himmelblau %>% set_f(npar = 2, c = -11, d = -7)
+```
+
+This does three things:
+
+1. We created `analysis` which is an object of class `ino`. Insights about the initialization will be saved here.
+
+2. We specified that we optimize over 2 parameters.
+
+3. We fixed the paremters `c` and `d`.
+
+> Remark: If your function is a likelihood function, then this is the right time to also introduce your dataset to ino. See the vignette ... on how to do this.
+
+### 2. Select a numerical optimizer
+
+Next, we need to specify a numerical optimizer, for example nlm from the stats package. We can also set parameters of the optimizer, for example the maximum number of iterations `iterlim`.
+
+```{r, set optimizer}
+#analysis %<>% set_optimizer(optimizer = stats::nlm, iterlim = 1000)
+```
+
+> Remark: You can specify a list of optimizers here to compare them. See the vignette ... for details.
+
+Now, all is setup to try different initialization strategies.
+
+### 3. Execute initialization strategies
+
+There is a separate function for each initialization strategy in ino. Let's try random initialization:
+
+```{r, random initialization}
+#analysis %<>% random_initialization(runs = 100, lower = -10, upper = 10, sampler = "normal")
+```
+
+We initialized `runs = 100` times at random samples from a normal distributions restricted on the interval `lower = -10` to `upper = 10`.
+
+Let's also try fixed initialization at the origin:
+```{r, fixed initialization}
+#analysis %<>% fixed_initialization(at = c(0,0))
+```
+
+> Remark: Each initialization strategy implemented in ino is documented in its own vignette.
+
+### 4. Evaluate the results
+
+The package provides several functions to evaluate the initialization strategies, for example:
+
+```{r, evaluate optima}
+#analysis %>% optima
+```
+
+```{r, evaluate time}
+#analysis %>% optimization_time
+```
+
+> Remark: Each evaluation function again is documented in its own vignette.
