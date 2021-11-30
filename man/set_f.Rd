@@ -4,12 +4,14 @@
 \alias{set_f}
 \title{Set a function for the numerical optimization.}
 \usage{
-set_f(f, npar)
+set_f(f, npar, ...)
 }
 \arguments{
 \item{f}{An object of class \code{function}.}
 
 \item{npar}{The number of parameters in \code{f}.}
+
+\item{...}{Additional arguments to be passed to \code{f}.}
 }
 \value{
 An object of class \code{ino_f}.
@@ -18,6 +20,6 @@ An object of class \code{ino_f}.
 Set a function for the numerical optimization.
 }
 \examples{
-f <- function(x) x
-set_f(f, 1)
+himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
+set_f(f = himmelblau, npar = 2, c = -11, d = -7)
 }
