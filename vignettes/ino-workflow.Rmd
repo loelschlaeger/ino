@@ -66,7 +66,7 @@ This does three things:
 Next, we need to specify a numerical optimizer, for example nlm from the stats package. We can also set parameters of the optimizer, for example the maximum number of iterations `iterlim`.
 
 ```{r, set optimizer}
-#analysis %<>% set_optimizer(optimizer = stats::nlm, iterlim = 1000)
+analysis %<>% set_optimizer(optimizer = stats::nlm, iterlim = 1000)
 ```
 
 > Remark: You can specify a list of optimizers here to compare them. See the vignette ... for details.
@@ -78,14 +78,14 @@ Now, all is setup to try different initialization strategies.
 There is a separate function for each initialization strategy in ino. Let's try random initialization:
 
 ```{r, random initialization}
-#analysis %<>% random_initialization(runs = 100, lower = -10, upper = 10, sampler = "normal")
+analysis %<>% random_initialization(runs = 100, lower = -10, upper = 10, sampler = "normal")
 ```
 
 We initialized `runs = 100` times at random samples from a normal distributions restricted on the interval `lower = -10` to `upper = 10`.
 
 Let's also try fixed initialization at the origin:
 ```{r, fixed initialization}
-#analysis %<>% fixed_initialization(at = c(0,0))
+analysis %<>% fixed_initialization(at = c(0,0))
 ```
 
 > Remark: Each initialization strategy implemented in ino is documented in its own vignette.
@@ -95,11 +95,11 @@ Let's also try fixed initialization at the origin:
 The package provides several functions to evaluate the initialization strategies, for example:
 
 ```{r, evaluate optima}
-#analysis %>% optima
+analysis %>% optima
 ```
 
 ```{r, evaluate time}
-#analysis %>% optimization_time
+analysis %>% optimization_time
 ```
 
 > Remark: Each evaluation function again is documented in its own vignette.
