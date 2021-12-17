@@ -4,6 +4,8 @@
 # ino
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/loelschlaeger/ino/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ino/actions)
 <!-- badges: end -->
 
 The goal of ino is to initialize numerical optimization. It provides
