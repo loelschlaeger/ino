@@ -36,7 +36,7 @@ Say we want to numerically optimize a version of the [Himmelblau's function](htt
 himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
 ```
 
-For `c <- -11` and `y <- -7`, the function is known to have one local maximum and four identical local minima, so it is worth putting a thought on the initialization.
+For `c <- -11` and `y <- -7`, the function is known to have one local maximum and four identical local minima, so it is worth putting a thought on the initialization..
 
 ```{r, visualize function, fig.cap = "Contour plot of the Himmelblau's function"}
 x <- y <- seq(-5,5,0.1)
