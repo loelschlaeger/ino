@@ -57,7 +57,7 @@ This does three things:
 
 2. We specified that we optimize over 2 parameters.
 
-3. We fixed the paremters `c` and `d`.
+3. We fixed the parameters `c` and `d`.
 
 > Remark: If your function is a likelihood function, then this is the right time to also introduce your dataset to ino. See the vignette ... on how to do this.
 
