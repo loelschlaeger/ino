@@ -4,14 +4,18 @@
 \alias{set_optimizer}
 \title{Title}
 \usage{
-set_optimizer()
+set_optimizer(x, optimizer, ...)
 }
-\value{
+\arguments{
+\item{x}{An object of class \code{ino}.}
 
+\item{optimizer}{An object of class \code{function}.}
+
+\item{...}{Additional arguments to be passed to \code{optimizer}.}
 }
 \description{
 Title
 }
 \examples{
-set_optimizer()
+# set_optimizer()
 }

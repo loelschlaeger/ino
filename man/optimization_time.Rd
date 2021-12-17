@@ -4,14 +4,14 @@
 \alias{optimization_time}
 \title{Title}
 \usage{
-optimization_time()
+optimization_time(x)
 }
-\value{
-
+\arguments{
+\item{x}{An object of class \code{ino}.}
 }
 \description{
 Title
 }
 \examples{
-optimization_time()
+# optimization_time()
 }

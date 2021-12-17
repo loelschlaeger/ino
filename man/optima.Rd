@@ -4,14 +4,14 @@
 \alias{optima}
 \title{Title}
 \usage{
-optima()
+optima(x)
 }
-\value{
-
+\arguments{
+\item{x}{An object of class \code{ino}.}
 }
 \description{
 Title
 }
 \examples{
-optima()
+# optima()
 }

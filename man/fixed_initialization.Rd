@@ -4,14 +4,16 @@
 \alias{fixed_initialization}
 \title{Title}
 \usage{
-fixed_initialization()
+fixed_initialization(x, at)
 }
-\value{
+\arguments{
+\item{x}{An object of class \code{ino}.}
 
+\item{at}{The initialization point.}
 }
 \description{
 Title
 }
 \examples{
-fixed_initialization()
+# fixed_initialization()
 }

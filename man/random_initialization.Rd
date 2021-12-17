@@ -4,14 +4,22 @@
 \alias{random_initialization}
 \title{Title}
 \usage{
-random_initialization()
+random_initialization(x, runs, lower, upper, sampler = "normal")
 }
-\value{
+\arguments{
+\item{x}{An object of class \code{ino}.}
 
+\item{runs}{The number of random initializations.}
+
+\item{lower}{The lower limit(s) for the random initial points.}
+
+\item{upper}{The upper limit(s) for the random initial points.}
+
+\item{sampler}{One of \code{"normal"} and \code{"uniform"}.}
 }
 \description{
 Title
 }
 \examples{
-random_initialization()
+# random_initialization()
 }

@@ -4,14 +4,14 @@
 \alias{alternating_optimization}
 \title{Title}
 \usage{
-alternating_optimization()
+alternating_optimization(x)
 }
-\value{
-
+\arguments{
+\item{x}{An object of class \code{ino}.}
 }
 \description{
 Title
 }
 \examples{
-alternating_optimization()
+# alternating_optimization()
 }
