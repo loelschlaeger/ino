@@ -19,3 +19,13 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(ino)
 ```
+
+This vignette explains how to specify the numerical optimizer for which we seek to find good initial points.
+
+## Pre-defined optimizer
+
+
+## Custom optimizer
+
+
+## Comparing optimizer

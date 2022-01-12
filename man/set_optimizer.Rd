@@ -2,20 +2,30 @@
 % Please edit documentation in R/set_optimizer.R
 \name{set_optimizer}
 \alias{set_optimizer}
-\title{Title}
+\title{Specify the numerical optimizer.}
 \usage{
-set_optimizer(x, optimizer, ...)
+set_optimizer(x = NULL, optimizer = "nlm", ...)
 }
 \arguments{
-\item{x}{An object of class \code{ino}.}
+\item{x}{Either \code{NULL} or an object of class \code{ino}.}
 
-\item{optimizer}{An object of class \code{function}.}
+\item{optimizer}{Either a character with the name of pre-defined optimizer or an object of
+class \code{function}.}
 
 \item{...}{Additional arguments to be passed to \code{optimizer}.}
 }
+\value{
+An object of class \code{ino}.
+}
 \description{
-Title
+This function specifies the numerical optimizer for which we seek to find
+good initial points.
+}
+\details{
+See the vignette "Specify numerical optimizer" for more details:
+\code{vignette("set-optimizer", package = "ino")}.
 }
 \examples{
-# set_optimizer()
+set_optimizer(optimizer = "nlm", iterlim = 1000)
 }
+\keyword{specify}

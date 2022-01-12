@@ -5,22 +5,18 @@
 #' @return
 #' An object of class \code{ino}.
 #'
-#' @export
-#'
 #' @keywords
 #' internal
-#'
-#' @examples
-#' new_ino()
 
 new_ino <- function () {
 
   out <- list()
 
   ### components
-  out$f <- NA
+  out$f <- list()
   out$data <- list()
   out$optimizer <- list()
+  out$optimizations <- list()
   out$optima <- list()
 
   class(out) <- "ino"
@@ -34,3 +30,11 @@ new_ino <- function () {
 print.ino <- function(x, ...) {
   cat("<ino>")
 }
+
+#' @export
+#' @noRd
+
+summary.ino <- function(object, ...) {
+  stop("Not implemented yet.")
+}
+

@@ -12,7 +12,4 @@ An object of class \code{ino}.
 \description{
 This function constructs an object of class \code{ino}.
 }
-\examples{
-new_ino()
-}
 \keyword{internal}
