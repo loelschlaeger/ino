@@ -1,10 +1,10 @@
 ---
-title: "Specify numerical optimizer"
+title: "Specification functions"
 author: "Lennart Oelschläger"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Specify numerical optimizer}
+  %\VignetteIndexEntry{Specification functions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,11 +16,35 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette explains how to specify the numerical optimizer for which we seek to find good initial points. The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package.
+This vignette explains the specification functions in `ino`. The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package.
 
 ```{r setup}
 library(ino)
 ```
+
+## The `set_f()` function
+
+The `set_f()` function must be used to specify the function. It takes the following arguments:
+
+```{r, args set_f}
+args(set_f)
+```
+
+The input `x` must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized by the `set_f()` function, in the latter case the suplied `ino` object is updated.
+
+The input `f` must be an object of class `function` and specifies the function to be optimized.
+
+The input `npar` is the number of parameters in `f`.
+
+The ellipsis argument `...` can be used to specify additional arguments in `f`.
+
+## Example
+
+```{r, example set_f}
+himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
+set_f(f = himmelblau, npar = 2, c = -11, d = -7)
+```
+
 
 ## The `set_optimizer()` function
 
@@ -54,6 +78,8 @@ returns an `ino` object where the nlm optimizer with iteration limit 1000 is spe
 
 The `optimizer` argument also can be a function to set a custom optimizer (or any optimizer not covered above). This functionality will be implemented in the future.
 
-## Comparing optimizer
+### Comparing optimizer
 
 In the future, `ino` will provide the functionality of comparing the initialization effect among different optimizer. In order to do so, `set_optimizer()` must be used to set multiple optimizer.
+
+## The `set_data()` function
