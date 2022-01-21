@@ -26,5 +26,6 @@ BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Imports: 
     magrittr,
-    DiagrammeR
+    DiagrammeR,
+    utils
     

@@ -16,16 +16,44 @@ knitr::opts_chunk$set(
 )
 ```
 
+This vignette explains how to specify the numerical optimizer for which we seek to find good initial points. The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package.
+
 ```{r setup}
 library(ino)
 ```
 
-This vignette explains how to specify the numerical optimizer for which we seek to find good initial points.
+## The `set_optimizer()` function
 
-## Pre-defined optimizer
+The `set_optimizer()` function must be used to specify the numerical optimizer. It takes the following arguments:
 
+```{r, args set_optimizer}
+args(set_optimizer)
+```
 
-## Custom optimizer
+The input `x` must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized by the `set_optimizer()` function, in the latter case the `ino` object is updated.
 
+The input `optimizer` must be either a character [specifying a pre-defined optimizer](#pre-defined-optimizer) or a function for [setting a custom optimizer](#custom-optimizer). 
+
+The ellipsis input `...` takes additional arguments to be passed to the optimizer.
+
+### Pre-defined optimizer
+
+Specify the `optimizer` argument to one of the following characters to set currently pre-defined optimizerin in ino^[Extending this list is on our agenda.]:
+
+- `"nlm"` for the Newton-type algorithm [nlm](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/nlm.html)
+
+For example, calling
+
+```{r, set_optimizer example}
+set_optimizer(optimizer = "nlm", iterlim = 1000)
+```
+
+returns an `ino` object where the nlm optimizer with iteration limit 1000 is specified.
+
+### Custom optimizer
+
+The `optimizer` argument also can be a function to set a custom optimizer (or any optimizer not covered above). This functionality will be implemented in the future.
 
 ## Comparing optimizer
+
+In the future, `ino` will provide the functionality of comparing the initialization effect among different optimizer. In order to do so, `set_optimizer()` must be used to set multiple optimizer.
