@@ -1,0 +1,46 @@
+---
+title: "Specify function"
+author: "Lennart Oelschläger"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Specify function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette explains how to specify the function that we seek to optimize numerically. The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package.
+
+```{r setup}
+library(ino)
+```
+
+## The `set_f()` function
+
+The `set_f()` function must be used to specify the function. It takes the following arguments:
+
+```{r, args set_f}
+args(set_f)
+```
+
+The input `x` must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized by the `set_f()` function, in the latter case the suplied `ino` object is updated.
+
+The input `f` must be an object of class `function` and specifies the function to be optimized.
+
+The input `npar` is the number of parameters in `f`.
+
+The ellipsis argument `...` can be used to specify additional arguments in `f`.
+
+## Example
+
+```{r, example set_f}
+himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
+set_f(f = himmelblau, npar = 2, c = -11, d = -7)
+```
