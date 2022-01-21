@@ -28,4 +28,4 @@ See the vignette "Specify numerical optimizer" for more details:
 \examples{
 set_optimizer(optimizer = "nlm", iterlim = 1000)
 }
-\keyword{specify}
+\keyword{specification}

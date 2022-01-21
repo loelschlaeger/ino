@@ -16,4 +16,6 @@ Title
 }
 \examples{
 # fixed_initialization()
+
 }
+\keyword{strategy}

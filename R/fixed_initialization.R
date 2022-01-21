@@ -8,6 +8,10 @@
 #'
 #' @examples
 #' # fixed_initialization()
+#'
+#' @keywords
+#' strategy
+
 fixed_initialization <- function(x, at) {
 
 

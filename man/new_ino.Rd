@@ -2,7 +2,7 @@
 % Please edit documentation in R/new_ino.R
 \name{new_ino}
 \alias{new_ino}
-\title{Construction of \code{ino} objects.}
+\title{Constructor of \code{ino} objects.}
 \usage{
 new_ino()
 }

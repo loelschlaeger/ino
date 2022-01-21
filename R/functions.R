@@ -11,12 +11,15 @@
 #'
 #' @examples
 #' ### The global minimum
-#' f_ackley(c(0,0))
+#' ino:::f_ackley(c(0, 0))
 #'
 #' @return
 #' A numeric value.
+#'
+#' @keywords
+#' function
 
 f_ackley <- function(x) {
-  -20*exp(-0.2*sqrt(0.5*(x[1]^2+x[2]^2))) -
-    exp(0.5*(cos(2*pi*x[1])+cos(2*pi*x[2])))+exp(1)+20
+  stopifnot(is.numeric(x), length(x) == 2)
+  -20 * exp(-0.2 * sqrt(0.5 * (x[1]^2 + x[2]^2))) - exp(0.5 * (cos(2 * pi * x[1]) + cos(2 * pi * x[2]))) + exp(1) + 20
 }

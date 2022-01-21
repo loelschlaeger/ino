@@ -7,9 +7,7 @@
 #' See the vignette "Specify numerical optimizer" for more details:
 #' \code{vignette("set-optimizer", package = "ino")}.
 #'
-#' @param x
-#' Either \code{NULL} or an object of class \code{ino}.
-#'
+#' @param x Either \code{NULL} or an object of class \code{ino}.
 #' @inheritParams new_optimizer
 #'
 #' @return
@@ -18,7 +16,7 @@
 #' @export
 #'
 #' @keywords
-#' specify
+#' specification
 #'
 #' @examples
 #' set_optimizer(optimizer = "nlm", iterlim = 1000)
@@ -26,15 +24,15 @@
 set_optimizer <- function(x = NULL, optimizer = "nlm", ...) {
 
   ### initialize ino
-  if(is.null(x)){
+  if (is.null(x)) {
     x <- new_ino()
   }
 
   ### check inputs
-  if(class(x) != "ino") {
+  if (class(x) != "ino") {
     stop("'x' must be of class 'ino'.")
   }
-  if(length(optimizer) != 1) {
+  if (length(optimizer) != 1) {
     stop("'optimizer' must be of length 1.")
   }
 
@@ -43,7 +41,6 @@ set_optimizer <- function(x = NULL, optimizer = "nlm", ...) {
 
   ### return ino
   return(x)
-
 }
 
 #' Construction of \code{optimizer} objects.
@@ -64,9 +61,8 @@ set_optimizer <- function(x = NULL, optimizer = "nlm", ...) {
 #' internal
 
 new_optimizer <- function(optimizer, ...) {
-
-  if(is.character(optimizer)) {
-    if(optimizer == "nlm") {
+  if (is.character(optimizer)) {
+    if (optimizer == "nlm") {
       fun <- stats::nlm
       args <- get_default_args(fun = fun, exclude = c("f", "p", "..."))
       args <- set_custom_args(args = args, custom_args = list(...))
@@ -84,7 +80,6 @@ new_optimizer <- function(optimizer, ...) {
   class(optimizer) <- "optimizer"
   validate_optimizer(optimizer)
   return(optimizer)
-
 }
 
 #' Get default function arguments
@@ -151,17 +146,14 @@ set_custom_args <- function(args, custom_args) {
 #' internal
 
 validate_optimizer <- function(optimizer) {
-
-  if(class(optimizer) != "optimizer") {
+  if (class(optimizer) != "optimizer") {
     stop("'optimizer' must be of class 'optimizer'.")
   }
   optimizer <- unclass(optimizer)
-  if(!identical(names(optimizer), c("fun", "args", "out"))) {
+  if (!identical(names(optimizer), c("fun", "args", "out"))) {
     stop("'optimizer' must have elements called 'fun', 'args' and 'out'.")
   }
-  if(!identical(names(optimizer$out), c("value", "estimate"))) {
+  if (!identical(names(optimizer$out), c("value", "estimate"))) {
     stop("'optimizer' must have elements called 'value' and 'estimate'.")
   }
-
 }
-

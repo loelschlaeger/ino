@@ -2,16 +2,22 @@
 % Please edit documentation in R/optimization_time.R
 \name{optimization_time}
 \alias{optimization_time}
-\title{Title}
+\title{Overview of optimization times.}
 \usage{
 optimization_time(x)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 }
+\value{
+A data frame.
+}
 \description{
-Title
+This function provides an overview of the optimization times with respect to
+the initialization strategies.
 }
 \examples{
 # optimization_time()
+
 }
+\keyword{evaluation}

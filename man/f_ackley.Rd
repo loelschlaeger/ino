@@ -20,9 +20,10 @@ The function has multiple local minima and one global minimum in the origin.
 }
 \examples{
 ### The global minimum
-f_ackley(c(0,0))
+ino:::f_ackley(c(0, 0))
 
 }
 \references{
 https://en.wikipedia.org/wiki/Ackley_function
 }
+\keyword{function}

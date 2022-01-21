@@ -27,5 +27,5 @@ VignetteBuilder: knitr
 Imports: 
     magrittr,
     DiagrammeR,
-    utils
+    R.utils
     
