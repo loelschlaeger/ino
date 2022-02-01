@@ -5,8 +5,10 @@ date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Workflow for using ino}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -26,6 +28,7 @@ This vignette describes the workflow for using ino.
 # install.packages("ino")
 library(ino)
 library(magrittr) # Used for better code readability.
+library(ggplot2)
 ```
 
 ### 1. Introduce your function to ino
@@ -39,11 +42,17 @@ himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
 For `c <- -11` and `y <- -7`, the function is known to have one local maximum and four identical local minima, so it is worth putting a thought on the initialization.....
 
 ```{r, visualize function, fig.cap = "Contour plot of the Himmelblau's function"}
-x <- y <- seq(-5,5,0.1)
-z <- outer(x, y, Vectorize(function(x,y) himmelblau(c(x,y), c = -11, d = -7)))
-contour(x, y, z)
+x <- y <- seq(-5, 5, 0.1)
+#z <- outer(x, y, Vectorize(function(x, y) himmelblau(c(x, y), c = -11, d = -7)))
+#contour(x, y, z)
+data_plot <- expand.grid(x, y)
+data_plot$z <- purrr::map2_dbl(data_plot$Var1, data_plot$Var2, function(x, y) himmelblau(c(x, y), c = -11, d = -7))
+data_plot %>% 
+  ggplot(aes(x = Var1, y = Var2, z = z)) + geom_contour_filled() +
+  theme_minimal() + xlab("x") + ylab("y") +
+  theme(legend.title = element_blank())
 ```
-<!-- TODO: Add better visualization. Perheps own visualization function? -->
+<!-- TODO: Add better visualization. Perhaps own visualization function? -->
 
 We introduce the function to ino via:
 
