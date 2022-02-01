@@ -2,24 +2,27 @@
 % Please edit documentation in R/random_initialization.R
 \name{random_initialization}
 \alias{random_initialization}
-\title{Title}
+\title{Random initialization}
 \usage{
-random_initialization(x, runs, lower, upper, sampler = "normal")
+random_initialization(x, runs = 1, sampler = NULL)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{runs}{The number of random initializations.}
+\item{runs}{The number of random initialization runs.}
 
-\item{lower}{The lower limit(s) for the random initial points.}
-
-\item{upper}{The upper limit(s) for the random initial points.}
-
-\item{sampler}{One of \code{"normal"} and \code{"uniform"}.}
+\item{sampler}{If unspecified, draws independent initial values from a standard normal
+distribution. Else can be a function that returns a (random) numeric vector
+of length \code{npar}.}
 }
 \description{
-Title
+This function implemented the random initialization strategy.
+}
+\details{
+See the vignette ... for more details.
 }
 \examples{
-# random_initialization()
+#random_initialization()
+
 }
+\keyword{strategy}

@@ -7,6 +7,10 @@
 #'
 #' @examples
 #' # optima()
+#'
+#' @keywords
+#' evaluation
+
 optima <- function(x) {
 
 

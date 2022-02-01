@@ -4,9 +4,11 @@
 \alias{set_f}
 \title{Set a function for the numerical optimization.}
 \usage{
-set_f(f, npar, ...)
+set_f(x = NULL, f, npar, ...)
 }
 \arguments{
+\item{x}{Either \code{NULL} or an object of class \code{ino}.}
+
 \item{f}{An object of class \code{function}.}
 
 \item{npar}{The number of parameters in \code{f}.}
@@ -22,4 +24,6 @@ Set a function for the numerical optimization.
 \examples{
 himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
 set_f(f = himmelblau, npar = 2, c = -11, d = -7)
+
 }
+\keyword{specification}

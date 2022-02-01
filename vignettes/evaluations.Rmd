@@ -1,0 +1,36 @@
+---
+title: "Evaluations"
+author: "Lennart Oelschläger"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Evaluations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette explains the evaluation functions. The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package.
+
+```{r setup}
+library(ino)
+```
+
+## The `optimization_time()` function
+
+The `optimization_time()` function provides an overview of the optimization times with respect to the initialization strategies.
+
+```{r, example optimization time}
+x <- set_f(f = ino:::f_ackley, npar = 2)
+x <- set_optimizer(x, "nlm")
+x <- random_initialization(x, runs = 10)
+optimization_time(x)
+```
+
+## The `optima()` function
