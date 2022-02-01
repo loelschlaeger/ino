@@ -9,6 +9,9 @@ summary(x)
 
 ### strategies
 x <- random_initialization(x, runs = 10)
+x <- fixed_initialization(x, at = list(c(1, 0.5, 0.3), c(2, 0.3, 1)))
 
 ### evaluation
 optimization_time(x)
+nr_optima(x)
+nr_optima(x, plot = TRUE)
