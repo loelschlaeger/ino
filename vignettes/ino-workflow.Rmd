@@ -67,18 +67,19 @@ library(magrittr) # Used for better code readability.
 
 Some functions are implemented in ino for demonstrations, for example the [Ackley function](https://en.wikipedia.org/wiki/Ackley_function). The function is known to have multiple local minima and one global minimum in $x = (0,0)$, so to avoid ending up at an inferior minimum it is worth putting a thought on the initialization.
 
+
 ```{r, visualize function, fig.cap = "Contour plot of the Ackley function"}
 x <- y <- seq(-5,5,0.1)
 #z <- outer(x, y, Vectorize(function(x,y) ino:::f_ackley(c(x,y))))
 #contour(x, y, z)
 data_plot <- expand.grid(x, y)
-data_plot$z <- purrr::map2_dbl(data_plot$Var1, data_plot$Var2, function(x, y) himmelblau(c(x, y), c = -11, d = -7))
+data_plot$z <- purrr::map2_dbl(data_plot$Var1, data_plot$Var2, function(x, y) ino:::f_ackley(c(x, y)))
 data_plot %>% 
   ggplot(aes(x = Var1, y = Var2, z = z)) + geom_contour_filled() +
   theme_minimal() + xlab("x") + ylab("y") +
   theme(legend.title = element_blank())
 ```
-<!-- TODO: Improve visualization. -->
+
 
 We introduce the function to ino via:
 
