@@ -2,20 +2,23 @@
 % Please edit documentation in R/fixed_initialization.R
 \name{fixed_initialization}
 \alias{fixed_initialization}
-\title{Title}
+\title{Fixed initialization}
 \usage{
 fixed_initialization(x, at)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{at}{The initialization point.}
+\item{at}{A list containing the (fixed) initial values.}
 }
 \description{
-Title
+This function implemented the fixed initialization strategy.
+}
+\details{
+See the vignette ... for more details.
 }
 \examples{
-# fixed_initialization()
+#fixed_initialization()
 
 }
 \keyword{strategy}

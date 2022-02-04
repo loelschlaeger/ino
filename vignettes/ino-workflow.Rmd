@@ -61,6 +61,7 @@ sequenceDiagram
 # install.packages("ino")
 library(ino)
 library(magrittr) # Used for better code readability.
+library(ggplot2)
 ```
 
 ### 1. Specify the optimization problem
@@ -70,8 +71,6 @@ Some functions are implemented in ino for demonstrations, for example the [Ackle
 
 ```{r, visualize function, fig.cap = "Contour plot of the Ackley function"}
 x <- y <- seq(-5,5,0.1)
-#z <- outer(x, y, Vectorize(function(x,y) ino:::f_ackley(c(x,y))))
-#contour(x, y, z)
 data_plot <- expand.grid(x, y)
 data_plot$z <- purrr::map2_dbl(data_plot$Var1, data_plot$Var2, function(x, y) ino:::f_ackley(c(x, y)))
 data_plot %>% 
@@ -79,7 +78,6 @@ data_plot %>%
   theme_minimal() + xlab("x") + ylab("y") +
   theme(legend.title = element_blank())
 ```
-
 
 We introduce the function to ino via:
 
@@ -97,6 +95,7 @@ analysis %<>% set_optimizer(optimizer = "nlm", iterlim = 100)
 ```
 
 > Remark: You can specify a list of optimizers here to compare them. See the vignette "Specification functions" for details.
+
 Now, all is setup to try different initialization strategies.
 
 ### 2. Execute initialization strategies
@@ -116,6 +115,7 @@ Let's also try fixed initialization at different points:
 ```
 
 > Remark: Each initialization strategy implemented in ino is documented in the vignette "Initialization strategies".
+
 ### 3. Evaluate the results
 
 The package provides several functions to evaluate the initialization strategies, for example:
