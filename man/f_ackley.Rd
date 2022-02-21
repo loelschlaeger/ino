@@ -19,7 +19,6 @@ The Ackley function
 The function has multiple local minima and one global minimum in the origin.
 }
 \examples{
-### The global minimum
 ino:::f_ackley(c(0, 0))
 
 }
