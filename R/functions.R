@@ -152,6 +152,8 @@ f_ll_mmnp <- function(theta, data) {
 #' @examples
 #' todo
 #'
+#' @importFrom stats dpois
+#'
 #' @return
 #' A log-likelihood value.
 #'
