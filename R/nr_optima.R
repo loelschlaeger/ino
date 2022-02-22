@@ -23,9 +23,9 @@
 #' @keywords
 #' evaluation
 
-nr_optima <- function(x, plot = FALSE) {
-
-  optima_found <- unlist(sapply(x$optimizations, '[[', "res")["minimum",])
+nr_optima <- function(x, plot = FALSE, round = 2) {
+  optima_found <- unlist(sapply(x$optimizations, '[[', "res")["minimum", ])
+  optima_found <- round(optima_found, digits = round)
   out  <- as.data.frame(table(optima_found))
   colnames(out) <- c("optimum", "frequency")
 
