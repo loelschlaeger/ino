@@ -10,7 +10,7 @@
 #' l <- L[lower.tri(L, diag = TRUE)][-1]
 #' data <- sim_MMNP_data(N, b, o, l, seed = 1)
 #' theta_true <- c(b,o,l)
-#' theta_est <- nlm(f = LL_MMNP, p = theta_true, data = data)$estimate
+#' theta_est <- nlm(f = nLL_MMNP, p = theta_true, data = data)$estimate
 
 sim_MMNP_data <- function(N, b, o, l, seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
@@ -54,7 +54,7 @@ P_ni_MMNP <- function(i, X, O, L, b) {
 #' @param theta
 #' theta <- c(b, o, l)
 
-LL_MMNP <- function(theta, data) {
+nLL_MMNP <- function(theta, data) {
   P <- ncol(data$X[[1]])
   J <- nrow(data$X[[1]])
   b <- theta[1:P]; theta <- theta[-(1:P)]
@@ -69,5 +69,6 @@ LL_MMNP <- function(theta, data) {
   for(n in 1:N){
     LL <- LL + log(P_ni_MMNP(i = data$y[n], X = data$X[[n]], O = O, L = L, b = b))
   }
-  return(LL)
+  return(-LL)
 }
+
