@@ -4,7 +4,7 @@
 \alias{nr_optima}
 \title{Overview of the number of optima found.}
 \usage{
-nr_optima(x, plot = FALSE)
+nr_optima(x, plot = FALSE, round = 2)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}

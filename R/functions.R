@@ -150,7 +150,7 @@ f_ll_mmnp <- function(theta, data) {
 #' A data frame of a time series of counts.
 #'
 #' @examples
-#' todo
+#'
 #'
 #' @importFrom stats dpois
 #'
