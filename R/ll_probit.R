@@ -38,7 +38,7 @@ sim_MMNP_data <- function(N, b, o, l, seed = NULL) {
 #' @noRd
 #' @importFrom mvtnorm pmvnorm
 
-P_ni_MMNP <- function(i, X, O, L, b) {
+P_ni_MMNP <- function(i, X, b, O, L, algorithm) {
   J <- nrow(L)
   delta <- RprobitB:::delta
   arg <- as.vector(-delta(J,i) %*% X %*% b)
@@ -46,7 +46,7 @@ P_ni_MMNP <- function(i, X, O, L, b) {
   Sigma <- L %*% t(L)
   Gamma <- delta(J,i) %*% ( X %*% Omega %*% t(X) + Sigma ) %*% t(delta(J,i))
   p <- mvtnorm::pmvnorm(lower = -Inf, upper = arg, mean = rep(0,J-1),
-                        sigma = Gamma)[1]
+                        sigma = Gamma, algorithm = algorithm)[1]
   return(p)
 }
 
@@ -54,7 +54,7 @@ P_ni_MMNP <- function(i, X, O, L, b) {
 #' @param theta
 #' theta <- c(b, o, l)
 
-nLL_MMNP <- function(theta, data) {
+nLL_MMNP <- function(theta, data, algorithm = mvtnorm::Miwa(steps = 10)) {
   P <- ncol(data$X[[1]])
   J <- nrow(data$X[[1]])
   b <- theta[1:P]; theta <- theta[-(1:P)]
@@ -67,7 +67,8 @@ nLL_MMNP <- function(theta, data) {
   N <- length(data$y)
   LL <- 0
   for(n in 1:N){
-    LL <- LL + log(P_ni_MMNP(i = data$y[n], X = data$X[[n]], O = O, L = L, b = b))
+    LL <- LL + log(P_ni_MMNP(i = data$y[n], X = data$X[[n]], b = b, O = O,
+                             L = L, algorithm = algorithm))
   }
   return(-LL)
 }
