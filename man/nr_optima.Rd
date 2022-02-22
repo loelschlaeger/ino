@@ -10,6 +10,8 @@ nr_optima(x, plot = FALSE, round = 2)
 \item{x}{An object of class \code{ino}.}
 
 \item{plot}{Set to \code{TRUE} for plotting a frequency plot of found optima.}
+
+\item{round}{Sets the number of decimal places for the location of the optima.}
 }
 \value{
 A data frame.

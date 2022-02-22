@@ -8,6 +8,8 @@
 #' An object of class \code{ino}.
 #' @param plot
 #' Set to \code{TRUE} for plotting a frequency plot of found optima.
+#' @param round
+#' Sets the number of decimal places for the location of the optima.
 #'
 #' @return
 #' A data frame.

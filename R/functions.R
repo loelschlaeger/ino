@@ -147,10 +147,12 @@ f_ll_mmnp <- function(theta, data) {
 #' @param theta
 #' A numeric vector of model parameters.
 #' @param data
-#' A data frame of a time series of counts.
+#' A data frame that includes a time series of counts.
+#' @param N
+#' The number of states in the hidden Markov model.
 #'
 #' @examples
-#'
+#' # f_ll_hmm()
 #'
 #' @importFrom stats dpois
 #'

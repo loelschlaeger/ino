@@ -9,7 +9,9 @@ f_ll_hmm(theta, data, N = 2)
 \arguments{
 \item{theta}{A numeric vector of model parameters.}
 
-\item{data}{A data frame of a time series of counts.}
+\item{data}{A data frame that includes a time series of counts.}
+
+\item{N}{The number of states in the hidden Markov model.}
 }
 \value{
 A log-likelihood value.
@@ -23,7 +25,7 @@ the {ino} package uses a data set cover the number of major earthquakes (magnitu
 in the world from 1900 until 2006.
 }
 \examples{
-
+# f_ll_hmm()
 
 }
 \references{
