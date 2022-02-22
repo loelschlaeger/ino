@@ -23,7 +23,8 @@ Imports:
     ggplot2,
     rlang,
     RprobitB,
-    mvtnorm
+    mvtnorm,
+    evd
 Suggests: 
     knitr,
     rmarkdown,
