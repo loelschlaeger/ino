@@ -21,7 +21,10 @@ Imports:
     DiagrammeR,
     R.utils,
     ggplot2,
-    rlang
+    rlang,
+    RprobitB,
+    mvtnorm,
+    evd
 Suggests: 
     knitr,
     rmarkdown,
