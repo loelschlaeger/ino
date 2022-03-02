@@ -4,20 +4,33 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Specification functions
 
-- [x] Implement `set_data()`. (L)
+- `set_f()`
+- `set_optimizer()`
+  - [ ] Multiple optimizer
+- `set_data()`
   - [x] Multiple data sets.
-  - [x] Document in vignette.
+  
+## Initialization strategies
+
+- `fixed_initialization()`
+  - [ ] Grid of `at` values.
+- `random_initialization()`
 
 ## Evaluation functions
 
-- [x] Implement `nr_optima()`. (M)
+- `nr_optima()`. 
   - [x] Tolerance for optima values in plot and table.
-- [x] Improve output of `summary.ino`. (L)
+- `optimization_time()`
+- `summary.ino`
+  - [ ] Add information about optimization runs.
 
 ## Applications
 
-- [x] Add standard optimization problems. (M)
-- [x] Likelihood functions.
+- Standard optimization problems
+  - [x] Add examples. (M)
+- Likelihood functions
   - [x] Poisson-HMM (M)
-  - [x] MMNP (L)
-  - [x] MMNL (L)
+  - [ ] MMNP (L)
+    - [ ] Add simulated data.
+  - [ ] MMNL (L)
+    - [ ] Add simulated data.
