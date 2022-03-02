@@ -5,7 +5,7 @@
 #' @param npar The number of parameters in \code{f}.
 #' @param ... Additional arguments to be passed to \code{f}.
 #'
-#' @return An object of class \code{ino_f}.
+#' @return An object of class \code{ino}.
 #' @export
 #'
 #' @examples

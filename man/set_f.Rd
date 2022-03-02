@@ -16,7 +16,7 @@ set_f(x = NULL, f, npar, ...)
 \item{...}{Additional arguments to be passed to \code{f}.}
 }
 \value{
-An object of class \code{ino_f}.
+An object of class \code{ino}.
 }
 \description{
 Set a function for the numerical optimization.
