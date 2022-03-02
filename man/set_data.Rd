@@ -2,7 +2,7 @@
 % Please edit documentation in R/set_data.R
 \name{set_data}
 \alias{set_data}
-\title{Set data for the numerical optimization of likelihood functions.}
+\title{Set data for the numerical optimization of likelihood functions}
 \usage{
 set_data(x, data)
 }
@@ -15,6 +15,6 @@ set_data(x, data)
 An object of class \code{ino}.
 }
 \description{
-Set data for the numerical optimization of likelihood functions.
+Set data for the numerical optimization of likelihood functions
 }
 \keyword{specification}

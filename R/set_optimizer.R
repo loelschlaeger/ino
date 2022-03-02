@@ -1,13 +1,7 @@
-#' Specify the numerical optimizer.
+#' Specify the numerical optimizer
 #'
-#' This function specifies the numerical optimizer for which we seek to find
-#' good initial points.
-#'
-#' @details
-#' See the vignette "Specify numerical optimizer" for more details:
-#' \code{vignette("set-optimizer", package = "ino")}.
-#'
-#' @param x Either \code{NULL} or an object of class \code{ino}.
+#' @param x
+#' Either \code{NULL} or an object of class \code{ino}.
 #' @inheritParams new_optimizer
 #'
 #' @return
@@ -23,17 +17,37 @@
 
 set_optimizer <- function(x = NULL, optimizer = "nlm", ...) {
 
-  ### initialize ino
-  if (is.null(x)) {
-    x <- new_ino()
-  }
-
-  ### check inputs
   if (class(x) != "ino") {
     stop("'x' must be of class 'ino'.")
   }
   if (length(optimizer) != 1) {
     stop("'optimizer' must be of length 1.")
+  }
+
+  add_optimizer <- new_optimizer(optimizer = optimizer, ...)
+
+  if (is.null(x)) {
+    ### initialize ino
+    x <- new_ino()
+    x[["optimizer"]] <- add_optimizer
+  } else if (identical(x[["optimizer"]], NA)) {
+    ### add optimizer first time
+    x[["optimizer"]] <- add_optimizer
+  } else if (!identical(x[["optimizer"]], NA)){
+    ### add optimizer again
+    cat("The ino object already contains an optimizer, what to do?\n")
+    cat("1: Cancel\n")
+    cat("2: Replace the old optimizer by the new optimizer\n")
+    cat("3: Add the new optimizer\n")
+    cat("\n")
+    input <- readline(prompt = "Action: ")
+    if(input == 1){
+      return(x)
+    } else if (input == 2) {
+      x[["optimizer"]] <- optimizer
+    } else if (input == 3) {
+      x[["optimizer"]] <- append(data, x[["optimizer"]])
+    }
   }
 
   ### add optimizer to ino
@@ -43,8 +57,9 @@ set_optimizer <- function(x = NULL, optimizer = "nlm", ...) {
   return(x)
 }
 
-#' Construction of \code{optimizer} objects.
+#' Construction of \code{optimizer} objects
 #'
+#' @description
 #' This function constructs an object of class \code{optimizer}.
 #'
 #' @param optimizer
@@ -75,7 +90,6 @@ new_optimizer <- function(optimizer, ...) {
   } else {
     stop("'optimizer' must be either a character or a function.")
   }
-
   optimizer <- list("fun" = fun, "args" = args, "out" = out)
   class(optimizer) <- "optimizer"
   validate_optimizer(optimizer)
@@ -84,6 +98,7 @@ new_optimizer <- function(optimizer, ...) {
 
 #' Get default function arguments
 #'
+#' @description
 #' This function extracts the default arguments of the function \code{fun},
 #' excluding the names in \code{exclude}.
 #'
@@ -109,6 +124,7 @@ get_default_args <- function(fun, exclude) {
 
 #' Set custom function arguments
 #'
+#' @description
 #' This function sets elements in \code{args} to the custom values in
 #' \code{custom_args}.
 #'
@@ -132,8 +148,9 @@ set_custom_args <- function(args, custom_args) {
   return(args)
 }
 
-#' Validation of \code{optimizer} objects.
+#' Validation of \code{optimizer} objects
 #'
+#' @description
 #' This function validates an object of class \code{optimizer}.
 #'
 #' @param optimizer

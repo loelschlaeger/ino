@@ -2,7 +2,7 @@
 % Please edit documentation in R/set_optimizer.R
 \name{set_optimizer}
 \alias{set_optimizer}
-\title{Specify the numerical optimizer.}
+\title{Specify the numerical optimizer}
 \usage{
 set_optimizer(x = NULL, optimizer = "nlm", ...)
 }
@@ -18,12 +18,7 @@ class \code{function}.}
 An object of class \code{ino}.
 }
 \description{
-This function specifies the numerical optimizer for which we seek to find
-good initial points.
-}
-\details{
-See the vignette "Specify numerical optimizer" for more details:
-\code{vignette("set-optimizer", package = "ino")}.
+Specify the numerical optimizer
 }
 \examples{
 set_optimizer(optimizer = "nlm", iterlim = 1000)

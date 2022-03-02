@@ -2,7 +2,7 @@
 % Please edit documentation in R/set_f.R
 \name{set_f}
 \alias{set_f}
-\title{Set a function for the numerical optimization.}
+\title{Set a function for the numerical optimization}
 \usage{
 set_f(x = NULL, f, npar, ...)
 }
@@ -19,7 +19,7 @@ set_f(x = NULL, f, npar, ...)
 An object of class \code{ino}.
 }
 \description{
-Set a function for the numerical optimization.
+Set a function for the numerical optimization
 }
 \examples{
 himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2

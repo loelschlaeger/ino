@@ -1,11 +1,17 @@
-#' Set a function for the numerical optimization.
+#' Set a function for the numerical optimization
 #'
-#' @param x Either \code{NULL} or an object of class \code{ino}.
-#' @param f An object of class \code{function}.
-#' @param npar The number of parameters in \code{f}.
-#' @param ... Additional arguments to be passed to \code{f}.
+#' @param x
+#' Either \code{NULL} or an object of class \code{ino}.
+#' @param f
+#' An object of class \code{function}.
+#' @param npar
+#' The number of parameters in \code{f}.
+#' @param ...
+#' Additional arguments to be passed to \code{f}.
 #'
-#' @return An object of class \code{ino}.
+#' @return
+#' An object of class \code{ino}.
+#'
 #' @export
 #'
 #' @examples
@@ -17,12 +23,6 @@
 
 set_f <- function(x = NULL, f, npar, ...) {
 
-  ### initialize ino
-  if (is.null(x)) {
-    x <- new_ino()
-  }
-
-  ### check inputs
   if (class(f) != "function") {
     stop("'f' must be of class function.")
   }
@@ -30,9 +30,28 @@ set_f <- function(x = NULL, f, npar, ...) {
     stop("'npar' must be a number.")
   }
 
-  ### add optimizer to ino
-  x$f <- list(f = f, npar = npar, add = list(...))
+  add_f <- list(f = f, npar = npar, add = list(...))
 
-  ### return ino
+  if (is.null(x)) {
+    ### initialize ino object
+    x <- new_ino()
+    x[["f"]] <- add_f
+  } else if (identical(x[["f"]], NA)) {
+    ### add f first time
+    x[["f"]] <- add_f
+  } else if (!identical(x[["data"]], NA)){
+    ### add f again
+    cat("The ino object already contains a function, what to do?\n")
+    cat("1: Cancel\n")
+    cat("2: Replace the old function by the new function\n")
+    cat("\n")
+    input <- readline(prompt = "Action: ")
+    if(input == 1){
+      return(x)
+    } else if (input == 2) {
+      x[["f"]] <- add_f
+    }
+  }
+
   return(x)
 }
