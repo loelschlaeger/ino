@@ -12,55 +12,49 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
-
-This vignette explains the specification functions in `ino`. The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package.
-
-```{r setup}
 library(ino)
 ```
 
+This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] explains the specification functions in {ino}.
+
 ## The `set_f()` function
 
-The `set_f()` function must be used to specify the function. It takes the following arguments:
+The optimization problem must be specified via the `set_f()` function. It takes the following arguments:
 
-```{r, args set_f}
+```{r}
 args(set_f)
 ```
 
-The input `x` must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized by the `set_f()` function, in the latter case the suplied `ino` object is updated.
+- `x`, which must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized, in the latter case the supplied `ino` object is updated.
 
-The input `f` must be an object of class `function` and specifies the function to be optimized.
+- `f` must be an object of class `function` and specifies the function to be optimized.
 
-The input `npar` is the number of parameters in `f`.
+- `npar` is the number of parameters in `f`.
 
-The ellipsis argument `...` can be used to specify additional arguments in `f`.
-
-## Example
+- The ellipsis argument `...` can be used to specify additional arguments of `f`.
 
 ```{r, example set_f}
 himmelblau <- function(x, c, d) (x[1]^2 + x[2] + c)^2 + (x[1] + x[2]^2 + d)^2
 set_f(f = himmelblau, npar = 2, c = -11, d = -7)
 ```
 
-
 ## The `set_optimizer()` function
 
-The `set_optimizer()` function must be used to specify the numerical optimizer. It takes the following arguments:
+The numerical optimizer must be specified via the `set_optimizer()` function. It takes the following arguments:
 
-```{r, args set_optimizer}
+```{r}
 args(set_optimizer)
 ```
 
-The input `x` must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized by the `set_optimizer()` function, in the latter case the `ino` object is updated.
+- `x`, which must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized, in the latter case the `ino` object is updated.
 
-The input `optimizer` must be either a character [specifying a pre-defined optimizer](#pre-defined-optimizer) or a function for [setting a custom optimizer](#custom-optimizer). 
+- The input `optimizer` must be either a character [specifying a pre-defined optimizer](#pre-defined-optimizer) or a function for [setting a custom optimizer](#custom-optimizer). 
 
-The ellipsis input `...` takes additional arguments to be passed to the optimizer.
+- The ellipsis input `...` takes additional arguments to be passed to the optimizer.
 
 ### Pre-defined optimizer
 
-Specify the `optimizer` argument to one of the following characters to set currently pre-defined optimizerin in ino^[Extending this list is on our agenda.]:
+Specify the `optimizer` argument to one of the following characters to set currently pre-defined optimizerin in {ino}^[Extending this list is on our agenda.]:
 
 - `"nlm"` for the Newton-type algorithm [nlm](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/nlm.html)
 
@@ -76,8 +70,14 @@ returns an `ino` object where the nlm optimizer with iteration limit 1000 is spe
 
 The `optimizer` argument also can be a function to set a custom optimizer (or any optimizer not covered above). This functionality will be implemented in the future.
 
-### Comparing optimizer
-
-In the future, `ino` will provide the functionality of comparing the initialization effect among different optimizer. In order to do so, `set_optimizer()` must be used to set multiple optimizer.
-
 ## The `set_data()` function
+
+Data sets for likelihood functions must be specified via the `set_data()` function:
+
+```{r}
+args(set_data)
+```
+
+- `x`, which must be either `NULL` or an object of class `ino`. In the former case, an `ino` object is initialized, in the latter case the `ino` object is updated.
+
+- The input `data` must be a list of data sets. 
