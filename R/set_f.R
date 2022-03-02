@@ -36,20 +36,26 @@ set_f <- function(x = NULL, f, npar, ...) {
     ### initialize ino object
     x <- new_ino()
     x[["f"]] <- add_f
-  } else if (identical(x[["f"]], NA)) {
-    ### add f first time
-    x[["f"]] <- add_f
-  } else if (!identical(x[["data"]], NA)){
-    ### add f again
-    cat("The ino object already contains a function, what to do?\n")
-    cat("1: Cancel\n")
-    cat("2: Replace the old function by the new function\n")
-    cat("\n")
-    input <- readline(prompt = "Action: ")
-    if(input == 1){
-      return(x)
-    } else if (input == 2) {
+  } else {
+    ### ino object already exists
+    if (class(x) != "ino") {
+      stop("'x' must be of class 'ino'.")
+    }
+    if (identical(x[["f"]], NA)) {
+      ### add f first time
       x[["f"]] <- add_f
+    } else {
+      ### add f again
+      cat("The ino object already contains a function, what to do?\n")
+      cat("1: Cancel\n")
+      cat("2: Replace the old function by the new function\n")
+      cat("\n")
+      input <- readline(prompt = "Action: ")
+      if(input == 1){
+        return(x)
+      } else if (input == 2) {
+        x[["f"]] <- add_f
+      }
     }
   }
 

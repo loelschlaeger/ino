@@ -23,23 +23,29 @@ set_data <- function(x, data) {
     ### initialize ino object
     x <- new_ino()
     x[["data"]] <- data
-  } else if (identical(x[["data"]], NA)) {
-    ### add data first time
-    x[["data"]] <- data
-  } else if (!identical(x[["data"]], NA)){
-    ### add data again
-    cat("The ino object already contains data, what to do?\n")
-    cat("1: Cancel\n")
-    cat("2: Replace the old data by the new data\n")
-    cat("3: Add the new data\n")
-    cat("\n")
-    input <- readline(prompt = "Action: ")
-    if(input == 1){
-      return(x)
-    } else if (input == 2) {
+  } else {
+    ### ino object already exists
+    if (class(x) != "ino") {
+      stop("'x' must be of class 'ino'.")
+    }
+    if (identical(x[["data"]], NA)) {
+      ### add data first time
       x[["data"]] <- data
-    } else if (input == 3) {
-      x[["data"]] <- append(data, x[["data"]])
+    } else {
+      ### add data again
+      cat("The ino object already contains data, what to do?\n")
+      cat("1: Cancel\n")
+      cat("2: Replace the old data by the new data\n")
+      cat("3: Add the new data\n")
+      cat("\n")
+      input <- readline(prompt = "Action: ")
+      if(input == 1){
+        return(x)
+      } else if (input == 2) {
+        x[["data"]] <- data
+      } else if (input == 3) {
+        x[["data"]] <- append(data, x[["data"]])
+      }
     }
   }
 

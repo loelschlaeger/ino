@@ -17,9 +17,6 @@
 
 set_optimizer <- function(x = NULL, optimizer = "nlm", ...) {
 
-  if (class(x) != "ino") {
-    stop("'x' must be of class 'ino'.")
-  }
   if (length(optimizer) != 1) {
     stop("'optimizer' must be of length 1.")
   }
@@ -30,23 +27,29 @@ set_optimizer <- function(x = NULL, optimizer = "nlm", ...) {
     ### initialize ino
     x <- new_ino()
     x[["optimizer"]] <- add_optimizer
-  } else if (identical(x[["optimizer"]], NA)) {
-    ### add optimizer first time
-    x[["optimizer"]] <- add_optimizer
-  } else if (!identical(x[["optimizer"]], NA)){
-    ### add optimizer again
-    cat("The ino object already contains an optimizer, what to do?\n")
-    cat("1: Cancel\n")
-    cat("2: Replace the old optimizer by the new optimizer\n")
-    cat("3: Add the new optimizer\n")
-    cat("\n")
-    input <- readline(prompt = "Action: ")
-    if(input == 1){
-      return(x)
-    } else if (input == 2) {
-      x[["optimizer"]] <- optimizer
-    } else if (input == 3) {
-      x[["optimizer"]] <- append(data, x[["optimizer"]])
+  } else {
+    ### ino object already exists
+    if (class(x) != "ino") {
+      stop("'x' must be of class 'ino'.")
+    }
+    if (identical(x[["optimizer"]], NA)) {
+      ### add optimizer first time
+      x[["optimizer"]] <- add_optimizer
+    } else {
+      ### add optimizer again
+      cat("The ino object already contains an optimizer, what to do?\n")
+      cat("1: Cancel\n")
+      cat("2: Replace the old optimizer by the new optimizer\n")
+      cat("3: Add the new optimizer\n")
+      cat("\n")
+      input <- readline(prompt = "Action: ")
+      if(input == 1){
+        return(x)
+      } else if (input == 2) {
+        x[["optimizer"]] <- optimizer
+      } else if (input == 3) {
+        x[["optimizer"]] <- append(x[["optimizer"]], add_optimizer)
+      }
     }
   }
 
