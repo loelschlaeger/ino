@@ -120,7 +120,7 @@ f_easom <- function(x) {
 #' data <- read.table("http://www.hmms-for-time-series.de/second/data/earthquakes.txt")
 #' colnames(data) <- c("year", "obs")
 #' theta <- c(-1, -1, 1, 2)
-#' f_ll_hmm(theta = theta, data = data, N = 2)
+#' ino:::f_ll_hmm(theta = theta, data = data, N = 2)
 #'
 #' @importFrom stats dpois
 #'
@@ -199,8 +199,8 @@ f_ll_hmm <- function(theta, data, N = 2, negative = FALSE) {
 #' Sigma <- diag(3)
 #' L <- t(chol(Sigma))
 #' l <- L[lower.tri(L, diag = TRUE)][-1]
-#' data <- sim_mmnp(N, b, o, l, seed = 1)
-#' f_ll_mmnp(theta = c(b,o,l), data = data)
+#' data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
+#' ino:::f_ll_mmnp(theta = c(b,o,l), data = data)
 #'
 #' @keywords
 #' function
@@ -261,7 +261,7 @@ f_ll_mmnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, negative = FAL
 #' Sigma <- diag(3)
 #' L <- t(chol(Sigma))
 #' l <- L[lower.tri(L, diag = TRUE)][-1]
-#' data <- sim_mmnp(N, b, o, l, seed = 1)
+#' data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
 
 sim_mmnp <- function(N, b, o, l, seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
@@ -313,8 +313,8 @@ sim_mmnp <- function(N, b, o, l, seed = NULL) {
 #' Omega <- diag(3)
 #' O <- t(chol(Omega))
 #' o <- O[lower.tri(O, diag = TRUE)]
-#' data <- sim_mmnl(N, J, b, o, seed = 1)
-#' f_ll_mmnl(theta = c(b,o), data = data)
+#' data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
+#' ino:::f_ll_mmnl(theta = c(b,o), data = data)
 #'
 #' @importFrom mvtnorm pmvnorm
 #'
@@ -363,7 +363,7 @@ f_ll_mmnl <- function(theta, data, R = 100, negative = FALSE) {
 #' Omega <- diag(3)
 #' O <- t(chol(Omega))
 #' o <- O[lower.tri(O, diag = TRUE)]
-#' data <- sim_mmnl(N, J, b, o, seed = 1)
+#' data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
 #'
 #' @importFrom evd rgumbel
 
