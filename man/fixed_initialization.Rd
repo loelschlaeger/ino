@@ -15,7 +15,7 @@ fixed_initialization(x, at)
 This function implemented the fixed initialization strategy.
 }
 \details{
-See the vignette ... for more details.
+See the vignette "Initialization strategies" for more details.
 }
 \examples{
 #fixed_initialization()

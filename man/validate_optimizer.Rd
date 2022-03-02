@@ -2,7 +2,7 @@
 % Please edit documentation in R/set_optimizer.R
 \name{validate_optimizer}
 \alias{validate_optimizer}
-\title{Validation of \code{optimizer} objects.}
+\title{Validation of \code{optimizer} objects}
 \usage{
 validate_optimizer(optimizer)
 }

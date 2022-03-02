@@ -2,7 +2,7 @@
 % Please edit documentation in R/set_optimizer.R
 \name{new_optimizer}
 \alias{new_optimizer}
-\title{Construction of \code{optimizer} objects.}
+\title{Construction of \code{optimizer} objects}
 \usage{
 new_optimizer(optimizer, ...)
 }
