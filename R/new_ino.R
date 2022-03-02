@@ -47,7 +47,6 @@ summary.ino <- function(object, ...) {
 #' @importFrom crayon underline
 
 print.summary.ino <- function(x, ...) {
-
   yes_no <- function(bool) {
     ifelse(bool, crayon::green("\U2713"), crayon::red("x"))
   }
@@ -55,10 +54,14 @@ print.summary.ino <- function(x, ...) {
   ### summarize specifications
   cat(crayon::underline("Specifications\n"))
   cat("* f:", yes_no(x$f_set), "\n")
-  cat("* data:", yes_no(x$data_set),
-      ifelse(x$data_set,paste0("(",x$no_data,")"),""),"\n")
-  cat("* optimizer:", yes_no(x$optimizer_set),
-      ifelse(x$optimizer_set,paste0("(",x$no_optimizer,")"),""),"\n")
+  cat(
+    "* data:", yes_no(x$data_set),
+    ifelse(x$data_set, paste0("(", x$no_data, ")"), ""), "\n"
+  )
+  cat(
+    "* optimizer:", yes_no(x$optimizer_set),
+    ifelse(x$optimizer_set, paste0("(", x$no_optimizer, ")"), ""), "\n"
+  )
 
   ### summarize optimization
   cat(crayon::underline("\nOptimizations\n"))
