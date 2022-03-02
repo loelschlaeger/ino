@@ -4,16 +4,15 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Specification functions
 
-- [ ] Implement `set_data()`. (L)
-  - [ ] Multiple data sets.
-  - [ ] Document in vignette.
+- [x] Implement `set_data()`. (L)
+  - [x] Multiple data sets.
+  - [x] Document in vignette.
 
 ## Evaluation functions
 
-- [ ] Implement `nr_optima()`. (M)
-  - [ ] Tolerance for optima values in plot and table.
-- [ ] Improve output of `summary.ino`. (L)
-  
+- [x] Implement `nr_optima()`. (M)
+  - [x] Tolerance for optima values in plot and table.
+- [x] Improve output of `summary.ino`. (L)
 
 ## Applications
 
