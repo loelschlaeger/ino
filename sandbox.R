@@ -8,7 +8,6 @@ devtools::load_all()
 ### setup
 x <- set_f(f = ino:::f_ackley, npar = 2)
 x <- set_optimizer(x, "nlm")
-x <- set_data(x, list())
 summary(x)
 
 ### strategies
@@ -23,17 +22,15 @@ nr_optima(x, plot = TRUE)
 
 # Example: HMM LL ---------------------------------------------------------
 
-### fit HMM
 earthquake_data <- read.table("http://www.hmms-for-time-series.de/second/data/earthquakes.txt")
 colnames(earthquake_data) <- c("year", "obs")
 
-# set number of states N
+### setup
 nr_states <- 2
-# set number of parameters: N * (N-1) for the transition probability matrix +
-# N for the state-dependent distributions
 nr_paras <- nr_states * (nr_states - 1) + nr_states
 x <- set_f(f = ino::f_ll_hmm, npar = nr_paras)
-# set_data...
+
+### good starting
 starting_values <- c(-1, -1, 1, 2)
 mod <- nlm(f_ll_hmm, starting_values, earthquake_data, N = nr_states, print.level = 2, iterlim = 1000)
 mod$estimate
