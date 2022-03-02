@@ -14,7 +14,6 @@
 #' specification
 
 set_data <- function(x, data) {
-
   if (class(data) != "list") {
     stop("'data' must be of class list.")
   }
@@ -39,7 +38,7 @@ set_data <- function(x, data) {
       cat("3: Add the new data\n")
       cat("\n")
       input <- readline(prompt = "Action: ")
-      if(input == 1){
+      if (input == 1) {
         return(x)
       } else if (input == 2) {
         x[["data"]] <- data
