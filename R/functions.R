@@ -101,39 +101,6 @@ f_easom <- function(x) {
   -cos(x[1]) * cos(x[2]) * exp(-((x[1] - pi)^2 + (x[2] - pi)^2))
 }
 
-#' The log-likelihood function of the mixed probit model
-#'
-#' @references
-#' https://en.wikipedia.org/wiki/Probit_model
-#'
-#' @details
-#' The {ino} package includes a data set that was sampled from a mixed probit
-#' model, which can be accessed via \code{data()}.
-#'
-#' @param theta
-#' A numeric vector of model parameters.
-#' @param data
-#' A data frame of discrete choice data.
-#'
-#' @examples
-#' b <- c(-1,1)
-#' Omega <- diag(2)
-#' Sigma <- diag(2)
-#' O <- t(chol(Omega))
-#' L <- t(chol(Sigma))
-#' theta <- c(b, O[lower.tri(O)], L[lower.tri(L)])
-#'
-#' @return
-#' A log-likelihood value.
-#'
-#' @keywords
-#' function
-
-f_ll_mmnp <- function(theta, data) {
-  stopifnot(is.numeric(theta), is.data.frame(data), "choice" %in% colnames(data))
-  warning("Not implemented yet.")
-}
-
 #' The log-likelihood function of a Poisson-hidden Markov model
 #'
 #' @references
@@ -193,3 +160,4 @@ f_ll_hmm <- function(theta, data, N = 2) {
 
   return(-llk)
 }
+
