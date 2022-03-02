@@ -49,7 +49,7 @@ summary.ino <- function(object, ...) {
 print.summary.ino <- function(x, ...) {
 
   yes_no <- function(bool) {
-    ifelse(bool, crayon::green("\U2713"), crayon::red("\U274C"))
+    ifelse(bool, crayon::green("\U2713"), crayon::red("x"))
   }
 
   ### summarize specifications
