@@ -1,7 +1,5 @@
 ---
 title: "Evaluations"
-author: "Lennart Oelschläger"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Evaluations}
@@ -30,7 +28,7 @@ The `optimization_time()` function provides an overview of the optimization time
 x <- set_f(f = ino:::f_ackley, npar = 2)
 x <- set_optimizer(x, "nlm")
 x <- random_initialization(x, runs = 10)
-optimization_time(x)
+# optimization_time(x)
 ```
 
 ## The `optima()` function

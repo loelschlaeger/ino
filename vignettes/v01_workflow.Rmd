@@ -1,7 +1,5 @@
 ---
 title: "Workflow"
-author: "Lennart Oelschläger"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Workflow}
@@ -87,7 +85,8 @@ analysis <- set_f(f = ino:::f_ackley, npar = 2)
 
 This creates the object `analysis` which is an object of class `ino`. Insights about the initialization will be saved here.
 
-> Remark: If your function is a likelihood function, then this is the right time to also introduce your dataset(s) to {ino}. See the vignette "Specification functions" on how to do this.
+> Remark: If your function is a likelihood function, then this is the right time to also introduce your data set(s) to {ino}. See the vignette "Specification functions" on how to do this.
+
 Next, we need to specify a numerical optimizer, for example [nlm from the stats package](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/nlm.html). We can also set parameters of the optimizer, for example the maximum number of iterations `iterlim`.
 
 ```{r, set optimizer}
@@ -111,7 +110,7 @@ We initialized `runs = 10` times at random samples.
 Let's also try fixed initialization at different points:
 
 ```{r, fixed initialization}
-#analysis %<>% fixed_initialization(at = list(c(0,0),c(5,5),c(10,10)))
+analysis %<>% fixed_initialization(at = list(c(0,0),c(5,5),c(10,10)))
 ```
 
 > Remark: Each initialization strategy implemented in {ino} is documented in the vignette "Initialization strategies".
@@ -121,11 +120,11 @@ Let's also try fixed initialization at different points:
 The package provides several functions to evaluate the initialization strategies, for example:
 
 ```{r, evaluate optima}
-#analysis %>% optima
+#analysis %>% nr_optima
 ```
 
 ```{r, evaluate time}
-analysis %>% optimization_time
+#analysis %>% optimization_time
 ```
 
 > Remark: All evaluation functions are documented in the vignette "Evaluations".

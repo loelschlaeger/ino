@@ -1,7 +1,5 @@
 ---
 title: "Introduction"
-author: "Lennart Oelschläger and Marius Ötting"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction}
@@ -18,4 +16,4 @@ knitr::opts_chunk$set(
 )
 ```
 
-This is the introductory vignette to ino explaining the purpose and giving a first example.
+This is the introductory vignette of {ino} explaining the purpose and giving a first example.
