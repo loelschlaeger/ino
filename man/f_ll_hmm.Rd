@@ -2,9 +2,9 @@
 % Please edit documentation in R/functions.R
 \name{f_ll_hmm}
 \alias{f_ll_hmm}
-\title{The log-likelihood function of a Poisson-hidden Markov model}
+\title{The log-likelihood function of the Poisson-hidden Markov model}
 \usage{
-f_ll_hmm(theta, data, N = 2)
+f_ll_hmm(theta, data, N = 2, negative = FALSE)
 }
 \arguments{
 \item{theta}{A numeric vector of model parameters.}
@@ -12,20 +12,24 @@ f_ll_hmm(theta, data, N = 2)
 \item{data}{A data frame that includes a time series of counts.}
 
 \item{N}{The number of states in the hidden Markov model.}
+
+\item{negative}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
-A log-likelihood value.
+The log-likelihood value.
 }
 \description{
-The log-likelihood function of a Poisson-hidden Markov model
+The log-likelihood function of the Poisson-hidden Markov model
 }
 \details{
-To illustrate the numerical optimisation of the log-likelihood of a Poisson-hidden Markov model,
-the {ino} package uses a data set cover the number of major earthquakes (magnitude 7 or greater)
-in the world from 1900 until 2006.
+The example uses a data set that covers the number of major earthquakes
+(magnitude 7 or greater) in the world from 1900 until 2006.
 }
 \examples{
-# f_ll_hmm()
+data <- read.table("http://www.hmms-for-time-series.de/second/data/earthquakes.txt")
+colnames(data) <- c("year", "obs")
+theta <- c(-1, -1, 1, 2)
+f_ll_hmm(theta = theta, data = data, N = 2)
 
 }
 \references{

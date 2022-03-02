@@ -17,10 +17,8 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Applications
 
-- [ ] Add standard optimization problems. (M)
-  - [x] Ackley function.
-- [ ] Likelihood functions.
-  - [ ] HMM. (M)
-    - [ ] Add dataset.
-  - [ ] MNP. (L)
-    - [ ] Add dataset.
+- [x] Add standard optimization problems. (M)
+- [x] Likelihood functions.
+  - [x] Poisson-HMM (M)
+  - [x] MMNP (L)
+  - [x] MMNL (L)
