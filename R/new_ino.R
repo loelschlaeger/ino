@@ -11,13 +11,10 @@
 
 new_ino <- function() {
   out <- list()
-
-  ### components
   out$f <- NA
-  out$data <- list()
-  out$optimizer <- list()
-  out$optimizations <- list()
-
+  out$data <- NA
+  out$optimizer <- NA
+  out$optimizations <- NA
   class(out) <- "ino"
   return(out)
 }
@@ -33,12 +30,14 @@ print.ino <- function(x, ...) {
 #' @noRd
 
 summary.ino <- function(object, ...) {
-  out <- list("f_set" = !identical(object[["f"]],NA),
-              "data_set" = !identical(object[["data"]],list()),
-              "no_data" = length(object[["data"]]),
-              "optimizer_set" = !identical(object[["optimizer"]],list()),
-              "no_optimizer" = length(object[["optimizer"]]),
-              "no_optimizations" = length(object[["optimizations"]]))
+  out <- list(
+    "f_set" = !identical(object[["f"]], NA),
+    "data_set" = !identical(object[["data"]], NA),
+    "no_data" = length(object[["data"]]),
+    "optimizer_set" = !identical(object[["optimizer"]], NA),
+    "no_optimizer" = length(object[["optimizer"]]),
+    "no_optimizations" = length(object[["optimizations"]])
+  )
   class(out) <- "summary.ino"
   return(out)
 }
