@@ -29,7 +29,7 @@ The example uses a data set that covers the number of major earthquakes
 data <- read.table("http://www.hmms-for-time-series.de/second/data/earthquakes.txt")
 colnames(data) <- c("year", "obs")
 theta <- c(-1, -1, 1, 2)
-f_ll_hmm(theta = theta, data = data, N = 2)
+ino:::f_ll_hmm(theta = theta, data = data, N = 2)
 
 }
 \references{

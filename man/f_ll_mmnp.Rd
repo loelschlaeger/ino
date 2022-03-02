@@ -38,8 +38,8 @@ o <- O[lower.tri(O, diag = TRUE)]
 Sigma <- diag(3)
 L <- t(chol(Sigma))
 l <- L[lower.tri(L, diag = TRUE)][-1]
-data <- sim_mmnp(N, b, o, l, seed = 1)
-f_ll_mmnp(theta = c(b,o,l), data = data)
+data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
+ino:::f_ll_mmnp(theta = c(b,o,l), data = data)
 
 }
 \references{

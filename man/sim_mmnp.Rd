@@ -35,5 +35,5 @@ o <- O[lower.tri(O, diag = TRUE)]
 Sigma <- diag(3)
 L <- t(chol(Sigma))
 l <- L[lower.tri(L, diag = TRUE)][-1]
-data <- sim_mmnp(N, b, o, l, seed = 1)
+data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
 }

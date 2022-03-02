@@ -31,6 +31,6 @@ b <- c(-2,0.5,2)
 Omega <- diag(3)
 O <- t(chol(Omega))
 o <- O[lower.tri(O, diag = TRUE)]
-data <- sim_mmnl(N, J, b, o, seed = 1)
+data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
 
 }
