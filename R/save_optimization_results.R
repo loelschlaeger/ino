@@ -20,7 +20,7 @@
 
 save_optimization_results <- function(x, strategy, res, time) {
   new_results <- list("strategy" = strategy, "res" = res, "time" = time)
-  if(identical(x[["optimizations"]],NA)){
+  if (identical(x[["optimizations"]], NA)) {
     ### first optimization
     x[["optimizations"]] <- list()
     x[["optimizations"]][[1]] <- new_results
