@@ -58,7 +58,9 @@ random_initialization <- function(x, runs = 1, sampler = NULL) {
     )
 
     ### save results in ino
-    x <- save_optimization_results(x, strategy = "random", res = out$res,
+    x <- save_optimization_results(x,
+                                   strategy = "random",
+                                   res = out$res,
                                    time = out$time)
   }
 

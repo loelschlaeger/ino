@@ -1,6 +1,7 @@
 #' Saving of optimization results.
 #'
-#' This function saves optimization results in \code{ino} object.
+#' @description
+#' This function saves optimization results in an \code{ino} object.
 #'
 #' @param x
 #' An object of class \code{ino}.
@@ -19,6 +20,13 @@
 
 save_optimization_results <- function(x, strategy, res, time) {
   new_results <- list("strategy" = strategy, "res" = res, "time" = time)
-  x$optimizations <- append(x$optimizations, list(new_results))
+  if(identical(x[["optimizations"]],NA)){
+    ### first optimization
+    x[["optimizations"]] <- list()
+    x[["optimizations"]][[1]] <- new_results
+  } else {
+    ### not first optimization
+    x[["optimizations"]] <- c(x[["optimizations"]], list(new_results))
+  }
   return(x)
 }
