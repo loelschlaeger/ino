@@ -15,6 +15,7 @@ The following tasks are on our agenda and will be tackled as time permits.
 - `fixed_initialization()`
 - `random_initialization()`
 - `vary_parameters()`
+- `subset_data()`
 
 ## Evaluation functions
 
