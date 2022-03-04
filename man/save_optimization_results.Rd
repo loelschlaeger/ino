@@ -19,6 +19,6 @@ save_optimization_results(x, strategy, res, time)
 An object of class \code{ino}.
 }
 \description{
-This function saves optimization results in \code{ino} object.
+This function saves optimization results in an \code{ino} object.
 }
 \keyword{internal}
