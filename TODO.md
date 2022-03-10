@@ -10,7 +10,9 @@ The following tasks are on our agenda and will be tackled as time permits.
   - [ ] Multiple optimizer (M*)
 - `set_data()`
   - [ ] Multiple data sets. (M***)
-  
+      - [x] for fixed_initialization
+      - [ ] for random_initialization
+      
 ## Initialization strategies
 
 - `fixed_initialization()`
@@ -22,7 +24,7 @@ The following tasks are on our agenda and will be tackled as time permits.
 - `nr_optima()`. 
   - [x] Tolerance for optima values in plot and table.
 - `optimization_time()`
-  - [ ] Add plot method. (M***)
+  - [x] Add plot method. (M***) (we can now plot histograms and/or frequency tables)
 - `summary.ino`
   - [ ] Add information about optimization runs. (L**)
 
@@ -33,8 +35,8 @@ The following tasks are on our agenda and will be tackled as time permits.
   - [x] Add examples. (M)
 - Likelihood functions
   - [x] Poisson-HMM (M)
-    - [ ] Ask Roland if we can include data set in package. (M***) 
-    - [ ] Transform sandbox example to ino structure. (M*)
+    - [x] Ask Roland if we can include data set in package. (M***) (we can use it)
+    - [x] Transform sandbox example to ino structure. (M*)
     - [ ] Document sandbox example in vignette. (M*)
   - [ ] MMNP (L)
     - [ ] Add simulated data. (L***)

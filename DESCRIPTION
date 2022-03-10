@@ -21,6 +21,7 @@ Imports:
     DiagrammeR,
     R.utils,
     ggplot2,
+    cowplot,
     rlang,
     RprobitB,
     mvtnorm,
