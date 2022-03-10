@@ -4,10 +4,16 @@
 \alias{optimization_time}
 \title{Overview of optimization times.}
 \usage{
-optimization_time(x)
+optimization_time(x, plot_hist = FALSE, plot_freq = FALSE, round = 2)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
+
+\item{plot_hist}{Set to \code{TRUE} for plotting a histogram of the optimization times.}
+
+\item{plot_freq}{Set to \code{TRUE} for plotting a frequency plot of the optimization times.}
+
+\item{round}{Sets the number of decimal places for the optimization time.}
 }
 \value{
 A data frame.
