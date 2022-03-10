@@ -24,18 +24,18 @@ create_grid <- function(x, at) {
   if (class(x) != "ino") {
     stop("'x' must be of class 'ino'.")
   }
-  if(!is.list(at)){
+  if (!is.list(at)) {
     stop("'at' must be a list.")
   }
 
   ### generate grid of all combinations of starting values and data sets
   # if data sets exist, create a grid of starting values and data sets
-  if(is.list(x$data)) {
+  if (is.list(x$data)) {
     out <- expand.grid(at, 1:length(x$data))
     colnames(out) <- c("at", "data_idx")
   }
   # if no data sets exist, simply return the starting values
-  else{
+  else {
     out <- data.frame(at = rep(NA, length(at)))
     out$at <- at
   }
