@@ -16,30 +16,35 @@ x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2), c(2, 0.3), c(1, 2))
 
 ### evaluation
 optimization_time(x)
+optimization_time(x, plot_hist = TRUE)
+optimization_time(x, plot_freq = TRUE)
+optimization_time(x, plot_hist = TRUE, plot_freq = TRUE)
 nr_optima(x)
 nr_optima(x, plot = TRUE)
 
 
 # Example: HMM LL ---------------------------------------------------------
-
+library(magrittr)
 earthquake_data <- read.table("http://hmms-for-time-series.de/second/data/earthquakes.txt")
 colnames(earthquake_data) <- c("year", "obs")
 
-### setup
+### set number of parameters to be estimated
 nr_states <- 2
 nr_paras <- nr_states * (nr_states - 1) + nr_states
-x <- set_f(f = ino::f_ll_hmm, npar = nr_paras)
 
-### good starting
-starting_values <- c(-1, -1, 1, 2)
-mod <- nlm(f_ll_hmm, starting_values, earthquake_data, N = nr_states, iterlim = 1000)
-mod$estimate
-exp(mod$estimate)
+### set up the ino object
+# set likelihood function
+x <- set_f(f = ino::f_ll_hmm, npar = nr_paras, N = 2, negative = TRUE) %>%
+  # set data
+  set_data(list(earthquake_data, earthquake_data)) %>%
+  # set optimizer
+  set_optimizer("nlm")
 
-# bad starting values:
-starting_values <- c(-1, -1, 0.1, 0.2)
-mod <- nlm(f_ll_hmm, starting_values, earthquake_data, N = nr_states, iterlim = 1000)
-exp(mod$estimate)
+summary(x)
+
+x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+optimization_time(x)
+nr_optima(x)
 
 
 # Example: Probit LL ------------------------------------------------------
