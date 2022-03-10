@@ -36,12 +36,22 @@ fixed_initialization <- function(x, at) {
     stop("Some element in 'at' has less entries than the function has parameters.")
   }
 
+  grid_for_optim <- create_grid(x, at)
+
   ### loop over all parameter combinations provided
-  for(p in at){
-    main_args <- list(f = x$f$f, p = p)
+  for(i in 1:nrow(grid_for_optim)){
+    main_args <- list(f = x$f$f, p = grid_for_optim$at[[i]])
+    # set data argument for optimiser, if a data set exists
+    if(is.list(x$data)){
+      data_arg <- list(data = x$data[[grid_for_optim$data_idx[i]]])
+    }
+    else{
+      data_arg <- c()
+    }
+
     out <- do.call_timed(
       what = x$optimizer$fun,
-      args = c(main_args, x$f$add)
+      args = c(main_args, data_arg, x$f$add)
     )
     x <- save_optimization_results(x, strategy = "fixed", res = out$res,
                                    time = out$time)
