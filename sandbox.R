@@ -46,6 +46,9 @@ x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
 optimization_time(x)
 nr_optima(x)
 
+x <- random_initialization(x, runs = 2)
+optimization_time(x)
+nr_optima(x)
 
 # Example: Probit LL ------------------------------------------------------
 
