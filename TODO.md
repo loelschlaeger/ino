@@ -11,7 +11,7 @@ The following tasks are on our agenda and will be tackled as time permits.
 - `set_data()`
   - [ ] Multiple data sets. (M***)
       - [x] for fixed_initialization
-      - [ ] for random_initialization
+      - [x] for random_initialization
       
 ## Initialization strategies
 
