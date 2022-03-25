@@ -20,7 +20,8 @@
 
 f_ackley <- function(x) {
   stopifnot(is.numeric(x), length(x) == 2)
-  -20 * exp(-0.2 * sqrt(0.5 * (x[1]^2 + x[2]^2))) - exp(0.5 * (cos(2 * pi * x[1]) + cos(2 * pi * x[2]))) + exp(1) + 20
+  -20 * exp(-0.2 * sqrt(0.5 * (x[1]^2 + x[2]^2))) -
+    exp(0.5 * (cos(2 * pi * x[1]) + cos(2 * pi * x[2]))) + exp(1) + 20
 }
 
 #' The Beale function
@@ -45,7 +46,8 @@ f_ackley <- function(x) {
 
 f_beale <- function(x) {
   stopifnot(is.numeric(x), length(x) == 2)
-  (1.5 - x[1] + x[1] * x[2])^2 + (2.25 - x[1] + x[1] * x[2]^2)^2 + (2.625 - x[1] + x[1] * x[2]^3)^2
+  (1.5 - x[1] + x[1] * x[2])^2 + (2.25 - x[1] + x[1] * x[2]^2)^2 +
+    (2.625 - x[1] + x[1] * x[2]^3)^2
 }
 
 #' The Matyas function
@@ -113,7 +115,7 @@ f_easom <- function(x) {
 #' A data frame that includes a time series of counts.
 #' @param N
 #' The number of states in the hidden Markov model.
-#' @param negative
+#' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @examples
@@ -128,36 +130,38 @@ f_easom <- function(x) {
 #' @keywords
 #' function
 
-f_ll_hmm <- function(theta, data, N = 2, negative = FALSE) {
-  stopifnot(is.numeric(theta), is.data.frame(data))
+f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 
-  ## transition probability matrix (t.p.m.)
+  ### input checks
+  stopifnot(is.numeric(theta), is.data.frame(data), N%%1==0)
+
+  ### transition probability matrix (t.p.m.)
   tpm <- diag(N)
   tpm[!tpm] <- exp(theta[1:(N * (N - 1))])
   tpm <- tpm/rowSums(tpm)
 
-  ## lambda for each state
+  ### lambda for each state
   lambda <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
   delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
   if ("try-error" %in% class(delta)) delta <- rep(1, N) / N
 
-  ## allprobs matrix
+  ### allprobs matrix
   allprobs <- matrix(1, nrow(data), N)
   for(j in 1:N){
     allprobs[, j] <- dpois(data$obs, exp(lambda[j]))
   }
 
+  ### forward algorithm
   foo <- delta %*% diag(allprobs[1,])
   llk <- log(sum(foo))
   phi <- foo/sum(foo)
-  ## forward algorithm
   for(t in 2:nrow(data)){
     foo <- phi %*% tpm %*% diag(allprobs[t, ])
     llk <- llk + log(sum(foo))
     phi <- foo/sum(foo)
   }
 
-  return(ifelse(negative, -llk, llk))
+  return(ifelse(neg, -llk, llk))
 }
 
 #' The log-likelihood function of the normally mixed multinomial probit model
@@ -168,8 +172,20 @@ f_ll_hmm <- function(theta, data, N = 2, negative = FALSE) {
 #' @seealso
 #' [sim_mmnp()]
 #'
+#' @details
+#' The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
+#' \itemize{
+#'   \item \code{b} denotes the coefficients,
+#'   \item \code{o} the lower-triangular elements of the lower-triangular
+#'         Cholesky root of \code{Omega},
+#'   \item and \code{l} the lower-triangular elements of the lower-triangular
+#'         Cholesky root \code{L} of the differenced (with respect to
+#'         alternative 1) error term covariance matrix \code{Sigma}, with the
+#'         top-left element of \code{L} fixed to 1.
+#' }
+#'
 #' @param theta
-#' A vector of model coefficients in the order \code{b}, \code{o}, \code{l}.
+#' The vector of model coefficients in order \code{c(b,o,l)}, see the details.
 #' @param data
 #' The output of \code{\link{sim_mmnp}}.
 #' @param normal_cdf
@@ -182,7 +198,7 @@ f_ll_hmm <- function(theta, data, N = 2, negative = FALSE) {
 #'   \item \code{sigma}, the covariance matrix of dimension \code{n},
 #' }
 #' and return a single numeric value.
-#' @param negative
+#' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @return
@@ -190,98 +206,149 @@ f_ll_hmm <- function(theta, data, N = 2, negative = FALSE) {
 #'
 #' @examples
 #' N <- 100
+#' T <- 10
 #' b <- c(-2,0.5,2)
 #' Omega <- diag(3)
-#' O <- t(chol(Omega))
-#' o <- O[lower.tri(O, diag = TRUE)]
 #' Sigma <- diag(3)
-#' L <- t(chol(Sigma))
-#' l <- L[lower.tri(L, diag = TRUE)][-1]
-#' data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
-#' ino:::f_ll_mmnp(theta = c(b,o,l), data = data)
+#' data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
+#' true <- attr(data, "true")
+#' ino:::f_ll_mmnp(theta = true, data = data)
 #'
 #' @keywords
 #' function
+#'
+#' @importFrom RprobitB delta undiff_Sigma
+#' @importFrom mvtnorm pmvnorm
 
-f_ll_mmnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, negative = FALSE) {
-  P <- ncol(data$X[[1]])
-  J <- nrow(data$X[[1]])
+f_ll_mmnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
+
+  ### model parameters
+  N <- length(data$y)
+  T <- length(data$y[[1]])
+  P <- ncol(data$X[[1]][[1]])
+  J <- nrow(data$X[[1]][[1]])
   b <- theta[1:P]; theta <- theta[-(1:P)]
   o <- theta[1:(P*(P+1)/2)]; theta <- theta[-(1:(P*(P+1)/2))]
   l <- theta
   O <- matrix(0, P, P)
   O[lower.tri(O, diag = TRUE)] <- o
   Omega <- O %*% t(O)
-  L <- matrix(0, J, J)
-  L[lower.tri(L, diag = TRUE)] <- c(1,l)
+  L_diff <- matrix(0, J-1, J-1)
+  L_diff[lower.tri(L_diff, diag = TRUE)] <- c(sqrt(2),l)
+  L <- cbind(0, rbind(0, L_diff))
   Sigma <- L %*% t(L)
-  N <- length(data$y)
   delta <- RprobitB:::delta
+
+  ### log-likelihood contributions
   LL <- 0
   for(n in 1:N){
-    i <- data$y[n]
-    X <- data$X[[n]]
-    arg <- as.vector(-delta(J,i) %*% X %*% b)
-    Gamma <- delta(J,i) %*% ( X %*% Omega %*% t(X) + Sigma ) %*% t(delta(J,i))
-    p <- do.call(what = normal_cdf,
-                 args = list(lower = -Inf, upper = arg, mean = rep(0,J-1),
-                             sigma = Gamma))
-    LL <- LL + log(p)
+    for(t in 1:T){
+      i <- data$y[[n]][t]
+      X <- data$X[[n]][[t]]
+      arg <- as.vector(-delta(J,i) %*% X %*% b)
+      Gamma <- delta(J,i) %*% ( X %*% Omega %*% t(X) + Sigma ) %*% t(delta(J,i))
+      p <- do.call(what = normal_cdf,
+                   args = list(lower = -Inf, upper = arg, mean = rep(0,J-1),
+                               sigma = Gamma))
+      LL <- LL + log(p)
+    }
   }
-  return(ifelse(negative, -LL, LL))
+
+  return(ifelse(neg, -LL, LL))
 }
 
-#' Simulate data from a normally mixed multinomial probit model
+#' Simulate data from a normally mixed multinomial probit panel model
+#'
+#' @details
+#' The normally mixed multinomial probit model formula is
+#' \deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt}},
+#' where \eqn{U_{nt}} is the vector of length \code{J} of utilities for each
+#' of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
+#' \eqn{X_{nt}} is the choice occasion-specific \eqn{J} times \eqn{P} covariate
+#' matrix, \eqn{\beta_n} is the decider-specific random coefficient vector with
+#' \deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{nt}} is the choice
+#' occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma)}.
+#'
+#' Note that because utility is indifferent in terms of level and scale, not all
+#' elements of \eqn{Sigma} are identified. Therefore, we take utility
+#' differences with respect to the first alternative and fix the first variance
+#' of the differenced error term matrix.
+#'
+#' @seealso
+#' [f_ll_mmnp()]
 #'
 #' @param N
 #' The number of observations.
+#' @param T
+#' The number of choice occasions.
 #' @param b
-#' The vector of linear coefficients.
-#' @param o
-#' The vector of elements of the lower Cholesky root of the covariance matrix
-#' of the normal mixing distribution.
-#' @param l
-#' The vector of elements of the lower Cholesky root of the error term
-#' covariance matrix, except for the first element which is fixed to 1 for
-#' identification.
+#' The vector of coefficients.
+#' @param Omega
+#' The covariance matrix of the normal mixing distribution.
+#' @param Sigma
+#' The error term covariance matrix. The top-left element is normalized to 1.
 #' @param seed
 #' Set a seed for the simulation.
 #'
 #' @return
-#' A list with choices \code{y} and covariate matrices \code{X}.
+#' A list with choices \code{y} and covariate matrices \code{X}, each of
+#' which containing sub-lists for the choice occasions.
+#' The true model coefficients are added via the attribute \code{"true"}.
+#' They are already normalized and can be directly compared with the maximum
+#' likelihood estimate.
 #'
 #' @examples
 #' N <- 100
+#' T <- 10
 #' b <- c(-2,0.5,2)
 #' Omega <- diag(3)
-#' O <- t(chol(Omega))
-#' o <- O[lower.tri(O, diag = TRUE)]
 #' Sigma <- diag(3)
-#' L <- t(chol(Sigma))
-#' l <- L[lower.tri(L, diag = TRUE)][-1]
-#' data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
+#' data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
 
-sim_mmnp <- function(N, b, o, l, seed = NULL) {
+sim_mmnp <- function(N, T, b, Omega, Sigma, seed = NULL) {
+
+  ### input checks
+  stopifnot(N%%1 == 0, N > 0, length(N) == 1)
+  stopifnot(T%%1 == 0, T > 0, length(T) == 1)
+  stopifnot(length(b) == ncol(Omega))
+  stopifnot(ncol(Omega) == nrow(Omega))
+  stopifnot(ncol(Sigma) == nrow(Sigma))
   if(!is.null(seed)) set.seed(seed)
-  P <- sqrt(0.25 + 2*length(o)) - 0.5
-  J <- sqrt(0.25 + 2*(length(l) + 1)) - 0.5
-  stopifnot(J%%1 == 0, P %%1 == 0)
-  O <- matrix(0, P, P)
-  O[lower.tri(O, diag = TRUE)] <- o
-  L <- matrix(0, J, J)
-  L[lower.tri(L, diag = TRUE)] <- c(1,l)
-  stopifnot(length(b) == nrow(O))
+
+  ### model parameters
+  P <- length(b)
+  J <- ncol(Sigma)
+  O <- t(chol(Omega))
+  o <- O[lower.tri(O, diag = TRUE)]
+  L <- t(chol(Sigma))
+
+  ### data simulation
   X <- list()
-  y <- numeric(N)
+  y <- list()
   for (n in 1:N){
-    X[[n]] <- matrix(rnorm(J*P,sd=3),nrow=J,ncol=P)
-    beta <- b + O %*% rnorm(P)
-    V <- X[[n]] %*% beta
-    e <- L %*% rnorm(J)
-    U <- V + e
-    y[n] <- which.max(U)
+    Xn <- list()
+    yn <- numeric(T)
+    for(t in 1:T){
+      Xn[[t]] <- matrix(rnorm(J*P,sd=3),nrow=J,ncol=P)
+      beta <- b + O %*% rnorm(P)
+      V <- Xn[[t]] %*% beta
+      e <- L %*% rnorm(J)
+      U <- V + e
+      yn[t] <- which.max(U)
+    }
+    X[[n]] <- Xn
+    y[[n]] <- yn
   }
-  return(list(y=y, X=X))
+
+  ### parameter normalization
+  delta <- RprobitB::delta(J,1)
+  Sigma_diff <- delta %*% Sigma %*% t(delta)
+  L_diff <- t(chol(Sigma_diff))
+  l_diff <- L_diff[lower.tri(L_diff, diag = TRUE)]
+
+  out <- list(y=y, X=X)
+  attr(out, "true") <- c(b,o,l_diff[-1])
+  return(out)
 }
 
 #' The log-likelihood function of the normally mixed multinomial logit model
@@ -292,13 +359,22 @@ sim_mmnp <- function(N, b, o, l, seed = NULL) {
 #' @seealso
 #' [sim_mmnl()]
 #'
+#' @details
+#' The order of \code{theta} is supposed to be \code{c(b,o)}, where
+#' \itemize{
+#'   \item \code{b} denotes the coefficients
+#'   \item and \code{o} the lower-triangular elements of the lower-triangular
+#'         Cholesky root of \code{Omega}.
+#' }
+#'
 #' @param theta
-#' A numeric vector of model coefficients in the order \code{b}, \code{o}.
+#' The vector of model coefficients in order \code{c(b,o)}, see the details.
 #' @param data
 #' The output of \code{\link{sim_mmnl}}.
 #' @param R
-#' The number of random draws.
-#' @param negative
+#' The number of random draws to approximate the integral for the mixed logit
+#' choice probabilities.
+#' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @return
@@ -309,23 +385,26 @@ sim_mmnp <- function(N, b, o, l, seed = NULL) {
 #' J <- 3
 #' b <- c(-2,0.5,2)
 #' Omega <- diag(3)
-#' O <- t(chol(Omega))
-#' o <- O[lower.tri(O, diag = TRUE)]
-#' data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
-#' ino:::f_ll_mmnl(theta = c(b,o), data = data)
+#' data <- ino:::sim_mmnl(N, J, b, Omega, seed = 1)
+#' true <- attr(data, "true")
+#' ino:::f_ll_mmnl(theta = true, data = data)
 #'
 #' @importFrom mvtnorm pmvnorm
 #'
 #' @keywords
 #' function
 
-f_ll_mmnl <- function(theta, data, R = 100, negative = FALSE) {
+f_ll_mmnl <- function(theta, data, R = 100, neg = FALSE) {
+
+  ### model parameters
   P <- ncol(data$X[[1]])
   J <- nrow(data$X[[1]])
   b <- theta[1:P]; theta <- theta[-(1:P)]
   O <- matrix(0, P, P)
   O[lower.tri(O, diag = TRUE)] <- theta
   N <- length(data$y)
+
+  ### log-likelihood contributions
   LL <- 0
   for(n in 1:N){
     i <- data$y[n]
@@ -334,44 +413,64 @@ f_ll_mmnl <- function(theta, data, R = 100, negative = FALSE) {
     p <- mean(replicate(R, L_ni(beta = b + O %*% rnorm(P))))
     LL <- LL + log(p)
   }
-  return(ifelse(negative, -LL, LL))
+
+  return(ifelse(neg, -LL, LL))
 }
 
 #' Simulate data from a normally mixed multinomial logit model
+#'
+#' @details
+#' The normally mixed multinomial logit model formula is
+#' \deqn{U_n = X_n \beta_n + \eps_{n}},
+#' where \eqn{U_n} is the vector of length \code{J} of utilities for each
+#' of the \eqn{J} alternatives for decider \eqn{n},
+#' \eqn{X_{n}} is the decider-specific \eqn{J} times \eqn{P} covariate
+#' matrix, \eqn{\beta_n} is the decider-specific random coefficient vector with
+#' \deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{n}} is the
+#' decider-specific error term that is iid extreme value distributed.
+#'
+#' @seealso
+#' [f_ll_mmnl()]
 #'
 #' @param N
 #' The number of observations.
 #' @param J
 #' The number of alternatives.
 #' @param b
-#' The vector of linear coefficients.
+#' The vector of coefficients.
 #' @param o
-#' The vector of elements of the lower Cholesky root of the covariance matrix
-#' of the normal mixing distribution.
+#' The covariance matrix of the normal mixing distribution.
 #' @param seed
 #' Set a seed for the simulation.
 #'
 #' @return
 #' A list with choices \code{y} and covariate matrices \code{X}.
+#' The true model coefficients are added via the attribute \code{"true"}.
 #'
 #' @examples
 #' N <- 100
 #' J <- 3
-#' b <- c(-2,0.5,2)
+#' b <- c(-2,0.5,d2)
 #' Omega <- diag(3)
-#' O <- t(chol(Omega))
-#' o <- O[lower.tri(O, diag = TRUE)]
 #' data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
 #'
 #' @importFrom evd rgumbel
 
-sim_mmnl <- function(N, J, b, o, seed = NULL) {
+sim_mmnl <- function(N, J, b, Omega, seed = NULL) {
+
+  ### input checks
+  stopifnot(N%%1 == 0, N > 0, length(N) == 1)
+  stopifnot(J%%1 == 0, J > 2, length(J) == 1)
+  stopifnot(length(b) == ncol(Omega))
+  stopifnot(ncol(Omega) == nrow(Omega))
   if(!is.null(seed)) set.seed(seed)
-  P <- sqrt(0.25 + 2*length(o)) - 0.5
-  stopifnot(J%%1 == 0, P %%1 == 0)
-  O <- matrix(0, P, P)
-  O[lower.tri(O, diag = TRUE)] <- o
-  stopifnot(length(b) == nrow(O))
+
+  ### model parameters
+  P <- length(b)
+  O <- t(chol(Omega))
+  o <- O[lower.tri(O, diag = TRUE)]
+
+  ### data simulation
   X <- list()
   y <- numeric(N)
   for (n in 1:N){
@@ -382,5 +481,8 @@ sim_mmnl <- function(N, J, b, o, seed = NULL) {
     U <- V + e
     y[n] <- which.max(U)
   }
-  return(list(y=y, X=X))
+
+  out <- list(y=y, X=X)
+  attr(out, "true") <- c(b,o)
+  return(out)
 }
