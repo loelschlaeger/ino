@@ -46,15 +46,25 @@ random_initialization <- function(x, runs = 1, sampler = NULL) {
     }
   }
 
-  ### loop over runs
-  for(run in 1:runs){
+  # create list where one entry corresponds to one set of starting values
+  at <- replicate(runs, sampler(), simplify = FALSE)
+  # create grid
+  grid_for_optim <- create_grid(x, at)
 
-    ### random initialization
-    p <- sampler()
-    main_args <- list(f = x$f$f, p = p)
+  ### loop over all parameter combinations provided
+  for(i in 1:nrow(grid_for_optim)){
+    main_args <- list(f = x$f$f, p = grid_for_optim$at[[i]])
+    # set data argument for optimiser, if a data set exists
+    if(is.list(x$data)){
+      data_arg <- list(data = x$data[[grid_for_optim$data_idx[i]]])
+    }
+    else{
+      data_arg <- c()
+    }
+
     out <- do.call_timed(
       what = x$optimizer$fun,
-      args = c(main_args, x$f$add)
+      args = c(main_args, data_arg, x$f$add)
     )
 
     ### save results in ino
@@ -63,6 +73,24 @@ random_initialization <- function(x, runs = 1, sampler = NULL) {
                                    res = out$res,
                                    time = out$time)
   }
+
+  ### loop over runs
+  # for(run in 1:runs){
+  #
+  #   ### random initialization
+  #   p <- sampler()
+  #   main_args <- list(f = x$f$f, p = p)
+  #   out <- do.call_timed(
+  #     what = x$optimizer$fun,
+  #     args = c(main_args, x$f$add)
+  #   )
+  #
+  #   ### save results in ino
+  #   x <- save_optimization_results(x,
+  #                                  strategy = "random",
+  #                                  res = out$res,
+  #                                  time = out$time)
+  # }
 
   ### return ino
   return(x)

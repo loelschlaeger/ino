@@ -33,6 +33,9 @@ summary(x)
 optimization_time(x)
 nr_optima(x)
 
+x <- random_initialization(x, runs = 2)
+optimization_time(x)
+nr_optima(x)
 
 # Example: Probit LL ------------------------------------------------------
 
