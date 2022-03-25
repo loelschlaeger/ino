@@ -117,10 +117,8 @@ f_easom <- function(x) {
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @examples
-#' data <- read.table("http://www.hmms-for-time-series.de/second/data/earthquakes.txt")
-#' colnames(data) <- c("year", "obs")
-#' theta <- c(-1, -1, 1, 2)
-#' ino:::f_ll_hmm(theta = theta, data = data, N = 2)
+#' data(earthquakes, package = "ino")
+#' ino:::f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
 #'
 #' @importFrom stats dpois
 #'
