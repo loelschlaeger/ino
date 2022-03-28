@@ -24,10 +24,11 @@ nr_optima(x, plot = TRUE)
 
 # Example: HMM LL ---------------------------------------------------------
 
-x <- set_f(f = ino::f_ll_hmm, npar = 4, N = 2, negative = TRUE) %>%
-  set_data(data(earthquakes)) %>%
+data(earthquakes)
+x <- set_f(f = ino::f_ll_hmm, npar = 4, N = c(2, 2), neg = TRUE) %>%
+  set_data(list(earthquakes)) %>%
   set_optimizer("nlm") %>%
-  fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+  fixed_initialization(at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
 
 summary(x)
 optimization_time(x)
