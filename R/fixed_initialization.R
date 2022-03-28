@@ -38,15 +38,26 @@ fixed_initialization <- function(x, at) {
 
   grid_for_optim <- create_grid(x, at)
 
+  # check if multiple argument specifications were provided
+  if ("argument_value" %in% colnames(grid_for_optim)) {
+    # name of argument for which multiple values are given
+    des_argument <- names(which(lapply(x$f$add, length) > 1))
+  }
+
   ### loop over all parameter combinations provided
-  for(i in 1:nrow(grid_for_optim)){
+  for(i in 1:nrow(grid_for_optim)) {
     main_args <- list(f = x$f$f, p = grid_for_optim$at[[i]])
     # set data argument for optimiser, if a data set exists
-    if(is.list(x$data)){
+    if (is.list(x$data)){
       data_arg <- list(data = x$data[[grid_for_optim$data_idx[i]]])
     }
-    else{
+    else {
       data_arg <- c()
+    }
+
+    # set further argument specifications (if there exist any)
+    if ("argument_value" %in% colnames(grid_for_optim)) {
+      x$f$add[[des_argument]] <- grid_for_optim$argument_value[i]
     }
 
     out <- do.call_timed(

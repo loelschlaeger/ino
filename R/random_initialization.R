@@ -46,10 +46,16 @@ random_initialization <- function(x, runs = 1, sampler = NULL) {
     }
   }
 
-  # create list where one entry corresponds to one set of starting values
+  # create list with one entry corresponding to one set of starting values
   at <- replicate(runs, sampler(), simplify = FALSE)
   # create grid
   grid_for_optim <- create_grid(x, at)
+
+  # check if multiple argument specifications were provided
+  if ("argument_value" %in% colnames(grid_for_optim)) {
+    # name of argument for which multiple values are given
+    des_argument <- names(which(lapply(x$f$add, length) > 1))
+  }
 
   ### loop over all parameter combinations provided
   for(i in 1:nrow(grid_for_optim)){
@@ -60,6 +66,11 @@ random_initialization <- function(x, runs = 1, sampler = NULL) {
     }
     else{
       data_arg <- c()
+    }
+
+    # set further argument specifications (if there exist any)
+    if ("argument_value" %in% colnames(grid_for_optim)) {
+      x$f$add[[des_argument]] <- grid_for_optim$argument_value[i]
     }
 
     out <- do.call_timed(
