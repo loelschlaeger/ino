@@ -4,7 +4,7 @@
 \alias{f_ll_hmm}
 \title{The log-likelihood function of the Poisson-hidden Markov model}
 \usage{
-f_ll_hmm(theta, data, N = 2, negative = FALSE)
+f_ll_hmm(theta, data, N = 2, neg = FALSE)
 }
 \arguments{
 \item{theta}{A numeric vector of model parameters.}
@@ -13,7 +13,7 @@ f_ll_hmm(theta, data, N = 2, negative = FALSE)
 
 \item{N}{The number of states in the hidden Markov model.}
 
-\item{negative}{Set to \code{TRUE} to return the negative log-likelihood value.}
+\item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
 The log-likelihood value.
@@ -26,10 +26,8 @@ The example uses a data set that covers the number of major earthquakes
 (magnitude 7 or greater) in the world from 1900 until 2006.
 }
 \examples{
-data <- read.table("http://www.hmms-for-time-series.de/second/data/earthquakes.txt")
-colnames(data) <- c("year", "obs")
-theta <- c(-1, -1, 1, 2)
-ino:::f_ll_hmm(theta = theta, data = data, N = 2)
+data(earthquakes, package = "ino")
+ino:::f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
 
 }
 \references{

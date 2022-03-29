@@ -12,9 +12,11 @@
 #' @param sampler
 #' If unspecified, draws independent initial values from a standard normal
 #' distribution. Else can be a function that returns a (random) numeric vector
-#' of length `npar`.
+#' of length \code{npar}.
 #'
-#' @return NULL
+#' @return
+#' The \code{ino} object.
+#'
 #' @export
 #'
 #' @examples

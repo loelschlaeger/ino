@@ -4,33 +4,44 @@
 \alias{sim_mmnl}
 \title{Simulate data from a normally mixed multinomial logit model}
 \usage{
-sim_mmnl(N, J, b, o, seed = NULL)
+sim_mmnl(N, J, b, Omega, seed = NULL)
 }
 \arguments{
 \item{N}{The number of observations.}
 
 \item{J}{The number of alternatives.}
 
-\item{b}{The vector of linear coefficients.}
-
-\item{o}{The vector of elements of the lower Cholesky root of the covariance matrix
-of the normal mixing distribution.}
+\item{b}{The vector of coefficients.}
 
 \item{seed}{Set a seed for the simulation.}
+
+\item{o}{The covariance matrix of the normal mixing distribution.}
 }
 \value{
 A list with choices \code{y} and covariate matrices \code{X}.
+The true model coefficients are added via the attribute \code{"true"}.
 }
 \description{
 Simulate data from a normally mixed multinomial logit model
 }
+\details{
+The normally mixed multinomial logit model formula is
+\deqn{U_n = X_n \beta_n + \eps_{n}},
+where \eqn{U_n} is the vector of length \code{J} of utilities for each
+of the \eqn{J} alternatives for decider \eqn{n},
+\eqn{X_{n}} is the decider-specific \eqn{J} times \eqn{P} covariate
+matrix, \eqn{\beta_n} is the decider-specific random coefficient vector with
+\deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{n}} is the
+decider-specific error term that is iid extreme value distributed.
+}
 \examples{
 N <- 100
 J <- 3
-b <- c(-2,0.5,2)
+b <- c(-2,0.5,d2)
 Omega <- diag(3)
-O <- t(chol(Omega))
-o <- O[lower.tri(O, diag = TRUE)]
 data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
 
+}
+\seealso{
+\code{\link[=f_ll_mmnl]{f_ll_mmnl()}}
 }

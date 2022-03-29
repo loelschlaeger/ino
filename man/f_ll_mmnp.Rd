@@ -4,10 +4,10 @@
 \alias{f_ll_mmnp}
 \title{The log-likelihood function of the normally mixed multinomial probit model}
 \usage{
-f_ll_mmnp(theta, data, normal_cdf = mvtnorm::pmvnorm, negative = FALSE)
+f_ll_mmnp(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE)
 }
 \arguments{
-\item{theta}{A vector of model coefficients in the order \code{b}, \code{o}, \code{l}.}
+\item{theta}{The vector of model coefficients in order \code{c(b,o,l)}, see the details.}
 
 \item{data}{The output of \code{\link{sim_mmnp}}.}
 
@@ -21,7 +21,7 @@ must take the arguments
 }
 and return a single numeric value.}
 
-\item{negative}{Set to \code{TRUE} to return the negative log-likelihood value.}
+\item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
 The log-likelihood value.
@@ -29,17 +29,27 @@ The log-likelihood value.
 \description{
 The log-likelihood function of the normally mixed multinomial probit model
 }
+\details{
+The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
+\itemize{
+\item \code{b} denotes the coefficients,
+\item \code{o} the lower-triangular elements of the lower-triangular
+Cholesky root of \code{Omega},
+\item and \code{l} the lower-triangular elements of the lower-triangular
+Cholesky root \code{L} of the differenced (with respect to
+alternative 1) error term covariance matrix \code{Sigma}, with the
+top-left element of \code{L} fixed to 1.
+}
+}
 \examples{
 N <- 100
+T <- 10
 b <- c(-2,0.5,2)
 Omega <- diag(3)
-O <- t(chol(Omega))
-o <- O[lower.tri(O, diag = TRUE)]
 Sigma <- diag(3)
-L <- t(chol(Sigma))
-l <- L[lower.tri(L, diag = TRUE)][-1]
-data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
-ino:::f_ll_mmnp(theta = c(b,o,l), data = data)
+data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
+true <- attr(data, "true")
+ino:::f_ll_mmnp(theta = true, data = data)
 
 }
 \references{

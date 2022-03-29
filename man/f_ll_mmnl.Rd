@@ -4,16 +4,17 @@
 \alias{f_ll_mmnl}
 \title{The log-likelihood function of the normally mixed multinomial logit model}
 \usage{
-f_ll_mmnl(theta, data, R = 100, negative = FALSE)
+f_ll_mmnl(theta, data, R = 100, neg = FALSE)
 }
 \arguments{
-\item{theta}{A numeric vector of model coefficients in the order \code{b}, \code{o}.}
+\item{theta}{The vector of model coefficients in order \code{c(b,o)}, see the details.}
 
 \item{data}{The output of \code{\link{sim_mmnl}}.}
 
-\item{R}{The number of random draws.}
+\item{R}{The number of random draws to approximate the integral for the mixed logit
+choice probabilities.}
 
-\item{negative}{Set to \code{TRUE} to return the negative log-likelihood value.}
+\item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
 The log-likelihood value.
@@ -21,15 +22,22 @@ The log-likelihood value.
 \description{
 The log-likelihood function of the normally mixed multinomial logit model
 }
+\details{
+The order of \code{theta} is supposed to be \code{c(b,o)}, where
+\itemize{
+\item \code{b} denotes the coefficients
+\item and \code{o} the lower-triangular elements of the lower-triangular
+Cholesky root of \code{Omega}.
+}
+}
 \examples{
 N <- 10
 J <- 3
 b <- c(-2,0.5,2)
 Omega <- diag(3)
-O <- t(chol(Omega))
-o <- O[lower.tri(O, diag = TRUE)]
-data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
-ino:::f_ll_mmnl(theta = c(b,o), data = data)
+data <- ino:::sim_mmnl(N, J, b, Omega, seed = 1)
+true <- attr(data, "true")
+ino:::f_ll_mmnl(theta = true, data = data)
 
 }
 \references{

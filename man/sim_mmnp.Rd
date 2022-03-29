@@ -2,38 +2,56 @@
 % Please edit documentation in R/functions.R
 \name{sim_mmnp}
 \alias{sim_mmnp}
-\title{Simulate data from a normally mixed multinomial probit model}
+\title{Simulate data from a normally mixed multinomial probit panel model}
 \usage{
-sim_mmnp(N, b, o, l, seed = NULL)
+sim_mmnp(N, T, b, Omega, Sigma, seed = NULL)
 }
 \arguments{
 \item{N}{The number of observations.}
 
-\item{b}{The vector of linear coefficients.}
+\item{T}{The number of choice occasions.}
 
-\item{o}{The vector of elements of the lower Cholesky root of the covariance matrix
-of the normal mixing distribution.}
+\item{b}{The vector of coefficients.}
 
-\item{l}{The vector of elements of the lower Cholesky root of the error term
-covariance matrix, except for the first element which is fixed to 1 for
-identification.}
+\item{Omega}{The covariance matrix of the normal mixing distribution.}
+
+\item{Sigma}{The error term covariance matrix. The top-left element is normalized to 1.}
 
 \item{seed}{Set a seed for the simulation.}
 }
 \value{
-A list with choices \code{y} and covariate matrices \code{X}.
+A list with choices \code{y} and covariate matrices \code{X}, each of
+which containing sub-lists for the choice occasions.
+The true model coefficients are added via the attribute \code{"true"}.
+They are already normalized and can be directly compared with the maximum
+likelihood estimate.
 }
 \description{
-Simulate data from a normally mixed multinomial probit model
+Simulate data from a normally mixed multinomial probit panel model
+}
+\details{
+The normally mixed multinomial probit model formula is
+\deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt}},
+where \eqn{U_{nt}} is the vector of length \code{J} of utilities for each
+of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
+\eqn{X_{nt}} is the choice occasion-specific \eqn{J} times \eqn{P} covariate
+matrix, \eqn{\beta_n} is the decider-specific random coefficient vector with
+\deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{nt}} is the choice
+occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma)}.
+
+Note that because utility is indifferent in terms of level and scale, not all
+elements of \eqn{Sigma} are identified. Therefore, we take utility
+differences with respect to the first alternative and fix the first variance
+of the differenced error term matrix.
 }
 \examples{
 N <- 100
+T <- 10
 b <- c(-2,0.5,2)
 Omega <- diag(3)
-O <- t(chol(Omega))
-o <- O[lower.tri(O, diag = TRUE)]
 Sigma <- diag(3)
-L <- t(chol(Sigma))
-l <- L[lower.tri(L, diag = TRUE)][-1]
-data <- ino:::sim_mmnp(N, b, o, l, seed = 1)
+data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
+}
+\seealso{
+\code{\link[=f_ll_mmnp]{f_ll_mmnp()}}
 }
