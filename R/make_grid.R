@@ -1,8 +1,24 @@
+#' Create grid of optimization problem specifications
+#'
+#' @description
+#' Missing
+#'
+#' @param x
+#' An object of class \code{ino}.
+#'
+#' @return
+#'
+
+make_grid <- function(x) {
+
+
+}
+
 #' Create grid
 #'
 #' @description
-#' This function creates a grid of all combinations of starting values, data sets, and arguments considered for
-#' optimisation.
+#' This function creates a grid of all combinations of starting values,
+#' data sets, and arguments considered for optimization.
 #'
 #' @details
 #' See the vignette "Initialization strategies" for more details.
@@ -14,6 +30,9 @@
 #'
 #' @return
 #' A data frame.
+#'
+#' @examples
+#' # Add example.
 #'
 #' @keywords
 #' internal

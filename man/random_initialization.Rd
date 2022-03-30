@@ -15,6 +15,9 @@ random_initialization(x, runs = 1, sampler = NULL)
 distribution. Else can be a function that returns a (random) numeric vector
 of length \code{npar}.}
 }
+\value{
+The \code{ino} object.
+}
 \description{
 This function implemented the random initialization strategy.
 }

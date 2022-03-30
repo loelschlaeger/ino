@@ -217,7 +217,7 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' @keywords
 #' function
 #'
-#' @importFrom RprobitB delta undiff_Sigma
+#' @importFrom RprobitB delta
 #' @importFrom mvtnorm pmvnorm
 
 f_ll_mmnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
