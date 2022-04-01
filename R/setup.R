@@ -17,11 +17,16 @@
 #' see below.
 #'
 #' ### Specifying multiple parameter values
-#' You can specify multiple values for each \code{...} parameter and multiple
-#' optimizer (i.e. multiple values for \code{opt}). Such arguments
+#' You can specify multiple values for each \code{...} parameter. Such arguments
 #' must be a list, where each list element must be a valid parameter value.
 #' The names of these arguments must be added to the \code{mpvs} character
 #' vector argument to make clear that you want to iterate over them.
+#'
+#' ### Specifying multiple optimizer
+#' Specifying multiple optimizer is analogue to specifying multiple parameter
+#' values: Submit a list of \code{optimizer} objects (i.e. outputs of
+#' \code{\link{set_optimizer}}) to the \code{opt} argument. However, you
+#' don't need to add \code{"opt"} to \code{mpvs}.
 #'
 #' ### An example
 #' Say that \code{f} is a likelihood function of \code{npar} parameters that has
@@ -29,16 +34,17 @@
 #' values. Say furthermore that you want to conduct a simulation experiment of
 #' the initialization effect for \code{f} for two different data sets.
 #' And last, say that you want to use the \code{\link[stats]{nlm}} optimizer
-#' with a gradient tolerance of \code{gradtol = 1e-10} and save the number of
-#' performed iterations (see the documentation of \code{\link{set_optimizer}}).
-#' Then, specify
+#' with two gradient tolerance \code{gradtol = 1e-6} and \code{gradtol = 1e-10},
+#' and save the number of performed iterations (see the documentation of
+#' \code{\link{set_optimizer}}). Then, specify
 #' \preformatted{
 #' setup_ino(
 #'   f = f,
 #'   npar = npar,
 #'   data = list("data1" = <data set 1>,
 #'               "data2" = <data set 2>),
-#'   opt = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations"),
+#'   opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
+#'              "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
 #'   mpvs = c("data", "opt")
 #' )
 #' }
@@ -51,20 +57,20 @@
 #' @param ...
 #' Additional and named arguments to be passed to \code{f} (optional).
 #' @param opt
-#' The output of \code{set_optimizer()}.
-#' Per default, \code{opt = set_optimizer("nlm")}.
-#' Can also be a list, see the details.
+#' The output of \code{set_optimizer()}, which is an object of class
+#' \code{optimizer}. Per default, \code{opt = set_optimizer_nlm()}, which is a
+#' wrapper for the \code{\link[stats]{nlm}} optimizer. Can also be a list of
+#' \code{optimizer} objects, see the details.
 #' @param mpvs
 #' A character vector of the parameter names with multiple values, see the
 #' details. Per default, \code{mpvs = character(0)}.
+#' @inheritParams test_ino
 #'
 #' @return
 #' An object of class \code{ino}.
 #'
 #' @seealso
 #' [set_optimizer()] to specify an optimizer.
-#' [update_ino()] to replace or add specifications.
-#' [test_ino()] to test the specifications.
 #'
 #' @export
 #'
@@ -81,40 +87,97 @@
 #' @keywords
 #' specification
 
-setup_ino <- function(f, npar, ..., opt = set_optimizer("nlm"),
-                      mpvs = character(0)) {
+setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
+                      mpvs = character(0), verbose = FALSE) {
 
   ### check inputs
-  if (missing(f)) {
-    stop("'f' must be specified.")
-  }
-  if (class(f) != "function") {
-    stop("'f' must be of class function.")
-  }
-  if (missing(npar)) {
-    stop("'npar' must be specified.")
-  }
-  if (!is.numeric(npar) || length(npar) != 1 || npar %% 1 != 0 || npar < 1) {
-    stop("'npar' must be a number.")
-  }
-  if (!is.character(mpvs)) {
-    stop("'mpvs' must be a character (vector).")
-  }
+  if (missing(f)) stop("Please specify 'f'.")
+  if (missing(npar)) stop("Plase specify 'npar'.")
 
   ### build ino object
   ino <- list()
   class(ino) <- c("ino","list")
-  ino$f <- list(f = f, npar = npar, add = list(...),
-                name = deparse(substitute(f)))
+  ino$f <- list(f = f, npar = npar, add = list(...), name = deparse(substitute(f)))
   ino$opt <- opt
   ino$optimizations <- list()
   ino$mpvs <- mpvs
 
+  ### test ino object
+  ino <- test_ino(ino, verbose = verbose)
+
   ### make grid of parameter values
-  ino$grid <- make_grid(ino)
+  grid_pars <- list()
+  for(mpv in ino$mpvs){
+    grid_pars[[mpv]] <- names(ino$f$add[[mpv]])
+  }
+  if(!"optimizer" %in% class(ino$opt)){
+    grid_pars[[".ino_opt"]] <- names(ino$opt)
+  }
+  ino$grid <- expand.grid(grid_pars)
 
   ### return ino object
   return(ino)
+}
+
+
+#' Test of an \code{ino} object
+#'
+#' @description
+#' This helper function tests the specification of an \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param verbose
+#' Set to \code{TRUE} to show the print the test results of the setup to the
+#' console.
+#'
+#' @return
+#' The updated object \code{x}.
+#'
+#' @keywords
+#' specification
+
+test_ino <- function(x, verbose = FALSE) {
+
+  ### helper functions
+  topic <- function(name) cat("*", name)
+  step <- function(desc) cat("**", desc, "")
+  succ <- function() cat(crayon::green("\U2713"),"\n")
+  fail <- function(msg) { cat(crayon::red("X"),"\n"); stop(msg, call. = FALSE) }
+  warn <- function(msg) { cat(crayon::yellow("(\U2713)"),"\n"); warning(msg, call. = FALSE, immediate. =  TRUE) }
+
+  ### start tests
+  if(!verbose){
+    sink(tempfile())
+    on.exit(sink())
+  }
+  cat("Started tests.\n")
+
+  ### check data types
+  topic("Check data types.\n")
+  step("'f' is of class 'function'")
+  if(!"function" %in% class(x$f$f)) fail() else succ()
+  step("'npar' is a number")
+  if(!is.numeric(x$f$npar) || length(x$f$npar) != 1 || x$f$npar %% 1 != 0 || x$f$npar < 1) fail() else succ()
+  step("'mpvs' is a character (vector)")
+  if(!is.character(x$mpvs)) fail() else succ()
+
+  ### check names of parameters with mpvs
+  if(length(x$mpvs) > 0) {
+    topic("Check names for parameters with multiple values.\n")
+    for(mpv in x$mpvs){
+      step(paste0("Check names for parameter '",mpv,"'"))
+      if(length(names(x$f$add[[mpv]])) != length(x$f$add[[mpv]])){
+        names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
+        warn(paste0("Named '",mpv,"' by '",mpv,"1:",length(x$f$add[[mpv]]),"'"))
+      } else succ()
+    }
+
+  }
+
+  ### return updated ino object
+  return(x)
+
 }
 
 #' @export
@@ -131,11 +194,21 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
     str(x$f$add, no.list = TRUE, give.head = FALSE)
   }
   cat(crayon::underline("Numerical optimizer\n"))
-  cat("- name:", x$opt$name, "\n")
-  cat("- crit:", x$opt$crit, "\n")
-  if(show_arguments){
-    cat("- arguments:\n")
-    str(x$opt$args, no.list = TRUE, give.head = FALSE)
+  if("opt" %in% x$mpvs){
+    opts <- x$opt
+  } else {
+    opts <- list(x$opt)
+  }
+  for(i in seq_along(opts)){
+    if("opt" %in% x$mpvs) {
+      cat(paste0(i,":\n"))
+    }
+    cat("- name:", opt$name, "\n")
+    cat("- crit:", opt$crit, "\n")
+    if(show_arguments){
+      cat("- arguments:\n")
+      str(opt$args, no.list = TRUE, give.head = FALSE)
+    }
   }
 }
 
@@ -249,61 +322,8 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
 #' @keywords
 #' specification
 
-set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code",
-                                            "iterations")) {
+set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iterations")) {
   set_optimizer(opt = stats::nlm, f = "f", p = "p", list(...), crit = crit)
-}
-
-
-#' Update of an \code{ino} object
-#'
-#' @description
-#' If you mis-specified an \code{ino} object or want to add specifications, you
-#' do not have to start from scratch - use this function instead. The function
-#' asks question in the console on whether specification in the \code{ino}
-#' object should be replaced, removed, or added.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param ...
-#' Any argument that could be passed to \code{\link{setup_ino}}.
-#'
-#' @return
-#' The updated \code{ino} object \code{x}.
-#'
-#' @export
-#'
-#' @examples
-#' # to be added
-#'
-#' @keywords
-#' specification
-
-update_ino <- function(x, ...) {
-
-
-
-}
-
-
-#' Test of an \code{ino} object
-#'
-#' @description
-#' Use this function to test the specification of an \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#'
-#' @return
-#' No return value, prints the test results to the console.
-#'
-#' @export
-#'
-#' @keywords
-#' specification
-
-test_ino <- function(x) {
-
 }
 
 

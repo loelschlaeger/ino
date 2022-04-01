@@ -4,7 +4,14 @@
 \alias{setup_ino}
 \title{Setup of an \code{ino} object}
 \usage{
-setup_ino(f, npar, ..., opt = set_optimizer("nlm"), mpvs = character(0))
+setup_ino(
+  f,
+  npar,
+  ...,
+  opt = set_optimizer_nlm(),
+  mpvs = character(0),
+  verbose = FALSE
+)
 }
 \arguments{
 \item{f}{An object of class \code{function}, the function to be optimized.}
@@ -14,12 +21,16 @@ setup_ino(f, npar, ..., opt = set_optimizer("nlm"), mpvs = character(0))
 
 \item{...}{Additional and named arguments to be passed to \code{f} (optional).}
 
-\item{opt}{The output of \code{set_optimizer()}.
-Per default, \code{opt = set_optimizer("nlm")}.
-Can also be a list, see the details.}
+\item{opt}{The output of \code{set_optimizer()}, which is an object of class
+\code{optimizer}. Per default, \code{opt = set_optimizer_nlm()}, which is a
+wrapper for the \code{\link[stats]{nlm}} optimizer. Can also be a list of
+\code{optimizer} objects, see the details.}
 
 \item{mpvs}{A character vector of the parameter names with multiple values, see the
 details. Per default, \code{mpvs = character(0)}.}
+
+\item{verbose}{Set to \code{TRUE} to show the print the test results of the setup to the
+console.}
 }
 \value{
 An object of class \code{ino}.
@@ -46,11 +57,18 @@ see below.
 
 \subsection{Specifying multiple parameter values}{
 
-You can specify multiple values for each \code{...} parameter and multiple
-optimizer (i.e. multiple values for \code{opt}). Such arguments
+You can specify multiple values for each \code{...} parameter. Such arguments
 must be a list, where each list element must be a valid parameter value.
 The names of these arguments must be added to the \code{mpvs} character
 vector argument to make clear that you want to iterate over them.
+}
+
+\subsection{Specifying multiple optimizer}{
+
+Specifying multiple optimizer is analogue to specifying multiple parameter
+values: Submit a list of \code{optimizer} objects (i.e. outputs of
+\code{\link{set_optimizer}}) to the \code{opt} argument. However, you
+don't need to add \code{"opt"} to \code{mpvs}.
 }
 
 \subsection{An example}{
@@ -60,16 +78,17 @@ the additional argument \code{data}, which is supposed to be a set of data
 values. Say furthermore that you want to conduct a simulation experiment of
 the initialization effect for \code{f} for two different data sets.
 And last, say that you want to use the \code{\link[stats]{nlm}} optimizer
-with a gradient tolerance of \code{gradtol = 1e-10} and save the number of
-performed iterations (see the documentation of \code{\link{set_optimizer}}).
-Then, specify
+with two gradient tolerance \code{gradtol = 1e-6} and \code{gradtol = 1e-10},
+and save the number of performed iterations (see the documentation of
+\code{\link{set_optimizer}}). Then, specify
 \preformatted{
 setup_ino(
   f = f,
   npar = npar,
   data = list("data1" = <data set 1>,
               "data2" = <data set 2>),
-  opt = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations"),
+  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
+             "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
   mpvs = c("data", "opt")
 )
 }
@@ -88,7 +107,5 @@ setup_ino(
 }
 \seealso{
 \code{\link[=set_optimizer]{set_optimizer()}} to specify an optimizer.
-\code{\link[=update_ino]{update_ino()}} to replace or add specifications.
-\code{\link[=test_ino]{test_ino()}} to test the specifications.
 }
 \keyword{specification}

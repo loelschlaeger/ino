@@ -54,14 +54,16 @@ abs(true - est)
 
 # Example: Logit LL -------------------------------------------------------
 
-N <- 100
-J <- 3
-b <- c(-2,0.5,2)
-Omega <- diag(3)
-data <- sim_mmnl(N, J, b, Omega, seed = 1)
-true <- attr(data, "true")
-starting_values <- true #rnorm(length(true))
-est <- nlm(f_ll_mmnl, p = starting_values, data = data, R = 100, neg = TRUE)$estimate
-abs(true - est)
+
+x <- setup_ino(
+  f = ino:::f_ll_mmnl,
+  npar = 4,
+  data = list("data1" = NULL, "data2" = NULL),
+  R = list("R1" = 10, "R2" = 100, "R3" = 1000),
+  neg = TRUE,
+  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
+             "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
+  mpvs = c("data","R","opt")
+)
 
 

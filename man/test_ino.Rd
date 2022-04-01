@@ -4,15 +4,18 @@
 \alias{test_ino}
 \title{Test of an \code{ino} object}
 \usage{
-test_ino(x)
+test_ino(x, verbose = FALSE)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
+
+\item{verbose}{Set to \code{TRUE} to show the print the test results of the setup to the
+console.}
 }
 \value{
-No return value, prints the test results to the console.
+The updated object \code{x}.
 }
 \description{
-Use this function to test the specification of an \code{ino} object.
+This helper function tests the specification of an \code{ino} object.
 }
 \keyword{specification}
