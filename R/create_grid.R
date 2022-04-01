@@ -36,7 +36,7 @@ create_grid <- function(x, at) {
   ## 4. one (or multiple) data sets and further argument specifications
 
   # 1.
-  if (!is.list(x$data) & (any(lapply(x$f$add, length) <= 1))) {
+  if (!is.list(x$data) & !(any(lapply(x$f$add, length) > 1))) {
     out <- data.frame(at = rep(NA, length(at)))
     out$at <- at
   }
