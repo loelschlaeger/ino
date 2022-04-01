@@ -12,7 +12,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.dim = c(8, 6),
-  out.width = "100%"
+  out.width = "100%",
+  eval = FALSE
 )
 ```
 

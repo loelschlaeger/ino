@@ -140,9 +140,9 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
 test_ino <- function(x, verbose = FALSE) {
 
   ### helper functions
-  topic <- function(name) cat("*", name)
-  step <- function(desc) cat("**", desc, "")
-  succ <- function() cat(crayon::green("\U2713"),"\n")
+  topic <- function(name) { cat("*", name) }
+  step <- function(desc) { cat("**", desc, "") }
+  succ <- function() { cat(crayon::green("\U2713"),"\n") }
   fail <- function(msg) { cat(crayon::red("X"),"\n"); stop(msg, call. = FALSE) }
   warn <- function(msg) { cat(crayon::yellow("(\U2713)"),"\n"); warning(msg, call. = FALSE, immediate. =  TRUE) }
 
@@ -183,6 +183,7 @@ test_ino <- function(x, verbose = FALSE) {
 #' @export
 #' @noRd
 #' @importFrom crayon underline
+#' @importFrom utils str
 
 print.ino <- function(x, show_arguments = FALSE, ...) {
   cat(crayon::underline("Function to be optimized\n"))
@@ -191,7 +192,7 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
   cat("- mpvs:", x$mpvs, "\n")
   if(show_arguments){
     cat("- arguments:\n")
-    str(x$f$add, no.list = TRUE, give.head = FALSE)
+    utils::str(x$f$add, no.list = TRUE, give.head = FALSE)
   }
   cat(crayon::underline("Numerical optimizer\n"))
   if("opt" %in% x$mpvs){
@@ -203,11 +204,11 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
     if("opt" %in% x$mpvs) {
       cat(paste0(i,":\n"))
     }
-    cat("- name:", opt$name, "\n")
-    cat("- crit:", opt$crit, "\n")
+    cat("- name:", opts[[i]]$name, "\n")
+    cat("- crit:", opts[[i]]$crit, "\n")
     if(show_arguments){
       cat("- arguments:\n")
-      str(opt$args, no.list = TRUE, give.head = FALSE)
+      utils::str(opts[[i]]$args, no.list = TRUE, give.head = FALSE)
     }
   }
 }
@@ -325,6 +326,3 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
 set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iterations")) {
   set_optimizer(opt = stats::nlm, f = "f", p = "p", list(...), crit = crit)
 }
-
-
-

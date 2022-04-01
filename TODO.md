@@ -4,33 +4,23 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Specification functions
 
-- `set_f()`
-  - [ ] Multiple argument specifications. (M**)
-- `set_optimizer()`
-  - [ ] Multiple optimizer (M*)
-- `set_data()`
-  - [ ] Multiple data sets. (M***)
-      - [x] for fixed_initialization
-      - [x] for random_initialization
+- `test_ino()`
+  - [ ] add test cases (L**)
       
 ## Initialization strategies
 
-- `fixed_initialization()`
-- `random_initialization()`
-- `subset_data()` (L**)
+- [ ] `fixed_initialization()` (M**)
+- [ ] `random_initialization()` (M**)
+- [ ] `subset_data()` (L**)
 
 ## Evaluation functions
 
-- `nr_optima()`. 
-  - [x] Tolerance for optima values in plot and table.
-- `optimization_time()`
-  - [x] Add plot method. (M***) (we can now plot histograms and/or frequency tables)
-- `summary.ino`
-  - [ ] Add information about optimization runs. (L**)
+- [ ] `summary()` (L**)
+- [ ] `plot()` (M**)
 
 ## Applications
 
-- Example ino object saved in the package to use for examples. (L***)
+- [ ] Example ino object saved in the package to use for examples. (L***)
 - Standard optimization problems
   - [x] Add examples. (M)
 - Likelihood functions

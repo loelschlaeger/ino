@@ -5,7 +5,7 @@
 \alias{logit}
 \title{Simulated choice data from a mixed logit model}
 \format{
-
+Missing
 }
 \usage{
 data(logit)
@@ -15,7 +15,9 @@ This data set includes simulated choices and corresponding choice
 characteristics from a (normally) mixed logit model.
 }
 \details{
+Missing
 \preformatted{
+NA
 }
 }
 \keyword{dataset}

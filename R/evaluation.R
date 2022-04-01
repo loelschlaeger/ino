@@ -1,4 +1,4 @@
-summary.ino <- function() {
+summary.ino <- function(x, var, type) {
 
 }
 
@@ -6,7 +6,7 @@ print.summary.ino <- function() {
 
 }
 
-plot.ino <- function() {
+plot.ino <- function(x, var, type) {
 
 }
 

@@ -29,7 +29,9 @@
 #' characteristics from a (normally) mixed probit model.
 #'
 #' @details
+#' Missing
 #' \preformatted{
+#' NA
 #' }
 #'
 #' @docType data
@@ -37,6 +39,7 @@
 #' @usage data(probit)
 #'
 #' @format
+#' Missing
 #'
 #' @keywords
 #' dataset
@@ -50,7 +53,9 @@
 #' characteristics from a (normally) mixed logit model.
 #'
 #' @details
+#' Missing
 #' \preformatted{
+#' NA
 #' }
 #'
 #' @docType data
@@ -58,6 +63,7 @@
 #' @usage data(logit)
 #'
 #' @format
+#' Missing
 #'
 #' @keywords
 #' dataset

@@ -237,7 +237,7 @@ f_ll_mmnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
   L_diff[lower.tri(L_diff, diag = TRUE)] <- c(sqrt(2),l)
   L <- cbind(0, rbind(0, L_diff))
   Sigma <- L %*% t(L)
-  delta <- RprobitB:::delta
+  delta <- RprobitB::delta
 
   ### log-likelihood contributions
   LL <- 0
@@ -438,7 +438,7 @@ f_ll_mmnl <- function(theta, data, R = 100, neg = FALSE) {
 #' The number of alternatives.
 #' @param b
 #' The vector of coefficients.
-#' @param o
+#' @param Omega
 #' The covariance matrix of the normal mixing distribution.
 #' @param seed
 #' Set a seed for the simulation.
@@ -450,9 +450,9 @@ f_ll_mmnl <- function(theta, data, R = 100, neg = FALSE) {
 #' @examples
 #' N <- 100
 #' J <- 3
-#' b <- c(-2,0.5,d2)
+#' b <- c(-2,0.5,2)
 #' Omega <- diag(3)
-#' data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
+#' data <- ino:::sim_mmnl(N, J, b, Omega, seed = 1)
 #'
 #' @importFrom evd rgumbel
 

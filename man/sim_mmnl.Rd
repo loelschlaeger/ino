@@ -13,9 +13,9 @@ sim_mmnl(N, J, b, Omega, seed = NULL)
 
 \item{b}{The vector of coefficients.}
 
-\item{seed}{Set a seed for the simulation.}
+\item{Omega}{The covariance matrix of the normal mixing distribution.}
 
-\item{o}{The covariance matrix of the normal mixing distribution.}
+\item{seed}{Set a seed for the simulation.}
 }
 \value{
 A list with choices \code{y} and covariate matrices \code{X}.
@@ -37,9 +37,9 @@ decider-specific error term that is iid extreme value distributed.
 \examples{
 N <- 100
 J <- 3
-b <- c(-2,0.5,d2)
+b <- c(-2,0.5,2)
 Omega <- diag(3)
-data <- ino:::sim_mmnl(N, J, b, o, seed = 1)
+data <- ino:::sim_mmnl(N, J, b, Omega, seed = 1)
 
 }
 \seealso{

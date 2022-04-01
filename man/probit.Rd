@@ -5,7 +5,7 @@
 \alias{probit}
 \title{Simulated choice data from a mixed probit model}
 \format{
-
+Missing
 }
 \usage{
 data(probit)
@@ -15,7 +15,9 @@ This data set includes simulated choices and corresponding choice
 characteristics from a (normally) mixed probit model.
 }
 \details{
+Missing
 \preformatted{
+NA
 }
 }
 \keyword{dataset}
