@@ -51,6 +51,7 @@ b <- c(-2,0.5,2)
 Omega <- diag(3)
 Sigma <- diag(3)
 data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
+
 }
 \seealso{
 \code{\link[=f_ll_mmnp]{f_ll_mmnp()}}

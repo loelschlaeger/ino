@@ -2,7 +2,6 @@
 
 # install.packages("../ino_0.0.0.9000.tar.gz", repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
 devtools::load_all()
-library(magrittr)
 
 
 # Example: Ackley ---------------------------------------------------------
@@ -20,22 +19,6 @@ x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2), c(2, 0.3), c(1, 2))
 summary(x, "time")
 
 plot(x)
-
-
-x <- set_f(f = ino:::f_ackley, npar = 2) %>%
-  set_optimizer("nlm") %>%
-  random_initialization(runs = 10) %>%
-  fixed_initialization(at = list(c(1, 0.5), c(0.3, 2), c(2, 0.3), c(1, 2)))
-
-summary(x)
-
-optimization_time(x)
-optimization_time(x, plot_hist = TRUE)
-optimization_time(x, plot_freq = TRUE)
-optimization_time(x, plot_hist = TRUE, plot_freq = TRUE)
-nr_optima(x)
-nr_optima(x, plot = TRUE)
-
 
 # Example: HMM LL ---------------------------------------------------------
 
@@ -78,7 +61,7 @@ x <- setup_ino(
   neg = TRUE,
   opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
              "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
-  mpvs = c("data","R","opt"), verbose = TRUE
+  mpvs = c("data","R"), verbose = TRUE
 )
 
 

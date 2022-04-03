@@ -4,7 +4,7 @@
 \alias{random_initialization}
 \title{Random initialization}
 \usage{
-random_initialization(x, runs = 1, sampler = NULL)
+random_initialization(x, runs = 1, sampler = stats::rnorm)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
@@ -16,13 +16,14 @@ distribution. Else can be a function that returns a (random) numeric vector
 of length \code{npar}.}
 }
 \value{
-The \code{ino} object.
+The updated input \code{x}.
 }
 \description{
-This function implemented the random initialization strategy.
+This function is an implementation of the random initialization
+strategy. See the vignette on initialization strategies for more details.
 }
 \details{
-See the vignette ... for more details.
+Missing.
 }
 \examples{
 #random_initialization()

@@ -11,11 +11,15 @@ fixed_initialization(x, at)
 
 \item{at}{A list containing the (fixed) initial values.}
 }
+\value{
+The updated input \code{x}.
+}
 \description{
-This function implemented the fixed initialization strategy.
+This function is an implementation of the fixed initialization
+strategy. See the vignette on initialization strategies for more details.
 }
 \details{
-See the vignette "Initialization strategies" for more details.
+Missing.
 }
 \examples{
 #fixed_initialization()

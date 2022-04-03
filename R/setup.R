@@ -93,32 +93,45 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
   ### check inputs
   if (missing(f)) stop("Please specify 'f'.")
   if (missing(npar)) stop("Plase specify 'npar'.")
+  if (length(verbose) != 1 || !is.logical(verbose)) stop("'verbose' must be a boolean.")
 
   ### build ino object
   ino <- list()
   class(ino) <- c("ino","list")
-  ino$f <- list(f = f, npar = npar, add = list(...), name = deparse(substitute(f)))
-  ino$opt <- opt
-  ino$optimizations <- list()
-  ino$mpvs <- mpvs
+  add <- list(...)
+  for(add_name in names(add)) if(!add_name %in% mpvs) add[[add_name]] <- list(add[[add_name]])
+  ino$f <- list(f = f, npar = npar, add = list(...),
+                name = deparse(substitute(f)), target_arg = names(formals(f))[1],
+                mpvs = mpvs)
+  if("optimizer" %in% class(opt)) ino$opt <- list("opt" = opt) else ino$opt <- opt
+  ino$optimizations <- data.frame()
 
   ### test ino object
   ino <- test_ino(ino, verbose = verbose)
 
   ### make grid of parameter values
-  grid_pars <- list()
-  for(mpv in ino$mpvs){
-    grid_pars[[mpv]] <- names(ino$f$add[[mpv]])
+  grid_par <- as.list(names(ino$f$add))
+  names(grid_par) <- names(ino$f$add)
+  for(mpv in ino$f$mpvs) grid_par[[mpv]] <- names(ino$f$add[[mpv]])
+  grid_par <- expand.grid(grid_par)
+  par_sets <- list()
+  for(i in 1:max(1,nrow(grid_par))) {
+    target <- list(NA)
+    names(target) <- ino$f$target_arg
+    par_set <- c(target, ino$f$add)
+    for(p in colnames(grid_par)) {
+      par_set[p] <- par_set[[p]][grid_par[i,p]]
+    }
+    par_names <- grid_par[i,]
+    names(par_names) <- names(ino$f$add)
+    attr(par_set, "pars") <- par_names
+    par_sets[[i]] <- par_set
   }
-  if(!"optimizer" %in% class(ino$opt)){
-    grid_pars[[".ino_opt"]] <- names(ino$opt)
-  }
-  ino$grid <- expand.grid(grid_pars)
+  ino$par_sets <- par_sets
 
   ### return ino object
   return(ino)
 }
-
 
 #' Test of an \code{ino} object
 #'
@@ -132,52 +145,75 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
 #' console.
 #'
 #' @return
-#' The updated object \code{x}.
+#' The updated object \code{x} (invisibly).
 #'
 #' @keywords
 #' specification
+#'
+#' @importFrom stats rnorm
 
 test_ino <- function(x, verbose = FALSE) {
 
   ### helper functions
-  topic <- function(name) { cat("*", name) }
-  step <- function(desc) { cat("**", desc, "") }
-  succ <- function() { cat(crayon::green("\U2713"),"\n") }
-  fail <- function(msg) { cat(crayon::red("X"),"\n"); stop(msg, call. = FALSE) }
-  warn <- function(msg) { cat(crayon::yellow("(\U2713)"),"\n"); warning(msg, call. = FALSE, immediate. =  TRUE) }
+  topic <- function(name) { cat(name, "\n", sep = "") }
+  step <- function(desc) { cat("* ", desc, sep = "") }
+  succ <- function() { cat(crayon::green(" \U2713"),"\n") }
+  fail <- function(msg) { cat(crayon::red(" X"),"\n"); stop(msg, call. = FALSE) }
+  warn <- function(msg) { cat(crayon::yellow(" (\U2713)"),"\n"); warning(msg, call. = FALSE, immediate. =  TRUE) }
 
   ### start tests
   if(!verbose){
     sink(tempfile())
     on.exit(sink())
   }
-  cat("Started tests.\n")
+  topic("start tests")
 
   ### check data types
-  topic("Check data types.\n")
+  topic("check data types")
   step("'f' is of class 'function'")
   if(!"function" %in% class(x$f$f)) fail() else succ()
   step("'npar' is a number")
   if(!is.numeric(x$f$npar) || length(x$f$npar) != 1 || x$f$npar %% 1 != 0 || x$f$npar < 1) fail() else succ()
+  step("'opt' is of class 'optimizer' or a list of those")
+  if (all(sapply(x$opt, function(x) "optimizer" %in% class(x)))) {
+    succ()
+  } else {
+    fail("'opt' is not of class 'optimizer' or a list of those")
+  }
   step("'mpvs' is a character (vector)")
-  if(!is.character(x$mpvs)) fail() else succ()
+  if(!is.character(x$f$mpvs)) fail() else succ()
 
   ### check names of parameters with mpvs
-  if(length(x$mpvs) > 0) {
-    topic("Check names for parameters with multiple values.\n")
-    for(mpv in x$mpvs){
-      step(paste0("Check names for parameter '",mpv,"'"))
+  if(length(x$f$mpvs) > 0) {
+    topic("check names for parameters with multiple values")
+    for(mpv in x$f$mpvs){
+      step(paste0("check names for parameter '",mpv,"'"))
       if(length(names(x$f$add[[mpv]])) != length(x$f$add[[mpv]])){
         names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
         warn(paste0("Named '",mpv,"' by '",mpv,"1:",length(x$f$add[[mpv]]),"'"))
       } else succ()
     }
-
   }
 
-  ### return updated ino object
-  return(x)
+  ### check that function can be called
+  topic("check that function 'f' can be called")
+  step("check name of target parameter in 'f'")
+  if(!is.character(x$f$target_arg) || length(x$f$target_arg) != 1) fail() else succ()
+  step(paste("name of target parameter in 'f':", x$f$target_arg, "\n"))
+  rvx <- round(rnorm(x$f$npar),1)
+  step(paste0("draw value of length 'npar' = ", x$f$npar, ": ", paste(rvx, collapse = " "), "\n"))
+  step(paste("number of parameter sets:", length(x$par_sets)))
+  for(i in 1:length(x$par_sets)){
+    step(paste("** set",i, "\n"))
+    step(paste("parameters:", attr(x$par_sets[[i]], "pars")))
+  }
 
+  step("call 'f' at 'x':")
+
+  ### check that optimizer can be called
+
+  ### return (invisibly) updated ino object
+  return(invisible(x))
 }
 
 #' @export
@@ -189,26 +225,19 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
   cat(crayon::underline("Function to be optimized\n"))
   cat("- name:", x$f$name, "\n")
   cat("- npar:", x$f$npar, "\n")
-  cat("- mpvs:", x$mpvs, "\n")
+  cat("- mpvs:", x$f$mpvs, "\n")
   if(show_arguments){
     cat("- arguments:\n")
     utils::str(x$f$add, no.list = TRUE, give.head = FALSE)
   }
   cat(crayon::underline("Numerical optimizer\n"))
-  if("opt" %in% x$mpvs){
-    opts <- x$opt
-  } else {
-    opts <- list(x$opt)
-  }
-  for(i in seq_along(opts)){
-    if("opt" %in% x$mpvs) {
-      cat(paste0(i,":\n"))
-    }
-    cat("- name:", opts[[i]]$name, "\n")
-    cat("- crit:", opts[[i]]$crit, "\n")
+  for(i in seq_along(x$opt)){
+    if(length(x$opt) > 1) cat(paste0(i,":\n"))
+    cat("- name:", x$opt[[i]]$name, "\n")
+    cat("- crit:", x$opt[[i]]$crit, "\n")
     if(show_arguments){
       cat("- arguments:\n")
-      utils::str(opts[[i]]$args, no.list = TRUE, give.head = FALSE)
+      utils::str(x$opt[[i]]$args, no.list = TRUE, give.head = FALSE)
     }
   }
 }

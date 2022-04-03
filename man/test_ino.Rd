@@ -13,7 +13,7 @@ test_ino(x, verbose = FALSE)
 console.}
 }
 \value{
-The updated object \code{x}.
+The updated object \code{x} (invisibly).
 }
 \description{
 This helper function tests the specification of an \code{ino} object.

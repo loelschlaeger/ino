@@ -304,6 +304,8 @@ f_ll_mmnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
 #' Omega <- diag(3)
 #' Sigma <- diag(3)
 #' data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
+#'
+#' @importFrom stats rnorm
 
 sim_mmnp <- function(N, T, b, Omega, Sigma, seed = NULL) {
 
@@ -390,6 +392,7 @@ sim_mmnp <- function(N, T, b, Omega, Sigma, seed = NULL) {
 #' ino:::f_ll_mmnl(theta = true, data = data)
 #'
 #' @importFrom mvtnorm pmvnorm
+#' @importFrom stats rnorm
 #'
 #' @keywords
 #' function
@@ -455,6 +458,7 @@ f_ll_mmnl <- function(theta, data, R = 100, neg = FALSE) {
 #' data <- ino:::sim_mmnl(N, J, b, Omega, seed = 1)
 #'
 #' @importFrom evd rgumbel
+#' @importFrom stats rnorm
 
 sim_mmnl <- function(N, J, b, Omega, seed = NULL) {
 

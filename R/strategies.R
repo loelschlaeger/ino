@@ -1,17 +1,58 @@
+#' Data subset initialization
+#'
+#' @description
+#' This function is an implementation of the data subset initialization
+#' strategy. See the vignette on initialization strategies for more details.
+#'
+#' @details
+#' Missing.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param how
+#' A character, specifying how to select the data subset. Can be one of
+#' \code{"random"} (default), \code{"first"}, and \code{"kmeans"}, see the
+#' details.
+#' @param prop
+#' A numeric between 0 and 1, specifying the proportion of the data subset.
+#' @param data_arg
+#' A character, the name of the data argument.
+#' @param by_row
+#' A boolean,
+#' @return
+#' The updated input \code{x}.
+#'
+#' @export
+#'
+#' @examples
+#' #data_subset_initialization()
+#'
+#' @keywords
+#' strategy
+
+data_subset_initialization <- function(x, how = "random", prop = 0.5,
+                                       data_arg = "data", by_row = TRUE) {
+
+
+}
+
 #' Fixed initialization
 #'
 #' @description
-#' This function implemented the fixed initialization strategy.
+#' This function is an implementation of the fixed initialization
+#' strategy. See the vignette on initialization strategies for more details.
 #'
 #' @details
-#' See the vignette "Initialization strategies" for more details.
+#' Missing.
 #'
 #' @param x
 #' An object of class \code{ino}.
 #' @param at
 #' A list containing the (fixed) initial values.
 #'
-#' @return NULL
+#' @return
+#' The updated input \code{x}.
+#'
 #' @export
 #'
 #' @examples
@@ -74,10 +115,12 @@ fixed_initialization <- function(x, at) {
 
 #' Random initialization
 #'
-#' This function implemented the random initialization strategy.
+#' @description
+#' This function is an implementation of the random initialization
+#' strategy. See the vignette on initialization strategies for more details.
 #'
 #' @details
-#' See the vignette ... for more details.
+#' Missing.
 #'
 #' @param x
 #' An object of class \code{ino}.
@@ -89,19 +132,17 @@ fixed_initialization <- function(x, at) {
 #' of length \code{npar}.
 #'
 #' @return
-#' The \code{ino} object.
+#' The updated input \code{x}.
 #'
 #' @export
 #'
 #' @examples
 #' #random_initialization()
 #'
-#' @importFrom stats rnorm
-#'
 #' @keywords
 #' strategy
 
-random_initialization <- function(x, runs = 1, sampler = NULL) {
+random_initialization <- function(x, runs = 1, sampler = stats::rnorm) {
 
   # ### check inputs
   # if (class(x) != "ino") {
@@ -180,38 +221,5 @@ random_initialization <- function(x, runs = 1, sampler = NULL) {
   # }
 
   ### return ino
-  return(x)
-}
-
-#' Saving of optimization results.
-#'
-#' @description
-#' This function saves optimization results in an \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param strategy
-#' A character, the label for the strategy.
-#' @param res
-#' A list object, the optimization output.
-#' @param time
-#' An object of class \code{difftime}, the optimization time.
-#'
-#' @return
-#' An object of class \code{ino}.
-#'
-#' @keywords
-#' internal
-
-save_optimization_results <- function(x, strategy, res, time) {
-  new_results <- list("strategy" = strategy, "res" = res, "time" = time)
-  if (identical(x[["optimizations"]], NA)) {
-    ### first optimization
-    x[["optimizations"]] <- list()
-    x[["optimizations"]][[1]] <- new_results
-  } else {
-    ### not first optimization
-    x[["optimizations"]] <- c(x[["optimizations"]], list(new_results))
-  }
   return(x)
 }
