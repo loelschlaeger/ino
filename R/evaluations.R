@@ -1,12 +1,18 @@
-summary.ino <- function(x, var, type) {
+#' @export
+
+summary.ino <- function(object, var, type, ...) {
 
 }
 
-print.summary.ino <- function() {
+#' @export
+
+print.summary.ino <- function(x, digits, ...) {
 
 }
 
-plot.ino <- function(x, var, type) {
+#' @export
+
+plot.ino <- function(x, var, type, ...) {
 
 }
 

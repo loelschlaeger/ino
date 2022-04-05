@@ -20,11 +20,11 @@ data_subset_initialization(
 details.}
 
 \item{prop}{A numeric between 0 and 1, specifying the proportion of the data subset.
-Or a vector.}
+Can also be a vector...}
 
-\item{data_arg}{A character, the name of the data argument.}
+\item{data_arg}{A character, the name of the data argument. The data argument must be ...}
 
-\item{by_row}{A boolean,}
+\item{by_row}{A boolean, ...}
 }
 \value{
 The updated input \code{x}.

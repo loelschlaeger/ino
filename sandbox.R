@@ -13,10 +13,10 @@ x <- setup_ino(
   verbose = TRUE)
 
 x <- random_initialization(x, runs = 10)
-x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2)))
+# x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2)))
 
-summary(x, "time")
-plot(x)
+# summary(x, "time")
+# plot(x)
 
 
 # Example: HMM LL ---------------------------------------------------------
@@ -31,10 +31,10 @@ x <- setup_ino(
   verbose = TRUE)
 
 x <- random_initialization(x, runs = 10)
-x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+# x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
 
-summary(x, "time")
-plot(x)
+# summary(x, "time")
+# plot(x)
 
 
 # Example: Probit LL ------------------------------------------------------

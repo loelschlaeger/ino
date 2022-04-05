@@ -15,11 +15,11 @@
 #' details.
 #' @param prop
 #' A numeric between 0 and 1, specifying the proportion of the data subset.
-#' Or a vector.
+#' Can also be a vector...
 #' @param data_arg
-#' A character, the name of the data argument.
+#' A character, the name of the data argument. The data argument must be ...
 #' @param by_row
-#' A boolean,
+#' A boolean, ...
 #' @return
 #' The updated input \code{x}.
 #'

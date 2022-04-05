@@ -187,16 +187,22 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
   ### determine number of new optimization result
   nopt <- nrow(x$optimizations) + 1
 
-  ### save initial value
-  x$inits[[nopt]] <- pars[[x$f$target_arg]]
-
   ### save optimization results
   x$optimizations[nopt, ".strategy"] <- strategy
   x$optimizations[nopt, ".time"] <- result$time
   x$optimizations[nopt, ".optimizer"] <- opt_name
   x$optimizations[nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
+  x$optimization_pars[[nopt]] <- list()
+  x$optimization_pars[[nopt]][[".init"]] <- pars[[x$f$target_arg]]
   opt_crit <- x$opt[[opt_name]]$crit
-  x$optimizations[nopt, opt_crit] <- result$res[opt_crit]
+  crit_val <- result$res[opt_crit]
+  for(i in 1:length(opt_crit)) {
+    if(is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1){
+      x$optimizations[nopt, opt_crit[i]] <- crit_val[[i]]
+    } else {
+      x$optimization_pars[[nopt]][[opt_crit[i]]] <- crit_val[[i]]
+    }
+  }
 
   ### return (invisibly) updated ino object
   return(invisible(x))
@@ -415,6 +421,6 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
 #' @keywords
 #' specification
 
-set_optimizer_nlm <- function(..., crit = c("minimum", "code", "iterations")) {
+set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iterations")) {
   set_optimizer(opt = stats::nlm, f = "f", p = "p", list(...), crit = crit)
 }
