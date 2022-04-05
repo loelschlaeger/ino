@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{do.call_timed}
 \alias{do.call_timed}
-\title{Measure computation time of \code{do.call}.}
+\title{Measure computation time of \code{do.call}}
 \usage{
 do.call_timed(what, args)
 }

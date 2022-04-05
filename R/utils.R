@@ -1,5 +1,6 @@
-#' Check for number.
+#' Check for number
 #'
+#' @description
 #' This function checks if the input \code{x} is a (vector of) number(s), i.e.
 #' a (vector of) positive integer value(s).
 #'
@@ -19,8 +20,9 @@ is_number <- function(x) {
   sapply(x, function(x) is.numeric(x) && x > 0 && x %% 1 == 0, USE.NAMES = FALSE)
 }
 
-#' Try an expression silently.
+#' Try an expression silently
 #'
+#' @description
 #' This function tries to execute \code{expr} and returns a string with the
 #' error message if the execution failed.
 #'
@@ -35,8 +37,8 @@ is_number <- function(x) {
 #' \code{fail}, which is the error message.
 #'
 #' @examples
-#' ino:::try_silent(log(1))
-#' ino:::try_silent(log("1"))
+#' ino:::try_silent(1 + 1)
+#' ino:::try_silent(1 + "1")
 #'
 #' @keywords
 #' utils
@@ -50,8 +52,9 @@ try_silent <- function(expr) {
   return(out)
 }
 
-#' Interruption of long evaluations.
+#' Interruption of long evaluations
 #'
+#' @description
 #' This function evaluates \code{expr} and interrupts the evaluation after
 #' \code{secs} seconds.
 #'
@@ -83,8 +86,9 @@ timed <- function(expr, secs) {
   R.utils::withTimeout(expr, timeout = secs, onTimeout = "silent")
 }
 
-#' Measure computation time of \code{do.call}.
+#' Measure computation time of \code{do.call}
 #'
+#' @description
 #' This function measures the computation time of a \code{do.call} call.
 #'
 #' @details

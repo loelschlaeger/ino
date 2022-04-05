@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{try_silent}
 \alias{try_silent}
-\title{Try an expression silently.}
+\title{Try an expression silently}
 \usage{
 try_silent(expr)
 }
@@ -21,8 +21,8 @@ error message if the execution failed.
 This function is a wrapper for \code{\link[base]{try}}.
 }
 \examples{
-ino:::try_silent(log(1))
-ino:::try_silent(log("1"))
+ino:::try_silent(1 + 1)
+ino:::try_silent(1 + "1")
 
 }
 \keyword{utils}

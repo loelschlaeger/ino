@@ -19,7 +19,8 @@ data_subset_initialization(
 \code{"random"} (default), \code{"first"}, and \code{"kmeans"}, see the
 details.}
 
-\item{prop}{A numeric between 0 and 1, specifying the proportion of the data subset.}
+\item{prop}{A numeric between 0 and 1, specifying the proportion of the data subset.
+Or a vector.}
 
 \item{data_arg}{A character, the name of the data argument.}
 
@@ -30,10 +31,10 @@ The updated input \code{x}.
 }
 \description{
 This function is an implementation of the data subset initialization
-strategy. See the vignette on initialization strategies for more details.
+strategy.
 }
 \details{
-Missing.
+See the vignette on initialization strategies for more details.
 }
 \examples{
 #data_subset_initialization()

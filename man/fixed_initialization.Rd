@@ -16,10 +16,10 @@ The updated input \code{x}.
 }
 \description{
 This function is an implementation of the fixed initialization
-strategy. See the vignette on initialization strategies for more details.
+strategy.
 }
 \details{
-Missing.
+See the vignette on initialization strategies for more details.
 }
 \examples{
 #fixed_initialization()

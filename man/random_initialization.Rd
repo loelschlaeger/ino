@@ -4,26 +4,32 @@
 \alias{random_initialization}
 \title{Random initialization}
 \usage{
-random_initialization(x, runs = 1, sampler = stats::rnorm)
+random_initialization(x, runs = 1, sampler = stats::rnorm, ...)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{runs}{The number of random initialization runs.}
+\item{runs}{The number of random initialization runs, the default is \code{1}.}
 
-\item{sampler}{If unspecified, draws independent initial values from a standard normal
-distribution. Else can be a function that returns a (random) numeric vector
-of length \code{npar}.}
+\item{sampler}{The sampler for random initial values. Can be any function that
+\itemize{
+\item has as first argument an integer, say \code{npar},
+\item and returns a numeric vector of length \code{npar}.
+}
+Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
+standard normal distribution as initial value.}
+
+\item{...}{Additional argument to \code{sampler} (optional).}
 }
 \value{
 The updated input \code{x}.
 }
 \description{
 This function is an implementation of the random initialization
-strategy. See the vignette on initialization strategies for more details.
+strategy.
 }
 \details{
-Missing.
+See the vignette on initialization strategies for more details.
 }
 \examples{
 #random_initialization()

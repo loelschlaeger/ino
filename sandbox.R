@@ -9,32 +9,33 @@ devtools::load_all()
 x <- setup_ino(
   f = ino:::f_ackley,
   npar = 2,
-  opt = set_optimizer_nlm(crit = "minimum"),
+  opt = set_optimizer_nlm(),
   verbose = TRUE)
 
-x <- random_initialization(x, runs = 2)
-
-x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2), c(2, 0.3), c(1, 2)))
+x <- random_initialization(x, runs = 10)
+x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2)))
 
 summary(x, "time")
-
 plot(x)
+
 
 # Example: HMM LL ---------------------------------------------------------
 
-data(earthquakes)
-x <- set_f(f = ino::f_ll_hmm, npar = 4, N = c(2, 2), neg = TRUE) %>%
-  set_data(list(earthquakes)) %>%
-  set_optimizer("nlm") %>%
-  fixed_initialization(at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+x <- setup_ino(
+  f = ino:::f_ll_hmm,
+  npar = 4,
+  data = ino::earthquakes,
+  N = 2,
+  neg = TRUE,
+  opt = set_optimizer_nlm(),
+  verbose = TRUE)
 
-summary(x)
-optimization_time(x)
-nr_optima(x)
+x <- random_initialization(x, runs = 10)
+x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
 
-x <- random_initialization(x, runs = 2)
-optimization_time(x)
-nr_optima(x)
+summary(x, "time")
+plot(x)
+
 
 # Example: Probit LL ------------------------------------------------------
 
@@ -51,7 +52,6 @@ abs(true - est)
 
 
 # Example: Logit LL -------------------------------------------------------
-
 
 x <- setup_ino(
   f = ino:::f_ll_mmnl,

@@ -4,7 +4,7 @@
 \alias{set_optimizer_nlm}
 \title{Specify the \code{\link[stats]{nlm}} optimizer}
 \usage{
-set_optimizer_nlm(..., crit = c("minimum", "estimate", "code", "iterations"))
+set_optimizer_nlm(..., crit = c("minimum", "code", "iterations"))
 }
 \arguments{
 \item{...}{Additional arguments to be passed to the optimizer \code{opt}. Without

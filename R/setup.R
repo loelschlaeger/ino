@@ -109,29 +109,99 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
   ### test ino object
   ino <- test_ino(ino, verbose = verbose)
 
-  ### make grid of parameter values
-  grid_par <- as.list(names(ino$f$add))
-  names(grid_par) <- names(ino$f$add)
-  for(mpv in ino$f$mpvs) grid_par[[mpv]] <- names(ino$f$add[[mpv]])
-  grid_par <- expand.grid(grid_par)
-  par_sets <- list()
-  for(i in 1:max(1,nrow(grid_par))) {
-    target <- list(NA)
-    names(target) <- ino$f$target_arg
-    par_set <- c(target, ino$f$add)
-    for(p in colnames(grid_par)) {
-      par_set[p] <- par_set[[p]][grid_par[i,p]]
-    }
-    par_names <- grid_par[i,]
-    names(par_names) <- names(ino$f$add)
-    attr(par_set, "pars") <- par_names
-    par_sets[[i]] <- par_set
-  }
-  ino$par_sets <- par_sets
-
   ### return ino object
   return(ino)
 }
+
+#' Create grid of parameter combinations
+#'
+#' @description
+#' This helper function creates a grid of all parameter combinations for an
+#' \code{ino} object,
+#'
+#' @param x
+#' An object of class \code{ino}.
+#'
+#' @return
+#' A list, where each element is a parameter set. Each parameter set contains
+#' at least a placeholder for the target parameter, which is set to \code{NA}
+#' and has to be filled by the initialization strategies. Additionally, each
+#' parameter set contains further arguments for the target function if
+#' available. In this case, the parameter names and identifier for the parameter
+#' values are added as attributes \code{"par_name"} and \code{"par_id"} to the
+#' parameter set.
+#'
+#' @keywords
+#' specification
+
+grid_ino <- function(x) {
+
+  ### build grid of parameter indentifiers
+  grid_par <- as.list(names(x$f$add))
+  names(grid_par) <- names(x$f$add)
+  for(mpv in x$f$mpvs) grid_par[[mpv]] <- names(x$f$add[[mpv]])
+  grid_par <- expand.grid(grid_par, stringsAsFactors = FALSE)
+
+  ### build list of parameter sets
+  par_sets <- list()
+  for(i in 1:max(1,nrow(grid_par))) {
+    target <- list(NA)
+    names(target) <- x$f$target_arg
+    par_set <- c(target, x$f$add)
+    for(p in colnames(grid_par)) par_set[p] <- par_set[p][grid_par[i,p]]
+    attr(par_set, "par_name") <- as.character(names(x$f$add))
+    attr(par_set, "par_id") <- as.character(grid_par[i,])
+    par_sets[[i]] <- par_set
+  }
+
+  ### return list of parameter sets
+  return(par_sets)
+}
+
+
+#' Save results of optimization run
+#'
+#' @description
+#' This helper function saves the results of an optimization run into the
+#' submitted \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param strategy
+#' A character, the name of the initialization strategy.
+#' @param pars
+#' A list of parameter values for the optimization run.
+#' @param result
+#' The output of \code{\link{do.call_timed}}.
+#' @param opt_name
+#' The identifier of the optimizer.
+#'
+#' @return
+#' The updated object \code{x} (invisibly).
+#'
+#' @keywords
+#' specification
+
+result_ino <- function(x, strategy, pars, result, opt_name) {
+
+  ### determine number of new optimization result
+  nopt <- nrow(x$optimizations) + 1
+
+  ### save initial value
+  x$inits[[nopt]] <- pars[[x$f$target_arg]]
+
+  ### save optimization results
+  x$optimizations[nopt, ".strategy"] <- strategy
+  x$optimizations[nopt, ".time"] <- result$time
+  x$optimizations[nopt, ".optimizer"] <- opt_name
+  x$optimizations[nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
+  opt_crit <- x$opt[[opt_name]]$crit
+  x$optimizations[nopt, opt_crit] <- result$res[opt_crit]
+
+  ### return (invisibly) updated ino object
+  return(invisible(x))
+}
+
 
 #' Test of an \code{ino} object
 #'
@@ -317,18 +387,11 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
     stop("'crit' must be a character (vector).")
   }
 
-  ### save arguments of 'opt'
-  add_args <- list(...)
-  all_args <- formals(opt)
-  add_args <- add_args[which(names(add_args) %in% names(all_args))]
-  exclude <- c(f, p, names(add_args), "...")
-  def_args <- all_args[!names(all_args) %in% exclude]
-  args <- c(add_args, def_args)
-
   ### build and return optimizer object
   optimizer <- list()
   optimizer$f <- opt
-  optimizer$args <- args
+  optimizer$base_arg_names <- c(f,p)
+  optimizer$args <- list(...)[[1]]
   optimizer$crit <- crit
   optimizer$name <- deparse(substitute(opt))
   class(optimizer) <- c("optimizer","list")
@@ -352,6 +415,6 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
 #' @keywords
 #' specification
 
-set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iterations")) {
+set_optimizer_nlm <- function(..., crit = c("minimum", "code", "iterations")) {
   set_optimizer(opt = stats::nlm, f = "f", p = "p", list(...), crit = crit)
 }
