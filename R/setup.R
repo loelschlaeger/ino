@@ -231,56 +231,85 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
 test_ino <- function(x, verbose = FALSE) {
 
   ### helper functions
-  topic <- function(name) { cat(name, "\n", sep = "") }
-  step <- function(desc) { cat("* ", desc, sep = "") }
-  succ <- function() { cat(crayon::green(" \U2713"),"\n") }
-  fail <- function(msg) { cat(crayon::red(" X"),"\n"); stop(msg, call. = FALSE) }
-  warn <- function(msg) { cat(crayon::yellow(" (\U2713)"),"\n"); warning(msg, call. = FALSE, immediate. =  TRUE) }
+  ll <- NULL
+  topic <- function(desc) pline(paste0("* ", desc))
+  step <- function(desc) pline(desc)
+  res <- function(msg = NULL, succ = FALSE, warn = FALSE) {
+    if(succ) {
+      cat(crayon::green("\U2713 "))
+    } else if(warn){
+      cat(crayon::yellow("X "))
+      warning(msg, call. = FALSE, immediate. =  TRUE)
+      ll <<- NULL
+    } else {
+      cat("\n")
+      if(is.null(msg)) {
+        msg <- paste("Please make sure that", ll)
+      }
+      stop(msg, call. = FALSE)
+    }
+  }
+  pline <- function(line = NULL) {
+    if(!is.null(ll)) cat(crayon::silver(ll), "\n", sep = "")
+    ll <<- line
+    cat(line, "\r")
+    Sys.sleep(0.1)
+    return(line)
+  }
 
   ### start tests
-  if(!verbose){
-    sink(tempfile())
-    on.exit(sink())
-  }
+  if(!verbose) { sink(tempfile()); on.exit(sink()) }
   topic("start tests")
 
   ### check data types
   topic("check data types")
   step("'f' is of class 'function'")
-  if(!"function" %in% class(x$f$f)) fail() else succ()
-  step("'npar' is a number")
-  if(!is.numeric(x$f$npar) || length(x$f$npar) != 1 || x$f$npar %% 1 != 0 || x$f$npar < 1) fail() else succ()
+  res(msg = "",
+      succ = "function" %in% class(x$f$f))
+  step("'npar' is a numeric")
+  res(msg = "",
+      succ = is.numeric(x$f$npar))
+  step("'npar' is of length 1")
+  res(succ = length(x$f$npar) == 1)
+  step("'npar' is a whole number")
+  res(msg = "",
+      succ = x$f$npar %% 1 == 0)
+  step("'npar' is non-negative")
+  res(msg = "",
+      succ = x$f$npar > 0)
   step("'opt' is of class 'optimizer' or a list of those")
-  if (all(sapply(x$opt, function(x) "optimizer" %in% class(x)))) {
-    succ()
-  } else {
-    fail("'opt' is not of class 'optimizer' or a list of those")
-  }
+  res(msg = "'opt' is not of class 'optimizer' or a list of those",
+      succ = all(sapply(x$opt, function(x) "optimizer" %in% class(x))))
   step("'mpvs' is a character (vector)")
-  if(!is.character(x$f$mpvs)) fail() else succ()
+  res(msg = "",
+      succ = is.character(x$f$mpvs))
 
   ### check names of parameters with mpvs
-  if(length(x$f$mpvs) > 0) {
-    topic("check names for parameters with multiple values")
-    for(mpv in x$f$mpvs){
-      step(paste0("check names for parameter '",mpv,"'"))
-      if(length(names(x$f$add[[mpv]])) != length(x$f$add[[mpv]])){
-        names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
-        warn(paste0("Named '",mpv,"' by '",mpv,"1:",length(x$f$add[[mpv]]),"'"))
-      } else succ()
+  topic("check names for parameters with multiple values")
+  for(mpv in x$f$mpvs){
+    step(paste0("check names for parameter '",mpv,"'"))
+    if(length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
+      res(succ = TRUE)
+    } else {
+      res(msg = paste0("Named '",mpv,"' by '",mpv,"1:",length(x$f$add[[mpv]]),"'"),
+          succ = FALSE,
+          warn = TRUE)
+      names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
     }
   }
 
   ### check that function can be called
   topic("check that function 'f' can be called")
   step("check name of target parameter in 'f'")
-  if(!is.character(x$f$target_arg) || length(x$f$target_arg) != 1) fail() else succ()
-  step(paste("name of target parameter in 'f':", x$f$target_arg, "\n"))
+  res(succ = is.character(x$f$target_arg))
+  step("check...")
+  res(succ = length(x$f$target_arg) == 1)
+  step(paste("name of target parameter in 'f':", x$f$target_arg))
   rvx <- round(rnorm(x$f$npar),1)
-  step(paste0("draw value of length 'npar' = ", x$f$npar, ": ", paste(rvx, collapse = " "), "\n"))
+  step(paste0("draw value of length 'npar' = ", x$f$npar, ": ", paste(rvx, collapse = " ")))
   step(paste("number of parameter sets:", length(x$par_sets)))
   for(i in 1:length(x$par_sets)){
-    step(paste("** set",i, "\n"))
+    step(paste("** set",i))
     step(paste("parameters:", attr(x$par_sets[[i]], "pars")))
   }
 
@@ -289,7 +318,9 @@ test_ino <- function(x, verbose = FALSE) {
   ### check that optimizer can be called
 
   ### return (invisibly) updated ino object
+  step("completed test cases")
   return(invisible(x))
+
 }
 
 #' @export
