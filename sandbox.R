@@ -9,7 +9,8 @@ devtools::load_all()
 x <- setup_ino(
   f = ino:::f_ackley,
   npar = 2,
-  opt = set_optimizer_nlm(),
+  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
+             "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
   verbose = TRUE)
 
 x <- random_initialization(x, runs = 10)
@@ -17,7 +18,11 @@ x <- random_initialization(x, runs = 10)
 
 # summary(x, "time")
 # plot(x)
-
+plot(x, var = ".time", by = ".strategy")
+plot(x, var = ".time", by = ".strategy") + theme_minimal()
+plot(x, var = ".time", by = ".optimizer", type = "histogram")
+## this should throw an error
+plot(x, var = ".time", by = c(".optimizer", ".strategy"))
 
 # Example: HMM LL ---------------------------------------------------------
 
