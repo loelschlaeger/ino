@@ -41,28 +41,43 @@ print.summary.ino <- function(x, digits, ...) {
 #' evaluation
 
 plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) {
-  optimisation_df <- x$optimizations
-  ### check input
-  if (nrow(optimisation_df) == 0) stop("Optimisations runs have not yet been performed.")
-  if(length(var) > 1) stop("Only one summary statistic can be selected in 'var'.")
-  if(length(by) > 1) stop("Only one group can be selected in 'by'.")
-  if(!(type %in% c("boxplot", "histogram"))) stop("type does allow only the following entries: boxplot, histogram")
-  if(!(var %in% colnames(optimisation_df))) stop(paste("Column", var, "does not exist."))
-  if(!(by %in% colnames(optimisation_df))) stop(paste("Column", var, "does not exist."))
 
+  ### check input
+  if (nrow(x$optimizations) == 0){
+    stop("Optimisations runs have not yet been performed.", call. = FALSE)
+  }
+  if(length(var) > 1){
+    stop("Only one summary statistic can be selected in 'var'.", call. = FALSE)
+  }
+  if(length(by) > 1){
+    stop("Only one group can be selected in 'by'.", call. = FALSE)
+  }
+  if(!(type %in% c("boxplot", "histogram"))){
+    stop("type does allow only the following entries: boxplot, histogram", call. = FALSE)
+  }
+  if(!(var %in% colnames(x$optimizations))) {
+    stop(paste("Column", var, "does not exist."), call. = FALSE)
+  }
+  if(!(by %in% colnames(x$optimizations))) {
+    stop(paste("Column", var, "does not exist."), call. = FALSE)
+  }
+
+  ### plot
   if(type == "boxplot"){
-    out_plot <- ggplot(optimisation_df, aes(y = .data[[var]], x = .data[[by]])) +
+    out_plot <- ggplot(x$optimizations, aes(y = .data[[var]], x = .data[[by]])) +
       geom_boxplot()
   }
   if(type == "histogram"){
-    out_plot <- ggplot(optimisation_df, aes(x = .data[[var]], fill = .data[[by]])) +
+    out_plot <- ggplot(x$optimizations, aes(x = .data[[var]], fill = .data[[by]])) +
       geom_histogram(position = "dodge")
   }
   if(type == "barplot"){
-    out_plot <- ggplot(optimisation_df, aes(x = .data[[var]])) +
+    out_plot <- ggplot(x$optimizations, aes(x = .data[[var]])) +
       geom_bar(aes(colour = .data[[by]], fill = .data[[by]]), position = "dodge")
   }
   print(out_plot)
+
+  ### return ggplot
   return(out_plot)
 }
 
