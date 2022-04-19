@@ -298,24 +298,20 @@ test_ino <- function(x, verbose = FALSE) {
     }
   }
 
-  ### check that function can be called
+  ### check that function and optimizer can be called
   topic("check that function 'f' can be called")
   step("check name of target parameter in 'f'")
   res(succ = is.character(x$f$target_arg))
-  step("check...")
-  res(succ = length(x$f$target_arg) == 1)
-  step(paste("name of target parameter in 'f':", x$f$target_arg))
+  topic(paste("name of target parameter in 'f':", x$f$target_arg))
   rvx <- round(rnorm(x$f$npar),1)
-  step(paste0("draw value of length 'npar' = ", x$f$npar, ": ", paste(rvx, collapse = " ")))
-  step(paste("number of parameter sets:", length(x$par_sets)))
-  for(i in 1:length(x$par_sets)){
+  step(paste0("draw value of length 'npar' = ", x$f$npar, ": ",
+              paste(rvx, collapse = " ")))
+  res(succ = (length(rvx) == x$f$npar))
+  topic(paste("number of parameter sets:", length(x$par_sets)))
+  for(i in seq_along(x$par_sets)){
     step(paste("** set",i))
     step(paste("parameters:", attr(x$par_sets[[i]], "pars")))
   }
-
-  step("call 'f' at 'x':")
-
-  ### check that optimizer can be called
 
   ### return (invisibly) updated ino object
   step("completed test cases")

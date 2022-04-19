@@ -5,12 +5,12 @@ The following tasks are on our agenda and will be tackled as time permits.
 ## Specification functions
 
 - `test_ino()`
-  - [ ] add test cases (L**)
+  - [x] add test cases 
       
 ## Initialization strategies
 
-- [ ] `fixed_initialization()` (M**)
-- [ ] `random_initialization()` (M**)
+- [x] `fixed_initialization()` 
+- [x] `random_initialization()` 
 - [ ] `subset_data()` (L**)
 
 ## Evaluation functions
