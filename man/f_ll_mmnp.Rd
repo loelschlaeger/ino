@@ -56,6 +56,6 @@ ino:::f_ll_mmnp(theta = true, data = data)
 https://en.wikipedia.org/wiki/Multinomial_probit
 }
 \seealso{
-\code{\link[=sim_mmnp]{sim_mmnp()}}
+\code{\link[=sim_mmnp]{sim_mmnp()}} for simulating a data set from a probit model.
 }
 \keyword{function}

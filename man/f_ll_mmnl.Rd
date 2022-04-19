@@ -44,6 +44,6 @@ ino:::f_ll_mmnl(theta = true, data = data)
 https://en.wikipedia.org/wiki/Multinomial_logistic_regression
 }
 \seealso{
-\code{\link[=sim_mmnl]{sim_mmnl()}}
+\code{\link[=sim_mmnl]{sim_mmnl()}} for simulating a data set from a logit model.
 }
 \keyword{function}

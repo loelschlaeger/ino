@@ -36,7 +36,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(probit)
+#' @usage data(probit_data)
 #'
 #' @format
 #' Missing
@@ -44,23 +44,30 @@
 #' @keywords
 #' dataset
 #'
-"probit"
+"probit_data"
 
 #' Simulated choice data from a mixed logit model
 #'
 #' @description
-#' This data set includes simulated choices and corresponding choice
-#' characteristics from a (normally) mixed logit model.
+#' This object is a list which includes 100 data sets of simulated choices and
+#' corresponding choice characteristics from a (normally) mixed logit model.
 #'
 #' @details
-#' Missing
+#' The data set was simulated via the following lines:
 #' \preformatted{
-#' NA
+#'   set.seed(1)
+#'   logit_data <- list()
+#'   for(i in 1:100){
+#'     b <- rnorm(3, sd = 9)
+#'     Omega <- RprobitB::rwishart(3,diag(3))$W
+#'     name <- paste0("data",i)
+#'     logit_data[[name]] <- ino:::sim_mmnl(N = 100, J = 3, b, Omega, seed = i)
+#'   }
 #' }
 #'
 #' @docType data
 #'
-#' @usage data(logit)
+#' @usage data(logit_data)
 #'
 #' @format
 #' Missing
@@ -68,4 +75,4 @@
 #' @keywords
 #' dataset
 #'
-"logit"
+"logit_data"

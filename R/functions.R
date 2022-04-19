@@ -170,7 +170,7 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' https://en.wikipedia.org/wiki/Multinomial_probit
 #'
 #' @seealso
-#' [sim_mmnp()]
+#' [sim_mmnp()] for simulating a data set from a probit model.
 #'
 #' @details
 #' The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
@@ -359,7 +359,7 @@ sim_mmnp <- function(N, T, b, Omega, Sigma, seed = NULL) {
 #' https://en.wikipedia.org/wiki/Multinomial_logistic_regression
 #'
 #' @seealso
-#' [sim_mmnl()]
+#' [sim_mmnl()] for simulating a data set from a logit model.
 #'
 #' @details
 #' The order of \code{theta} is supposed to be \code{c(b,o)}, where

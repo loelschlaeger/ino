@@ -36,10 +36,7 @@ x <- setup_ino(
   verbose = TRUE)
 
 x <- random_initialization(x, runs = 10)
-# x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
-
-# summary(x, "time")
-# plot(x)
+x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
 
 
 # Example: Probit LL ------------------------------------------------------
@@ -60,13 +57,15 @@ abs(true - est)
 
 x <- setup_ino(
   f = ino:::f_ll_mmnl,
-  npar = 4,
-  data = list(NULL, NULL),
+  npar = 9,
+  data = ino::logit_data,
   R = list("R1" = 10, "R2" = 100, "R3" = 1000),
   neg = TRUE,
   opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
              "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
-  mpvs = c("data","R"), verbose = TRUE
+  mpvs = c("data","R"),
+  verbose = TRUE
 )
 
-
+x <- random_initialization(x, runs = 10)
+x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
