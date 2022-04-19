@@ -253,7 +253,7 @@ test_ino <- function(x, verbose = FALSE) {
     if(!is.null(ll)) cat(crayon::silver(ll), "\n", sep = "")
     ll <<- line
     cat(line, "\r")
-    Sys.sleep(0.1)
+    Sys.sleep(ifelse(verbose,0.1,0))
     return(line)
   }
 
