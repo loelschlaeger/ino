@@ -9,12 +9,17 @@ devtools::load_all()
 x <- setup_ino(
   f = ino:::f_ackley,
   npar = 2,
-  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
-             "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
+  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-06,
+                                        crit = "iterations"),
+             "opt2" = set_optimizer_nlm(gradtol = 1e-10,
+                                        crit = "iterations")
+             ),
   verbose = TRUE)
 
-x <- random_initialization(x, runs = 10)
-x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2)))
+x <- random_initialization(x,
+                           runs = 10)
+x <- fixed_initialization(x,
+                          at = list(c(1, 0.5), c(0.3, 2)))
 
 # summary(x, "time")
 # plot(x)
@@ -35,8 +40,10 @@ x <- setup_ino(
   opt = set_optimizer_nlm(),
   verbose = TRUE)
 
-x <- random_initialization(x, runs = 10)
-x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+x <- random_initialization(x,
+                           runs = 10)
+x <- fixed_initialization(x,
+                          at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
 
 
 # Example: Probit LL ------------------------------------------------------
@@ -59,13 +66,21 @@ x <- setup_ino(
   f = ino:::f_ll_mmnl,
   npar = 9,
   data = ino::logit_data,
-  R = list("R1" = 10, "R2" = 100, "R3" = 1000),
+  R = list("R1" = 10,
+           "R2" = 100,
+           "R3" = 1000
+           ),
   neg = TRUE,
-  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
-             "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
+  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-06,
+                                        crit = "iterations"),
+             "opt2" = set_optimizer_nlm(gradtol = 1e-10,
+                                        crit = "iterations")
+             ),
   mpvs = c("data","R"),
   verbose = TRUE
 )
 
-x <- random_initialization(x, runs = 10)
-x <- fixed_initialization(x, at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+x <- random_initialization(x,
+                           runs = 10)
+x <- fixed_initialization(x,
+                          at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
