@@ -14,7 +14,7 @@ x <- setup_ino(
   verbose = TRUE)
 
 x <- random_initialization(x, runs = 10)
-# x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2)))
+x <- fixed_initialization(x, at = list(c(1, 0.5), c(0.3, 2)))
 
 # summary(x, "time")
 # plot(x)
