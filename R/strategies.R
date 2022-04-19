@@ -40,8 +40,7 @@ data_subset_initialization <- function(x, how = "random", prop = 0.5,
 #' Fixed initialization
 #'
 #' @description
-#' This function is an implementation of the fixed initialization
-#' strategy.
+#' This function is an implementation of the fixed initialization strategy.
 #'
 #' @details
 #' See the vignette on initialization strategies for more details.
@@ -64,53 +63,58 @@ data_subset_initialization <- function(x, how = "random", prop = 0.5,
 
 fixed_initialization <- function(x, at) {
 
-  # ### check inputs
-  # if (class(x) != "ino") {
-  #   stop("'x' must be of class 'ino'.")
-  # }
-  # if(!is.list(at)){
-  #   stop("'at' must be a list.")
-  # }
-  # if(any(sapply(at,length) > x$f$npar)){
-  #   stop("Some element in 'at' has more entries than the function has parameters.")
-  # }
-  # if(any(sapply(at,length) < x$f$npar)){
-  #   stop("Some element in 'at' has less entries than the function has parameters.")
-  # }
-  #
-  # grid_for_optim <- create_grid(x, at)
-  #
-  # # check if multiple argument specifications were provided
-  # if ("argument_value" %in% colnames(grid_for_optim)) {
-  #   # name of argument for which multiple values are given
-  #   des_argument <- names(which(lapply(x$f$add, length) > 1))
-  # }
-  #
-  # ### loop over all parameter combinations provided
-  # for(i in 1:nrow(grid_for_optim)) {
-  #   main_args <- list(f = x$f$f, p = grid_for_optim$at[[i]])
-  #   # set data argument for optimiser, if a data set exists
-  #   if (is.list(x$data)){
-  #     data_arg <- list(data = x$data[[grid_for_optim$data_idx[i]]])
-  #   }
-  #   else {
-  #     data_arg <- c()
-  #   }
-  #
-  #   # set further argument specifications (if there exist any)
-  #   if ("argument_value" %in% colnames(grid_for_optim)) {
-  #     x$f$add[[des_argument]] <- grid_for_optim$argument_value[i]
-  #   }
-  #
-  #   out <- do.call_timed(
-  #     what = x$optimizer$fun,
-  #     args = c(main_args, data_arg, x$f$add)
-  #   )
-  #   x <- save_optimization_results(x, strategy = "fixed", res = out$res,
-  #                                  time = out$time)
-  # }
+  ### check inputs
+  if (!inherits(x, "ino")) {
+    stop("'x' must be of class 'ino'.", call. = FALSE)
+  }
+  if(!is.list(at)){
+    stop("'at' must be a list.", call. = FALSE)
+  }
+  if(any(sapply(at,length) > x$f$npar)){
+    stop("Some element in 'at' has more entries than the function has parameters.",
+         call. = FALSE)
+  }
+  if(any(sapply(at,length) < x$f$npar)){
+    stop("Some element in 'at' has less entries than the function has parameters.",
+         call. = FALSE)
+  }
 
-  ### return ino
+  ### create parameter grid
+  grid <- grid_ino(x)
+
+  ### loop over parameter sets
+  for(p in 1:length(grid)) {
+    ### extract current parameter set
+    pars <- grid[[p]]
+    ### loop over 'at'
+    for(r in seq_along(at)) {
+      ### draw random initial value
+      init <- at[[1]]
+      ### save initial value in parameter set
+      pars[[x$f$target_arg]] <- init
+      ### loop over optimizer
+      for(o in 1:length(x$opt)) {
+        ### extract current optimizer
+        opt <- x$opt[[o]]
+        ### base arguments of the optimizer
+        base_args <- list(x$f$f, pars[[x$f$target_arg]])
+        names(base_args) <- opt$base_arg_names
+        f_args <- pars
+        f_args[[x$f$target_arg]] <- NULL
+        result <- try_silent(
+          do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
+        )
+        if(inherits(result, "fail")) {
+          warning("Optimization failed with message", result)
+        }
+        ### save new result
+        x <- result_ino(x = x, strategy = "fixed", pars = pars,
+                        result = result, opt_name = names(x$opt)[o])
+      }
+    }
+  }
+
+  ### return ino object
   return(x)
 }
 

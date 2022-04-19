@@ -15,8 +15,7 @@ fixed_initialization(x, at)
 The updated input \code{x}.
 }
 \description{
-This function is an implementation of the fixed initialization
-strategy.
+This function is an implementation of the fixed initialization strategy.
 }
 \details{
 See the vignette on initialization strategies for more details.
