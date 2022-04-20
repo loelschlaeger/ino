@@ -25,13 +25,21 @@
 #' Simulated choice data from a mixed probit model
 #'
 #' @description
-#' This data set includes simulated choices and corresponding choice
-#' characteristics from a (normally) mixed probit model.
+#' This object is a list which includes 100 data sets of simulated choices and
+#' corresponding choice characteristics from a (normally) mixed probit model.
 #'
 #' @details
-#' Missing
+#' The data set was simulated via the following lines:
 #' \preformatted{
-#' NA
+#'   set.seed(1)
+#'   probit_data <- list()
+#'   for(i in 1:100){
+#'     b <- rnorm(3, sd = 9)
+#'     Omega <- RprobitB::rwishart(3,diag(3))$W
+#'     Sigma <- RprobitB::rwishart(3,diag(3))$W
+#'     name <- paste0("data",i)
+#'     probit_data[[name]] <- ino:::sim_mmnp(N = 100, T = 10, b, Omega, Sigma, seed = i)
+#'   }
 #' }
 #'
 #' @docType data

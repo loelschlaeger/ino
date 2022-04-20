@@ -48,16 +48,21 @@ plot(x, var = ".time", by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
-N <- 100
-T <- 100
-b <- c(2,-2)
-Omega <- matrix(c(1,0.1,0.1,0.5),ncol = 2)
-Sigma <- diag(3)
-data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
-true <- attr(data, "true")
-starting_values <- true
-est <- nlm(f_ll_mmnp, p = starting_values, data = data, neg = TRUE)$estimate
-abs(true - est)
+x <- setup_ino(
+  f = ino:::f_ll_mmnp,
+  npar = 9,
+  data = ino::probit_data[1:2],
+  neg = TRUE,
+  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-06,
+                                        crit = "iterations"),
+             "opt2" = set_optimizer_nlm(gradtol = 1e-10,
+                                        crit = "iterations")
+  ),
+  mpvs = "data",
+  verbose = TRUE
+)
+
+x <- random_initialization(x, runs = 2)
 
 
 # Example: Logit LL -------------------------------------------------------
@@ -65,7 +70,7 @@ abs(true - est)
 x <- setup_ino(
   f = ino:::f_ll_mmnl,
   npar = 9,
-  data = ino::logit_data,
+  data = ino::logit_data[1:2],
   R = list("R1" = 100,
            "R2" = 1000
            ),
@@ -79,7 +84,5 @@ x <- setup_ino(
   verbose = TRUE
 )
 
-x <- random_initialization(x,
-                           runs = 2)
-x <- fixed_initialization(x,
-                          at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+x <- random_initialization(x, runs = 2)
+plot(x, var = ".time", by = "R")
