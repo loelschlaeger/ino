@@ -40,7 +40,7 @@ ino_pp <- function(pb) {
 .onAttach <- function(lib, pkg) {
   ### startup message
   msg <- paste0(
-    "Thanks for using {ino} ", utils::packageVersion("ino"),"."
+    "Thanks for using {ino} ", utils::packageVersion("ino"), "."
   )
   packageStartupMessage(msg)
   invisible()
