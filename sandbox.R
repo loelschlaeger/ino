@@ -48,26 +48,23 @@ plot(x, var = ".time", by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
-x <- setup_ino(
+probit_ino <- setup_ino(
   f = ino:::f_ll_mmnp,
-  npar = 9,
+  npar = 11,
   data = ino::probit_data[1:2],
   neg = TRUE,
-  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-06,
-                                        crit = "iterations"),
-             "opt2" = set_optimizer_nlm(gradtol = 1e-10,
-                                        crit = "iterations")
-  ),
+  opt = set_optimizer_nlm(),
   mpvs = "data",
   verbose = TRUE
 )
 
-x <- random_initialization(x, runs = 2)
+probit_ino <- random_initialization(probit_ino, runs = 2)
+plot(probit_ino, var = ".time")
 
 
 # Example: Logit LL -------------------------------------------------------
 
-x <- setup_ino(
+logit_ino <- setup_ino(
   f = ino:::f_ll_mmnl,
   npar = 9,
   data = ino::logit_data[1:2],
@@ -84,5 +81,5 @@ x <- setup_ino(
   verbose = TRUE
 )
 
-x <- random_initialization(x, runs = 2)
-plot(x, var = ".time", by = "R")
+logit_ino <- random_initialization(logit_ino, runs = 2)
+plot(logit_ino, var = ".time", by = "R")
