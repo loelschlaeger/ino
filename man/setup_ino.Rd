@@ -10,7 +10,7 @@ setup_ino(
   ...,
   opt = set_optimizer_nlm(),
   mpvs = character(0),
-  verbose = FALSE
+  verbose = getOption("ino_progress")
 )
 }
 \arguments{
@@ -29,8 +29,8 @@ wrapper for the \code{\link[stats]{nlm}} optimizer. Can also be a list of
 \item{mpvs}{A character vector of the parameter names with multiple values, see the
 details. Per default, \code{mpvs = character(0)}.}
 
-\item{verbose}{Set to \code{TRUE} to show the print the test results of the setup to the
-console.}
+\item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) the test results of the
+setup at the console.}
 }
 \value{
 An object of class \code{ino}.

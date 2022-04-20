@@ -27,7 +27,8 @@ Imports:
     RprobitB,
     mvtnorm,
     evd,
-    crayon
+    crayon,
+    progress
 Suggests: 
     knitr,
     rmarkdown,

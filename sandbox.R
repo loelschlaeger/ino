@@ -17,7 +17,7 @@ x <- setup_ino(
   verbose = TRUE)
 
 x <- random_initialization(x,
-                           runs = 10)
+                           runs = 100)
 x <- fixed_initialization(x,
                           at = list(c(1, 0.5), c(0.3, 2)))
 
@@ -44,7 +44,7 @@ x <- random_initialization(x,
                            runs = 10)
 x <- fixed_initialization(x,
                           at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
-
+plot(x, var = ".time", by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
@@ -66,9 +66,8 @@ x <- setup_ino(
   f = ino:::f_ll_mmnl,
   npar = 9,
   data = ino::logit_data,
-  R = list("R1" = 10,
-           "R2" = 100,
-           "R3" = 1000
+  R = list("R1" = 100,
+           "R2" = 1000
            ),
   neg = TRUE,
   opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-06,
@@ -81,6 +80,6 @@ x <- setup_ino(
 )
 
 x <- random_initialization(x,
-                           runs = 10)
+                           runs = 2)
 x <- fixed_initialization(x,
                           at = list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))

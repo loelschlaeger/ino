@@ -88,7 +88,7 @@
 #' specification
 
 setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
-                      mpvs = character(0), verbose = FALSE) {
+                      mpvs = character(0), verbose = getOption("ino_progress")) {
 
   ### check inputs
   if (missing(f)) stop("Please specify 'f'.")
@@ -99,7 +99,9 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
   ino <- list()
   class(ino) <- c("ino","list")
   add <- list(...)
-  for(add_name in names(add)) if(!add_name %in% mpvs) add[[add_name]] <- list(add[[add_name]])
+  for(add_name in names(add))
+    if(!add_name %in% mpvs)
+      add[[add_name]] <- list(add[[add_name]])
   ino$f <- list(f = f, npar = npar, add = list(...),
                 name = deparse(substitute(f)), target_arg = names(formals(f))[1],
                 mpvs = mpvs)
@@ -136,7 +138,7 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
 
 grid_ino <- function(x) {
 
-  ### build grid of parameter indentifiers
+  ### build grid of parameter identifiers
   grid_par <- as.list(names(x$f$add))
   names(grid_par) <- names(x$f$add)
   for(mpv in x$f$mpvs) grid_par[[mpv]] <- names(x$f$add[[mpv]])
@@ -148,7 +150,13 @@ grid_ino <- function(x) {
     target <- list(NA)
     names(target) <- x$f$target_arg
     par_set <- c(target, x$f$add)
-    for(p in colnames(grid_par)) par_set[p] <- par_set[p][grid_par[i,p]]
+    for(p in colnames(grid_par)) {
+      if(inherits(par_set[[p]], "list")){
+        par_set[p] <- par_set[[p]][grid_par[i,p]]
+      } else {
+        par_set[p] <- par_set[p][grid_par[i,p]]
+      }
+    }
     attr(par_set, "par_name") <- as.character(names(x$f$add))
     attr(par_set, "par_id") <- as.character(grid_par[i,])
     par_sets[[i]] <- par_set
@@ -217,8 +225,8 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
 #' @param x
 #' An object of class \code{ino}.
 #' @param verbose
-#' Set to \code{TRUE} to show the print the test results of the setup to the
-#' console.
+#' Set to \code{TRUE} (\code{FALSE}) to print (hide) the test results of the
+#' setup at the console.
 #'
 #' @return
 #' The updated object \code{x} (invisibly).
@@ -228,7 +236,7 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
 #'
 #' @importFrom stats rnorm
 
-test_ino <- function(x, verbose = FALSE) {
+test_ino <- function(x, verbose = getOption("ino_progress")) {
 
   ### helper functions
   ll <- NULL
@@ -299,7 +307,6 @@ test_ino <- function(x, verbose = FALSE) {
   }
 
   ### check that function and optimizer can be called
-  topic("check that function 'f' can be called")
   step("check name of target parameter in 'f'")
   res(succ = is.character(x$f$target_arg))
   topic(paste("name of target parameter in 'f':", x$f$target_arg))
@@ -307,10 +314,25 @@ test_ino <- function(x, verbose = FALSE) {
   step(paste0("draw value of length 'npar' = ", x$f$npar, ": ",
               paste(rvx, collapse = " ")))
   res(succ = (length(rvx) == x$f$npar))
-  topic(paste("number of parameter sets:", length(x$par_sets)))
-  for(i in seq_along(x$par_sets)){
-    step(paste("** set",i))
-    step(paste("parameters:", attr(x$par_sets[[i]], "pars")))
+  step("create grid of parameter sets")
+  grid <- grid_ino(x)
+  res(succ = is.list(grid))
+  topic(paste("number of parameter sets:", length(grid)))
+  if(length(grid) > 10) {
+    topic("randomly select 10 parameter sets for testing")
+    grid <- grid[sort(sample.int(length(grid), 10))]
+  }
+  topic("check that function 'f' can be called")
+  for(i in seq_along(grid)){
+    step(paste("parameter set:", paste(attr(grid[[i]], "par_id"), collapse = " ")))
+    pars <- grid[[i]]
+    pars[[x$f$target_arg]] <- rvx
+    f_return <- try_silent(
+      timed(expr = do.call(what = x$f$f, args = pars),
+            secs = 1)
+    )
+    res(msg = "msg",
+        succ = !inherits(f_return, "fail"))
   }
 
   ### return (invisibly) updated ino object

@@ -82,20 +82,34 @@ fixed_initialization <- function(x, at) {
   ### create parameter grid
   grid <- grid_ino(x)
 
+  ### initialize progress bar
+  pb <- ino_pb(title = "random initialization",
+               total = length(grid) * length(at) * length(x$opt))
+
   ### loop over parameter sets
   for(p in 1:length(grid)) {
+
     ### extract current parameter set
     pars <- grid[[p]]
+
     ### loop over 'at'
     for(r in seq_along(at)) {
+
       ### draw random initial value
       init <- at[[1]]
+
       ### save initial value in parameter set
       pars[[x$f$target_arg]] <- init
+
       ### loop over optimizer
       for(o in 1:length(x$opt)) {
+
+        ### increase counter for progress bar
+        ino_pp(pb)
+
         ### extract current optimizer
         opt <- x$opt[[o]]
+
         ### base arguments of the optimizer
         base_args <- list(x$f$f, pars[[x$f$target_arg]])
         names(base_args) <- opt$base_arg_names
@@ -105,8 +119,9 @@ fixed_initialization <- function(x, at) {
           do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
         )
         if(inherits(result, "fail")) {
-          warning("Optimization failed with message", result)
+          warning("Optimization failed with message", result, immediate. = TRUE)
         }
+
         ### save new result
         x <- result_ino(x = x, strategy = "fixed", pars = pars,
                         result = result, opt_name = names(x$opt)[o])
@@ -147,13 +162,13 @@ fixed_initialization <- function(x, at) {
 #'
 #' @export
 #'
-#' @importFrom utils capture.output
-#'
 #' @examples
 #' #random_initialization()
 #'
 #' @keywords
 #' strategy
+#'
+#' @importFrom utils capture.output
 
 random_initialization <- function(x, runs = 1, sampler = stats::rnorm, ...) {
 
@@ -185,31 +200,48 @@ random_initialization <- function(x, runs = 1, sampler = stats::rnorm, ...) {
   ### create parameter grid
   grid <- grid_ino(x)
 
+  ### initialize progress bar
+  pb <- ino_pb(title = "random initialization",
+               total = length(grid) * runs * length(x$opt))
+
   ### loop over parameter sets
   for(p in 1:length(grid)) {
+
     ### extract current parameter set
     pars <- grid[[p]]
+
     ### loop over runs
     for(r in 1:runs) {
+
       ### draw random initial value
       init <- sampler_init(x$f$npar)
+
       ### save initial value in parameter set
       pars[[x$f$target_arg]] <- init
+
       ### loop over optimizer
       for(o in 1:length(x$opt)) {
+
+        ### increase counter for progress bar
+        ino_pp(pb)
+
         ### extract current optimizer
         opt <- x$opt[[o]]
+
         ### base arguments of the optimizer
         base_args <- list(x$f$f, pars[[x$f$target_arg]])
         names(base_args) <- opt$base_arg_names
         f_args <- pars
         f_args[[x$f$target_arg]] <- NULL
+
+        ### optimize
         result <- try_silent(
           do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
         )
         if(inherits(result, "fail")) {
-          warning("Optimization failed with message", result)
+          warning("Optimization failed with message", result, immediate. = TRUE)
         }
+
         ### save new result
         x <- result_ino(x = x, strategy = "random", pars = pars,
                         result = result, opt_name = names(x$opt)[o])

@@ -4,13 +4,13 @@
 \alias{test_ino}
 \title{Test of an \code{ino} object}
 \usage{
-test_ino(x, verbose = FALSE)
+test_ino(x, verbose = getOption("ino_progress"))
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{verbose}{Set to \code{TRUE} to show the print the test results of the setup to the
-console.}
+\item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) the test results of the
+setup at the console.}
 }
 \value{
 The updated object \code{x} (invisibly).
