@@ -14,7 +14,7 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Evaluation functions
 
-- [ ] `summary()` (L**)
+- [x] `summary()` (L**)
 - [ ] `plot()` (M**)
 
 ## Applications

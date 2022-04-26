@@ -28,7 +28,8 @@ Imports:
     mvtnorm,
     evd,
     crayon,
-    progress
+    progress,
+    dplyr
 Suggests: 
     knitr,
     rmarkdown,

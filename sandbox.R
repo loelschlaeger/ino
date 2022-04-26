@@ -21,8 +21,7 @@ x <- random_initialization(x,
 x <- fixed_initialization(x,
                           at = list(c(1, 0.5), c(0.3, 2)))
 
-# summary(x, "time")
-# plot(x)
+summary(x, "mean" = mean)
 plot(x, var = ".time", by = ".strategy")
 plot(x, var = ".time", by = ".strategy") + theme_minimal()
 plot(x, var = ".time", by = ".optimizer", type = "histogram")
