@@ -96,7 +96,7 @@ fixed_initialization <- function(x, at) {
     for(r in seq_along(at)) {
 
       ### draw random initial value
-      init <- at[[1]]
+      init <- at[[r]]
 
       ### save initial value in parameter set
       pars[[x$f$target_arg]] <- init
