@@ -21,6 +21,8 @@
 #' @param row
 #' A boolean, set to \code{TRUE} to subset by row, set to \code{FALSE} to subset
 #' by column.
+#' @param ncores
+#' This function is parallelized, set the number of cores here.
 #'
 #' @return
 #' The updated input \code{x}.
@@ -34,8 +36,116 @@
 #' strategy
 
 subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
-                                  row = TRUE) {
+                                  row = TRUE, ncores = parallel::detectCores()-1) {
 
+  ### initial message
+  ino_status("subset initialization")
+
+  ### check inputs
+  if (!inherits(x, "ino")) {
+    stop("'x' must be of class 'ino'.", call. = FALSE)
+  }
+  if(!is.character(arg)){
+    stop("'arg' must be a character.", call. = FALSE)
+  }
+  if(!arg %in% names(x$f$add)) {
+    stop(paste0("'arg' = '", arg, "' does not seem to be an argument of '",
+                x$f$name, "'."), call. = FALSE)
+  }
+  if(arg %in% x$f$mpvs && !all(sapply(x$f$add[[arg]], inherits, c("matrix","data.frame"))) ||
+     arg %in% !x$f$mpvs && !inherits(x$f$add[[arg]], c("matrix","data.frame"))) {
+      stop(paste0("The argument 'arg' = '", arg, "' does not seem to be of class ",
+                  "'matrix' or 'data.frame'."), call. = FALSE)
+  }
+  if(!how %in% c("random", "first", "kmeans")) {
+    stop("'how' must be one of 'random', 'first', or 'kmeans'.", call. = FALSE)
+  }
+  if(how == "kmeans"){
+    # add check if columns are numeric
+    # add argument that specifies the columns for clustering
+  }
+  if(!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
+    stop("(Each element of) 'prop' must be between 0 and 1.", call. = FALSE)
+  }
+  if(!(is.logical(row) || length(logical) == 1)) {
+    stop("'row' must be either 'TRUE' or 'FALSE'.")
+  }
+
+  ### create parameter grid
+  grid <- grid_ino(x)
+
+  ### initialize progress bar
+  pb <- ino_pb(title = "", total = length(grid))
+
+  ### initialize parallel cluster
+  cluster <- parallel::makeCluster(ncores)
+  doSNOW::registerDoSNOW(cluster)
+  opts <- list(progress = function(n) ino_pp(pb))
+
+  ### loop over parameter sets
+  p <- NULL
+  loop_res <- foreach::foreach(p = 1:length(grid), .packages = "ino",
+                               .options.snow = opts) %dopar% {
+
+   ### extract current parameter set
+   pars <- grid[[p]]
+
+   ### initialize list for results for loop p
+   loop_res_p <- list()
+
+   ### loop over 'at' # TODO: over how and prop
+   for(r in seq_along(at)) {
+
+     ### draw random initial value
+     init <- at[[r]]
+
+     ### save initial value in parameter set
+     pars[[x$f$target_arg]] <- init
+
+     ### loop over optimizer
+     for(o in 1:length(x$opt)) {
+
+       ### extract current optimizer
+       opt <- x$opt[[o]]
+
+       ### base arguments of the optimizer
+       base_args <- list(x$f$f, pars[[x$f$target_arg]])
+       names(base_args) <- opt$base_arg_names
+       f_args <- pars
+       f_args[[x$f$target_arg]] <- NULL
+       result <- try_silent(
+         do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
+       )
+       if(inherits(result, "fail")) {
+         warning("Optimization failed with message", result, immediate. = TRUE)
+       }
+
+       ### save new result
+       loop_res_p[[length(loop_res_p) + 1]] <- list(
+         "pars" = pars, "result" = result, "opt_name" = names(x$opt)[o]
+       )
+     }
+   }
+
+   ### return results of loop p
+   loop_res_p
+  }
+
+  ### terminate cluster
+  parallel::stopCluster(cluster)
+
+  ### save optimization results
+  ino_status("saving results")
+  loop_res <- unlist(loop_res, recursive = FALSE)
+  for(res in seq_along(loop_res)){
+    x <- do.call(what = result_ino,
+                 args = append(list("x" = x, "strategy" = "fixed"),
+                               loop_res[[res]]))
+  }
+
+  ### return ino object
+  ino_status("done")
+  return(x)
 
 }
 
@@ -52,7 +162,7 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
 #' @param at
 #' A list containing the (fixed) initial values.
 #' @param ncores
-#' This function is parallized, set the number of cores here.
+#' This function is parallelized, set the number of cores here.
 #'
 #' @return
 #' The updated input \code{x}.

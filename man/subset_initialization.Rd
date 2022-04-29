@@ -4,7 +4,14 @@
 \alias{subset_initialization}
 \title{Subset initialization}
 \usage{
-subset_initialization(x, arg = "data", how = "random", prop = 0.5, row = TRUE)
+subset_initialization(
+  x,
+  arg = "data",
+  how = "random",
+  prop = 0.5,
+  row = TRUE,
+  ncores = parallel::detectCores() - 1
+)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
@@ -21,6 +28,8 @@ Can also be a vector of proportions.}
 
 \item{row}{A boolean, set to \code{TRUE} to subset by row, set to \code{FALSE} to subset
 by column.}
+
+\item{ncores}{This function is parallelized, set the number of cores here.}
 }
 \value{
 The updated input \code{x}.

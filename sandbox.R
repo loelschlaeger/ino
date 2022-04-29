@@ -10,9 +10,9 @@ x <- setup_ino(
   f = ino:::f_ackley,
   npar = 2,
   opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-06,
-                                        crit = "iterations"),
+                                        crit = c("iterations","minimum")),
              "opt2" = set_optimizer_nlm(gradtol = 1e-10,
-                                        crit = "iterations")
+                                        crit = c("iterations","minimum"))
              ),
   verbose = TRUE)
 
@@ -21,9 +21,9 @@ x <- random_initialization(x,
 x <- fixed_initialization(x,
                           at = list(c(1, 0.5), c(0.3, 2)))
 
-summary(x, "mean" = mean)
+summary(x, var = "minimum", "count" = n())
 plot(x, var = ".time", by = ".strategy")
-plot(x, var = ".time", by = ".strategy") + theme_minimal()
+plot(x, var = ".time", by = ".strategy") + ggplot2::theme_minimal()
 plot(x, var = ".time", by = ".optimizer", type = "histogram")
 ## this should throw an error
 plot(x, var = ".time", by = c(".optimizer", ".strategy"))
