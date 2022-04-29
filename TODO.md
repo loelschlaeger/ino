@@ -2,36 +2,33 @@
 
 The following tasks are on our agenda and will be tackled as time permits.
 
+## Functions
+
+- [ ] change data structure in logit and probit LL to data frame (L***)
+- [ ] add updated data sets to package (L**)
+
 ## Specification functions
 
-- `test_ino()`
-  - [ ] add test cases for optimizer 
+- [ ] add test cases for optimizer in `setup_ino()` (L***)
       
 ## Initialization strategies
 
-- [ ] `subset_data()` (L**)
-- [ ] parallelize
+- [ ] `subset_initialization()` (L***)
+- [ ] `standardize_initialization()` (L***)
+- [ ] `ao_initialization()` (L*)
 
 ## Evaluation functions
 
-- [x] `summary()` (L**)
-- [ ] `plot()` (M**)
+- [ ] allow empty group in `summary()` to get full table (L***)
+- [ ] suppress warnings `plot()` (M***)
+- [ ] add facets to `plot()` (M***)
+- [ ] reactivate `nr_optima()` function (M***)
 
 ## Applications
 
-- [ ] Example ino object saved in the package to use for examples. (L***)
-- Standard optimization problems
-  - [x] Add examples. (M)
-- Likelihood functions
-  - [ ] Poisson-HMM (M)
-    - [x] Ask Roland if we can include data set in package. (M***) (we can use it)
-    - [x] Transform sandbox example to ino structure. (M*)
-    - [ ] Document sandbox example in vignette. (M*)
-  - [ ] MMNP (L)
-    - [x] Add simulated data. (L***)
-    - [x] Transform sandbox example to ino structure. (L*)
-    - [ ] Document sandbox example in vignette. (L*)
-  - [ ] MMNL (L)
-    - [x] Add simulated data. (L***)
-    - [x] Transform sandbox example to ino structure. (L*)
-    - [ ] Document sandbox example in vignette. (L*)
+- [ ] Example ino object for standard numerical problems and HMM likelihood saved in the package to use for examples. (M*)
+- [ ] Example ino object for logit and probit likelihood saved in the package to use for examples. (L*)
+- [ ] Vignette introduction + workflow (L\*\*\*) with example standard numerical problems + geysir data (M**)
+- [ ] Vignette example HMM (M**)
+- [ ] Vignette example probit (L**)
+- [ ] Vignette example logit (L**)
