@@ -4,12 +4,14 @@
 \alias{fixed_initialization}
 \title{Fixed initialization}
 \usage{
-fixed_initialization(x, at)
+fixed_initialization(x, at, ncores = parallel::detectCores() - 1)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
 \item{at}{A list containing the (fixed) initial values.}
+
+\item{ncores}{This function is parallized, set the number of cores here.}
 }
 \value{
 The updated input \code{x}.

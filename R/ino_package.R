@@ -14,9 +14,10 @@ NULL
 
 ino_pb <- function(title, total) {
   progress::progress_bar$new(
-    format = paste(":spin", title, ":percent [ETA: :eta]"),
+    format = paste0(title, "grid set :current/:total"),
     total = total,
-    clear = TRUE
+    show_after = 1,
+    clear = FALSE
   )
 }
 
@@ -25,6 +26,14 @@ ino_pb <- function(title, total) {
 ino_pp <- function(pb) {
   if (identical(getOption("ino_progress"), TRUE)) {
     pb$tick()
+  }
+}
+
+#' @noRd
+
+ino_status <- function(msg) {
+  if (identical(getOption("ino_progress"), TRUE)) {
+    message(msg)
   }
 }
 

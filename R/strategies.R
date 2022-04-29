@@ -1,25 +1,27 @@
-#' Data subset initialization
+#' Subset initialization
 #'
 #' @description
-#' This function is an implementation of the data subset initialization
-#' strategy.
+#' This function is an implementation of the subset initialization strategy.
 #'
 #' @details
 #' See the vignette on initialization strategies for more details.
 #'
 #' @param x
 #' An object of class \code{ino}.
+#' @param arg
+#' A character, the name of the argument to be subsetted. The argument must be
+#' of class \code{matrix} or \code{data.frame}.
 #' @param how
-#' A character, specifying how to select the data subset. Can be one of
+#' A character, specifying how to select the subset. Can be one of
 #' \code{"random"} (default), \code{"first"}, and \code{"kmeans"}, see the
 #' details.
 #' @param prop
-#' A numeric between 0 and 1, specifying the proportion of the data subset.
-#' Can also be a vector...
-#' @param data_arg
-#' A character, the name of the data argument. The data argument must be ...
-#' @param by_row
-#' A boolean, ...
+#' A numeric between 0 and 1, specifying the proportion of the subset.
+#' Can also be a vector of proportions.
+#' @param row
+#' A boolean, set to \code{TRUE} to subset by row, set to \code{FALSE} to subset
+#' by column.
+#'
 #' @return
 #' The updated input \code{x}.
 #'
@@ -31,8 +33,8 @@
 #' @keywords
 #' strategy
 
-data_subset_initialization <- function(x, how = "random", prop = 0.5,
-                                       data_arg = "data", by_row = TRUE) {
+subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
+                                  row = TRUE) {
 
 
 }
@@ -49,6 +51,8 @@ data_subset_initialization <- function(x, how = "random", prop = 0.5,
 #' An object of class \code{ino}.
 #' @param at
 #' A list containing the (fixed) initial values.
+#' @param ncores
+#' This function is parallized, set the number of cores here.
 #'
 #' @return
 #' The updated input \code{x}.
@@ -61,7 +65,10 @@ data_subset_initialization <- function(x, how = "random", prop = 0.5,
 #' @keywords
 #' strategy
 
-fixed_initialization <- function(x, at) {
+fixed_initialization <- function(x, at, ncores = parallel::detectCores()-1) {
+
+  ### initial message
+  ino_status("fixed initialization")
 
   ### check inputs
   if (!inherits(x, "ino")) {
@@ -83,14 +90,23 @@ fixed_initialization <- function(x, at) {
   grid <- grid_ino(x)
 
   ### initialize progress bar
-  pb <- ino_pb(title = "random initialization",
-               total = length(grid) * length(at) * length(x$opt))
+  pb <- ino_pb(title = "", total = length(grid))
+
+  ### initialize parallel cluster
+  cluster <- parallel::makeCluster(ncores)
+  doSNOW::registerDoSNOW(cluster)
+  opts <- list(progress = function(n) ino_pp(pb))
 
   ### loop over parameter sets
-  for(p in 1:length(grid)) {
+  p <- NULL
+  loop_res <- foreach::foreach(p = 1:length(grid), .packages = "ino",
+                               .options.snow = opts) %dopar% {
 
     ### extract current parameter set
     pars <- grid[[p]]
+
+    ### initialize list for results for loop p
+    loop_res_p <- list()
 
     ### loop over 'at'
     for(r in seq_along(at)) {
@@ -103,9 +119,6 @@ fixed_initialization <- function(x, at) {
 
       ### loop over optimizer
       for(o in 1:length(x$opt)) {
-
-        ### increase counter for progress bar
-        ino_pp(pb)
 
         ### extract current optimizer
         opt <- x$opt[[o]]
@@ -123,13 +136,30 @@ fixed_initialization <- function(x, at) {
         }
 
         ### save new result
-        x <- result_ino(x = x, strategy = "fixed", pars = pars,
-                        result = result, opt_name = names(x$opt)[o])
+        loop_res_p[[length(loop_res_p) + 1]] <- list(
+          "pars" = pars, "result" = result, "opt_name" = names(x$opt)[o]
+        )
       }
     }
+
+    ### return results of loop p
+    loop_res_p
+  }
+
+  ### terminate cluster
+  parallel::stopCluster(cluster)
+
+  ### save optimization results
+  ino_status("saving results")
+  loop_res <- unlist(loop_res, recursive = FALSE)
+  for(res in seq_along(loop_res)){
+    x <- do.call(what = result_ino,
+                 args = append(list("x" = x, "strategy" = "fixed"),
+                               loop_res[[res]]))
   }
 
   ### return ino object
+  ino_status("done")
   return(x)
 }
 
@@ -154,6 +184,8 @@ fixed_initialization <- function(x, at) {
 #' }
 #' Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
 #' standard normal distribution as initial value.
+#' @param ncores
+#' This function is parallized, set the number of cores here.
 #' @param ...
 #' Additional argument to \code{sampler} (optional).
 #'
@@ -169,8 +201,13 @@ fixed_initialization <- function(x, at) {
 #' strategy
 #'
 #' @importFrom utils capture.output
+#' @importFrom foreach %dopar%
 
-random_initialization <- function(x, runs = 1, sampler = stats::rnorm, ...) {
+random_initialization <- function(x, runs = 1, sampler = stats::rnorm,
+                                  ncores = parallel::detectCores()-1, ...) {
+
+  ### initial message
+  ino_status("random initialization")
 
   ### check inputs
   if (!inherits(x, "ino")) {
@@ -201,14 +238,23 @@ random_initialization <- function(x, runs = 1, sampler = stats::rnorm, ...) {
   grid <- grid_ino(x)
 
   ### initialize progress bar
-  pb <- ino_pb(title = "random initialization",
-               total = length(grid) * runs * length(x$opt))
+  pb <- ino_pb(title = "", total = length(grid))
+
+  ### initialize parallel cluster
+  cluster <- parallel::makeCluster(ncores)
+  doSNOW::registerDoSNOW(cluster)
+  opts <- list(progress = function(n) ino_pp(pb))
 
   ### loop over parameter sets
-  for(p in 1:length(grid)) {
+  p <- NULL
+  loop_res <- foreach::foreach(p = 1:length(grid), .packages = "ino",
+                               .options.snow = opts) %dopar% {
 
     ### extract current parameter set
     pars <- grid[[p]]
+
+    ### initialize list for results for loop p
+    loop_res_p <- list()
 
     ### loop over runs
     for(r in 1:runs) {
@@ -222,9 +268,6 @@ random_initialization <- function(x, runs = 1, sampler = stats::rnorm, ...) {
       ### loop over optimizer
       for(o in 1:length(x$opt)) {
 
-        ### increase counter for progress bar
-        ino_pp(pb)
-
         ### extract current optimizer
         opt <- x$opt[[o]]
 
@@ -236,19 +279,39 @@ random_initialization <- function(x, runs = 1, sampler = stats::rnorm, ...) {
 
         ### optimize
         result <- try_silent(
-          do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
+          do.call_timed(
+            what = opt$f,
+            args = c(base_args, f_args, opt$args)
+            )
         )
         if(inherits(result, "fail")) {
           warning("Optimization failed with message", result, immediate. = TRUE)
         }
 
         ### save new result
-        x <- result_ino(x = x, strategy = "random", pars = pars,
-                        result = result, opt_name = names(x$opt)[o])
+        loop_res_p[[length(loop_res_p) + 1]] <- list(
+          "pars" = pars, "result" = result, "opt_name" = names(x$opt)[o]
+        )
       }
     }
+
+    ### return results of loop p
+    loop_res_p
+  }
+
+  ### terminate cluster
+  parallel::stopCluster(cluster)
+
+  ### save optimization results
+  ino_status("saving results")
+  loop_res <- unlist(loop_res, recursive = FALSE)
+  for(res in seq_along(loop_res)){
+    x <- do.call(what = result_ino,
+                 args = append(list("x" = x, "strategy" = "random"),
+                               loop_res[[res]]))
   }
 
   ### return ino object
+  ino_status("done")
   return(x)
 }

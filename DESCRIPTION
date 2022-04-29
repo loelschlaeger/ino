@@ -29,7 +29,9 @@ Imports:
     evd,
     crayon,
     progress,
-    dplyr
+    dplyr,
+    foreach,
+    doSNOW
 Suggests: 
     knitr,
     rmarkdown,

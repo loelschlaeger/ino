@@ -4,7 +4,13 @@
 \alias{random_initialization}
 \title{Random initialization}
 \usage{
-random_initialization(x, runs = 1, sampler = stats::rnorm, ...)
+random_initialization(
+  x,
+  runs = 1,
+  sampler = stats::rnorm,
+  ncores = parallel::detectCores() - 1,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
@@ -18,6 +24,8 @@ random_initialization(x, runs = 1, sampler = stats::rnorm, ...)
 }
 Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
 standard normal distribution as initial value.}
+
+\item{ncores}{This function is parallized, set the number of cores here.}
 
 \item{...}{Additional argument to \code{sampler} (optional).}
 }
