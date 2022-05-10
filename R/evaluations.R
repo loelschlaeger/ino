@@ -85,6 +85,7 @@ print.summary.ino <- function(x, digits = NULL, ...) {
 
 plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) {
   optimisation_df <- x$optimizations
+  optimisation_df$.time <- as.numeric(optimisation_df$.time)
   ### check input
   if (nrow(optimisation_df) == 0) stop("Optimisations runs have not yet been performed.")
   if(length(var) > 1) stop("Only one summary statistic can be selected in 'var'.")
@@ -106,7 +107,7 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
     out_plot <- ggplot(optimisation_df, aes(x = .data[[var]])) +
       geom_bar(aes(colour = .data[[by]], fill = .data[[by]]), position = "dodge")
   }
-  suppressWarnings(print(out_plot))
+  print(out_plot)
   return(out_plot)
 }
 
