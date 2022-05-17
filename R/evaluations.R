@@ -78,7 +78,7 @@ print.summary.ino <- function(x, digits = NULL, ...) {
 #' # plot.ino()
 #'
 #' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_bar geom_histogram geom_boxplot
+#' @importFrom ggplot2 ggplot aes geom_bar geom_histogram geom_boxplot facet_wrap
 #'
 #' @keywords
 #' evaluation
@@ -89,23 +89,24 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   ### check input
   if (nrow(optimisation_df) == 0) stop("Optimisations runs have not yet been performed.")
   if(length(var) > 1) stop("Only one summary statistic can be selected in 'var'.")
-  if(length(by) > 1) stop("Only one group can be selected in 'by'.")
+  #if(length(by) > 1) stop("Only one group can be selected in 'by'.")
   if(!(type %in% c("boxplot", "histogram", "barplot"))) stop("type does allow only the following entries: 'boxplot',
                                                              'histogram', or 'barplot'")
   if(!(var %in% colnames(optimisation_df))) stop(paste("Column", var, "does not exist."))
-  if(!(by %in% colnames(optimisation_df))) stop(paste("Column", var, "does not exist."))
+  if(sum(!(by %in% colnames(optimisation_df))) > 0) stop(paste("Column", by[!(by %in% colnames(optimisation_df))],
+                                                               "does not exist."))
 
   if(type == "boxplot"){
-    out_plot <- ggplot(optimisation_df, aes(y = .data[[var]], x = .data[[by]])) +
-      geom_boxplot()
+    out_plot <- ggplot(optimisation_df, aes(y = .data[[var]])) +
+      geom_boxplot() + facet_wrap(by, labeller = "label_both")
   }
   if(type == "histogram"){
-    out_plot <- ggplot(optimisation_df, aes(x = .data[[var]], fill = .data[[by]])) +
-      geom_histogram(position = "dodge")
+    out_plot <- ggplot(optimisation_df, aes(x = .data[[var]])) +
+      geom_histogram(position = "dodge") + facet_wrap(by, labeller = "label_both")
   }
   if(type == "barplot"){
     out_plot <- ggplot(optimisation_df, aes(x = .data[[var]])) +
-      geom_bar(aes(colour = .data[[by]], fill = .data[[by]]), position = "dodge")
+      geom_bar(position = "dodge") + facet_wrap(by, labeller = "label_both")
   }
   print(out_plot)
   return(out_plot)

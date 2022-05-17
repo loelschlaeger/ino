@@ -17,7 +17,7 @@ x <- setup_ino(
   verbose = TRUE)
 
 x <- random_initialization(x,
-                           runs = 100)
+                           runs = 5)
 x <- fixed_initialization(x,
                           at = list(c(1, 0.5), c(0.3, 2)))
 
@@ -25,7 +25,8 @@ summary(x, var = "minimum", "count" = n())
 plot(x, var = ".time", by = ".strategy")
 plot(x, var = ".time", by = ".strategy") + ggplot2::theme_minimal()
 plot(x, var = ".time", by = ".optimizer", type = "histogram")
-## this should throw an error
+plot(x, var = ".time", by = ".optimizer", type = "barplot")
+## this now works using facets
 plot(x, var = ".time", by = c(".optimizer", ".strategy"))
 
 # Example: HMM LL ---------------------------------------------------------
