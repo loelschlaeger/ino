@@ -4,14 +4,14 @@
 \alias{nr_optima}
 \title{Number of optima found}
 \usage{
-nr_optima(x, plot = FALSE, round = 2)
+nr_optima(x, round = 2)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{plot}{Set to \code{TRUE} for plotting a frequency plot of found optima.}
-
 \item{round}{TBA}
+
+\item{plot}{Set to \code{TRUE} for plotting a frequency plot of found optima.}
 }
 \value{
 A ggplot.

@@ -480,13 +480,15 @@ set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iter
 #' This function specifies true parameter values.
 #'
 #' @param
+#' NA
 #'
 #' @return
+#' NA
 #'
 #' @export
 #'
-#' @example
-#' # TBA
+#' @examples
+#' NA
 #'
 #' @keywords
 #' specification

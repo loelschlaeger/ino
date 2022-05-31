@@ -41,7 +41,7 @@ This function is an implementation of the subset initialization strategy.
 See the vignette on initialization strategies for more details.
 }
 \examples{
-#data_subset_initialization()
+#subset_initialization()
 
 }
 \keyword{strategy}

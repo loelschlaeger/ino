@@ -4,16 +4,16 @@
 \alias{summary.ino}
 \title{Summary of an \code{ino} object}
 \usage{
-\method{summary}{ino}(object, group = c(".strategy", ".optimizer"), var = c(".time"), ...)
+\method{summary}{ino}(object, group = c(".strategy", ".optimizer"), ...)
 }
 \arguments{
 \item{object}{An object of class \code{ino}.}
 
 \item{group}{A character vector for grouping the optimization results.}
 
-\item{var}{A character vector of names of numeric optimization results.}
-
 \item{...}{Named functions for computing statistics.}
+
+\item{var}{A character vector of names of numeric optimization results.}
 }
 \description{
 This function gives an overview of the optimization runs in an \code{ino}

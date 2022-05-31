@@ -164,33 +164,32 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
   return(ifelse(neg, -llk, llk))
 }
 
-#' The log-likelihood function of the normally mixed multinomial probit model
+#' The log-likelihood function of the (normally mixed) multinomial probit model
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Multinomial_probit
 #'
 #' @seealso
-#' [sim_mmnp()] for simulating a data set from a probit model.
+#' [sim_mnp()] for simulating a data set from a probit model.
 #'
 #' @details
 #' The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
 #' \itemize{
-#'   \item \code{b} denotes the coefficients,
+#'   \item \code{b} denotes the vector of mean effects without the first one,
 #'   \item \code{o} the lower-triangular elements of the lower-triangular
-#'         Cholesky root of \code{Omega},
+#'         Cholesky root of the effect covariance matrix \code{Omega} (if any),
 #'   \item and \code{l} the lower-triangular elements of the lower-triangular
 #'         Cholesky root \code{L} of the differenced (with respect to
-#'         alternative 1) error term covariance matrix \code{Sigma}, with the
-#'         top-left element of \code{L} fixed to 1.
+#'         alternative 1) error term covariance matrix \code{Sigma}.
 #' }
 #'
 #' @param theta
 #' The vector of model coefficients in order \code{c(b,o,l)}, see the details.
 #' @param data
-#' The output of \code{\link{sim_mmnp}}.
+#' A data frame with the shape of the output of \code{\link{sim_mnp}}.
 #' @param normal_cdf
-#' A function that evaluates the CDF of a multivariate normal distribution. It
-#' must take the arguments
+#' A function that evaluates the CDF of an \code{n}-variate normal distribution.
+#' It must take the arguments
 #' \itemize{
 #'   \item \code{lower}, the vector of lower limits of length \code{n},
 #'   \item \code{upper}, the vector of upper limits of length \code{n},
@@ -205,14 +204,10 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' The log-likelihood value.
 #'
 #' @examples
-#' N <- 100
-#' T <- 10
-#' b <- c(-2,0.5,2)
-#' Omega <- diag(3)
-#' Sigma <- diag(3)
-#' data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
-#' true <- attr(data, "true")
-#' ino:::f_ll_mmnp(theta = true, data = data)
+#' data <- ino:::sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
+#' theta <- attr(data, "true")
+#' ino:::f_ll_mnp(theta = theta, data = data)
+#' # nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 #'
 #' @keywords
 #' function
@@ -220,159 +215,203 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' @importFrom RprobitB delta
 #' @importFrom mvtnorm pmvnorm
 
-f_ll_mmnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
+f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
+
+  ### check inputs
+  stopifnot(c("N","T","P","J","mix") %in% names(attributes(data)))
 
   ### model parameters
-  N <- length(data$y)
-  T <- length(data$y[[1]])
-  P <- ncol(data$X[[1]][[1]])
-  J <- nrow(data$X[[1]][[1]])
-  b <- theta[1:P]; theta <- theta[-(1:P)]
-  o <- theta[1:(P*(P+1)/2)]; theta <- theta[-(1:(P*(P+1)/2))]
+  N <- attr(data, "N")
+  T <- attr(data, "T")
+  P <- attr(data, "P")
+  J <- attr(data, "J")
+  mix <- attr(data, "mix")
+  b <- 1
+  if(P > 1) {
+    b <- c(b, theta[1:(P-1)])
+    theta <- theta[-(1:(P-1))]
+  }
+  if(mix) {
+    o <- theta[1:(P*(P+1)/2)]; theta <- theta[-(1:(P*(P+1)/2))]
+  }
   l <- theta
-  O <- matrix(0, P, P)
-  O[lower.tri(O, diag = TRUE)] <- o
-  Omega <- O %*% t(O)
+  if(mix) {
+    O <- matrix(0, P, P)
+    O[lower.tri(O, diag = TRUE)] <- o
+    Omega <- O %*% t(O)
+  }
   L_diff <- matrix(0, J-1, J-1)
-  L_diff[lower.tri(L_diff, diag = TRUE)] <- c(sqrt(2),l)
+  L_diff[lower.tri(L_diff, diag = TRUE)] <- l
   L <- cbind(0, rbind(0, L_diff))
   Sigma <- L %*% t(L)
   delta <- RprobitB::delta
 
   ### log-likelihood contributions
   LL <- 0
-  for(n in 1:N){
-    for(t in 1:T){
-      i <- data$y[[n]][t]
-      X <- data$X[[n]][[t]]
-      arg <- as.vector(-delta(J,i) %*% X %*% b)
+  ind <- 0
+  for(n in 1:N) for(t in 1:T){
+    ind <- ind + 1
+    i <- data[ind,"y"]
+    X <- matrix(as.numeric(data[ind,-(1:3)]), nrow = J, ncol = P)
+    arg <- as.vector(-delta(J,i) %*% X %*% b)
+    if(mix) {
       Gamma <- delta(J,i) %*% ( X %*% Omega %*% t(X) + Sigma ) %*% t(delta(J,i))
-      p <- do.call(what = normal_cdf,
-                   args = list(lower = -Inf, upper = arg, mean = rep(0,J-1),
-                               sigma = Gamma))
-      LL <- LL + log(p)
+    } else {
+      Gamma <- delta(J,i) %*% Sigma %*% t(delta(J,i))
     }
+    p <- as.numeric(
+      do.call(what = normal_cdf,
+              args = list(lower = rep(-Inf,J-1), upper = arg, mean = rep(0,J-1),
+                          sigma = Gamma)))
+    LL <- LL + log(p)
   }
 
   return(ifelse(neg, -LL, LL))
 }
 
-#' Simulate data from a normally mixed multinomial probit panel model
+#' Simulate data from a (normally mixed) multinomial probit model
 #'
 #' @details
 #' The normally mixed multinomial probit model formula is
 #' \deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt}},
-#' where \eqn{U_{nt}} is the vector of length \code{J} of utilities for each
+#' where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
 #' of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
 #' \eqn{X_{nt}} is the choice occasion-specific \eqn{J} times \eqn{P} covariate
-#' matrix, \eqn{\beta_n} is the decider-specific random coefficient vector with
+#' matrix, \eqn{\beta_n} is the decider-specific random effect vector with
 #' \deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{nt}} is the choice
 #' occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma)}.
-#'
-#' Note that because utility is indifferent in terms of level and scale, not all
-#' elements of \eqn{Sigma} are identified. Therefore, we take utility
-#' differences with respect to the first alternative and fix the first variance
-#' of the differenced error term matrix.
+#' The choice \eqn{y_{nt}} of decider \eqn{n} at choice occasion \eqn{t} is
+#' linked to the utilities via \deqn{y_{nt} = \arg \max U_{nt}} (hence assuming
+#' utility maximizing behavior). For parameter identification (utility is
+#' indifferent towards level and scale), utility differences with respect to the
+#' first alternative are taken and the first effect is fixed to one.
 #'
 #' @seealso
-#' [f_ll_mmnp()]
+#' [f_ll_mnp()] for computing the log-likelihood of a (normally mixed)
+#' multinomial probit model.
 #'
 #' @param N
 #' The number of observations.
 #' @param T
-#' The number of choice occasions.
+#' The number of choice occasions with \code{T = 1} per default.
 #' @param b
-#' The vector of coefficients.
+#' The vector of mean effects. The first element will be set to one.
 #' @param Omega
-#' The covariance matrix of the normal mixing distribution.
+#' The covariance matrix of the normal mixing distribution. Set to \code{NULL}
+#' (the default) for no mixing distribution.
 #' @param Sigma
-#' The error term covariance matrix. The top-left element is normalized to 1.
+#' The error term covariance matrix.
 #' @param seed
 #' Set a seed for the simulation.
+#' @param covariate
+#' A function that samples the covariates. It must return a single numeric
+#' (random) value and must not require arguments. Per default,
+#' \code{covariate = function() rnorm(n = 1, mean = 0, sd = 9)}, i.e. covariates
+#' are sampled from a normal distribution with mean 0 and standard deviation 9.
 #'
 #' @return
-#' A list with choices \code{y} and covariate matrices \code{X}, each of
-#' which containing sub-lists for the choice occasions.
-#' The true model coefficients are added via the attribute \code{"true"}.
-#' They are already normalized and can be directly compared with the maximum
-#' likelihood estimate.
+#' A data frame. The first column (\code{n}) is the identifier for the decider,
+#' the next column (\code{t}) the identifier for the choice occasion. Next
+#' comes the column \code{y} with the indices of the chosen alternatives.
+#' The last columns contain the column-wise entries of \eqn{X_{nt}}.
+#'
+#' The true model coefficients are added to the output via the attribute
+#' \code{"true"}. They are already normalized and can be directly compared with
+#' the maximum likelihood estimate.
+#'
+#' Additional attributes are \code{"N"} (the number of deciders), \code{"T"}
+#' (the number of choice occasions), \code{"J"} (the number of alternatives),
+#' \code{"P"} (the number of choice covariates), and \code{"mix"} (a boolean
+#' which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 #'
 #' @examples
-#' N <- 100
-#' T <- 10
-#' b <- c(-2,0.5,2)
-#' Omega <- diag(3)
-#' Sigma <- diag(3)
-#' data <- ino:::sim_mmnp(N, T, b, Omega, Sigma, seed = 1)
+#' ino:::sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 #'
 #' @importFrom stats rnorm
 
-sim_mmnp <- function(N, T, b, Omega, Sigma, seed = NULL) {
+sim_mnp <- function(N, T = 1, b, Omega = NULL, Sigma, seed = NULL,
+                    covariate = function() rnorm(n = 1, mean = 0, sd = 9)) {
 
   ### input checks
   stopifnot(N%%1 == 0, N > 0, length(N) == 1)
   stopifnot(T%%1 == 0, T > 0, length(T) == 1)
-  stopifnot(length(b) == ncol(Omega))
-  stopifnot(ncol(Omega) == nrow(Omega))
+  if(!is.null(Omega)){
+    stopifnot(length(b) == ncol(Omega))
+    stopifnot(ncol(Omega) == nrow(Omega))
+  }
   stopifnot(ncol(Sigma) == nrow(Sigma))
+  stopifnot(inherits(covariate, "function"))
+  stopifnot(is.numeric(covariate()), length(covariate()) == 1)
   if(!is.null(seed)) set.seed(seed)
 
   ### model parameters
   P <- length(b)
   J <- ncol(Sigma)
-  O <- t(chol(Omega))
-  o <- O[lower.tri(O, diag = TRUE)]
+  if(!is.null(Omega)){
+    O <- t(chol(Omega))
+    o <- O[lower.tri(O, diag = TRUE)]
+  }
   L <- t(chol(Sigma))
-
-  ### data simulation
-  X <- list()
-  y <- list()
-  for (n in 1:N){
-    Xn <- list()
-    yn <- numeric(T)
-    for(t in 1:T){
-      Xn[[t]] <- matrix(rnorm(J*P,sd=3),nrow=J,ncol=P)
-      beta <- b + O %*% rnorm(P)
-      V <- Xn[[t]] %*% beta
-      e <- L %*% rnorm(J)
-      U <- V + e
-      yn[t] <- which.max(U)
-    }
-    X[[n]] <- Xn
-    y[[n]] <- yn
+  if(b[1] != 1) {
+    b[1] <- 1
+    warning("Set b[1] <- 1 for normalization.", call. = FALSE)
   }
 
-  ### parameter normalization
+  ### data simulation
+  data <- data.frame("n" = rep(1:N, each = T), "t" = rep(1:T, times = N))
+  ind <- 0
+  for (n in 1:N){
+    if(!is.null(Omega)){
+      beta <- b + O %*% rnorm(P)
+    } else {
+      beta <- b
+    }
+    for(t in 1:T){
+      ind <- ind + 1
+      X <- matrix(replicate(J*P, covariate()),nrow=J,ncol=P)
+      V <- X %*% beta
+      e <- L %*% rnorm(J)
+      U <- V + e
+      y <- which.max(U)
+      data[ind,"y"] <- y
+      data[ind,paste0("x", 1:J, rep(1:P, each = J))] <- as.numeric(X)
+    }
+  }
+
+  ### add parameters
   delta <- RprobitB::delta(J,1)
   Sigma_diff <- delta %*% Sigma %*% t(delta)
   L_diff <- t(chol(Sigma_diff))
-  l_diff <- L_diff[lower.tri(L_diff, diag = TRUE)]
-
-  out <- list(y=y, X=X)
-  attr(out, "true") <- c(b,o,l_diff[-1])
-  return(out)
+  l <- L_diff[lower.tri(L_diff, diag = TRUE)]
+  attr(data, "true") <- if(!is.null(Omega)) c(b[-1],o,l) else  c(b[-1],l)
+  attr(data, "N") <- N
+  attr(data, "T") <- T
+  attr(data, "J") <- J
+  attr(data, "P") <- P
+  attr(data, "mix") <- !is.null(Omega)
+  return(data)
 }
 
-#' The log-likelihood function of the normally mixed multinomial logit model
+#' The log-likelihood function of the (normally mixed) multinomial logit model
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Multinomial_logistic_regression
 #'
 #' @seealso
-#' [sim_mmnl()] for simulating a data set from a logit model.
+#' [sim_mnl()] for simulating a data set from a logit model.
 #'
 #' @details
 #' The order of \code{theta} is supposed to be \code{c(b,o)}, where
 #' \itemize{
 #'   \item \code{b} denotes the coefficients
 #'   \item and \code{o} the lower-triangular elements of the lower-triangular
-#'         Cholesky root of \code{Omega}.
+#'         Cholesky root of \code{Omega} (if any).
 #' }
 #'
 #' @param theta
 #' The vector of model coefficients in order \code{c(b,o)}, see the details.
 #' @param data
-#' The output of \code{\link{sim_mmnl}}.
+#' A data frame with the shape of the output of \code{\link{sim_mnl}}.
 #' @param R
 #' The number of random draws to approximate the integral for the mixed logit
 #' choice probabilities.
@@ -383,13 +422,10 @@ sim_mmnp <- function(N, T, b, Omega, Sigma, seed = NULL) {
 #' The log-likelihood value.
 #'
 #' @examples
-#' N <- 10
-#' J <- 3
-#' b <- c(-2,0.5,2)
-#' Omega <- diag(3)
-#' data <- ino:::sim_mmnl(N, J, b, Omega, seed = 1)
-#' true <- attr(data, "true")
-#' ino:::f_ll_mmnl(theta = true, data = data)
+#' data <- ino:::sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
+#' theta <- attr(data, "true")
+#' ino:::f_ll_mnl(theta = theta, data = data)
+#' # nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
 #'
 #' @importFrom mvtnorm pmvnorm
 #' @importFrom stats rnorm
@@ -397,96 +433,143 @@ sim_mmnp <- function(N, T, b, Omega, Sigma, seed = NULL) {
 #' @keywords
 #' function
 
-f_ll_mmnl <- function(theta, data, R = 100, neg = FALSE) {
+f_ll_mnl <- function(theta, data, R = 100, neg = FALSE) {
+
+  ### check inputs
+  stopifnot(c("N","T","P","J","mix") %in% names(attributes(data)))
 
   ### model parameters
-  P <- ncol(data$X[[1]])
-  J <- nrow(data$X[[1]])
+  N <- attr(data, "N")
+  T <- attr(data, "T")
+  P <- attr(data, "P")
+  J <- attr(data, "J")
+  mix <- attr(data, "mix")
   b <- theta[1:P]; theta <- theta[-(1:P)]
-  O <- matrix(0, P, P)
-  O[lower.tri(O, diag = TRUE)] <- theta
-  N <- length(data$y)
+  if(mix){
+    O <- matrix(0, P, P)
+    O[lower.tri(O, diag = TRUE)] <- theta
+  }
 
   ### log-likelihood contributions
   LL <- 0
-  for(n in 1:N){
-    i <- data$y[n]
-    X <- data$X[[n]]
-    L_ni <- function(beta) exp(X[i,]%*%beta) / sum(exp(X%*%beta))
-    p <- mean(replicate(R, L_ni(beta = b + O %*% rnorm(P))))
+  ind <- 0
+  for(n in 1:N) for(t in 1:T){
+    ind <- ind + 1
+    i <- data[ind,"y"]
+    X <- matrix(as.numeric(data[ind,-(1:3)]), nrow = J, ncol = P)
+    if(mix){
+      L_ni <- function(beta) exp(X[i,]%*%beta) / sum(exp(X%*%beta))
+      p <- mean(replicate(R, L_ni(beta = b + O %*% rnorm(P))))
+    } else {
+      p <- exp(X[i,] %*% b) / sum(exp(X %*% b))
+    }
     LL <- LL + log(p)
   }
 
   return(ifelse(neg, -LL, LL))
 }
 
-#' Simulate data from a normally mixed multinomial logit model
+#' Simulate data from a (normally mixed) multinomial logit model
 #'
 #' @details
 #' The normally mixed multinomial logit model formula is
-#' \deqn{U_n = X_n \beta_n + \eps_{n}},
-#' where \eqn{U_n} is the vector of length \code{J} of utilities for each
-#' of the \eqn{J} alternatives for decider \eqn{n},
-#' \eqn{X_{n}} is the decider-specific \eqn{J} times \eqn{P} covariate
-#' matrix, \eqn{\beta_n} is the decider-specific random coefficient vector with
-#' \deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{n}} is the
-#' decider-specific error term that is iid extreme value distributed.
+#' \deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt}},
+#' where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
+#' of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
+#' \eqn{X_{nt}} is the decider- and choice occasion-specific \eqn{J} times
+#' \eqn{P} covariate matrix, \eqn{\beta_n} is the decider-specific random
+#' coefficient vector with \deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and
+#' \eqn{\eps_{nt}} is the error term that is iid extreme value distributed.
 #'
 #' @seealso
-#' [f_ll_mmnl()]
+#' [f_ll_mnl()]
 #'
 #' @param N
 #' The number of observations.
+#' @param T
+#' The number of choice occasions with \code{T = 1} per default.
 #' @param J
 #' The number of alternatives.
 #' @param b
 #' The vector of coefficients.
 #' @param Omega
-#' The covariance matrix of the normal mixing distribution.
+#' The covariance matrix of the normal mixing distribution. Set to \code{NULL}
+#' (the default) for no mixing distribution.
 #' @param seed
 #' Set a seed for the simulation.
+#' @param covariate
+#' A function that samples the covariates. It must return a single numeric
+#' (random) value and must not require arguments. Per default,
+#' \code{covariate = function() rnorm(n = 1, mean = 0, sd = 9)}, i.e. covariates
+#' are sampled from a normal distribution with mean 0 and standard deviation 9.
 #'
 #' @return
-#' A list with choices \code{y} and covariate matrices \code{X}.
-#' The true model coefficients are added via the attribute \code{"true"}.
+#' A data frame. The first column (\code{n}) is the identifier for the decider,
+#' the next column (\code{t}) the identifier for the choice occasion. Next
+#' comes the column \code{y} with the indices of the chosen alternatives.
+#' The last columns contain the column-wise entries of \eqn{X_{nt}}.
+#'
+#' The true model coefficients are added to the output via the attribute
+#' \code{"true"}. Additional attributes are \code{"N"} (the number of deciders),
+#' \code{"T"} (the number of choice occasions), \code{"J"} (the number of
+#' alternatives), \code{"P"} (the number of choice covariates), and \code{"mix"}
+#' (a boolean which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 #'
 #' @examples
-#' N <- 100
-#' J <- 3
-#' b <- c(-2,0.5,2)
-#' Omega <- diag(3)
-#' data <- ino:::sim_mmnl(N, J, b, Omega, seed = 1)
+#' ino:::sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
 #'
 #' @importFrom evd rgumbel
 #' @importFrom stats rnorm
 
-sim_mmnl <- function(N, J, b, Omega, seed = NULL) {
+sim_mnl <- function(N, T = 1, J, b, Omega = NULL, seed = NULL,
+                    covariate = function() rnorm(n = 1, mean = 0, sd = 9)) {
 
   ### input checks
   stopifnot(N%%1 == 0, N > 0, length(N) == 1)
-  stopifnot(J%%1 == 0, J > 2, length(J) == 1)
-  stopifnot(length(b) == ncol(Omega))
-  stopifnot(ncol(Omega) == nrow(Omega))
+  stopifnot(T%%1 == 0, T > 0, length(T) == 1)
+  stopifnot(J%%1 == 0, J >= 2, length(J) == 1)
+  if(!is.null(Omega)){
+    stopifnot(length(b) == ncol(Omega))
+    stopifnot(ncol(Omega) == nrow(Omega))
+  }
+  stopifnot(inherits(covariate, "function"))
+  stopifnot(is.numeric(covariate()), length(covariate()) == 1)
   if(!is.null(seed)) set.seed(seed)
 
   ### model parameters
   P <- length(b)
-  O <- t(chol(Omega))
-  o <- O[lower.tri(O, diag = TRUE)]
-
-  ### data simulation
-  X <- list()
-  y <- numeric(N)
-  for (n in 1:N){
-    X[[n]] <- matrix(rnorm(J*P,sd=3),nrow=J,ncol=P)
-    beta <- b + O %*% rnorm(P)
-    V <- X[[n]] %*% beta
-    e <- evd::rgumbel(J,loc=0,scale=1)
-    U <- V + e
-    y[n] <- which.max(U)
+  if(!is.null(Omega)){
+    O <- t(chol(Omega))
+    o <- O[lower.tri(O, diag = TRUE)]
   }
 
-  out <- list(y=y, X=X)
-  attr(out, "true") <- c(b,o)
-  return(out)
+  ### data simulation
+  data <- data.frame("n" = rep(1:N, each = T), "t" = rep(1:T, times = N))
+  ind <- 0
+  for (n in 1:N){
+    if(!is.null(Omega)){
+      beta <- b + O %*% rnorm(P)
+    } else {
+      beta <- b
+    }
+    for(t in 1:T){
+      ind <- ind + 1
+      X <- matrix(replicate(J*P, covariate()),nrow=J,ncol=P)
+      V <- X %*% beta
+      e <- evd::rgumbel(J,loc=0,scale=1)
+      U <- V + e
+      y <- which.max(U)
+      data[ind,"y"] <- y
+      data[ind,paste0("x", 1:J, rep(1:P, each = J))] <- as.numeric(X)
+    }
+  }
+
+  ### add parameters
+  attr(data, "true") <- if(!is.null(Omega)) c(b,o) else b
+  attr(data, "N") <- N
+  attr(data, "T") <- T
+  attr(data, "J") <- J
+  attr(data, "P") <- P
+  attr(data, "mix") <- !is.null(Omega)
+  return(data)
 }
