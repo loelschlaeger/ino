@@ -30,7 +30,7 @@
 #' @export
 #'
 #' @examples
-#' #data_subset_initialization()
+#' #subset_initialization()
 #'
 #' @keywords
 #' strategy
@@ -93,10 +93,31 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
    ### initialize list for results for loop p
    loop_res_p <- list()
 
-   ### loop over 'at' # TODO: over how and prop
-   for(r in seq_along(at)) {
+   ### loop over 'how' and 'prop'
+   for(h in how) for(pr in prop) {
 
-     ### draw random initial value
+     ### determine initial value
+     pars_arg_full <- pars[[arg]]
+     pars_arg_full_length <- ifelse(row, nrow(pars_arg_full), ncol(pars_arg_full))
+     pars_arg_subset_length <- ceiling(pars_arg_full_length * pr)
+     if(h == "random"){
+
+
+       init <- 0
+
+
+
+
+     } else if (h == "first") {
+       init <- 0
+     } else if (h == "kmeans") {
+       init <- 0
+     } else {
+       stop()
+     }
+
+
+
      init <- at[[r]]
 
      ### save initial value in parameter set

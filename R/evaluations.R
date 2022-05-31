@@ -89,12 +89,15 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   ### check input
   if (nrow(optimisation_df) == 0) stop("Optimisations runs have not yet been performed.")
   if(length(var) > 1) stop("Only one summary statistic can be selected in 'var'.")
-  #if(length(by) > 1) stop("Only one group can be selected in 'by'.")
-  if(!(type %in% c("boxplot", "histogram", "barplot"))) stop("type does allow only the following entries: 'boxplot',
-                                                             'histogram', or 'barplot'")
-  if(!(var %in% colnames(optimisation_df))) stop(paste("Column", var, "does not exist."))
-  if(sum(!(by %in% colnames(optimisation_df))) > 0) stop(paste("Column", by[!(by %in% colnames(optimisation_df))],
-                                                               "does not exist."))
+  if(!(type %in% c("boxplot", "histogram", "barplot"))) {
+    stop("type does allow only the following entries: 'boxplot', 'histogram', or 'barplot'", call. = FALSE)
+  }
+  if(!(var %in% colnames(optimisation_df))) {
+    stop(paste("Column", var, "does not exist."), call. = FALSE)
+  }
+  if(sum(!(by %in% colnames(optimisation_df))) > 0) {
+    stop(paste("Column", by[!(by %in% colnames(optimisation_df))], "does not exist."), call. = FALSE)
+  }
 
   if(type == "boxplot"){
     out_plot <- ggplot(optimisation_df, aes(y = .data[[var]])) +
@@ -113,6 +116,8 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 }
 
 
+#' Number of optima found
+#'
 #' @description
 #' This function provides an overview of the number of optima found with respect to
 #' the initialization strategies.
@@ -121,6 +126,8 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 #' An object of class \code{ino}.
 #' @param plot
 #' Set to \code{TRUE} for plotting a frequency plot of found optima.
+#' @param round
+#' TBA
 #'
 #' @return
 #' A ggplot.

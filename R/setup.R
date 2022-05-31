@@ -473,3 +473,24 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
 set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iterations")) {
   set_optimizer(opt = stats::nlm, f = "f", p = "p", list(...), crit = crit)
 }
+
+#' Set to parameter values
+#'
+#' @description
+#' This function specifies true parameter values.
+#'
+#' @param
+#'
+#' @return
+#'
+#' @export
+#'
+#' @example
+#' # TBA
+#'
+#' @keywords
+#' specification
+
+set_true <- function() {
+
+}
