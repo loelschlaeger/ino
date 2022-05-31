@@ -21,13 +21,20 @@ x <- random_initialization(x,
 x <- fixed_initialization(x,
                           at = list(c(1, 0.5), c(0.3, 2)))
 
-summary(x, var = "minimum", "count" = n())
+#summary(x, var = "minimum", "count" = n())
+summary(x, "count" = n())
+summary(x, "count" = n(), "average_time" = mean(.time))
+summary(x, group = ".strategy", "count" = n(), "average_time" = mean(.time))
+summary(x)
+
 plot(x, var = ".time", by = ".strategy")
 plot(x, var = ".time", by = ".strategy") + ggplot2::theme_minimal()
 plot(x, var = ".time", by = ".optimizer", type = "histogram")
 plot(x, var = ".time", by = ".optimizer", type = "barplot")
 ## this now works using facets
 plot(x, var = ".time", by = c(".optimizer", ".strategy"))
+## nr optima
+nr_optima(x, round = 2)
 
 # Example: HMM LL ---------------------------------------------------------
 

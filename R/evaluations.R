@@ -16,8 +16,7 @@
 #'
 #' @importFrom dplyr group_by_at summarize n across all_of
 
-summary.ino <- function(object, group = c(".strategy", ".optimizer"),
-                        var = c(".time"), ...) {
+summary.ino <- function(object, group = c(".strategy", ".optimizer"), ...) {
 
   ### check input
   if (!inherits(object, "ino")) {
@@ -28,11 +27,11 @@ summary.ino <- function(object, group = c(".strategy", ".optimizer"),
   }
 
   ### grouping
-  opt <- dplyr::group_by_at(object$optimizations, group)
+  opt <- dplyr::group_by_at(object$optimizations, dplyr::vars(dplyr::all_of(group)))
 
   ### summarizing
-  opt <- dplyr::summarize(opt, "runs" = dplyr::n(),
-                          dplyr::across(dplyr::all_of(var), list(...)))
+  opt <- dplyr::summarize(opt, "runs" = dplyr::n(), ...)#,
+  #dplyr::across(dplyr::all_of(var), list(...)))
 
   ### ungrouping
   opt <- dplyr::ungroup(opt)
@@ -138,22 +137,21 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 #' # nr_optima()
 #'
 #' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_bar theme_minimal
+#' @importFrom ggplot2 ggplot aes geom_bar theme_minimal xlab
 #'
 #' @keywords
 #' evaluation
 
-nr_optima <- function(x, plot = FALSE, round = 2) {
-  optima_found <- unlist(sapply(x$optimizations, '[[', "res")["minimum", ])
+nr_optima <- function(x, round = 2) {
+  optima_found <- x$optimizations$minimum
   optima_found <- round(optima_found, digits = round)
   out  <- as.data.frame(table(optima_found))
   colnames(out) <- c("optimum", "frequency")
 
-  if(plot){
-    out_plot <- ggplot2::ggplot(out, ggplot2::aes(x = .data$optimum, y = .data$frequency)) +
-      ggplot2::geom_bar(stat = "identity") +
-      ggplot2::theme_minimal()
-    print(out_plot)
-  }
-  return(out)
+  out_plot <- ggplot2::ggplot(out, ggplot2::aes(x = .data$optimum, y = .data$frequency)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::theme_minimal() + ggplot2::xlab("function value at the optimum")
+  print(out_plot)
+  print(out)
+  return(out_plot)
 }
