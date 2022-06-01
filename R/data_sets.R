@@ -22,11 +22,11 @@
 #'
 "earthquakes"
 
-#' Simulated choice data from a mixed probit model
+#' Simulated choice data from a probit model
 #'
 #' @description
 #' This object is a list which includes 100 data sets of simulated choices and
-#' corresponding choice characteristics from a (normally) mixed probit model.
+#' corresponding choice characteristics from a probit model.
 #'
 #' @details
 #' The data set was simulated via the following lines:
@@ -34,11 +34,12 @@
 #'   set.seed(1)
 #'   probit_data <- list()
 #'   for(i in 1:100){
-#'     b <- rnorm(3, sd = 9)
-#'     Omega <- RprobitB::rwishart(3,diag(3))$W
+#'     b <- c(1,rnorm(2, sd = 3))
 #'     Sigma <- RprobitB::rwishart(3,diag(3))$W
 #'     name <- paste0("data",i)
-#'     probit_data[[name]] <- ino:::sim_mmnp(N = 100, T = 10, b, Omega, Sigma, seed = i)
+#'     probit_data[[name]] <- ino:::sim_mnp(
+#'        N = 100, b = b, Sigma = Sigma, seed = i
+#'        )
 #'   }
 #' }
 #'
@@ -47,7 +48,7 @@
 #' @usage data(probit_data)
 #'
 #' @format
-#' Missing
+#' The format of the data sets is documented in \code{\link{sim_mnp}}.
 #'
 #' @keywords
 #' dataset
@@ -66,10 +67,12 @@
 #'   set.seed(1)
 #'   logit_data <- list()
 #'   for(i in 1:100){
-#'     b <- rnorm(3, sd = 9)
+#'     b <- rnorm(3, sd = 3)
 #'     Omega <- RprobitB::rwishart(3,diag(3))$W
 #'     name <- paste0("data",i)
-#'     logit_data[[name]] <- ino:::sim_mmnl(N = 100, J = 3, b, Omega, seed = i)
+#'     logit_data[[name]] <- ino:::sim_mnl(
+#'       N = 300, J = 3, b = b, Omega = Omega, seed = i
+#'     )
 #'   }
 #' }
 #'
@@ -78,7 +81,7 @@
 #' @usage data(logit_data)
 #'
 #' @format
-#' Missing
+#' The format of the data sets is documented in \code{\link{sim_mnl}}.
 #'
 #' @keywords
 #' dataset

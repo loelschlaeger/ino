@@ -5,7 +5,7 @@
 \alias{logit_data}
 \title{Simulated choice data from a mixed logit model}
 \format{
-Missing
+The format of the data sets is documented in \code{\link{sim_mnl}}.
 }
 \usage{
 data(logit_data)
@@ -20,10 +20,12 @@ The data set was simulated via the following lines:
   set.seed(1)
   logit_data <- list()
   for(i in 1:100){
-    b <- rnorm(3, sd = 9)
+    b <- rnorm(3, sd = 3)
     Omega <- RprobitB::rwishart(3,diag(3))$W
     name <- paste0("data",i)
-    logit_data[[name]] <- ino:::sim_mmnl(N = 100, J = 3, b, Omega, seed = i)
+    logit_data[[name]] <- ino:::sim_mnl(
+      N = 300, J = 3, b = b, Omega = Omega, seed = i
+    )
   }
 }
 }

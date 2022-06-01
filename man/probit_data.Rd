@@ -3,16 +3,16 @@
 \docType{data}
 \name{probit_data}
 \alias{probit_data}
-\title{Simulated choice data from a mixed probit model}
+\title{Simulated choice data from a probit model}
 \format{
-Missing
+The format of the data sets is documented in \code{\link{sim_mnp}}.
 }
 \usage{
 data(probit_data)
 }
 \description{
 This object is a list which includes 100 data sets of simulated choices and
-corresponding choice characteristics from a (normally) mixed probit model.
+corresponding choice characteristics from a probit model.
 }
 \details{
 The data set was simulated via the following lines:
@@ -20,11 +20,12 @@ The data set was simulated via the following lines:
   set.seed(1)
   probit_data <- list()
   for(i in 1:100){
-    b <- rnorm(3, sd = 9)
-    Omega <- RprobitB::rwishart(3,diag(3))$W
+    b <- c(1,rnorm(2, sd = 3))
     Sigma <- RprobitB::rwishart(3,diag(3))$W
     name <- paste0("data",i)
-    probit_data[[name]] <- ino:::sim_mmnp(N = 100, T = 10, b, Omega, Sigma, seed = i)
+    probit_data[[name]] <- ino:::sim_mnp(
+       N = 100, b = b, Sigma = Sigma, seed = i
+       )
   }
 }
 }

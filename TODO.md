@@ -4,8 +4,8 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Functions
 
-- [ ] change data structure in logit and probit LL to data frame (L***)
-- [ ] add updated data sets to package (L**)
+- [x] change data structure in logit and probit LL to data frame (L***)
+- [x] add updated data sets to package (L**)
 
 ## Specification functions
 
