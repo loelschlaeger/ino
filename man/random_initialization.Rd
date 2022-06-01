@@ -6,16 +6,14 @@
 \usage{
 random_initialization(
   x,
-  runs = 1,
   sampler = stats::rnorm,
-  ncores = parallel::detectCores() - 1,
+  ncores = getOption("ino_ncores"),
+  verbose = getOption("ino_progress"),
   ...
 )
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
-
-\item{runs}{The number of random initialization runs, the default is \code{1}.}
 
 \item{sampler}{The sampler for random initial values. Can be any function that
 \itemize{
@@ -25,12 +23,12 @@ random_initialization(
 Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
 standard normal distribution as initial value.}
 
-\item{ncores}{This function is parallized, set the number of cores here.}
+\item{ncores}{This function is parallelized, set the number of cores here.}
 
 \item{...}{Additional argument to \code{sampler} (optional).}
 }
 \value{
-The updated input \code{x}.
+The updated \code{ino} object.
 }
 \description{
 This function is an implementation of the random initialization

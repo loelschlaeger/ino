@@ -19,3 +19,7 @@
 This function gives an overview of the optimization runs in an \code{ino}
 object.
 }
+\examples{
+# summary.ino()
+
+}

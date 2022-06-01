@@ -9,11 +9,12 @@
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{var}{A (numeric) summary statistic on the optimisation runs.}
+\item{var}{A (numeric) summary statistic on the optimization runs.}
 
 \item{by}{Plots the summary statistic \code{var} for all groups listed in \code{by}.}
 
-\item{type}{Governs the type of plot. Either 'boxplot', 'histogram', or 'barplot'.}
+\item{type}{Governs the type of plot. Either \code{"boxplot"}, \code{"histogram"}, or
+\code{"barplot"}.}
 
 \item{...}{Additional arguments to be passed to the plotting function.}
 }
@@ -21,7 +22,8 @@
 A ggplot.
 }
 \description{
-This function plots one or multiple summary statistics on the optimisation runs.
+This function plots one or multiple summary statistics on the optimization
+runs in an \code{ino} object.
 }
 \examples{
 # plot.ino()

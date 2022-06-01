@@ -9,30 +9,42 @@ subset_initialization(
   arg = "data",
   how = "random",
   prop = 0.5,
-  row = TRUE,
-  ncores = parallel::detectCores() - 1
+  by_row = TRUE,
+  ncores = getOption("ino_ncores"),
+  kmeans_ign = NULL,
+  kmeans_arg = list(centers = 2),
+  initialization = random_initialization(),
+  verbose = getOption("ino_progress")
 )
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
 \item{arg}{A character, the name of the argument to be subsetted. The argument must be
-of class \code{matrix} or \code{data.frame}.}
+of class \code{matrix} or \code{data.frame}. Per default, \code{arg = "data"}.}
 
 \item{how}{A character, specifying how to select the subset. Can be one of
 \code{"random"} (default), \code{"first"}, and \code{"kmeans"}, see the
 details.}
 
-\item{prop}{A numeric between 0 and 1, specifying the proportion of the subset.
-Can also be a vector of proportions.}
+\item{prop}{A numeric between 0 and 1, specifying the proportion of the subset.}
 
-\item{row}{A boolean, set to \code{TRUE} to subset by row, set to \code{FALSE} to subset
-by column.}
+\item{by_row}{A boolean, set to \code{TRUE} (the default) to subset by row, set to
+\code{FALSE} to subset by column.}
 
 \item{ncores}{This function is parallelized, set the number of cores here.}
+
+\item{kmeans_ign}{A numeric vector of column indices (or row indices if \code{by_row = FALSE})
+that are ignored when clustering.
+Only relevant if \code{how = kmeans"}.}
+
+\item{kmeans_arg}{A list of additional arguments for \code{\link[stats]{kmeans}}.
+Per default, \code{kmeans_arg = list(centers = 2)}, which sets the number of
+clusters to 2.
+Only relevant if \code{how = kmeans"}.}
 }
 \value{
-The updated input \code{x}.
+The updated \code{ino} object.
 }
 \description{
 This function is an implementation of the subset initialization strategy.

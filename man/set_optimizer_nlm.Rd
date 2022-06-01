@@ -11,7 +11,7 @@ set_optimizer_nlm(..., crit = c("minimum", "estimate", "code", "iterations"))
 specifications, the default values of \code{opt} are used.}
 
 \item{crit}{The names of the list elements in the output of \code{opt} to be saved after
-the optimization.}
+the optimization. Must contain \code{z}.}
 }
 \value{
 An object of class \code{optimizer}, which can be passed to

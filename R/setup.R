@@ -99,14 +99,19 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
   ino <- list()
   class(ino) <- c("ino","list")
   add <- list(...)
-  for(add_name in names(add))
-    if(!add_name %in% mpvs)
+  for(add_name in names(add)) {
+    if(!add_name %in% mpvs) {
       add[[add_name]] <- list(add[[add_name]])
-  ino$f <- list(f = f, npar = npar, add = list(...),
-                name = deparse(substitute(f)), target_arg = names(formals(f))[1],
-                mpvs = mpvs)
-  if("optimizer" %in% class(opt)) ino$opt <- list("opt" = opt) else ino$opt <- opt
-  ino$optimizations <- data.frame()
+    }
+  }
+  ino$f <- list(f = f, npar = npar, add = list(...), name = deparse(substitute(f)),
+                target_arg = names(formals(f))[1], mpvs = mpvs)
+  if("optimizer" %in% class(opt)) {
+    ino$opt <- list("opt" = opt)
+  } else {
+    ino$opt <- opt
+  }
+  ino$runs <- list("table" = data.frame(), "pars" = list())
 
   ### test ino object
   ino <- test_ino(ino, verbose = verbose)
@@ -119,7 +124,7 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
 #'
 #' @description
 #' This helper function creates a grid of all parameter combinations for an
-#' \code{ino} object,
+#' \code{ino} object.
 #'
 #' @param x
 #' An object of class \code{ino}.
@@ -193,22 +198,22 @@ grid_ino <- function(x) {
 result_ino <- function(x, strategy, pars, result, opt_name) {
 
   ### determine number of new optimization result
-  nopt <- nrow(x$optimizations) + 1
+  nopt <- nrow(x$runs$table) + 1
 
   ### save optimization results
-  x$optimizations[nopt, ".strategy"] <- strategy
-  x$optimizations[nopt, ".time"] <- result$time
-  x$optimizations[nopt, ".optimizer"] <- opt_name
-  x$optimizations[nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
-  x$optimization_pars[[nopt]] <- list()
-  x$optimization_pars[[nopt]][[".init"]] <- pars[[x$f$target_arg]]
+  x$runs$table[nopt, ".strategy"] <- strategy
+  x$runs$table[nopt, ".time"] <- result$time
+  x$runs$table[nopt, ".optimizer"] <- opt_name
+  x$runs$table[nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
+  x$runs$pars[[nopt]] <- list()
+  x$runs$pars[[nopt]][[".init"]] <- pars[[x$f$target_arg]]
   opt_crit <- x$opt[[opt_name]]$crit
   crit_val <- result$res[opt_crit]
   for(i in 1:length(opt_crit)) {
     if(is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1){
-      x$optimizations[nopt, opt_crit[i]] <- crit_val[[i]]
+      x$runs$table[nopt, opt_crit[i]] <- crit_val[[i]]
     } else {
-      x$optimization_pars[[nopt]][[opt_crit[i]]] <- crit_val[[i]]
+      x$runs$pars[[nopt]][[opt_crit[i]]] <- crit_val[[i]]
     }
   }
 
@@ -380,7 +385,8 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #'   \item function input name f
 #'   \item starting parameter values input name p
 #'   \item additional parameters to f via ...
-#'   \item output is a named list.
+#'   \item output is a named list
+#'   \item name of optimal parameter vector in the output list is z
 #' }
 #'
 #' @param opt
@@ -389,12 +395,14 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' The name of the function input of \code{opt}.
 #' @param p
 #' The name of the starting parameter values input of \code{opt}.
+#' @param z
+#' The name of the optimal parameter vector in the output list of \code{opt}.
 #' @param ...
 #' Additional arguments to be passed to the optimizer \code{opt}. Without
 #' specifications, the default values of \code{opt} are used.
 #' @param crit
 #' The names of the list elements in the output of \code{opt} to be saved after
-#' the optimization.
+#' the optimization. Must contain \code{z}.
 #'
 #' @return
 #' An object of class \code{optimizer}, which can be passed to
@@ -410,14 +418,15 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #'   opt = pracma::nelder_mead,
 #'   f = "fn",
 #'   p = "x0",
+#'   z = "xmin",
 #'   tol = 1e-6,
-#'   crit = c("fcount")
+#'   crit = c("xmin", "fcount")
 #' )
 #'
 #' @keywords
 #' specification
 
-set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
+set_optimizer <- function(opt, f, p, z, ..., crit = c("z")) {
 
   ### check inputs
   if (missing(opt)) {
@@ -438,14 +447,23 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
   if (!is.character(p) || length(p) != 1) {
     stop("'p' must be a character.")
   }
+  if (missing(z)) {
+    stop("'z' must be specified.")
+  }
+  if (!is.character(z) || length(z) != 1) {
+    stop("'z' must be a character.")
+  }
   if (!is.character(crit)) {
     stop("'crit' must be a character (vector).")
+  }
+  if (!z %in% crit) {
+    stop("'z' must be contained in 'crit'.")
   }
 
   ### build and return optimizer object
   optimizer <- list()
   optimizer$f <- opt
-  optimizer$base_arg_names <- c(f,p)
+  optimizer$base_arg_names <- c(f,p,z)
   optimizer$args <- list(...)[[1]]
   optimizer$crit <- crit
   optimizer$name <- deparse(substitute(opt))
@@ -471,10 +489,11 @@ set_optimizer <- function(opt, f, p, ..., crit = character(0)) {
 #' specification
 
 set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iterations")) {
-  set_optimizer(opt = stats::nlm, f = "f", p = "p", list(...), crit = crit)
+  set_optimizer(opt = stats::nlm, f = "f", p = "p", z = "estimate",
+                list(...), crit = crit)
 }
 
-#' Set to parameter values
+#' Set true parameter values
 #'
 #' @description
 #' This function specifies true parameter values.

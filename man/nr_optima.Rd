@@ -17,8 +17,8 @@ nr_optima(x, round = 2)
 A ggplot.
 }
 \description{
-This function provides an overview of the number of optima found with respect to
-the initialization strategies.
+This function provides an overview of the number of optima found with respect
+to the initialization strategies.
 }
 \examples{
 # nr_optima()

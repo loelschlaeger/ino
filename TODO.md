@@ -2,7 +2,7 @@
 
 The following tasks are on our agenda and will be tackled as time permits.
 
-## Functions
+## Functions to optimize
 
 - [x] change data structure in logit and probit LL to data frame (L***)
 - [x] add updated data sets to package (L**)
@@ -10,12 +10,14 @@ The following tasks are on our agenda and will be tackled as time permits.
 ## Specification functions
 
 - [ ] add test cases for optimizer in `setup_ino()` (L***)
+  - check that output 'z' exists and is numeric vector of length 'npar'
       
 ## Initialization strategies
 
 - [ ] `subset_initialization()` (L***)
 - [ ] `standardize_initialization()` (L***)
 - [ ] `ao_initialization()` (L*)
+- [ ] Option to combine strategies
 
 ## Evaluation functions
 

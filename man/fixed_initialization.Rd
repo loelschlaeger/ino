@@ -4,17 +4,22 @@
 \alias{fixed_initialization}
 \title{Fixed initialization}
 \usage{
-fixed_initialization(x, at, ncores = parallel::detectCores() - 1)
+fixed_initialization(
+  x,
+  at,
+  ncores = getOption("ino_ncores"),
+  verbose = getOption("ino_progress")
+)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{at}{A list containing the (fixed) initial values.}
+\item{at}{A vector containing the (fixed) initial values.}
 
 \item{ncores}{This function is parallelized, set the number of cores here.}
 }
 \value{
-The updated input \code{x}.
+The updated \code{ino} object.
 }
 \description{
 This function is an implementation of the fixed initialization strategy.

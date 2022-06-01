@@ -20,6 +20,6 @@ parameter set.
 }
 \description{
 This helper function creates a grid of all parameter combinations for an
-\code{ino} object,
+\code{ino} object.
 }
 \keyword{specification}

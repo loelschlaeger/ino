@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{set_true}
 \alias{set_true}
-\title{Set to parameter values}
+\title{Set true parameter values}
 \usage{
 set_true()
 }
