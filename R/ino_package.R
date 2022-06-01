@@ -57,7 +57,7 @@ ino_status <- function(msg, verbose = getOption("ino_progress")) {
 ino_call <- function(call) {
   call$ncores <- 1
   call$verbose <- FALSE
-  class(call) <- c("ino_call",class(call))
+  class(call) <- c("ino_call", class(call))
   return(call)
 }
 
@@ -71,33 +71,42 @@ print.ino_call <- function(x, ...) {
 #' @noRd
 
 ino_check_inputs <- function(...) {
-
   stop0 <- function(msg) stop(msg, call. = FALSE)
   inputs <- list(...)
 
   within(inputs, {
     n <- names(inputs)
-    if ("x" %in% n) if (!inherits(x, "ino")) {
-      stop0("'x' must be of class 'ino'.")
+    if ("x" %in% n) {
+      if (!inherits(x, "ino")) {
+        stop0("'x' must be of class 'ino'.")
+      }
     }
-    if ("runs" %in% n) if (!length(runs) == 1 && is_number(runs)) {
-      stop0("'runs' must be an integer.")
+    if ("runs" %in% n) {
+      if (!length(runs) == 1 && is_number(runs)) {
+        stop0("'runs' must be an integer.")
+      }
     }
-    if ("sampler" %in% n) if (!is.function(sampler)) {
-      stop0("'sampler' must be a function.")
+    if ("sampler" %in% n) {
+      if (!is.function(sampler)) {
+        stop0("'sampler' must be a function.")
+      }
     }
-    if ("at" %in% n) if(!is.numeric(at)){
-      stop0("'at' must be a numeric vector.")
+    if ("at" %in% n) {
+      if (!is.numeric(at)) {
+        stop0("'at' must be a numeric vector.")
+      }
     }
-    if (all(c("at","x") %in% n)) if(length(at) > x$f$npar){
-      stop0("'at' has more entries than the function has parameters.")
+    if (all(c("at", "x") %in% n)) {
+      if (length(at) > x$f$npar) {
+        stop0("'at' has more entries than the function has parameters.")
+      }
     }
-    if (all(c("at","x") %in% n)) if(length(at) < x$f$npar){
-      stop0("'at' has less entries than the function has parameters.")
+    if (all(c("at", "x") %in% n)) {
+      if (length(at) < x$f$npar) {
+        stop0("'at' has less entries than the function has parameters.")
+      }
     }
   })
 
   return(invisible(NULL))
-
 }
-
