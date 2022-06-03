@@ -27,7 +27,10 @@ This is the introductory vignette of {ino} explaining the purpose and giving a f
 
 Whenever we optimise a function, several things need to be carefully considered, such as the choice of starting values, the optimisation algorithm, and ... . The purpose of the {ino} package is to provide a comprehensive toolbox for comparing such different settings. Throughout this vignette, as a case study, we will use the popular `faithful` data set that is provided in base R. This data set provides information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
 
-The data set contains two variables: the eruption time and the waiting time to the next eruption (both given in minutes).
+The vignette contains some general information about ino as well as two examples for optimising a function with fixed and random starting values, respectively.
+
+
+The faithful data set contains two variables: the eruption time and the waiting time to the next eruption (both given in minutes).
 
 ```{r}
 data("faithful")
@@ -67,9 +70,21 @@ x <- setup_ino(
 )
 ```
 
+We can print `x` to obtain a quick overview of our ino setup, which includes the name of the function, the number of parameters to estimate, the mpvs, and information about the optimiser:
+
 ```{r}
-x <- fixed_initialization(x,
-                          at = list(c(2, 4, log(1), log(1), qlogis(0.5)), 
-                                    c(10, 8, log(0.1), log(0.2), qlogis(0.5))))
+print(x)
+```
+
+
+### Compare different starting values for the optimisation
+
+```{r}
+starting_values <- list(c(2, 4, log(1), log(1), qlogis(0.5)), 
+                                    c(10, 8, log(0.1), log(0.2), qlogis(0.5)))
+
+for(i in 1:length(starting_values)){
+  x <- fixed_initialization(x, at = starting_values[[i]])
+}
 ```
 
