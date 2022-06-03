@@ -97,39 +97,43 @@ ino_check_inputs <- function(...) {
       }
     }
     if ("arg" %in% n) {
-      if(!is.character(arg)){
+      if (!is.character(arg)) {
         stop0("'arg' must be a character.")
       }
     }
     if (all(c("arg", "x") %in% n)) {
-      if(!arg %in% names(x$f$add)) {
-        stop0(paste0("'arg' = '", arg, "' does not seem to be an argument of '",
-                     x$f$name, "'."))
+      if (!arg %in% names(x$f$add)) {
+        stop0(paste0(
+          "'arg' = '", arg, "' does not seem to be an argument of '",
+          x$f$name, "'."
+        ))
       }
-      if(arg %in% x$f$mpvs && !all(sapply(x$f$add[[arg]], inherits, c("matrix","data.frame"))) ||
-         !arg %in% x$f$mpvs && !inherits(x$f$add[[arg]], c("matrix","data.frame"))) {
-        stop0(paste0("The argument 'arg' = '", arg, "' does not seem to be of class ",
-                     "'matrix' or 'data.frame'."))
+      if (arg %in% x$f$mpvs && !all(sapply(x$f$add[[arg]], inherits, c("matrix", "data.frame"))) ||
+        !arg %in% x$f$mpvs && !inherits(x$f$add[[arg]], c("matrix", "data.frame"))) {
+        stop0(paste0(
+          "The argument 'arg' = '", arg, "' does not seem to be of class ",
+          "'matrix' or 'data.frame'."
+        ))
       }
     }
     if ("how" %in% n) {
-      if(!how %in% c("random", "first", "kmeans")) {
+      if (!how %in% c("random", "first", "kmeans")) {
         stop0("'how' must be one of 'random', 'first', or 'kmeans'.")
       }
-      if("x" %in% n) {
-        if(how == "kmeans"){
+      if ("x" %in% n) {
+        if (how == "kmeans") {
           # TODO: add check if columns are numeric
           # TODO: add argument that specifies the columns for clustering
         }
       }
     }
     if ("prop" %in% n) {
-      if(!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
+      if (!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
         stop0("(Each element of) 'prop' must be between 0 and 1.")
       }
     }
     if ("by_row" %in% n) {
-      if(!(is.logical(by_row) || length(by_row) == 1)) {
+      if (!(is.logical(by_row) || length(by_row) == 1)) {
         stop0("'by_row' must be either 'TRUE' or 'FALSE'.")
       }
     }
@@ -156,41 +160,47 @@ ino_check_inputs <- function(...) {
 subset_arg <- function(x, arg, how, prop, by_row, kmeans_ign, kmeans_arg) {
 
   ### check inputs
-  ino_check_inputs("x" = x, "arg" = arg, "how" = how, "prop" = prop,
-                   "by_row" = by_row, "kmeans_ign" = kmeans_ign,
-                   "kmeans_arg" = kmeans_arg)
+  ino_check_inputs(
+    "x" = x, "arg" = arg, "how" = how, "prop" = prop,
+    "by_row" = by_row, "kmeans_ign" = kmeans_ign,
+    "kmeans_arg" = kmeans_arg
+  )
 
   ### function for subsetting
   do_subset_arg <- function(arg_val) {
-    if(!by_row) arg_val <- t(arg_val)
+    if (!by_row) arg_val <- t(arg_val)
     arg_val_length <- nrow(arg_val)
     arg_val_subset_length <- ceiling(arg_val_length * prop)
-    if(how == "random"){
+    if (how == "random") {
       subset_ind <- sort(sample.int(arg_val_length, arg_val_subset_length))
     } else if (how == "first") {
       subset_ind <- 1:arg_val_subset_length
     } else if (how == "last") {
       # TODO: implement
     } else if (how == "kmeans") {
-      if(!is.null(kmeans_ign)) arg_val <- arg_val[, -kmeans_ign, drop = FALSE]
-      kmeans_out <- do.call(what = stats::kmeans,
-                            args = c(list("x" = arg_val), kmeans_arg))
+      if (!is.null(kmeans_ign)) arg_val <- arg_val[, -kmeans_ign, drop = FALSE]
+      kmeans_out <- do.call(
+        what = stats::kmeans,
+        args = c(list("x" = arg_val), kmeans_arg)
+      )
       nc <- ceiling(arg_val_subset_length / kmeans_arg[["centers"]])
       subset_ind <- c()
-      for(i in 1:kmeans_arg[["centers"]]){
+      for (i in 1:kmeans_arg[["centers"]]) {
         subset_ind_i <- which(kmeans_out$cluster == i)
-        subset_ind <- c(subset_ind, sample(x = subset_ind_i,
-                                           size = min(nc, length(subset_ind_i))))
+        subset_ind <- c(subset_ind, sample(
+          x = subset_ind_i,
+          size = min(nc, length(subset_ind_i))
+        ))
       }
       subset_ind <- sort(subset_ind)
     }
     arg_val_subset <- arg_val[subset_ind, , drop = FALSE]
-    if(!by_row) arg_val_subset <- t(arg_val_subset)
+    if (!by_row) arg_val_subset <- t(arg_val_subset)
     return(arg_val_subset)
   }
 
   ### perform subsetting
-  if(arg %in% x$f$mpvs) {
+  if (arg %in% x$f$mpvs) {
     x$f$add[[arg]] <- lapply(x$f$add[[arg]], do_subset_arg)
   } else {
     x$f$add[[arg]] <- do_subset_arg(x$f$add[[arg]])
