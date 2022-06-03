@@ -2,29 +2,24 @@
 
 The following tasks are on our agenda and will be tackled as time permits.
 
-## Functions to optimize
-
-- [x] change data structure in logit and probit LL to data frame (L***)
-- [x] add updated data sets to package (L**)
+## Example functions to optimize
 
 ## Specification functions
 
 - [ ] add test cases for optimizer in `setup_ino()` (L***)
   - check that output 'z' exists and is numeric vector of length 'npar'
+- [ ] specify true parameter values
       
 ## Initialization strategies
 
 - [ ] `subset_initialization()` (L***)
 - [ ] `standardize_initialization()` (L***)
 - [ ] `ao_initialization()` (L*)
-- [ ] Option to combine strategies
 
 ## Evaluation functions
 
-- [ ] allow empty group in `summary()` to get full table (L***)
-- [ ] suppress warnings `plot()` (M***)
-- [ ] add facets to `plot()` (M***)
-- [ ] reactivate `nr_optima()` function (M***)
+- [ ] allow empty group in `summary()` to get full table (M***)
+- [ ] visualize parameter values in different optimization iterations
 
 ## Applications
 
