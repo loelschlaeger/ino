@@ -20,12 +20,13 @@ subset_initialization(
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{arg}{A character, the name of the argument to be subsetted. The argument must be
-of class \code{matrix} or \code{data.frame}. Per default, \code{arg = "data"}.}
+\item{arg}{A character, the name of the argument to be subsetted.
+The argument must be of class \code{matrix} or \code{data.frame}.
+Per default, \code{arg = "data"}.}
 
-\item{how}{A character, specifying how to select the subset. Can be one of
-\code{"random"} (default), \code{"first"}, and \code{"kmeans"}, see the
-details.}
+\item{how}{A character, specifying how to select the subset.
+Can be one of \code{"random"} (default), \code{"first"}, and \code{"kmeans"},
+see the details.}
 
 \item{prop}{A numeric between 0 and 1, specifying the proportion of the subset.}
 
@@ -42,6 +43,10 @@ Only relevant if \code{how = kmeans"}.}
 Per default, \code{kmeans_arg = list(centers = 2)}, which sets the number of
 clusters to 2.
 Only relevant if \code{how = kmeans"}.}
+
+\item{initialization}{TBA}
+
+\item{verbose}{TBA}
 }
 \value{
 The updated \code{ino} object.

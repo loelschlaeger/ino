@@ -4,7 +4,7 @@
 \alias{set_optimizer}
 \title{Specify a numerical optimizer for an \code{ino} object}
 \usage{
-set_optimizer(opt, f, p, z, ..., crit = c("z"))
+set_optimizer(opt, f, p, z, ..., crit = c(z))
 }
 \arguments{
 \item{opt}{An object of class \code{function}, a numerical optimizer, see the details.}

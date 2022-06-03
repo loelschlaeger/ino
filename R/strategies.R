@@ -9,12 +9,13 @@
 #' @param x
 #' An object of class \code{ino}.
 #' @param arg
-#' A character, the name of the argument to be subsetted. The argument must be
-#' of class \code{matrix} or \code{data.frame}. Per default, \code{arg = "data"}.
+#' A character, the name of the argument to be subsetted.
+#' The argument must be of class \code{matrix} or \code{data.frame}.
+#' Per default, \code{arg = "data"}.
 #' @param how
-#' A character, specifying how to select the subset. Can be one of
-#' \code{"random"} (default), \code{"first"}, and \code{"kmeans"}, see the
-#' details.
+#' A character, specifying how to select the subset.
+#' Can be one of \code{"random"} (default), \code{"first"}, and \code{"kmeans"},
+#' see the details.
 #' @param prop
 #' A numeric between 0 and 1, specifying the proportion of the subset.
 #' @param by_row
@@ -31,6 +32,10 @@
 #' Per default, \code{kmeans_arg = list(centers = 2)}, which sets the number of
 #' clusters to 2.
 #' Only relevant if \code{how = kmeans"}.
+#' @param initialization
+#' TBA
+#' @param verbose
+#' TBA
 #'
 #' @return
 #' The updated \code{ino} object.
@@ -51,105 +56,66 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
                                   initialization = random_initialization(),
                                   verbose = getOption("ino_progress")) {
 
-  ### initial  message
-  ino_status("subset initialization")
+  ### capture function call if 'x' is not specified
+  if(missing(x)) return(ino_call(match.call(expand.dots = TRUE)))
 
   ### check inputs
-  if (!inherits(x, "ino")) {
-    stop("'x' must be of class 'ino'.", call. = FALSE)
-  }
-  if(!is.character(arg)){
-    stop("'arg' must be a character.", call. = FALSE)
-  }
-  if(!arg %in% names(x$f$add)) {
-    stop(paste0("'arg' = '", arg, "' does not seem to be an argument of '",
-                x$f$name, "'."), call. = FALSE)
-  }
-  if(arg %in% x$f$mpvs && !all(sapply(x$f$add[[arg]], inherits, c("matrix","data.frame"))) ||
-     !arg %in% x$f$mpvs && !inherits(x$f$add[[arg]], c("matrix","data.frame"))) {
-      stop(paste0("The argument 'arg' = '", arg, "' does not seem to be of class ",
-                  "'matrix' or 'data.frame'."), call. = FALSE)
-  }
-  if(!how %in% c("random", "first", "kmeans")) {
-    stop("'how' must be one of 'random', 'first', or 'kmeans'.", call. = FALSE)
-  }
-  if(how == "kmeans"){
-    # add check if columns are numeric
-    # add argument that specifies the columns for clustering
-  }
-  if(!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
-    stop("(Each element of) 'prop' must be between 0 and 1.", call. = FALSE)
-  }
-  if(!(is.logical(by_row) || length(logical) == 1)) {
-    stop("'by_row' must be either 'TRUE' or 'FALSE'.")
-  }
-  # add check for 'kmeans_arg'
+  ino_check_inputs("x" = x, "arg" = arg, "how" = how, "prop" = prop,
+                   "by_row" = by_row, "ncores" = ncores, "kmeans_ign" = kmeans_ign,
+                   "kmeans_arg" = kmeans_arg, "initialization" = initialization,
+                   "verbose" = verbose)
+
+  ### subset 'arg' argument in 'x', optimize on subset, and extract estimates
+  x_subset <- subset_arg(x = clear_optimizations(x), arg = arg, how = how,
+                         prop = prop, by_row = by_row, kmeans_ign = kmeans_ign,
+                         kmeans_arg = kmeans_arg)
+  x_subset <- do.call(
+    what = rlang::call_name(initialization),
+    args = c(list("x" = x_subset), rlang::call_args(initialization)))
+  # TODO: add name of initialization strategy
+  init <- x_subset$runs$pars
 
   ### create parameter grid
   grid <- grid_ino(x)
 
-  ### loop over how 'h', prop 'p', and optimizer 'o'
-  loop_grid <- expand.grid(h = 1:length(how), p = 1:length(prop), o = 1:length(x$opt))
+  ### initial  message
+  ino_status(msg = "subset initialization", verbose = verbose)
+
+  ### loop over parameter sets 'p' and optimizer 'o'
+  loop_grid <- expand.grid(p = 1:length(grid), o = 1:length(x$opt))
   cluster <- parallel::makeCluster(ncores)
   doSNOW::registerDoSNOW(cluster)
-  pb <- ino_pb(title = "", total = nrow(loop_grid))
-  opts <- list(progress = function(n) ino_pp(pb))
+  pb <- ino_pb(title = "  grid set ", total = nrow(loop_grid))
+  opts <- list(progress = function(n) ino_pp(pb = pb, verbose = verbose))
   i <- 0
-  loop_res <- foreach::foreach(i = 1:nrow(loop_grid), .packages = "ino",
-                               .options.snow = opts) %dopar% {
+  loop_res <- foreach::foreach(i = 1:nrow(loop_grid), .inorder = FALSE,
+                               .packages = "ino", .options.snow = opts) %dopar% {
 
    ### extract current loop indices
-   h <- loop_grid[i,"h"]
    p <- loop_grid[i,"p"]
    o <- loop_grid[i,"o"]
 
    ### extract current parameter set
    pars <- grid[[p]]
 
-   ### build subset
-   pars_arg_full <- pars[[arg]]
-   if(!by_row) pars_arg_full <- t(pars_arg_full)
-   pars_arg_full_length <- nrow(pars_arg_full)
-   pars_arg_subset_length <- ceiling(pars_arg_full_length * prop[p])
-   if(how[h] == "random"){
-     pars_arg_subset <- pars_arg_full[sort(sample.int(pars_arg_full_length,pars_arg_subset_length)),,drop=FALSE]
-   } else if (how[h] == "first") {
-     pars_arg_subset <- pars_arg_full[1:pars_arg_subset_length,,drop=FALSE]
-   } else if (how[h] == "kmeans") {
-     if(!is.null(kmeans_ign)) pars_arg_full <- pars_arg_full[,-kmeans_ign,drop=FALSE]
-     kmeans_out <- do.call(what = stats::kmeans,
-                           args = c(list("x" = pars_arg_full), kmeans_arg))
-     nc <- ceiling(pars_arg_subset_length / kmeans_arg[["centers"]])
-     nc <- rep(nc, kmeans_arg[["centers"]])
-     subset_ind <- c()
-     for(i in 1:kmeans_arg[["centers"]]){
-       subset_ind_center <- which(kmeans_out$cluster == i)
-       if(nc[i] > length(subset_ind_center)) nc[i] <- length(subset_ind_center)
-       subset_ind <- c(subset_ind, sample(x = subset_ind_center, size = nc[i]))
-     }
-     pars_arg_subset <- pars_arg_full[order(subset_ind),,drop=FALSE]
-   }
-   if(!by_row) pars_arg_subset <- t(pars_arg_subset)
-
    ### extract current optimizer
    opt <- x$opt[[o]]
 
-   ### optimize first on subset then on full set
-   {
-     pars[[x$f$target_arg]] <- init
+   ### extract initial value
+   pars[[x$f$target_arg]] <- init
 
-     ### base arguments of the optimizer
-     base_args <- list(x$f$f, pars[[x$f$target_arg]])
-     names(base_args) <- opt$base_arg_names
-     f_args <- pars
-     f_args[[x$f$target_arg]] <- NULL
-     result <- try_silent(
-       do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
-     )
-     if(inherits(result, "fail")) {
-       warning("Optimization failed with message", result, immediate. = TRUE)
-     }
+   ### base arguments of the optimizer
+   base_args <- list(x$f$f, pars[[x$f$target_arg]])
+   names(base_args) <- opt$base_arg_names
+   f_args <- pars
+   f_args[[x$f$target_arg]] <- NULL
 
+   ### optimize
+   result <- try_silent(
+     do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
+   )
+   if(inherits(result, "fail")) {
+     warning("Optimization failed with message", result, immediate. = TRUE)
    }
 
    ### return results of current loop
@@ -270,8 +236,7 @@ fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
 #' Random initialization
 #'
 #' @description
-#' This function is an implementation of the random initialization
-#' strategy.
+#' This function is an implementation of the random initialization strategy.
 #'
 #' @details
 #' See the vignette on initialization strategies for more details.

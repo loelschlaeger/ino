@@ -31,8 +31,7 @@ standard normal distribution as initial value.}
 The updated \code{ino} object.
 }
 \description{
-This function is an implementation of the random initialization
-strategy.
+This function is an implementation of the random initialization strategy.
 }
 \details{
 See the vignette on initialization strategies for more details.

@@ -13,8 +13,10 @@ x <- setup_ino(
              "opt2" = set_optimizer_nlm(gradtol = 1e-10)),
   verbose = F)
 
-for(i in 1:5) x <- random_initialization(x)
-for(at in list(c(1, 0.5), c(0.3, 2))) x <- fixed_initialization(x, at = at)
+for(i in 1:5)
+  x <- random_initialization(x)
+for(at in list(c(1, 0.5), c(0.3, 2)))
+  x <- fixed_initialization(x, at = at)
 
 summary(x, group = c(), var = "minimum", "count" = n())
 summary(x, "count" = n())
@@ -30,7 +32,7 @@ nr_optima(x, round = 2)
 
 # Example: HMM LL ---------------------------------------------------------
 
-x <- setup_ino(
+hmm_ino <- setup_ino(
   f = ino:::f_ll_hmm,
   npar = 4,
   data = ino::earthquakes,
@@ -39,8 +41,14 @@ x <- setup_ino(
   opt = set_optimizer_nlm(),
   verbose = F)
 
-for(i in 1:5) x <- random_initialization(x)
-for(at in list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2))) x <- fixed_initialization(x, at = at)
+for(i in 1:5)
+  hmm_ino <- random_initialization(hmm_ino)
+
+for(at in list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+  hmm_ino <- fixed_initialization(hmm_ino, at = at)
+
+hmm_ino <- subset_initialization(hmm_ino, how = "kmeans",
+                                 initialization = random_initialization())
 
 summary(x, "mean" = mean(.time))
 plot(x, var = ".time", by = ".strategy")
@@ -57,6 +65,8 @@ probit_ino <- setup_ino(
   verbose = F)
 
 probit_ino <- random_initialization(probit_ino)
+probit_ino <- subset_initialization(probit_ino, how = "kmeans",
+                                    initialization = random_initialization())
 
 summary(probit_ino, "mean" = mean)
 plot(probit_ino, var = ".time")
@@ -80,3 +90,11 @@ logit_ino <- random_initialization(logit_ino, runs = 2)
 
 summary(logit_ino, group = "R", "mean" = mean)
 plot(logit_ino, var = ".time", by = "R")
+
+
+
+
+standardize_initialization(
+  x, initialization = subset_initialization(
+    initialization = fixed_initialization())
+)

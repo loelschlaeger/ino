@@ -426,7 +426,7 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' @keywords
 #' specification
 
-set_optimizer <- function(opt, f, p, z, ..., crit = c("z")) {
+set_optimizer <- function(opt, f, p, z, ..., crit = c(z)) {
 
   ### check inputs
   if (missing(opt)) {
@@ -514,4 +514,39 @@ set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iter
 
 set_true <- function() {
 
+}
+
+#' Clear optimization runs
+#'
+#' @description
+#' This function clears optimization runs saved in an \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param which
+#' Either \code{"all"} to clear all optimization runs, or alternatively a
+#' numeric vector of row numbers in \code{x$runs$table}.
+#'
+#' @return
+#' The updated \code{ino} object.
+#'
+#' @export
+#'
+#' @examples
+#' NA
+#'
+#' @keywords
+#' specification
+
+clear_optimizations <- function(x, which = "all") {
+  ino_check_inputs("x" = x, "which" = which)
+  if(identical(which, "all")) {
+    x$runs$table <- data.frame()
+    x$runs$pars <- list()
+  } else {
+    x$runs$table <- x$runs$table[-which, , drop = FALSE]
+    rownames(x$runs$table) <- NULL
+    x$runs$pars <- x$runs$pars[-which, drop = FALSE]
+  }
+  return(x)
 }
