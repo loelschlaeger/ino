@@ -151,6 +151,10 @@ summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 ```
 
 ```{r}
+summary(geyser_ino, group = c())
+```
+
+```{r}
 plot(geyser_ino)
 ```
 

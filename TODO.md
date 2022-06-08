@@ -18,7 +18,7 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Evaluation functions
 
-- [ ] allow empty group in `summary()` to get full table (M***)
+- [x] allow empty group in `summary()` to get full table (M***)
 - [ ] visualize parameter values in different optimization iterations
 
 ## Applications
