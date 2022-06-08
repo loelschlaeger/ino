@@ -30,14 +30,20 @@ summary.ino <- function(object, group = c(".strategy", ".optimizer"), ...) {
     stop("No optimization runs found.", call. = FALSE)
   }
 
-  ### grouping
-  opt <- dplyr::group_by_at(object$runs$table, dplyr::vars(dplyr::all_of(group)))
+  ### if group is empty, print the entire table
+  if(length(group) > 0) {
+    ### grouping
+    opt <- dplyr::group_by_at(object$runs$table, dplyr::vars(dplyr::all_of(group)))
 
-  ### summarizing
-  opt <- dplyr::summarize(opt, "runs" = dplyr::n(), ...)
+    ### summarizing
+    opt <- dplyr::summarize(opt, "runs" = dplyr::n(), ...)
 
-  ### un-grouping
-  opt <- dplyr::ungroup(opt)
+    ### un-grouping
+    opt <- dplyr::ungroup(opt)
+  }
+  else {
+    opt <- object$runs$table
+  }
 
   ### return summary
   class(opt) <- c("summary.ino", class(opt))
@@ -127,7 +133,7 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   }
 
   ### return plot
-  print(out_plot)
+  #print(out_plot)
   return(out_plot)
 }
 

@@ -19,35 +19,54 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(ino)
+#library(ino)
+devtools::load_all()
 library(ggplot2)
 ```
 
 This is the introductory vignette of {ino} explaining the purpose and giving a first example. The vignette was built using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package. 
 
-Whenever we optimise a function, several things need to be carefully considered, such as the choice of starting values, the optimisation algorithm, and ... . The purpose of the {ino} package is to provide a comprehensive toolbox for comparing such different settings. Throughout this vignette, as a case study, we will use the popular `faithful` data set that is provided in base R. This data set provides information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
+## Getting started with {ino}
 
-The vignette contains some general information about ino as well as two examples for optimising a function with fixed and random starting values, respectively.
+Whenever we numerically optimise a function, we need to take care of several things: the chosen starting values, optimisation algorithm, and optimisation strategy (such as subset optimisation) can have a substantial effect on the computational cost or even on the results. The purpose of the {ino} package is to provide a comprehensive toolbox for comparing such different settings when performing numerical optimisation. 
+
+Throughout this vignette, we will demonstrate the main functions of {ino}. In particular, we will show how to numerically optimise a likelihood function using {ino}, thereby applying different strategies for the choice of the starting values and the optimisation strategy.
+
+As an example data set, we consider the popular `faithful` data set that is provided via in base R. This data set contains information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
 
 
-The faithful data set contains two variables: the eruption time and the waiting time to the next eruption (both given in minutes).
+### Example data
+
+The faithful data set contains two variables: the eruption time and the waiting time to the next eruption (both given in minutes). There are many published analyses of data relating to the Old Faithful geyser (see, e.g., refs).
 
 ```{r}
 data("faithful")
 head(faithful)
 ```
 
-Focussing on the eruption time, a histogram indicates two clusters (short and long eruption times, respectively).
+Focussing on the eruption time, the following histogram indicates two clusters with short and long eruption times, respectively.
 
 ```{r}
 ggplot(faithful, aes(x = eruptions, y = ..density..)) + 
   geom_histogram() + xlab("Eruption time (min)") + ylab("Waiting time to next eruption (min)")
 ```
 
-To illustrate the functions provided by {ino}, we fit a mixture of two normal distributions to the eruption times. (There are many published analyses of data relating to the Old Faithful geyser (see, e.g., refs).) We can simply define the log-likelihood of a mixture of two normal distributions as follows:
+## Fitting a Gaussian mixture using {ino}
+
+
+The figure above indicates that the geyser erupts either for about two minutes or about 4.5 minutes. For both clusters, we assume a normal distribution here, such that we consider a mixture of two normal distributions for the eruption times. The log-likelihood is then given by
+
+
+$$
+\ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \pi f_{\mu_1, \sigma_1^2}(x_i) + (1-\pi)f_{\mu_2,\sigma_2^2} (x_i) \Big),
+$$
+where $f_{\mu_1, \sigma_1^2}$ and $f_{\mu_2, \sigma_2^2}$ denote the normal density for the first and second cluster, respectively, and $\pi$ is the mixing proportion. The vector of parameters to be estimated is thus $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \pi)$. As there exists no closed-form solution for the maximum likelihood estimator, we use {ino} to numerically maximise the likelihood.
+
+
+The following function gives the log-likelihood of the normal mixture:
 
 ```{r}
-normal_mixture <- function(theta, data){
+normal_mixture_llk <- function(theta, data){
   mu <- theta[1:2]
   sigma <- exp(theta[3:4])
   pi <- plogis(theta[5])
@@ -56,13 +75,15 @@ normal_mixture <- function(theta, data){
 }
 ```
 
-Since we are using the function `nlm()` here which uses unconstrained optimisation, we restrict the standard deviations `sigma` to be positive and `pi` to be between 0 and 1.
+Since we are using the function `nlm()` here, which uses unconstrained optimisation, we restrict the standard deviations `sigma` to be positive and `pi` to be between 0 and 1. As `nlm()` *minimises* a function, we return the negative log-likelihood.
 
-To optimise the likelihood function with potentially different sets of starting values, we first setup an ino object using the function `setup_ino`. Behind the scenes, `setup_ino` runs several checks of the inputs, such as checking whether a function and a optimiser have been provided and whether the function f can be called. For `verbose = TRUE`, all checks are printed.
+To optimise the likelihood function with potentially different sets of starting values, we first setup an ino object using the function `setup_ino`. Here, `f` constitues the function to be optimised (i.e. `normal_mixture_llk`), `npar` gives the number of parameters, `data` gives the vector of observations as required by our likelihood function, and `opt` sets the optimiser.
+
+Behind the scenes, `setup_ino` runs several checks of the inputs, such as checking whether a function and a optimiser have been provided and whether the function f can be called. If `verbose` is set to `TRUE`, all checks are printed.
 
 ```{r}
-x <- setup_ino(
-  f = normal_mixture,
+geyser_ino <- setup_ino(
+  f = normal_mixture_llk,
   npar = 5,
   data = faithful$eruptions,
   opt = set_optimizer_nlm(),
@@ -70,21 +91,76 @@ x <- setup_ino(
 )
 ```
 
-We can print `x` to obtain a quick overview of our ino setup, which includes the name of the function, the number of parameters to estimate, the mpvs, and information about the optimiser:
+We can print `geyser_ino` to obtain a quick overview of our ino setup, which includes the name of the function, the number of parameters to estimate, the mpvs, and information about the optimiser:
 
 ```{r}
-print(x)
+print(geyser_ino)
 ```
 
 
-### Compare different starting values for the optimisation
+### Use fixed starting values
+
+With the ino object `geyser_ino`, we can now optimise the likelihood function. We will first consider fixed starting values. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. For the variances, we set the starting values to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). The starting value for the mixing proportion is set to 0.5.
+To compare the results of different optimisation runs, we also select a set of starting values which are somewhat unplausible.
 
 ```{r}
 starting_values <- list(c(2, 4, log(1), log(1), qlogis(0.5)), 
-                                    c(10, 8, log(0.1), log(0.2), qlogis(0.5)))
+                        c(10, 8, log(0.1), log(0.2), qlogis(0.5)))
+```
 
+The function provided by {ino} to run the optimisation with chosen starting values is `fixed_initialization()`. We then loop over the set of starting values by passing them to the argument `at`.  
+
+```{r}
 for(i in 1:length(starting_values)){
-  x <- fixed_initialization(x, at = starting_values[[i]])
+  geyser_ino <- fixed_initialization(geyser_ino, at = starting_values[[i]])
 }
 ```
+
+Before we evaluate the optimisation runs, we first add some further optimisation runs using randomly chosen starting values. ToDo: add short explanation on the grid set 1/1 output.
+
+
+### Use randomly chosen starting values
+
+When using randomly chosen starting values, we apply the function `random_initialization()`. The most simple (yet __not__ neccessarily effective) function call would be as follows:
+
+```{r}
+set.seed(123)
+geyser_ino <- random_initialization(geyser_ino)
+```
+
+Here, `npar` starting values are randomly drawn from a standard normal distribution. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(3, 1)$ distribution:
+
+```{r}
+geyser_ino <- random_initialization(geyser_ino, sampler = stats::rnorm, mean = 3, sd = 1)
+```
+
+The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. As it was done above for fixed starting values, we could of course also use a loop here to conduct multiple optimisation runs.
+
+
+## Evaluating the optimisation runs
+
+The `geyser_ino` object now contains the results and further information on four optimisation runs (two with fixed starting values and two with randomly selected starting values).
+
+```{r}
+summary(geyser_ino)
+```
+
+
+```{r}
+summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
+```
+
+```{r}
+plot(geyser_ino)
+```
+
+
+* high variance for random initialisation strategy
+* add information on optimisation time (which should be low here anyway)
+* add plots
+
+## A more involved initialisation strategy: subset initialisation
+
+
+* add subset initialisation strategy (highlight usefulness of kmeans here)
 
