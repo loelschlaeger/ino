@@ -66,11 +66,12 @@ where $f_{\mu_1, \sigma_1^2}$ and $f_{\mu_2, \sigma_2^2}$ denote the normal dens
 The following function gives the log-likelihood of the normal mixture:
 
 ```{r}
-normal_mixture_llk <- function(theta, data){
+normal_mixture_llk <- function(theta, data, column){
   mu <- theta[1:2]
   sigma <- exp(theta[3:4])
   pi <- plogis(theta[5])
-  logl <- sum(log(pi * dnorm(data, mu[1], sigma[1]) + (1 - pi) * dnorm(data, mu[2], sigma[2])))
+  logl <- sum(log(pi * dnorm(data[[column]], mu[1], sigma[1]) + 
+                    (1 - pi) * dnorm(data[[column]], mu[2], sigma[2])))
   return(-logl)
 }
 ```
@@ -85,20 +86,21 @@ Behind the scenes, `setup_ino` runs several checks of the inputs, such as checki
 geyser_ino <- setup_ino(
   f = normal_mixture_llk,
   npar = 5,
-  data = faithful$eruptions,
+  data = faithful,
+  column = "eruptions",
   opt = set_optimizer_nlm(),
   verbose = FALSE
 )
 ```
 
-We can print `geyser_ino` to obtain a quick overview of our ino setup, which includes the name of the function, the number of parameters to estimate, the mpvs, and information about the optimiser:
+We can print `geyser_ino` to obtain a quick overview of our ino setup, which includes the name of the function, the number of parameters to estimate, the mpvs (TODO), and information about the selected optimiser and its arguments:
 
 ```{r}
 print(geyser_ino)
 ```
 
 
-### Use fixed starting values
+### Fixed starting values
 
 With the ino object `geyser_ino`, we can now optimise the likelihood function. We will first consider fixed starting values. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. For the variances, we set the starting values to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). The starting value for the mixing proportion is set to 0.5.
 To compare the results of different optimisation runs, we also select a set of starting values which are somewhat unplausible.
@@ -116,10 +118,12 @@ for(i in 1:length(starting_values)){
 }
 ```
 
-Before we evaluate the optimisation runs, we first add some further optimisation runs using randomly chosen starting values. ToDo: add short explanation on the grid set 1/1 output.
+The messages printed in the console summarises that we are using fixed initialisation here. In addition, there is also information given about a grid --- this concerns the progress if, for example, multiple data sets are used. We will learn more about this below.
+
+Before we evaluate the optimisation runs, we first add some further optimisation runs using randomly chosen starting values. 
 
 
-### Use randomly chosen starting values
+### Randomly chosen starting values
 
 When using randomly chosen starting values, we apply the function `random_initialization()`. The most simple (yet __not__ neccessarily effective) function call would be as follows:
 
@@ -128,42 +132,46 @@ set.seed(123)
 geyser_ino <- random_initialization(geyser_ino)
 ```
 
-Here, `npar` starting values are randomly drawn from a standard normal distribution. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(3, 1)$ distribution:
+Here, `npar` starting values are randomly drawn from a standard normal distribution. Depending on the application and the magnitude of the parameters to be estimated, this may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(3, 1)$ distribution:
 
 ```{r}
 geyser_ino <- random_initialization(geyser_ino, sampler = stats::rnorm, mean = 3, sd = 1)
 ```
 
-The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. As it was done above for fixed starting values, we could of course also use a loop here to conduct multiple optimisation runs.
+The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. As it was done above for fixed starting values, we could of course also use a loop here to run multiple optimisations.
+
 
 
 ## Evaluating the optimisation runs
 
-The `geyser_ino` object now contains the results and further information on four optimisation runs (two with fixed starting values and two with randomly selected starting values).
-
-```{r}
-summary(geyser_ino)
-```
-
+The `geyser_ino` object now contains the results and further information on four optimisation runs (two runs with fixed and randomly selected starting values, respectively). We can use `summary()` to obtain summary statistics for the optimisation runs conducted. Moreover, we also can add grouping variables, for example to compare the average computation time for the two approaches:
 
 ```{r}
 summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 ```
 
-```{r}
-summary(geyser_ino, group = c())
-```
+In addition, `summary()` by default prints the number of optimisation runs for each group.
+Due to the relatively simple statistical model considered in this example, the average computation time in our examples is fairly low. However, when considering more complex models, the computation time can substantially differ across different optimisation strategies.
+
+If we do not set any group, `summary()` will print the entire table displaying the optimisation runs.
 
 ```{r}
-plot(geyser_ino)
+summary(geyser_ino, group = NULL)
 ```
 
+Aside from summary statistics, we can also visually inspect the optimisation results. Using the `plot()` function, we can compare the computation using boxplots:
 
-* high variance for random initialisation strategy
-* add information on optimisation time (which should be low here anyway)
-* add plots
+```{r}
+plot(geyser_ino, var = ".time", by = ".strategy", type = "boxplot")
+```
+
 
 ## A more involved initialisation strategy: subset initialisation
+
+```{r}
+# geyser_ino <- subset_initialization(geyser_ino, how = "random",
+#                                     initialization = random_initialization())
+```
 
 
 * add subset initialisation strategy (highlight usefulness of kmeans here)
