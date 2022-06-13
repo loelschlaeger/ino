@@ -24,7 +24,7 @@ ino_pb <- function(title = "", total) {
 #' @noRd
 
 ino_pp <- function(pb, verbose = getOption("ino_progress")) {
-  if (verbose) pb$tick()
+  if (verbose) if(pb$.__enclos_env__$private$total > 1) pb$tick()
 }
 
 #' @noRd
@@ -132,9 +132,24 @@ ino_check_inputs <- function(...) {
         stop0("(Each element of) 'prop' must be between 0 and 1.")
       }
     }
+    if ("by_col" %in% n) {
+      if (!(is.logical(by_col) || length(by_col) == 1)) {
+        stop0("'by_col' must be either 'TRUE' or 'FALSE'.")
+      }
+    }
     if ("by_row" %in% n) {
       if (!(is.logical(by_row) || length(by_row) == 1)) {
         stop0("'by_row' must be either 'TRUE' or 'FALSE'.")
+      }
+    }
+    if ("center" %in% n) {
+      if (!(is.logical(center) || length(center) == 1)) {
+        stop0("'center' must be either 'TRUE' or 'FALSE'.")
+      }
+    }
+    if ("scale" %in% n) {
+      if (!(is.logical(scale) || length(scale) == 1)) {
+        stop0("'scale' must be either 'TRUE' or 'FALSE'.")
       }
     }
     if ("kmeans_arg" %in% n) {
@@ -157,14 +172,12 @@ ino_check_inputs <- function(...) {
 
 #' @noRd
 
-subset_arg <- function(x, arg, how, prop, by_row, kmeans_ign, kmeans_arg) {
+subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
 
   ### check inputs
   ino_check_inputs(
-    "x" = x, "arg" = arg, "how" = how, "prop" = prop,
-    "by_row" = by_row, "kmeans_ign" = kmeans_ign,
-    "kmeans_arg" = kmeans_arg
-  )
+    "x" = x, "arg" = arg, "how" = how, "prop" = prop, "by_row" = by_row,
+    "col_ign" = col_ign, "kmeans_arg" = kmeans_arg)
 
   ### function for subsetting
   do_subset_arg <- function(arg_val) {
@@ -178,7 +191,7 @@ subset_arg <- function(x, arg, how, prop, by_row, kmeans_ign, kmeans_arg) {
     } else if (how == "last") {
       # TODO: implement
     } else if (how == "kmeans") {
-      if (!is.null(kmeans_ign)) arg_val <- arg_val[, -kmeans_ign, drop = FALSE]
+      if (!is.null(col_ign)) arg_val <- arg_val[, -col_ign, drop = FALSE]
       kmeans_out <- do.call(
         what = stats::kmeans,
         args = c(list("x" = arg_val), kmeans_arg)
@@ -204,6 +217,37 @@ subset_arg <- function(x, arg, how, prop, by_row, kmeans_ign, kmeans_arg) {
     x$f$add[[arg]] <- lapply(x$f$add[[arg]], do_subset_arg)
   } else {
     x$f$add[[arg]] <- do_subset_arg(x$f$add[[arg]])
+  }
+
+  ### return updated ino object
+  return(x)
+}
+
+#' @noRd
+
+standardize_arg <- function(x, arg, by_col, center, scale, col_ign) {
+
+  ### check inputs
+  ino_check_inputs(
+    "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
+    "col_ign" = col_ign)
+
+  ### function for standardizing
+  do_standardize_arg <- function(arg_val) {
+    if (!by_col) arg_val <- t(arg_val)
+    for(i in 1:ncol(arg_val)) {
+      if(i %in% col_ign) next()
+      arg_val[,i] <- scale(arg_val[,i], center = center, scale = scale)
+    }
+    if (!by_col) arg_val <- t(arg_val)
+    return(arg_val)
+  }
+
+  ### perform subsetting
+  if (arg %in% x$f$mpvs) {
+    x$f$add[[arg]] <- lapply(x$f$add[[arg]], do_standardize_arg)
+  } else {
+    x$f$add[[arg]] <- do_standardize_arg(x$f$add[[arg]])
   }
 
   ### return updated ino object

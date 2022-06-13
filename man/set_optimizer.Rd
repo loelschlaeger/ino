@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{set_optimizer}
 \alias{set_optimizer}
-\title{Specify a numerical optimizer for an \code{ino} object}
+\title{Specify a numerical optimizer}
 \usage{
 set_optimizer(opt, f, p, z, ..., crit = c(z))
 }

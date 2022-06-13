@@ -98,6 +98,8 @@ timed <- function(expr, secs) {
 #' Passed to \code{\link[base]{do.call}}.
 #' @param args
 #' Passed to \code{\link[base]{do.call}}.
+#' @param headstart
+#' A positive numeric value that is added to the total computation time.
 #'
 #' @return
 #' A list of the two elements \code{"res"} (the results of the \code{do.call}
@@ -109,14 +111,16 @@ timed <- function(expr, secs) {
 #'   return(s)
 #' }
 #' args <- list(s = 1)
-#' ino:::do.call_timed(what = what, args = args)
+#' ino:::do.call_timed(what = what, args = args, headstart = 1)
 #'
 #' @keywords
 #' utils
 
-do.call_timed <- function(what, args) {
+do.call_timed <- function(what, args, headstart = 0) {
+  stopifnot(length(headstart) == 1, headstart >= 0)
   start <- Sys.time()
   res <- do.call(what = what, args = args)
   end <- Sys.time()
-  return(list("res" = res, "time" = difftime(end, start)))
+  total <- difftime(end, start) + headstart
+  return(list("res" = res, "time" = total))
 }

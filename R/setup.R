@@ -87,13 +87,16 @@
 #' @keywords
 #' specification
 
-setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
-                      mpvs = character(0), verbose = getOption("ino_progress")) {
+setup_ino <- function(
+  f, npar, ..., opt = set_optimizer_nlm(), mpvs = character(0),
+  verbose = getOption("ino_progress")
+  ) {
 
   ### check inputs
   if (missing(f)) stop("Please specify 'f'.")
   if (missing(npar)) stop("Plase specify 'npar'.")
-  if (length(verbose) != 1 || !is.logical(verbose)) stop("'verbose' must be a boolean.")
+  if (length(verbose) != 1 || !is.logical(verbose))
+    stop("'verbose' must be a boolean.")
 
   ### build ino object
   ino <- list()
@@ -104,7 +107,8 @@ setup_ino <- function(f, npar, ..., opt = set_optimizer_nlm(),
       add[[add_name]] <- list(add[[add_name]])
     }
   }
-  ino$f <- list(f = f, npar = npar, add = list(...), name = deparse(substitute(f)),
+  ino$f <- list(f = f, npar = npar, add = list(...),
+                name = deparse(substitute(f)),
                 target_arg = names(formals(f))[1], mpvs = mpvs)
   if("optimizer" %in% class(opt)) {
     ino$opt <- list("opt" = opt)
@@ -198,22 +202,22 @@ grid_ino <- function(x) {
 result_ino <- function(x, strategy, pars, result, opt_name) {
 
   ### determine number of new optimization result
-  nopt <- nrow(x$runs$table) + 1
+  nopt <- nrow(x[["runs"]][["table"]]) + 1
 
   ### save optimization results
-  x$runs$table[nopt, ".strategy"] <- strategy
-  x$runs$table[nopt, ".time"] <- result$time
-  x$runs$table[nopt, ".optimizer"] <- opt_name
-  x$runs$table[nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
-  x$runs$pars[[nopt]] <- list()
-  x$runs$pars[[nopt]][[".init"]] <- pars[[x$f$target_arg]]
+  x[["runs"]][["table"]][nopt, ".strategy"] <- strategy
+  x[["runs"]][["table"]][nopt, ".time"] <- result$time
+  x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
+  x[["runs"]][["table"]][nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
+  x[["runs"]][["pars"]][[nopt]] <- list()
+  x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
   opt_crit <- x$opt[[opt_name]]$crit
   crit_val <- result$res[opt_crit]
   for(i in 1:length(opt_crit)) {
     if(is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1){
-      x$runs$table[nopt, opt_crit[i]] <- crit_val[[i]]
+      x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
     } else {
-      x$runs$pars[[nopt]][[opt_crit[i]]] <- crit_val[[i]]
+      x[["runs"]][["pars"]][[nopt]][[opt_crit[i]]] <- crit_val[[i]]
     }
   }
 
@@ -304,7 +308,8 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
     if(length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
       res(succ = TRUE)
     } else {
-      res(msg = paste0("Named '",mpv,"' by '",mpv,"1:",length(x$f$add[[mpv]]),"'"),
+      res(msg = paste0("Named '", mpv, "' by '", mpv, "1:",
+                       length(x$f$add[[mpv]]),"'"),
           succ = FALSE,
           warn = TRUE)
       names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
@@ -329,7 +334,8 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
   }
   topic("check that function 'f' can be called")
   for(i in seq_along(grid)){
-    step(paste("parameter set:", paste(attr(grid[[i]], "par_id"), collapse = " ")))
+    step(paste("parameter set:", paste(attr(grid[[i]], "par_id"),
+                                       collapse = " ")))
     pars <- grid[[i]]
     pars[[x$f$target_arg]] <- rvx
     f_return <- try_silent(
@@ -372,7 +378,7 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
   }
 }
 
-#' Specify a numerical optimizer for an \code{ino} object
+#' Specify a numerical optimizer
 #'
 #' @description
 #' Use this function to specify a numerical optimizer for the optimization
@@ -464,7 +470,7 @@ set_optimizer <- function(opt, f, p, z, ..., crit = c(z)) {
   optimizer <- list()
   optimizer$f <- opt
   optimizer$base_arg_names <- c(f,p,z)
-  optimizer$args <- list(...)[[1]]
+  optimizer$args <- unlist(list(...)[[1]], recursive = FALSE)
   optimizer$crit <- crit
   optimizer$name <- deparse(substitute(opt))
   class(optimizer) <- c("optimizer","list")
@@ -488,21 +494,52 @@ set_optimizer <- function(opt, f, p, z, ..., crit = c(z)) {
 #' @keywords
 #' specification
 
-set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iterations")) {
+set_optimizer_nlm <- function(
+  ..., crit = c("minimum", "estimate", "code", "iterations")
+  ) {
   set_optimizer(opt = stats::nlm, f = "f", p = "p", z = "estimate",
+                list(...), crit = crit)
+}
+
+#' Specify the \code{\link[stats]{optim}} optimizer
+#'
+#' @inheritParams set_optimizer
+#'
+#' @return
+#' An object of class \code{optimizer}, which can be passed to
+#' \code{\link{setup_ino}}.
+#'
+#' @seealso
+#' [set_optimizer()], for specifying a different optimizer.
+#'
+#' @export
+#'
+#' @keywords
+#' specification
+
+set_optimizer_optim <- function(
+  ..., crit = c("value", "par", "convergence")
+  ) {
+  set_optimizer(opt = stats::optim, f = "fn", p = "par", z = "par",
                 list(...), crit = crit)
 }
 
 #' Set true parameter values
 #'
 #' @description
-#' This function specifies true parameter values.
+#' This function specifies true parameter values for an \code{ino} object.
 #'
-#' @param
-#' NA
+#' @param x
+#' An object of class \code{ino}.
+#' @param par
+#' A numeric vector with the true parameter values.
+#' Can also be a list of true parameter values in the case that the target
+#' function has multiple parameter values.
+#' @param overview
+#' A boolean, set to \code{TRUE} to print an overview of the grid parameters.
 #'
 #' @return
-#' NA
+#' The updated \code{ino} object.
 #'
 #' @export
 #'
@@ -512,8 +549,18 @@ set_optimizer_nlm <- function(..., crit = c("minimum", "estimate", "code", "iter
 #' @keywords
 #' specification
 
-set_true <- function() {
-
+true_ino <- function(x, par, overview = FALSE) {
+  if(missing(x)) stop("Please specify the ino object 'x'.", call. = FALSE)
+  ino_check_inputs("x" = x)
+  table <- Reduce(rbind, lapply(grid_ino(x), attr, "par_id"))
+  table <- data.frame(table, row.names = NULL)
+  colnames(table) <- names(x$f$add)
+  if(overview) return(table)
+  if(!is.list(par)) par <- list(par)
+  ino_check_inputs("par" = par, "overview" = overview)
+  if(nrow(table) != length(par)) stop()
+  x[["f"]][["true"]] <- par
+  return(x)
 }
 
 #' Clear optimization runs
@@ -538,15 +585,55 @@ set_true <- function() {
 #' @keywords
 #' specification
 
-clear_optimizations <- function(x, which = "all") {
+clear_ino <- function(x, which = "all") {
   ino_check_inputs("x" = x, "which" = which)
   if(identical(which, "all")) {
-    x$runs$table <- data.frame()
-    x$runs$pars <- list()
+    x[["runs"]][["table"]] <- data.frame()
+    x[["runs"]][["pars"]] <- list()
   } else {
-    x$runs$table <- x$runs$table[-which, , drop = FALSE]
-    rownames(x$runs$table) <- NULL
-    x$runs$pars <- x$runs$pars[-which, drop = FALSE]
+    x[["runs"]][["table"]] <- x[["runs"]][["table"]][-which, , drop = FALSE]
+    rownames(x[["runs"]][["table"]]) <- NULL
+    x[["runs"]][["pars"]] <- x[["runs"]][["pars"]][-which, drop = FALSE]
   }
   return(x)
+}
+
+#' Merge multiple \code{ino} objects
+#'
+#' @description
+#' This function merges multiple \code{ino} objects.
+#'
+#' @param ...
+#' Arbitrary many \code{ino} objects, of which the optimization results are
+#' merged into the first object, which is then returned.
+#'
+#' @return
+#' The updated \code{ino} object.
+#'
+#' @export
+#'
+#' @examples
+#' NA
+#'
+#' @keywords
+#' specification
+
+merge_ino <- function(...) {
+  ino_objects <- list(...)
+  if(length(ino_objects) == 0) {
+    return()
+  }
+  class <- sapply(lapply(ino_objects, class), function(x) any("ino" %in% x))
+  if(any(!class)){
+    stop("Object(s) at position(s) ", paste(which(!class), collapse = ", "),
+         " not of class 'ino'.", call. = FALSE)
+  }
+  base <- ino_objects[[1]]
+  if(length(ino_objects) > 1) {
+    for(i in 2:length(ino_objects)) {
+      base$runs$table <- rbind(base$runs$table, ino_objects[[i]]$runs$table)
+      base$runs$pars <- c(base$runs$pars, ino_objects[[i]]$runs$pars)
+    }
+  }
+  return(base)
 }

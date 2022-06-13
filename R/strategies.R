@@ -1,3 +1,83 @@
+#' Standardize initialization
+#'
+#' @description
+#' This function is an implementation of the standardize initialization strategy.
+#'
+#' @details
+#' See the vignette on initialization strategies for more details.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param arg
+#' A character, the name of the argument to be standardized.
+#' The argument must be of class \code{matrix} or \code{data.frame}.
+#' Per default, \code{arg = "data"}.
+#' @param by_col
+#' A boolean, set to \code{TRUE} (the default) to standardize column-wise, set
+#' to \code{FALSE} to standardize by rows.
+#' @param center
+#' A boolean, passed to \code{\link[base]{scale}}.
+#' @param scale
+#' A boolean, passed to \code{\link[base]{scale}}.
+#' @param ncores
+#' This function is parallelized, set the number of cores here.
+#' @param col_ign
+#' A numeric vector of column indices (or row indices if \code{by_col = FALSE})
+#' that are ignored when standardizing.
+#' @param initialization
+#' TBA
+#' @param verbose
+#' TBA
+#'
+#' @return
+#' The updated \code{ino} object.
+#'
+#' @export
+#'
+#' @examples
+#' #standardize_initialization()
+#'
+#' @keywords
+#' strategy
+
+standardize_initialization <- function(
+  x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
+  ncores = getOption("ino_ncores"), col_ign = NULL,
+  initialization = random_initialization(), verbose = getOption("ino_progress")
+  ) {
+
+  ### capture function call if 'x' is not specified
+  if(missing(x)) return(ino_call(match.call(expand.dots = TRUE)))
+
+  ### check inputs
+  ino_check_inputs(
+    "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
+    "ncores" = ncores, "col_ign" = col_ign, "initialization" = initialization,
+    "verbose" = verbose)
+
+  ### initial  message
+  ino_status(msg = "standardize initialization", verbose = verbose)
+
+  ### standardize 'arg' argument in 'x'
+  x_standardized <- standardize_arg(
+    x = clear_ino(x), arg = arg, by_col = by_col, center = center,
+    scale = scale, col_ign = col_ign)
+
+  ### optimize on standardized 'x'
+  x_standardized <- do.call(
+    what = rlang::call_name(initialization),
+    args = c(list("x" = x_standardized), rlang::call_args(initialization)))
+  name <- paste("standardize", x_standardized$runs$table$.strategy, sep = ">")
+  x_standardized$runs$table$.strategy <- name
+
+  ### merge 'x' and 'x_standardized'
+  x <- merge_ino(x, x_standardized)
+
+  ### return ino object
+  return(x)
+
+}
+
 #' Subset initialization
 #'
 #' @description
@@ -23,7 +103,7 @@
 #' \code{FALSE} to subset by column.
 #' @param ncores
 #' This function is parallelized, set the number of cores here.
-#' @param kmeans_ign
+#' @param col_ign
 #' A numeric vector of column indices (or row indices if \code{by_row = FALSE})
 #' that are ignored when clustering.
 #' Only relevant if \code{how = kmeans"}.
@@ -52,7 +132,7 @@
 
 subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
                                   by_row = TRUE, ncores = getOption("ino_ncores"),
-                                  kmeans_ign = NULL, kmeans_arg = list("centers" = 2),
+                                  col_ign = NULL, kmeans_arg = list("centers" = 2),
                                   initialization = random_initialization(),
                                   verbose = getOption("ino_progress")) {
 
@@ -61,19 +141,20 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
 
   ### check inputs
   ino_check_inputs("x" = x, "arg" = arg, "how" = how, "prop" = prop,
-                   "by_row" = by_row, "ncores" = ncores, "kmeans_ign" = kmeans_ign,
+                   "by_row" = by_row, "ncores" = ncores, "col_ign" = col_ign,
                    "kmeans_arg" = kmeans_arg, "initialization" = initialization,
                    "verbose" = verbose)
 
   ### subset 'arg' argument in 'x', optimize on subset, and extract estimates
-  x_subset <- subset_arg(x = clear_optimizations(x), arg = arg, how = how,
-                         prop = prop, by_row = by_row, kmeans_ign = kmeans_ign,
+  x_subset <- subset_arg(x = clear_ino(x), arg = arg, how = how,
+                         prop = prop, by_row = by_row, col_ign = col_ign,
                          kmeans_arg = kmeans_arg)
   x_subset <- do.call(
     what = rlang::call_name(initialization),
     args = c(list("x" = x_subset), rlang::call_args(initialization)))
-  # TODO: add name of initialization strategy
-  init <- x_subset$runs$pars
+  initial_time <- x_subset$runs$table$.time
+  strategy_name <- x_subset$runs$table$.strategy[1]
+  init <- lapply(x_subset$runs$pars, "[[", "estimate")
 
   ### create parameter grid
   grid <- grid_ino(x)
@@ -102,17 +183,20 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
    opt <- x$opt[[o]]
 
    ### extract initial value
-   pars[[x$f$target_arg]] <- init
+   pars[[x$f$target_arg]] <- init[[i]]
 
    ### base arguments of the optimizer
    base_args <- list(x$f$f, pars[[x$f$target_arg]])
-   names(base_args) <- opt$base_arg_names
+   names(base_args) <- opt$base_arg_names[1:2]
    f_args <- pars
    f_args[[x$f$target_arg]] <- NULL
 
    ### optimize
    result <- try_silent(
-     do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
+     do.call_timed(
+       what = opt$f,
+       args = c(base_args, f_args, opt$args),
+       headstart = initial_time[i])
    )
    if(inherits(result, "fail")) {
      warning("Optimization failed with message", result, immediate. = TRUE)
@@ -126,9 +210,10 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
   parallel::stopCluster(cluster)
 
   ### save optimization results
+  strategy_name <- paste("subset", strategy_name, sep = ">")
   for(res in seq_along(loop_res)){
     x <- do.call(what = result_ino,
-                 args = append(list("x" = x, "strategy" = "subset"),
+                 args = append(list("x" = x, "strategy" = strategy_name),
                                loop_res[[res]]))
   }
 

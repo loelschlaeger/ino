@@ -12,9 +12,9 @@ The following tasks are on our agenda and will be tackled as time permits.
       
 ## Initialization strategies
 
-- [ ] `subset_initialization()` (L***)
-- [ ] `standardize_initialization()` (L***)
-- [ ] `ao_initialization()` (L*)
+- [x] `subset_initialization()` (L***)
+- [x] `standardize_initialization()` (L***)
+- [ ] `ao_initialization()` (L*, next package version)
 
 ## Evaluation functions
 

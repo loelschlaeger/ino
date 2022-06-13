@@ -11,7 +11,7 @@ subset_initialization(
   prop = 0.5,
   by_row = TRUE,
   ncores = getOption("ino_ncores"),
-  kmeans_ign = NULL,
+  col_ign = NULL,
   kmeans_arg = list(centers = 2),
   initialization = random_initialization(),
   verbose = getOption("ino_progress")
@@ -35,7 +35,7 @@ see the details.}
 
 \item{ncores}{This function is parallelized, set the number of cores here.}
 
-\item{kmeans_ign}{A numeric vector of column indices (or row indices if \code{by_row = FALSE})
+\item{col_ign}{A numeric vector of column indices (or row indices if \code{by_row = FALSE})
 that are ignored when clustering.
 Only relevant if \code{how = kmeans"}.}
 

@@ -4,12 +4,14 @@
 \alias{do.call_timed}
 \title{Measure computation time of \code{do.call}}
 \usage{
-do.call_timed(what, args)
+do.call_timed(what, args, headstart = 0)
 }
 \arguments{
 \item{what}{Passed to \code{\link[base]{do.call}}.}
 
 \item{args}{Passed to \code{\link[base]{do.call}}.}
+
+\item{headstart}{A positive numeric value that is added to the total computation time.}
 }
 \value{
 A list of the two elements \code{"res"} (the results of the \code{do.call}
@@ -27,7 +29,7 @@ what <- function(s) {
   return(s)
 }
 args <- list(s = 1)
-ino:::do.call_timed(what = what, args = args)
+ino:::do.call_timed(what = what, args = args, headstart = 1)
 
 }
 \keyword{utils}

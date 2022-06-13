@@ -9,12 +9,15 @@ devtools::load_all()
 x <- setup_ino(
   f = ino:::f_ackley,
   npar = 2,
-  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-06),
-             "opt2" = set_optimizer_nlm(gradtol = 1e-10)),
-  verbose = F)
+  opt = list("nlm"   = set_optimizer_nlm(),
+             "optim" = set_optimizer_optim()),
+  verbose = FALSE)
+
+x <- true_ino(x, par = c(0,0), overview = FALSE)
 
 for(i in 1:5)
   x <- random_initialization(x)
+
 for(at in list(c(1, 0.5), c(0.3, 2)))
   x <- fixed_initialization(x, at = at)
 
@@ -47,11 +50,21 @@ for(i in 1:5)
 for(at in list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
   hmm_ino <- fixed_initialization(hmm_ino, at = at)
 
-hmm_ino <- subset_initialization(hmm_ino, how = "kmeans",
-                                 initialization = random_initialization())
+for(i in 1:5)
+  hmm_ino <- subset_initialization(
+    hmm_ino, arg = "data", how = "first", prop = 0.2,
+    initialization = random_initialization())
 
-summary(x, "mean" = mean(.time))
-plot(x, var = ".time", by = ".strategy")
+for(at in list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
+  hmm_ino <- subset_initialization(
+    hmm_ino, arg = "data", how = "first", prop = 0.2,
+    initialization = fixed_initialization(at = at))
+
+for(i in 1:5)
+  hmm_ino <- standardize_initialization(hmm_ino)
+
+summary(hmm_ino, "mean" = mean(.time))
+plot(hmm_ino, var = ".time", by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
@@ -62,9 +75,12 @@ probit_ino <- setup_ino(
   neg = TRUE,
   opt = set_optimizer_nlm(),
   mpvs = "data",
-  verbose = F)
+  verbose = FALSE)
+
+probit_ino <- true_ino(probit_ino, par = lapply(ino::probit_data, attr, "true"))
 
 probit_ino <- random_initialization(probit_ino)
+
 probit_ino <- subset_initialization(probit_ino, how = "kmeans",
                                     initialization = random_initialization())
 
