@@ -24,7 +24,7 @@ ino_pb <- function(title = "", total) {
 #' @noRd
 
 ino_pp <- function(pb, verbose = getOption("ino_progress")) {
-  if (verbose) if(pb$.__enclos_env__$private$total > 1) pb$tick()
+  if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
 }
 
 #' @noRd
@@ -177,7 +177,8 @@ subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
   ### check inputs
   ino_check_inputs(
     "x" = x, "arg" = arg, "how" = how, "prop" = prop, "by_row" = by_row,
-    "col_ign" = col_ign, "kmeans_arg" = kmeans_arg)
+    "col_ign" = col_ign, "kmeans_arg" = kmeans_arg
+  )
 
   ### function for subsetting
   do_subset_arg <- function(arg_val) {
@@ -230,14 +231,15 @@ standardize_arg <- function(x, arg, by_col, center, scale, col_ign) {
   ### check inputs
   ino_check_inputs(
     "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
-    "col_ign" = col_ign)
+    "col_ign" = col_ign
+  )
 
   ### function for standardizing
   do_standardize_arg <- function(arg_val) {
     if (!by_col) arg_val <- t(arg_val)
-    for(i in 1:ncol(arg_val)) {
-      if(i %in% col_ign) next()
-      arg_val[,i] <- scale(arg_val[,i], center = center, scale = scale)
+    for (i in 1:ncol(arg_val)) {
+      if (i %in% col_ign) next()
+      arg_val[, i] <- scale(arg_val[, i], center = center, scale = scale)
     }
     if (!by_col) arg_val <- t(arg_val)
     return(arg_val)
