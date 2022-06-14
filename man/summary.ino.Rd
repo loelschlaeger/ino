@@ -12,8 +12,6 @@
 \item{group}{A character vector for grouping the optimization results.}
 
 \item{...}{Named functions for computing statistics.}
-
-\item{var}{A character vector of names of numeric optimization results.}
 }
 \description{
 This function gives an overview of the optimization runs in an \code{ino}

@@ -2,30 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{clear_ino}
 \alias{clear_ino}
-\title{#' Set true parameter values
-#'
-#' @description
-#' This function specifies true parameter values for an \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param par
-#' A numeric vector with the true parameter values.
-#' Can also be a list of true parameter values in the case that the target
-#' function has multiple parameter values.
-#' @param overview
-#' A boolean, set to \code{TRUE} to print an overview of the grid parameters.
-#'
-#' @return
-#' The updated \code{ino} object.
-#'
-#' @export
-#'
-#' @examples
-#' NA
-#'
-#' @keywords
-#' specification}
+\title{Clear optimization runs}
 \usage{
 clear_ino(x, which = "all")
 }
@@ -40,22 +17,6 @@ The updated \code{ino} object.
 }
 \description{
 This function clears optimization runs saved in an \code{ino} object.
-}
-\details{
-true_ino <- function(x, par, overview = FALSE) {
-if(missing(x)) stop("Please specify the ino object 'x'.", call. = FALSE)
-ino_check_inputs("x" = x)
-table <- Reduce(rbind, lapply(grid_ino(x), attr, "par_id"))
-table <- data.frame(table, row.names = NULL)
-colnames(table) <- names(x$f$add)
-if(overview) return(table)
-if(!is.list(par)) par <- list(par)
-ino_check_inputs("par" = par, "overview" = overview)
-if(nrow(table) != length(par)) stop()
-x[\link{"f"}][\link{"true"}] <- par
-return(x)
-}
-Clear optimization runs
 }
 \examples{
 NA

@@ -25,6 +25,8 @@ standard normal distribution as initial value.}
 
 \item{ncores}{This function is parallelized, set the number of cores here.}
 
+\item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.}
+
 \item{...}{Additional argument to \code{sampler} (optional).}
 }
 \value{

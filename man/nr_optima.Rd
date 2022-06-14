@@ -10,8 +10,6 @@ nr_optima(x, round = 2)
 \item{x}{An object of class \code{ino}.}
 
 \item{round}{TBA}
-
-\item{plot}{Set to \code{TRUE} for plotting a frequency plot of found optima.}
 }
 \value{
 A ggplot.

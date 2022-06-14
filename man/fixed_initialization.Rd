@@ -17,6 +17,8 @@ fixed_initialization(
 \item{at}{A vector containing the (fixed) initial values.}
 
 \item{ncores}{This function is parallelized, set the number of cores here.}
+
+\item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.}
 }
 \value{
 The updated \code{ino} object.
