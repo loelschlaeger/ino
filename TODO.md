@@ -22,7 +22,7 @@ The following tasks are on our agenda and will be tackled as time permits.
 - [x] allow empty group in `summary()` to get full table (M***)
 - [ ] visualize parameter values in different optimization iterations (next package version)
 - [ ] comparison with true parameter values (next package version)
-- [ ] maybe rename `nr_optima()` to `overview_optima()`
+- [ ] maybe rename `nr_optima()` to `overview_optima()` (L***)
 
 ## Applications
 
