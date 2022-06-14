@@ -8,8 +8,6 @@
 #' An object of class \code{ino}.
 #' @param group
 #' A character vector for grouping the optimization results.
-#' @param var
-#' A character vector of names of numeric optimization results.
 #' @param ...
 #' Named functions for computing statistics.
 #'
@@ -146,8 +144,6 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 #'
 #' @param x
 #' An object of class \code{ino}.
-#' @param plot
-#' Set to \code{TRUE} for plotting a frequency plot of found optima.
 #' @param round
 #' TBA
 #'
@@ -170,7 +166,6 @@ nr_optima <- function(x, round = 2) {
   optima_found <- round(optima_found, digits = round)
   out  <- as.data.frame(table(optima_found))
   colnames(out) <- c("optimum", "frequency")
-
   out_plot <- ggplot2::ggplot(out, ggplot2::aes(x = .data$optimum, y = .data$frequency)) +
     ggplot2::geom_bar(stat = "identity") +
     ggplot2::theme_minimal() + ggplot2::xlab("function value at the optimum")

@@ -73,7 +73,8 @@ print.ino_call <- function(x, ...) {
 ino_check_inputs <- function(...) {
   stop0 <- function(msg) stop(msg, call. = FALSE)
   inputs <- list(...)
-
+  arg <- at <- by_col <- by_row <- center <- how <- prop <- runs <- NULL
+  sampler <- x <- NULL
   within(inputs, {
     n <- names(inputs)
     if ("x" %in% n) {

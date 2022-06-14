@@ -25,26 +25,23 @@
 #' ### Specifying multiple optimizer
 #' Specifying multiple optimizer is analogue to specifying multiple parameter
 #' values: Submit a list of \code{optimizer} objects (i.e. outputs of
-#' \code{\link{set_optimizer}}) to the \code{opt} argument. However, you
-#' don't need to add \code{"opt"} to \code{mpvs}.
+#' \code{\link{set_optimizer}}) to the \code{opt} argument.
 #'
 #' ### An example
 #' Say that \code{f} is a likelihood function of \code{npar} parameters that has
 #' the additional argument \code{data}, which is supposed to be a set of data
 #' values. Say furthermore that you want to conduct a simulation experiment of
 #' the initialization effect for \code{f} for two different data sets.
-#' And last, say that you want to use the \code{\link[stats]{nlm}} optimizer
-#' with two gradient tolerance \code{gradtol = 1e-6} and \code{gradtol = 1e-10},
-#' and save the number of performed iterations (see the documentation of
-#' \code{\link{set_optimizer}}). Then, specify
+#' And last, say that you want to apply the \code{\link[stats]{nlm}} optimizer
+#' and the \code{\link[stats]{optim}} optimizer. Then, specify
 #' \preformatted{
 #' setup_ino(
 #'   f = f,
 #'   npar = npar,
 #'   data = list("data1" = <data set 1>,
 #'               "data2" = <data set 2>),
-#'   opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
-#'              "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
+#'   opt = list("nlm" = set_optimizer_nlm(),
+#'              "optim" = set_optimizer_optim()),
 #'   mpvs = c("data", "opt")
 #' )
 #' }
@@ -64,6 +61,8 @@
 #' @param mpvs
 #' A character vector of the parameter names with multiple values, see the
 #' details. Per default, \code{mpvs = character(0)}.
+#' @param skip_test
+#' Set to \code{TRUE} to skip the specification tests.
 #' @inheritParams test_ino
 #'
 #' @return
@@ -89,39 +88,41 @@
 
 setup_ino <- function(
   f, npar, ..., opt = set_optimizer_nlm(), mpvs = character(0),
-  verbose = getOption("ino_progress")
+  verbose = getOption("ino_progress"), skip_test = FALSE
   ) {
 
   ### check inputs
-  if (missing(f)) stop("Please specify 'f'.")
-  if (missing(npar)) stop("Plase specify 'npar'.")
+  if (missing(f))
+    stop("Please specify 'f'.", call. = FALSE)
+  if (missing(npar))
+    stop("Plase specify 'npar'.", call. = FALSE)
   if (length(verbose) != 1 || !is.logical(verbose))
-    stop("'verbose' must be a boolean.")
+    stop("'verbose' must be a boolean.", call. = FALSE)
 
   ### build ino object
-  ino <- list()
-  class(ino) <- c("ino","list")
+  x <- list()
+  class(x) <- c("ino","list")
   add <- list(...)
   for(add_name in names(add)) {
     if(!add_name %in% mpvs) {
       add[[add_name]] <- list(add[[add_name]])
     }
   }
-  ino$f <- list(f = f, npar = npar, add = list(...),
-                name = deparse(substitute(f)),
-                target_arg = names(formals(f))[1], mpvs = mpvs)
+  x$f <- list(
+    f = f, npar = npar, add = list(...), name = deparse(substitute(f)),
+    target_arg = names(formals(f))[1], mpvs = mpvs)
   if("optimizer" %in% class(opt)) {
-    ino$opt <- list("opt" = opt)
+    x$opt <- list("opt" = opt)
   } else {
-    ino$opt <- opt
+    x$opt <- opt
   }
-  ino$runs <- list("table" = data.frame(), "pars" = list())
+  x$runs <- list("table" = data.frame(), "pars" = list())
 
   ### test ino object
-  ino <- test_ino(ino, verbose = verbose)
+  if(!skip_test) x <- test_ino(x, verbose = verbose)
 
   ### return ino object
-  return(ino)
+  return(x)
 }
 
 #' Create grid of parameter combinations
@@ -160,7 +161,7 @@ grid_ino <- function(x) {
     names(target) <- x$f$target_arg
     par_set <- c(target, x$f$add)
     for(p in colnames(grid_par)) {
-      if(inherits(par_set[[p]], "list")){
+      if(p %in% x$f$mpvs) {
         par_set[p] <- par_set[[p]][grid_par[i,p]]
       } else {
         par_set[p] <- par_set[p][grid_par[i,p]]
@@ -249,7 +250,6 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
 
   ### helper functions
   ll <- NULL
-  topic <- function(desc) pline(paste0("* ", desc))
   step <- function(desc) pline(desc)
   res <- function(msg = NULL, succ = FALSE, warn = FALSE) {
     if(succ) {
@@ -260,9 +260,6 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
       ll <<- NULL
     } else {
       cat("\n")
-      if(is.null(msg)) {
-        msg <- paste("Please make sure that", ll)
-      }
       stop(msg, call. = FALSE)
     }
   }
@@ -276,80 +273,87 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
 
   ### start tests
   if(!verbose) { sink(tempfile()); on.exit(sink()) }
-  topic("start tests")
 
   ### check data types
-  topic("check data types")
-  step("'f' is of class 'function'")
+  step("check that 'f' is of class 'function'")
   res(msg = "",
       succ = "function" %in% class(x$f$f))
-  step("'npar' is a numeric")
+  step("check that 'npar' is a numeric")
   res(msg = "",
       succ = is.numeric(x$f$npar))
-  step("'npar' is of length 1")
+  step("check that 'npar' is of length 1")
   res(succ = length(x$f$npar) == 1)
-  step("'npar' is a whole number")
+  step("check that 'npar' is a whole number")
   res(msg = "",
       succ = x$f$npar %% 1 == 0)
-  step("'npar' is non-negative")
+  step("check that 'npar' is non-negative")
   res(msg = "",
       succ = x$f$npar > 0)
-  step("'opt' is of class 'optimizer' or a list of those")
+  step("check that 'opt' is of class 'optimizer' or a list of those")
   res(msg = "'opt' is not of class 'optimizer' or a list of those",
       succ = all(sapply(x$opt, function(x) "optimizer" %in% class(x))))
-  step("'mpvs' is a character (vector)")
+  step("check that 'mpvs' is a character (vector)")
   res(msg = "",
       succ = is.character(x$f$mpvs))
 
   ### check names of parameters with mpvs
-  topic("check names for parameters with multiple values")
-  for(mpv in x$f$mpvs){
-    step(paste0("check names for parameter '",mpv,"'"))
-    if(length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
-      res(succ = TRUE)
-    } else {
-      res(msg = paste0("Named '", mpv, "' by '", mpv, "1:",
-                       length(x$f$add[[mpv]]),"'"),
-          succ = FALSE,
-          warn = TRUE)
-      names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
+  if(length(x$f$mpvs) > 0) {
+    for(mpv in x$f$mpvs){
+      step(paste0("check names for parameter '",mpv,"'"))
+      if(length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
+        res(succ = TRUE)
+      } else {
+        res(msg = paste0("re-named '", mpv, "' by '", mpv, "1:",
+                         length(x$f$add[[mpv]]),"'"),
+            succ = FALSE,
+            warn = TRUE)
+        names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
+      }
     }
   }
 
   ### check that function and optimizer can be called
   step("check name of target parameter in 'f'")
   res(succ = is.character(x$f$target_arg))
-  topic(paste("name of target parameter in 'f':", x$f$target_arg))
   rvx <- round(rnorm(x$f$npar),1)
-  step(paste0("draw value of length 'npar' = ", x$f$npar, ": ",
+  step(paste0("try to draw value of length 'npar' = ", x$f$npar, ": ",
               paste(rvx, collapse = " ")))
   res(succ = (length(rvx) == x$f$npar))
-  step("create grid of parameter sets")
+  step("try to create grid of parameter sets")
   grid <- grid_ino(x)
   res(succ = is.list(grid))
-  topic(paste("number of parameter sets:", length(grid)))
-  if(length(grid) > 10) {
-    topic("randomly select 10 parameter sets for testing")
-    grid <- grid[sort(sample.int(length(grid), 10))]
-  }
-  topic("check that function 'f' can be called")
-  for(i in seq_along(grid)){
-    step(paste("parameter set:", paste(attr(grid[[i]], "par_id"),
-                                       collapse = " ")))
+  for(i in 1:min(length(grid),10)){
+    step(paste("check call to 'f' with parameter set", i))
     pars <- grid[[i]]
     pars[[x$f$target_arg]] <- rvx
     f_return <- try_silent(
-      timed(expr = do.call(what = x$f$f, args = pars),
+      timed(expr = do.call(what = x$f$f,
+                           args = pars),
             secs = 1)
     )
-    res(msg = "msg",
+    res(msg = f_return,
         succ = !inherits(f_return, "fail"))
+    for(o in seq_along(x$opt)) {
+      step(paste0("check call to '", names(x$opt)[o],
+                  "' with parameter set ", i))
+      opt <- x$opt[[o]]
+      base_args <- list(x$f$f, pars[[x$f$target_arg]])
+      names(base_args) <- opt$base_arg_names[1:2]
+      f_args <- pars
+      f_args[[x$f$target_arg]] <- NULL
+      o_return <- try_silent(
+        timed(expr = do.call(what = opt$f,
+                             args = c(base_args, f_args, opt$args)),
+              secs = 1)
+      )
+      res(msg = o_return,
+          succ = !inherits(o_return, "fail"))
+    }
   }
 
   ### return (invisibly) updated ino object
-  step("completed test cases")
+  step("completed test cases\n")
   return(invisible(x))
-
 }
 
 #' @export
@@ -522,45 +526,6 @@ set_optimizer_optim <- function(
   ) {
   set_optimizer(opt = stats::optim, f = "fn", p = "par", z = "par",
                 list(...), crit = crit)
-}
-
-#' Set true parameter values
-#'
-#' @description
-#' This function specifies true parameter values for an \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param par
-#' A numeric vector with the true parameter values.
-#' Can also be a list of true parameter values in the case that the target
-#' function has multiple parameter values.
-#' @param overview
-#' A boolean, set to \code{TRUE} to print an overview of the grid parameters.
-#'
-#' @return
-#' The updated \code{ino} object.
-#'
-#' @export
-#'
-#' @examples
-#' NA
-#'
-#' @keywords
-#' specification
-
-true_ino <- function(x, par, overview = FALSE) {
-  if(missing(x)) stop("Please specify the ino object 'x'.", call. = FALSE)
-  ino_check_inputs("x" = x)
-  table <- Reduce(rbind, lapply(grid_ino(x), attr, "par_id"))
-  table <- data.frame(table, row.names = NULL)
-  colnames(table) <- names(x$f$add)
-  if(overview) return(table)
-  if(!is.list(par)) par <- list(par)
-  ino_check_inputs("par" = par, "overview" = overview)
-  if(nrow(table) != length(par)) stop()
-  x[["f"]][["true"]] <- par
-  return(x)
 }
 
 #' Clear optimization runs

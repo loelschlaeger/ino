@@ -72,9 +72,9 @@ try_silent <- function(expr) {
 #' exceeded \code{secs} seconds.
 #'
 #' @examples
-#' ino:::timed(Sys.sleep(1.1), 1)
-#'
-#' @importFrom R.utils withTimeout
+#' foo <- function(x) { Sys.sleep(x); return(x) }
+#' ino:::timed(foo(0.9), 1)
+#' ino:::timed(foo(1.1), 1)
 #'
 #' @keywords
 #' utils
@@ -83,7 +83,19 @@ timed <- function(expr, secs) {
   if (!(length(secs) == 1 && is_number(secs))) {
     stop("'secs' must be a number.")
   }
-  R.utils::withTimeout(expr, timeout = secs, onTimeout = "silent")
+  setTimeLimit(cpu = secs, elapsed = secs, transient = TRUE)
+  on.exit({
+    setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+  })
+  tryCatch({
+    expr
+  }, error = function(e) {
+    if (grepl("reached elapsed time limit|reached CPU time limit", e$message)) {
+      return(NULL)
+    } else {
+      stop(e)
+    }
+  })
 }
 
 #' Measure computation time of \code{do.call}

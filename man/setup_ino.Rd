@@ -10,7 +10,8 @@ setup_ino(
   ...,
   opt = set_optimizer_nlm(),
   mpvs = character(0),
-  verbose = getOption("ino_progress")
+  verbose = getOption("ino_progress"),
+  skip_test = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ details. Per default, \code{mpvs = character(0)}.}
 
 \item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) the test results of the
 setup at the console.}
+
+\item{skip_test}{Set to \code{TRUE} to skip the specification tests.}
 }
 \value{
 An object of class \code{ino}.
@@ -67,8 +70,7 @@ vector argument to make clear that you want to iterate over them.
 
 Specifying multiple optimizer is analogue to specifying multiple parameter
 values: Submit a list of \code{optimizer} objects (i.e. outputs of
-\code{\link{set_optimizer}}) to the \code{opt} argument. However, you
-don't need to add \code{"opt"} to \code{mpvs}.
+\code{\link{set_optimizer}}) to the \code{opt} argument.
 }
 
 \subsection{An example}{
@@ -77,18 +79,16 @@ Say that \code{f} is a likelihood function of \code{npar} parameters that has
 the additional argument \code{data}, which is supposed to be a set of data
 values. Say furthermore that you want to conduct a simulation experiment of
 the initialization effect for \code{f} for two different data sets.
-And last, say that you want to use the \code{\link[stats]{nlm}} optimizer
-with two gradient tolerance \code{gradtol = 1e-6} and \code{gradtol = 1e-10},
-and save the number of performed iterations (see the documentation of
-\code{\link{set_optimizer}}). Then, specify
+And last, say that you want to apply the \code{\link[stats]{nlm}} optimizer
+and the \code{\link[stats]{optim}} optimizer. Then, specify
 \preformatted{
 setup_ino(
   f = f,
   npar = npar,
   data = list("data1" = <data set 1>,
               "data2" = <data set 2>),
-  opt = list("opt1" = set_optimizer_nlm(gradtol = 1e-6, crit = "iterations"),
-             "opt2" = set_optimizer_nlm(gradtol = 1e-10, crit = "iterations")),
+  opt = list("nlm" = set_optimizer_nlm(),
+             "optim" = set_optimizer_optim()),
   mpvs = c("data", "opt")
 )
 }

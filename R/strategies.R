@@ -130,11 +130,12 @@ standardize_initialization <- function(
 #'
 #' @importFrom stats kmeans
 
-subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
-                                  by_row = TRUE, ncores = getOption("ino_ncores"),
-                                  col_ign = NULL, kmeans_arg = list("centers" = 2),
-                                  initialization = random_initialization(),
-                                  verbose = getOption("ino_progress")) {
+subset_initialization <- function(
+  x, arg = "data", how = "random", prop = 0.5, by_row = TRUE,
+  ncores = getOption("ino_ncores"), col_ign = NULL,
+  kmeans_arg = list("centers" = 2), initialization = random_initialization(),
+  verbose = getOption("ino_progress")
+  ) {
 
   ### capture function call if 'x' is not specified
   if(missing(x)) return(ino_call(match.call(expand.dots = TRUE)))
@@ -236,6 +237,8 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5,
 #' A vector containing the (fixed) initial values.
 #' @param ncores
 #' This function is parallelized, set the number of cores here.
+#' @param verbose
+#' Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
 #'
 #' @return
 #' The updated \code{ino} object.
@@ -338,6 +341,8 @@ fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
 #' standard normal distribution as initial value.
 #' @param ncores
 #' This function is parallelized, set the number of cores here.
+#' @param verbose
+#' Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
 #' @param ...
 #' Additional argument to \code{sampler} (optional).
 #'

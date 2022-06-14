@@ -6,23 +6,22 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Specification functions
 
-- [ ] add test cases for optimizer in `setup_ino()` (L***)
-  - check that output 'z' exists and is numeric vector of length 'npar'
-- [x] specify true parameter values
-- [ ] wrapper for `vntrs()` optimizer
+- [x] add test cases for optimizer in `setup_ino()` (L***)
+- [ ] specify true parameter values (next package version)
+- [ ] wrapper for `vntrs()` optimizer to better find the global optimum (next package version)
       
 ## Initialization strategies
 
 - [x] `subset_initialization()` (L***)
 - [x] `standardize_initialization()` (L***)
 - [ ] `ao_initialization()` (next package version)
-- [ ] save steps of combined initialization strategies
+- [ ] save steps of combined initialization strategies (next package version)
 
 ## Evaluation functions
 
 - [x] allow empty group in `summary()` to get full table (M***)
-- [ ] visualize parameter values in different optimization iterations
-- [ ] comparison with true parameter values
+- [ ] visualize parameter values in different optimization iterations (next package version)
+- [ ] comparison with true parameter values (next package version)
 - [ ] maybe rename `nr_optima()` to `overview_optima()`
 
 ## Applications
