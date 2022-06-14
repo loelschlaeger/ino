@@ -18,3 +18,10 @@ knitr::opts_chunk$set(
 ```
 
 This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] is a demonstration of the {ino} package for the likelihood optimization of an hidden Markov model.
+
+- different optimizer
+- random initialization
+- fixed initialization
+- subset initialization (only first)
+- number local optima?
+- variation in optimization time?

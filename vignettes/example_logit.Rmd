@@ -18,3 +18,12 @@ knitr::opts_chunk$set(
 ```
 
 This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] is a demonstration of the {ino} package for the likelihood optimization of a logit model.
+
+- different random draws R
+- different data sets
+- random initialization
+- fixed initialization
+- subset initialization (first, random, kmeans)
+- standardize initialization
+- number local optima?
+- variation in optimization time?

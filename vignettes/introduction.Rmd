@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 #library(ino)
 devtools::load_all()
 library(ggplot2)
+options(ino_progress = FALSE)
 ```
 
 This is the introductory vignette of {ino} explaining the purpose and giving a first example. The vignette was built using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package. 
@@ -113,9 +114,8 @@ starting_values <- list(c(2, 4, log(1), log(1), qlogis(0.5)),
 The function provided by {ino} to run the optimisation with chosen starting values is `fixed_initialization()`. We then loop over the set of starting values by passing them to the argument `at`.  
 
 ```{r}
-for(i in 1:length(starting_values)){
-  geyser_ino <- fixed_initialization(geyser_ino, at = starting_values[[i]])
-}
+for(val in starting_values)
+  geyser_ino <- fixed_initialization(geyser_ino, at = val)
 ```
 
 The messages printed in the console summarises that we are using fixed initialisation here. In addition, there is also information given about a grid --- this concerns the progress if, for example, multiple data sets are used. We will learn more about this below.
@@ -128,7 +128,6 @@ Before we evaluate the optimisation runs, we first add some further optimisation
 When using randomly chosen starting values, we apply the function `random_initialization()`. The most simple (yet __not__ neccessarily effective) function call would be as follows:
 
 ```{r}
-set.seed(123)
 geyser_ino <- random_initialization(geyser_ino)
 ```
 
@@ -169,10 +168,17 @@ plot(geyser_ino, var = ".time", by = ".strategy", type = "boxplot")
 ## A more involved initialisation strategy: subset initialisation
 
 ```{r}
-# geyser_ino <- subset_initialization(geyser_ino, how = "random",
-#                                     initialization = random_initialization())
+for(i in 1:5)
+  geyser_ino <- subset_initialization(
+    geyser_ino, how = "kmeans", prop = 0.3, initialization = random_initialization(), 
+    )
+summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 ```
 
+## Standardized initialization
 
-* add subset initialisation strategy (highlight usefulness of kmeans here)
-
+```{r}
+for(i in 1:5)
+  geyser_ino <- standardize_initialization(geyser_ino)
+summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
+```
