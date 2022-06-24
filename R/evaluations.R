@@ -96,6 +96,7 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   ### extract optimization
   optimization_df <- x$runs$table
   optimization_df$.time <- as.numeric(optimization_df$.time)
+  optimization_df$minimum <- round(optimization_df$minimum, digits = 2)
 
   ### check input
   if (nrow(optimization_df) == 0) {
