@@ -15,7 +15,7 @@ result_ino(x, strategy, pars, result, opt_name)
 
 \item{result}{The output of \code{\link{do.call_timed}}.}
 
-\item{opt_name}{The identifier of the optimizer.}
+\item{opt_name}{The name of the optimizer.}
 }
 \value{
 The updated object \code{x} (invisibly).
@@ -24,4 +24,4 @@ The updated object \code{x} (invisibly).
 This helper function saves the results of an optimization run into the
 submitted \code{ino} object.
 }
-\keyword{specification}
+\keyword{internal}

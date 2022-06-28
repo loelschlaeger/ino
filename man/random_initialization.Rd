@@ -7,9 +7,9 @@
 random_initialization(
   x,
   sampler = stats::rnorm,
+  ...,
   ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress"),
-  ...
+  verbose = getOption("ino_progress")
 )
 }
 \arguments{
@@ -23,11 +23,11 @@ random_initialization(
 Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
 standard normal distribution as initial value.}
 
+\item{...}{Additional argument to \code{sampler} (optional).}
+
 \item{ncores}{This function is parallelized, set the number of cores here.}
 
 \item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.}
-
-\item{...}{Additional argument to \code{sampler} (optional).}
 }
 \value{
 The updated \code{ino} object.
@@ -36,10 +36,7 @@ The updated \code{ino} object.
 This function is an implementation of the random initialization strategy.
 }
 \details{
-See the vignette on initialization strategies for more details.
-}
-\examples{
-#random_initialization()
-
+For more details see the help vignette:
+\code{vignette("workflow", package = "ino")}
 }
 \keyword{strategy}

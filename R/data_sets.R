@@ -9,8 +9,8 @@
 #' @usage data(earthquakes)
 #'
 #' @format
-#' The data set is a data frame with two integer columns, \code{year} for the
-#' year and \code{obs} for the number of measured earthquakes.
+#' The data set is a \code{data.frame} with two integer columns, \code{year} for
+#' the year and \code{obs} for the number of measured earthquakes.
 #'
 #' @source
 #' The data was obtained from
@@ -19,14 +19,13 @@
 #'
 #' @keywords
 #' dataset
-#'
 "earthquakes"
 
 #' Simulated choice data from a probit model
 #'
 #' @description
-#' This object is a list which includes 100 data sets of simulated choices and
-#' corresponding choice characteristics from a probit model.
+#' This object is a \code{list} which includes 100 data sets of simulated
+#' choices and corresponding choice characteristics from a probit model.
 #'
 #' @details
 #' The data set was simulated via the following lines:
@@ -52,14 +51,14 @@
 #'
 #' @keywords
 #' dataset
-#'
 "probit_data"
 
 #' Simulated choice data from a mixed logit model
 #'
 #' @description
-#' This object is a list which includes 100 data sets of simulated choices and
-#' corresponding choice characteristics from a (normally) mixed logit model.
+#' This object is a \code{list} which includes 100 data sets of simulated
+#' choices and corresponding choice characteristics from a (normally) mixed
+#' logit model.
 #'
 #' @details
 #' The data set was simulated via the following lines:
@@ -85,5 +84,4 @@
 #'
 #' @keywords
 #' dataset
-#'
 "logit_data"

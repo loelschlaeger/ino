@@ -5,8 +5,8 @@
 \alias{earthquakes}
 \title{Earthquake data}
 \format{
-The data set is a data frame with two integer columns, \code{year} for the
-year and \code{obs} for the number of measured earthquakes.
+The data set is a \code{data.frame} with two integer columns, \code{year} for
+the year and \code{obs} for the number of measured earthquakes.
 }
 \source{
 The data was obtained from

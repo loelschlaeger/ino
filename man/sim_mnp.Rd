@@ -34,9 +34,9 @@ sim_mnp(
 are sampled from a normal distribution with mean 0 and standard deviation 9.}
 }
 \value{
-A data frame. The first column (\code{n}) is the identifier for the decider,
-the next column (\code{t}) the identifier for the choice occasion. Next
-comes the column \code{y} with the indices of the chosen alternatives.
+A \code{data.frame}. The first column (\code{n}) is the identifier for the
+decider, the next column (\code{t}) the identifier for the choice occasion.
+Next comes the column \code{y} with the indices of the chosen alternatives.
 The last columns contain the column-wise entries of \eqn{X_{nt}}.
 
 The true model coefficients are added to the output via the attribute
@@ -53,13 +53,13 @@ Simulate data from a (normally mixed) multinomial probit model
 }
 \details{
 The normally mixed multinomial probit model formula is
-\deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt}},
+\deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt},}
 where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
 of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
 \eqn{X_{nt}} is the choice occasion-specific \eqn{J} times \eqn{P} covariate
 matrix, \eqn{\beta_n} is the decider-specific random effect vector with
-\deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{nt}} is the choice
-occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma)}.
+\deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and \eqn{\eps_{nt}} is the choice
+occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma).}
 The choice \eqn{y_{nt}} of decider \eqn{n} at choice occasion \eqn{t} is
 linked to the utilities via \deqn{y_{nt} = \arg \max U_{nt}} (hence assuming
 utility maximizing behavior). For parameter identification (utility is
@@ -74,3 +74,4 @@ ino:::sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 \code{\link[=f_ll_mnp]{f_ll_mnp()}} for computing the log-likelihood of a (normally mixed)
 multinomial probit model.
 }
+\keyword{function}

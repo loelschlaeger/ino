@@ -21,6 +21,6 @@ An object of class \code{optimizer}, which can be passed to
 Specify the \code{\link[stats]{nlm}} optimizer
 }
 \seealso{
-\code{\link[=set_optimizer]{set_optimizer()}}, for specifying a different optimizer.
+\code{\link[=set_optimizer]{set_optimizer()}} for specifying a different optimizer.
 }
 \keyword{specification}

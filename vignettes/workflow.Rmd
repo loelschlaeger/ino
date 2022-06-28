@@ -121,7 +121,7 @@ analysis %<>% fixed_initialization(at = list(c(0,0),c(5,5),c(10,10)))
 The package provides several functions to evaluate the initialization strategies, for example:
 
 ```{r, evaluate optima}
-#analysis %>% nr_optima
+#analysis %>% overview_optima
 ```
 
 ```{r, evaluate time}

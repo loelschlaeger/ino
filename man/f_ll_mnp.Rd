@@ -9,7 +9,7 @@ f_ll_mnp(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE)
 \arguments{
 \item{theta}{The vector of model coefficients in order \code{c(b,o,l)}, see the details.}
 
-\item{data}{A data frame with the shape of the output of \code{\link{sim_mnp}}.}
+\item{data}{A \code{data.frame} with the shape of the output of \code{\link{sim_mnp}}.}
 
 \item{normal_cdf}{A function that evaluates the CDF of an \code{n}-variate normal distribution.
 It must take the arguments
@@ -24,7 +24,7 @@ and return a single numeric value.}
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
-The log-likelihood value.
+The log-likelihood value at \code{theta}.
 }
 \description{
 The log-likelihood function of the (normally mixed) multinomial probit model
@@ -44,7 +44,9 @@ alternative 1) error term covariance matrix \code{Sigma}.
 data <- ino:::sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
 theta <- attr(data, "true")
 ino:::f_ll_mnp(theta = theta, data = data)
-# nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
+\dontrun{
+nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
+}
 
 }
 \references{

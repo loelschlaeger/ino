@@ -3,9 +3,9 @@
 \docType{package}
 \name{ino}
 \alias{ino}
-\title{ino: A package for initialization for numerical optimization}
+\title{ino: Initialization strategies for numerical optimization}
 \description{
-This package provides tools for the analysis of the initialization of
+This package implements tools for the analysis of the initialization of
 numerical optimization.
 }
 \keyword{internal}

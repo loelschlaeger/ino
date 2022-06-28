@@ -18,8 +18,4 @@ The updated \code{ino} object.
 \description{
 This function clears optimization runs saved in an \code{ino} object.
 }
-\examples{
-NA
-
-}
 \keyword{specification}

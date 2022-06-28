@@ -13,9 +13,6 @@
 #'
 #' @export
 #'
-#' @examples
-#' # summary.ino()
-#'
 #' @importFrom dplyr group_by_at summarize n across all_of
 
 summary.ino <- function(object, group = c(".strategy", ".optimizer"), ...) {
@@ -154,7 +151,7 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 #' @export
 #'
 #' @examples
-#' # nr_optima()
+#' # overview_optima()
 #'
 #' @importFrom rlang .data
 #' @importFrom ggplot2 ggplot aes geom_bar theme_minimal xlab
@@ -162,7 +159,7 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 #' @keywords
 #' evaluation
 
-nr_optima <- function(x, round = 2) {
+overview_optima <- function(x, round = 2) {
   optima_found <- x$runs$table$minimum
   optima_found <- round(optima_found, digits = round)
   out  <- as.data.frame(table(optima_found))

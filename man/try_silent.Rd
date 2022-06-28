@@ -11,7 +11,7 @@ try_silent(expr)
 }
 \value{
 Either the value of \code{expr} or in case of a failure an object of class
-\code{fail}, which is the error message.
+\code{fail}, which contains the error message.
 }
 \description{
 This function tries to execute \code{expr} and returns a string with the

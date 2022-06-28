@@ -9,14 +9,14 @@ f_ll_hmm(theta, data, N = 2, neg = FALSE)
 \arguments{
 \item{theta}{A numeric vector of model parameters.}
 
-\item{data}{A data frame that includes a time series of counts.}
+\item{data}{A \code{data.frame} that includes a time series of counts.}
 
 \item{N}{The number of states in the hidden Markov model.}
 
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
-The log-likelihood value.
+The log-likelihood value at \code{theta}.
 }
 \description{
 The log-likelihood function of the Poisson-hidden Markov model

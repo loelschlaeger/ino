@@ -13,7 +13,7 @@
 #' ino:::f_ackley(c(0, 0))
 #'
 #' @return
-#' A numeric value.
+#' The function value at \code{x}, a single numeric value.
 #'
 #' @keywords
 #' function
@@ -39,7 +39,7 @@ f_ackley <- function(x) {
 #' ino:::f_beale(c(3, 0.5))
 #'
 #' @return
-#' A numeric value.
+#' The function value at \code{x}, a single numeric value.
 #'
 #' @keywords
 #' function
@@ -65,7 +65,7 @@ f_beale <- function(x) {
 #' ino:::f_matyas(c(0, 0))
 #'
 #' @return
-#' A numeric value.
+#' The function value at \code{x}, a single numeric value.
 #'
 #' @keywords
 #' function
@@ -90,7 +90,7 @@ f_matyas <- function(x) {
 #' ino:::f_easom(c(pi, pi))
 #'
 #' @return
-#' A numeric value.
+#' The function value at \code{x}, a single numeric value.
 #'
 #' @keywords
 #' function
@@ -112,7 +112,7 @@ f_easom <- function(x) {
 #' @param theta
 #' A numeric vector of model parameters.
 #' @param data
-#' A data frame that includes a time series of counts.
+#' A \code{data.frame} that includes a time series of counts.
 #' @param N
 #' The number of states in the hidden Markov model.
 #' @param neg
@@ -125,7 +125,7 @@ f_easom <- function(x) {
 #' @importFrom stats dpois
 #'
 #' @return
-#' The log-likelihood value.
+#' The log-likelihood value at \code{theta}.
 #'
 #' @keywords
 #' function
@@ -186,7 +186,7 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' @param theta
 #' The vector of model coefficients in order \code{c(b,o,l)}, see the details.
 #' @param data
-#' A data frame with the shape of the output of \code{\link{sim_mnp}}.
+#' A \code{data.frame} with the shape of the output of \code{\link{sim_mnp}}.
 #' @param normal_cdf
 #' A function that evaluates the CDF of an \code{n}-variate normal distribution.
 #' It must take the arguments
@@ -201,13 +201,15 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @return
-#' The log-likelihood value.
+#' The log-likelihood value at \code{theta}.
 #'
 #' @examples
 #' data <- ino:::sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
 #' theta <- attr(data, "true")
 #' ino:::f_ll_mnp(theta = theta, data = data)
-#' # nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
+#' \dontrun{
+#' nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
+#' }
 #'
 #' @keywords
 #' function
@@ -273,13 +275,13 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
 #'
 #' @details
 #' The normally mixed multinomial probit model formula is
-#' \deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt}},
+#' \deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt},}
 #' where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
 #' of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
 #' \eqn{X_{nt}} is the choice occasion-specific \eqn{J} times \eqn{P} covariate
 #' matrix, \eqn{\beta_n} is the decider-specific random effect vector with
-#' \deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and \eqn{\eps_{nt}} is the choice
-#' occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma)}.
+#' \deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and \eqn{\eps_{nt}} is the choice
+#' occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma).}
 #' The choice \eqn{y_{nt}} of decider \eqn{n} at choice occasion \eqn{t} is
 #' linked to the utilities via \deqn{y_{nt} = \arg \max U_{nt}} (hence assuming
 #' utility maximizing behavior). For parameter identification (utility is
@@ -310,9 +312,9 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
 #' are sampled from a normal distribution with mean 0 and standard deviation 9.
 #'
 #' @return
-#' A data frame. The first column (\code{n}) is the identifier for the decider,
-#' the next column (\code{t}) the identifier for the choice occasion. Next
-#' comes the column \code{y} with the indices of the chosen alternatives.
+#' A \code{data.frame}. The first column (\code{n}) is the identifier for the
+#' decider, the next column (\code{t}) the identifier for the choice occasion.
+#' Next comes the column \code{y} with the indices of the chosen alternatives.
 #' The last columns contain the column-wise entries of \eqn{X_{nt}}.
 #'
 #' The true model coefficients are added to the output via the attribute
@@ -328,6 +330,9 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
 #' ino:::sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 #'
 #' @importFrom stats rnorm
+#'
+#' @keywords
+#' function
 
 sim_mnp <- function(N, T = 1, b, Omega = NULL, Sigma, seed = NULL,
                     covariate = function() rnorm(n = 1, mean = 0, sd = 9)) {
@@ -411,7 +416,7 @@ sim_mnp <- function(N, T = 1, b, Omega = NULL, Sigma, seed = NULL,
 #' @param theta
 #' The vector of model coefficients in order \code{c(b,o)}, see the details.
 #' @param data
-#' A data frame with the shape of the output of \code{\link{sim_mnl}}.
+#' A \code{data.frame} with the shape of the output of \code{\link{sim_mnl}}.
 #' @param R
 #' The number of random draws to approximate the integral for the mixed logit
 #' choice probabilities.
@@ -419,13 +424,15 @@ sim_mnp <- function(N, T = 1, b, Omega = NULL, Sigma, seed = NULL,
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @return
-#' The log-likelihood value.
+#' The log-likelihood value at \code{theta}.
 #'
 #' @examples
 #' data <- ino:::sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
 #' theta <- attr(data, "true")
 #' ino:::f_ll_mnl(theta = theta, data = data)
-#' # nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
+#' \dontrun{
+#' nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
+#' }
 #'
 #' @importFrom mvtnorm pmvnorm
 #' @importFrom stats rnorm
@@ -473,16 +480,17 @@ f_ll_mnl <- function(theta, data, R = 100, neg = FALSE) {
 #'
 #' @details
 #' The normally mixed multinomial logit model formula is
-#' \deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt}},
+#' \deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt},}
 #' where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
 #' of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
 #' \eqn{X_{nt}} is the decider- and choice occasion-specific \eqn{J} times
 #' \eqn{P} covariate matrix, \eqn{\beta_n} is the decider-specific random
-#' coefficient vector with \deqn{beta_n\sim\text{MVN}_P(b,\Omega)}, and
+#' coefficient vector with \deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and
 #' \eqn{\eps_{nt}} is the error term that is iid extreme value distributed.
 #'
 #' @seealso
-#' [f_ll_mnl()]
+#' [f_ll_mnp()] for computing the log-likelihood of a (normally mixed)
+#' multinomial logit model.
 #'
 #' @param N
 #' The number of observations.
@@ -504,9 +512,9 @@ f_ll_mnl <- function(theta, data, R = 100, neg = FALSE) {
 #' are sampled from a normal distribution with mean 0 and standard deviation 9.
 #'
 #' @return
-#' A data frame. The first column (\code{n}) is the identifier for the decider,
-#' the next column (\code{t}) the identifier for the choice occasion. Next
-#' comes the column \code{y} with the indices of the chosen alternatives.
+#' A \code{data.frame}. The first column (\code{n}) is the identifier for the
+#' decider, the next column (\code{t}) the identifier for the choice occasion.
+#' Next comes the column \code{y} with the indices of the chosen alternatives.
 #' The last columns contain the column-wise entries of \eqn{X_{nt}}.
 #'
 #' The true model coefficients are added to the output via the attribute
@@ -520,6 +528,9 @@ f_ll_mnl <- function(theta, data, R = 100, neg = FALSE) {
 #'
 #' @importFrom evd rgumbel
 #' @importFrom stats rnorm
+#'
+#' @keywords
+#' function
 
 sim_mnl <- function(N, T = 1, J, b, Omega = NULL, seed = NULL,
                     covariate = function() rnorm(n = 1, mean = 0, sd = 9)) {

@@ -27,10 +27,7 @@ The updated \code{ino} object.
 This function is an implementation of the fixed initialization strategy.
 }
 \details{
-See the vignette on initialization strategies for more details.
-}
-\examples{
-#fixed_initialization()
-
+For more details see the help vignette:
+\code{vignette("workflow", package = "ino")}
 }
 \keyword{strategy}

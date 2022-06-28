@@ -13,14 +13,14 @@
 #'
 #' ### Specifying an optimizer
 #' The numerical optimizer must be specified via the \code{opt} argument as the
-#' output of \code{set_optimizer()}. Specifying multiple optimizer is possible,
-#' see below.
+#' output of \code{\link{set_optimizer}}. You can specify multiple optimizer for
+#' comparison, see below.
 #'
 #' ### Specifying multiple parameter values
 #' You can specify multiple values for each \code{...} parameter. Such arguments
-#' must be a list, where each list element must be a valid parameter value.
-#' The names of these arguments must be added to the \code{mpvs} character
-#' vector argument to make clear that you want to iterate over them.
+#' must be in \code{list} format, where each list element must be a valid
+#' parameter value. The names of these arguments must be added to the
+#' \code{mpvs} input to make clear that you want to iterate over them.
 #'
 #' ### Specifying multiple optimizer
 #' Specifying multiple optimizer is analogue to specifying multiple parameter
@@ -29,18 +29,18 @@
 #'
 #' ### An example
 #' Say that \code{f} is a likelihood function of \code{npar} parameters that has
-#' the additional argument \code{data}, which is supposed to be a set of data
-#' values. Say furthermore that you want to conduct a simulation experiment of
-#' the initialization effect for \code{f} for two different data sets.
-#' And last, say that you want to apply the \code{\link[stats]{nlm}} optimizer
-#' and the \code{\link[stats]{optim}} optimizer. Then, specify
+#' the additional argument \code{data}. Say furthermore that you want to conduct
+#' a simulation experiment of the initialization effect for \code{f} for two
+#' different data sets. And last, say that you want to compare the
+#' \code{\link[stats]{nlm}} optimizer and the \code{\link[stats]{optim}}
+#' optimizer. Then, specify
 #' \preformatted{
 #' setup_ino(
 #'   f = f,
 #'   npar = npar,
 #'   data = list("data1" = <data set 1>,
 #'               "data2" = <data set 2>),
-#'   opt = list("nlm" = set_optimizer_nlm(),
+#'   opt = list("nlm"   = set_optimizer_nlm(),
 #'              "optim" = set_optimizer_optim()),
 #'   mpvs = c("data", "opt")
 #' )
@@ -54,13 +54,13 @@
 #' @param ...
 #' Additional and named arguments to be passed to \code{f} (optional).
 #' @param opt
-#' The output of \code{set_optimizer()}, which is an object of class
-#' \code{optimizer}. Per default, \code{opt = set_optimizer_nlm()}, which is a
-#' wrapper for the \code{\link[stats]{nlm}} optimizer. Can also be a list of
-#' \code{optimizer} objects, see the details.
+#' The output of \code{\link{set_optimizer}}, which is an object of class
+#' \code{optimizer}. Per default, \code{opt = set_optimizer_nlm()}, which
+#' specifies the \code{\link[stats]{nlm}} optimizer. Can also be a list of
+#' different \code{optimizer} objects, see the details.
 #' @param mpvs
-#' A character vector of the parameter names with multiple values, see the
-#' details. Per default, \code{mpvs = character(0)}.
+#' A character vector of the argument names with multiple parameter values, see
+#' the details. Per default, \code{mpvs = character(0)}.
 #' @param skip_test
 #' Set to \code{TRUE} to skip the specification tests.
 #' @inheritParams test_ino
@@ -135,16 +135,16 @@ setup_ino <- function(
 #' An object of class \code{ino}.
 #'
 #' @return
-#' A list, where each element is a parameter set. Each parameter set contains
-#' at least a placeholder for the target parameter, which is set to \code{NA}
-#' and has to be filled by the initialization strategies. Additionally, each
-#' parameter set contains further arguments for the target function if
-#' available. In this case, the parameter names and identifier for the parameter
-#' values are added as attributes \code{"par_name"} and \code{"par_id"} to the
-#' parameter set.
+#' A \code{list}, where each element is a parameter set. Each parameter set
+#' contains at least a placeholder for the target parameter, which is set to
+#' \code{NA} and has to be filled by the initialization strategies.
+#' Additionally, each parameter set contains further arguments for the target
+#' function if available. In this case, the parameter names and identifier for
+#' the parameter values are added as attributes \code{"par_name"} and
+#' \code{"par_id"} to the parameter set.
 #'
 #' @keywords
-#' specification
+#' internal
 
 grid_ino <- function(x) {
 
@@ -176,7 +176,6 @@ grid_ino <- function(x) {
   return(par_sets)
 }
 
-
 #' Save results of optimization run
 #'
 #' @description
@@ -192,13 +191,13 @@ grid_ino <- function(x) {
 #' @param result
 #' The output of \code{\link{do.call_timed}}.
 #' @param opt_name
-#' The identifier of the optimizer.
+#' The name of the optimizer.
 #'
 #' @return
 #' The updated object \code{x} (invisibly).
 #'
 #' @keywords
-#' specification
+#' internal
 
 result_ino <- function(x, strategy, pars, result, opt_name) {
 
@@ -242,7 +241,7 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
 #' The updated object \code{x} (invisibly).
 #'
 #' @keywords
-#' specification
+#' internal
 #'
 #' @importFrom stats rnorm
 
@@ -389,18 +388,19 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' problem.
 #'
 #' @details
-#' Numerical optimization functions specified for the \code{opt} argument must
-#' fulfill the following requirements:
+#' Numerical optimizer specified for the \code{opt} argument must fulfill the
+#' following requirements:
 #' \itemize{
-#'   \item function input name f
-#'   \item starting parameter values input name p
-#'   \item additional parameters to f via ...
-#'   \item output is a named list
-#'   \item name of optimal parameter vector in the output list is z
+#'   \item it must have an input \code{f} for the function to be optimized,
+#'   \item it must have an input \code{p} for the starting parameter values,
+#'   \item it must have a \code{...} argument for additional parameters to
+#'         \code{f},
+#'   \item the output must be a named list, including the optimal parameter
+#'         vector.
 #' }
 #'
 #' @param opt
-#' An object of class \code{function}, a numerical optimizer, see the details.
+#' An object of class \code{function}, a numerical optimizer.
 #' @param f
 #' The name of the function input of \code{opt}.
 #' @param p
@@ -419,7 +419,8 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' \code{\link{setup_ino}}.
 #'
 #' @seealso
-#' [set_optimizer_nlm()], a wrapper for the \code{\link[stats]{nlm}} optimizer.
+#' [set_optimizer_nlm()] and [set_optimizer_optim()], two wrappers for the
+#' \code{\link[stats]{nlm}} and \code{\link[stats]{optim}} optimizer.
 #'
 #' @export
 #'
@@ -479,7 +480,13 @@ set_optimizer <- function(opt, f, p, z, ..., crit = c(z)) {
   optimizer$name <- deparse(substitute(opt))
   class(optimizer) <- c("optimizer","list")
   return(optimizer)
+}
 
+#' @export
+#' @noRd
+
+print.optimizer <- function(x, ...) {
+  cat("<optimizer ",x$name,">", sep = "")
 }
 
 #' Specify the \code{\link[stats]{nlm}} optimizer
@@ -491,7 +498,7 @@ set_optimizer <- function(opt, f, p, z, ..., crit = c(z)) {
 #' \code{\link{setup_ino}}.
 #'
 #' @seealso
-#' [set_optimizer()], for specifying a different optimizer.
+#' [set_optimizer()] for specifying a different optimizer.
 #'
 #' @export
 #'
@@ -514,7 +521,7 @@ set_optimizer_nlm <- function(
 #' \code{\link{setup_ino}}.
 #'
 #' @seealso
-#' [set_optimizer()], for specifying a different optimizer.
+#' [set_optimizer()] for specifying a different optimizer.
 #'
 #' @export
 #'
@@ -543,9 +550,6 @@ set_optimizer_optim <- function(
 #' The updated \code{ino} object.
 #'
 #' @export
-#'
-#' @examples
-#' NA
 #'
 #' @keywords
 #' specification
@@ -576,9 +580,6 @@ clear_ino <- function(x, which = "all") {
 #' The updated \code{ino} object.
 #'
 #' @export
-#'
-#' @examples
-#' NA
 #'
 #' @keywords
 #' specification

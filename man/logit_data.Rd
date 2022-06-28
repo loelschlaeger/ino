@@ -11,8 +11,9 @@ The format of the data sets is documented in \code{\link{sim_mnl}}.
 data(logit_data)
 }
 \description{
-This object is a list which includes 100 data sets of simulated choices and
-corresponding choice characteristics from a (normally) mixed logit model.
+This object is a \code{list} which includes 100 data sets of simulated
+choices and corresponding choice characteristics from a (normally) mixed
+logit model.
 }
 \details{
 The data set was simulated via the following lines:

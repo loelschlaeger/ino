@@ -7,7 +7,7 @@
 set_optimizer(opt, f, p, z, ..., crit = c(z))
 }
 \arguments{
-\item{opt}{An object of class \code{function}, a numerical optimizer, see the details.}
+\item{opt}{An object of class \code{function}, a numerical optimizer.}
 
 \item{f}{The name of the function input of \code{opt}.}
 
@@ -30,14 +30,15 @@ Use this function to specify a numerical optimizer for the optimization
 problem.
 }
 \details{
-Numerical optimization functions specified for the \code{opt} argument must
-fulfill the following requirements:
+Numerical optimizer specified for the \code{opt} argument must fulfill the
+following requirements:
 \itemize{
-\item function input name f
-\item starting parameter values input name p
-\item additional parameters to f via ...
-\item output is a named list
-\item name of optimal parameter vector in the output list is z
+\item it must have an input \code{f} for the function to be optimized,
+\item it must have an input \code{p} for the starting parameter values,
+\item it must have a \code{...} argument for additional parameters to
+\code{f},
+\item the output must be a named list, including the optimal parameter
+vector.
 }
 }
 \examples{
@@ -52,6 +53,7 @@ set_optimizer(
 
 }
 \seealso{
-\code{\link[=set_optimizer_nlm]{set_optimizer_nlm()}}, a wrapper for the \code{\link[stats]{nlm}} optimizer.
+\code{\link[=set_optimizer_nlm]{set_optimizer_nlm()}} and \code{\link[=set_optimizer_optim]{set_optimizer_optim()}}, two wrappers for the
+\code{\link[stats]{nlm}} and \code{\link[stats]{optim}} optimizer.
 }
 \keyword{specification}

@@ -1,6 +1,7 @@
 # Installation ------------------------------------------------------------
 
-# install.packages("../ino_0.0.0.9000.tar.gz", repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
+# ppath <- "../ino_0.0.0.9000.tar.gz"
+# install.packages(ppath, repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
 devtools::load_all()
 
 # Example: Ackley ---------------------------------------------------------
@@ -29,7 +30,7 @@ plot(x, var = ".time", by = ".optimizer", type = "histogram")
 plot(x, var = ".time", by = ".optimizer", type = "barplot")
 plot(x, var = ".time", by = c(".optimizer", ".strategy"))
 
-nr_optima(x, round = 2)
+overview_optima(x, round = 2)
 
 # Example: HMM LL ---------------------------------------------------------
 

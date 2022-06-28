@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{do.call_timed}
 \alias{do.call_timed}
-\title{Measure computation time of \code{do.call}}
+\title{Measure computation time}
 \usage{
 do.call_timed(what, args, headstart = 0)
 }
@@ -24,10 +24,7 @@ This function measures the computation time of a \code{do.call} call.
 This function is a wrapper for \code{\link[base]{do.call}}.
 }
 \examples{
-what <- function(s) {
-  Sys.sleep(s)
-  return(s)
-}
+what <- function(s) { Sys.sleep(s); return(s) }
 args <- list(s = 1)
 ino:::do.call_timed(what = what, args = args, headstart = 1)
 

@@ -19,12 +19,11 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-#library(ino)
-devtools::load_all()
-library(ggplot2)
+#library(ino)        # UNCOMMENT
+devtools::load_all() # REMOVE
+library(ggplot2)     # REMOVE
 options(ino_progress = FALSE)
 ```
-
 
 This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of an hidden Markov model (HMM). The aim of this vignette is to learn about the functions and the workflow of ino, for more technical details about HMMs see, e.g.,  Zucchini et al. (2016).
 
@@ -84,7 +83,7 @@ for(i in 1:3)
 ### Local optima
 
 ```{r echo=TRUE}
-nr_optima(hmm_ino)
+overview_optima(hmm_ino)
 plot(hmm_ino, var = "minimum", by = ".strategy", type = "barplot")
 ```
 

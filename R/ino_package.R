@@ -1,6 +1,7 @@
-#' ino: A package for initialization for numerical optimization
+#' ino: Initialization strategies for numerical optimization
 #'
-#' This package provides tools for the analysis of the initialization of
+#' @description
+#' This package implements tools for the analysis of the initialization of
 #' numerical optimization.
 #'
 #' @docType package
@@ -11,6 +12,8 @@ NULL
 
 #' @noRd
 #' @importFrom progress progress_bar
+#' @keywords
+#' internal
 
 ino_pb <- function(title = "", total) {
   progress::progress_bar$new(
@@ -22,18 +25,24 @@ ino_pb <- function(title = "", total) {
 }
 
 #' @noRd
+#' @keywords
+#' internal
 
 ino_pp <- function(pb, verbose = getOption("ino_progress")) {
   if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
 }
 
 #' @noRd
+#' @keywords
+#' internal
 
 ino_status <- function(msg, verbose = getOption("ino_progress")) {
   if (verbose) message("* ", msg)
 }
 
 #' @noRd
+#' @keywords
+#' internal
 
 .onLoad <- function(lib, pkg) {
   options("ino_progress" = TRUE)
@@ -42,9 +51,10 @@ ino_status <- function(msg, verbose = getOption("ino_progress")) {
 
 #' @noRd
 #' @importFrom utils packageVersion
+#' @keywords
+#' internal
 
 .onAttach <- function(lib, pkg) {
-  ### startup message
   msg <- paste0(
     "Thanks for using {ino} ", utils::packageVersion("ino"), "."
   )
@@ -53,6 +63,8 @@ ino_status <- function(msg, verbose = getOption("ino_progress")) {
 }
 
 #' @noRd
+#' @keywords
+#' internal
 
 ino_call <- function(call) {
   call$ncores <- 1
@@ -63,12 +75,16 @@ ino_call <- function(call) {
 
 #' @noRd
 #' @export
+#' @keywords
+#' internal
 
 print.ino_call <- function(x, ...) {
   cat("<ino_call>")
 }
 
 #' @noRd
+#' @keywords
+#' internal
 
 ino_check_inputs <- function(...) {
   stop0 <- function(msg) stop(msg, call. = FALSE)
@@ -109,8 +125,10 @@ ino_check_inputs <- function(...) {
           x$f$name, "'."
         ))
       }
-      if (arg %in% x$f$mpvs && !all(sapply(x$f$add[[arg]], inherits, c("matrix", "data.frame"))) ||
-        !arg %in% x$f$mpvs && !inherits(x$f$add[[arg]], c("matrix", "data.frame"))) {
+      if (arg %in% x$f$mpvs &&
+          !all(sapply(x$f$add[[arg]], inherits, c("matrix", "data.frame"))) ||
+        !arg %in% x$f$mpvs &&
+        !inherits(x$f$add[[arg]], c("matrix", "data.frame"))) {
         stop0(paste0(
           "The argument 'arg' = '", arg, "' does not seem to be of class ",
           "'matrix' or 'data.frame'."
@@ -124,7 +142,6 @@ ino_check_inputs <- function(...) {
       if ("x" %in% n) {
         if (how == "kmeans") {
           # TODO: add check if columns are numeric
-          # TODO: add argument that specifies the columns for clustering
         }
       }
     }
@@ -172,6 +189,8 @@ ino_check_inputs <- function(...) {
 }
 
 #' @noRd
+#' @keywords
+#' internal
 
 subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
 
@@ -190,8 +209,6 @@ subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
       subset_ind <- sort(sample.int(arg_val_length, arg_val_subset_length))
     } else if (how == "first") {
       subset_ind <- 1:arg_val_subset_length
-    } else if (how == "last") {
-      # TODO: implement
     } else if (how == "kmeans") {
       if (!is.null(col_ign)) arg_val <- arg_val[, -col_ign, drop = FALSE]
       kmeans_out <- do.call(
@@ -226,6 +243,8 @@ subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
 }
 
 #' @noRd
+#' @keywords
+#' internal
 
 standardize_arg <- function(x, arg, by_col, center, scale, col_ign) {
 

@@ -9,7 +9,7 @@ f_ll_mnl(theta, data, R = 100, neg = FALSE)
 \arguments{
 \item{theta}{The vector of model coefficients in order \code{c(b,o)}, see the details.}
 
-\item{data}{A data frame with the shape of the output of \code{\link{sim_mnl}}.}
+\item{data}{A \code{data.frame} with the shape of the output of \code{\link{sim_mnl}}.}
 
 \item{R}{The number of random draws to approximate the integral for the mixed logit
 choice probabilities.}
@@ -17,7 +17,7 @@ choice probabilities.}
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
-The log-likelihood value.
+The log-likelihood value at \code{theta}.
 }
 \description{
 The log-likelihood function of the (normally mixed) multinomial logit model
@@ -34,7 +34,9 @@ Cholesky root of \code{Omega} (if any).
 data <- ino:::sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
 theta <- attr(data, "true")
 ino:::f_ll_mnl(theta = theta, data = data)
-# nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
+\dontrun{
+nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
+}
 
 }
 \references{

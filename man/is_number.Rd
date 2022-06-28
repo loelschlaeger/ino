@@ -7,7 +7,7 @@
 is_number(x)
 }
 \arguments{
-\item{x}{A (vector of) numeric value(s).}
+\item{x}{A (vector of) value(s).}
 }
 \value{
 A logical vector of the same length as \code{x}.

@@ -22,13 +22,13 @@ setup_ino(
 
 \item{...}{Additional and named arguments to be passed to \code{f} (optional).}
 
-\item{opt}{The output of \code{set_optimizer()}, which is an object of class
-\code{optimizer}. Per default, \code{opt = set_optimizer_nlm()}, which is a
-wrapper for the \code{\link[stats]{nlm}} optimizer. Can also be a list of
-\code{optimizer} objects, see the details.}
+\item{opt}{The output of \code{\link{set_optimizer}}, which is an object of class
+\code{optimizer}. Per default, \code{opt = set_optimizer_nlm()}, which
+specifies the \code{\link[stats]{nlm}} optimizer. Can also be a list of
+different \code{optimizer} objects, see the details.}
 
-\item{mpvs}{A character vector of the parameter names with multiple values, see the
-details. Per default, \code{mpvs = character(0)}.}
+\item{mpvs}{A character vector of the argument names with multiple parameter values, see
+the details. Per default, \code{mpvs = character(0)}.}
 
 \item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) the test results of the
 setup at the console.}
@@ -54,16 +54,16 @@ length \code{npar}, followed by any other arguments specified via the
 \subsection{Specifying an optimizer}{
 
 The numerical optimizer must be specified via the \code{opt} argument as the
-output of \code{set_optimizer()}. Specifying multiple optimizer is possible,
-see below.
+output of \code{\link{set_optimizer}}. You can specify multiple optimizer for
+comparison, see below.
 }
 
 \subsection{Specifying multiple parameter values}{
 
 You can specify multiple values for each \code{...} parameter. Such arguments
-must be a list, where each list element must be a valid parameter value.
-The names of these arguments must be added to the \code{mpvs} character
-vector argument to make clear that you want to iterate over them.
+must be in \code{list} format, where each list element must be a valid
+parameter value. The names of these arguments must be added to the
+\code{mpvs} input to make clear that you want to iterate over them.
 }
 
 \subsection{Specifying multiple optimizer}{
@@ -76,18 +76,18 @@ values: Submit a list of \code{optimizer} objects (i.e. outputs of
 \subsection{An example}{
 
 Say that \code{f} is a likelihood function of \code{npar} parameters that has
-the additional argument \code{data}, which is supposed to be a set of data
-values. Say furthermore that you want to conduct a simulation experiment of
-the initialization effect for \code{f} for two different data sets.
-And last, say that you want to apply the \code{\link[stats]{nlm}} optimizer
-and the \code{\link[stats]{optim}} optimizer. Then, specify
+the additional argument \code{data}. Say furthermore that you want to conduct
+a simulation experiment of the initialization effect for \code{f} for two
+different data sets. And last, say that you want to compare the
+\code{\link[stats]{nlm}} optimizer and the \code{\link[stats]{optim}}
+optimizer. Then, specify
 \preformatted{
 setup_ino(
   f = f,
   npar = npar,
   data = list("data1" = <data set 1>,
               "data2" = <data set 2>),
-  opt = list("nlm" = set_optimizer_nlm(),
+  opt = list("nlm"   = set_optimizer_nlm(),
              "optim" = set_optimizer_optim()),
   mpvs = c("data", "opt")
 )

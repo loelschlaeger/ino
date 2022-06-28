@@ -10,7 +10,7 @@ f_beale(x)
 \item{x}{A numeric vector of length 2.}
 }
 \value{
-A numeric value.
+The function value at \code{x}, a single numeric value.
 }
 \description{
 The Beale function

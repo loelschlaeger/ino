@@ -16,8 +16,4 @@ The updated \code{ino} object.
 \description{
 This function merges multiple \code{ino} objects.
 }
-\examples{
-NA
-
-}
 \keyword{specification}

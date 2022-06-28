@@ -18,4 +18,4 @@ The updated object \code{x} (invisibly).
 \description{
 This helper function tests the specification of an \code{ino} object.
 }
-\keyword{specification}
+\keyword{internal}
