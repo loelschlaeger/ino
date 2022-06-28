@@ -24,4 +24,26 @@ The updated object \code{x} (invisibly).
 This helper function saves the results of an optimization run into the
 submitted \code{ino} object.
 }
+\details{
+The results are saved at \code{x$runs}, which is a list of two elements:
+\itemize{
+\item \code{table} is a \code{data.frame} with the optimization runs as
+rows and optimization results as columns.
+Per default, the following columns are created:
+\itemize{
+\item \code{.strategy}, the name of the initialization strategy,
+\item \code{.optimizer}, the name of the optimizer,
+\item \code{.time}, the optimization time,
+\item \code{.optimum}, the function value at the optimum.
+}
+\item \code{pars} is a \code{list}, where the following values are saved
+for each optimization run:
+\itemize{
+\item \code{.init}, the initial value,
+\item \code{.estimate}, the optimal parameter values,
+\item and any non-single valued output of the optimizer that was
+specified via \code{crit} in \code{\link{set_optimizer}}.
+}
+}
+}
 \keyword{internal}

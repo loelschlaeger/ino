@@ -334,8 +334,10 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
 #' @keywords
 #' function
 
-sim_mnp <- function(N, T = 1, b, Omega = NULL, Sigma, seed = NULL,
-                    covariate = function() rnorm(n = 1, mean = 0, sd = 9)) {
+sim_mnp <- function(
+  N, T = 1, b, Omega = NULL, Sigma, seed = NULL,
+  covariate = function() rnorm(n = 1, mean = 0, sd = 9)
+  ) {
 
   ### input checks
   stopifnot(N%%1 == 0, N > 0, length(N) == 1)

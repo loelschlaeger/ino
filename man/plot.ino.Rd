@@ -2,14 +2,14 @@
 % Please edit documentation in R/evaluations.R
 \name{plot.ino}
 \alias{plot.ino}
-\title{Plotting function.}
+\title{Visualization of an \code{ino} object}
 \usage{
 \method{plot}{ino}(x, var = ".time", by = ".strategy", type = "boxplot", ...)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{var}{A (numeric) summary statistic on the optimization runs.}
+\item{var}{The name of the statistic to be plotted.}
 
 \item{by}{Plots the summary statistic \code{var} for all groups listed in \code{by}.}
 
@@ -19,14 +19,10 @@
 \item{...}{Additional arguments to be passed to the plotting function.}
 }
 \value{
-A ggplot.
+An \code{ggplot} object.
 }
 \description{
 This function plots one or multiple summary statistics on the optimization
 runs in an \code{ino} object.
-}
-\examples{
-# plot.ino()
-
 }
 \keyword{evaluation}

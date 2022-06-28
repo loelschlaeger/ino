@@ -2,24 +2,22 @@
 % Please edit documentation in R/evaluations.R
 \name{overview_optima}
 \alias{overview_optima}
-\title{Number of optima found}
+\title{Overview of found optima}
 \usage{
-overview_optima(x, round = 2)
+overview_optima(x, digits = 2, plot = FALSE)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{round}{TBA}
+\item{digits}{The number of digits of the optima values.}
+
+\item{plot}{Set to \code{TRUE} for a visualization.}
 }
 \value{
-A ggplot.
+Either a \code{data.frame} (if \code{plot = FALSE}), or otherwise a
+\code{ggplot} object.
 }
 \description{
-This function provides an overview of the number of optima found with respect
-to the initialization strategies.
-}
-\examples{
-# overview_optima()
-
+This function provides an overview of the number of optima found.
 }
 \keyword{evaluation}

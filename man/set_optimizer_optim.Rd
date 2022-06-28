@@ -4,14 +4,14 @@
 \alias{set_optimizer_optim}
 \title{Specify the \code{\link[stats]{optim}} optimizer}
 \usage{
-set_optimizer_optim(..., crit = c("value", "par", "convergence"))
+set_optimizer_optim(..., crit = c("convergence"))
 }
 \arguments{
 \item{...}{Additional arguments to be passed to the optimizer \code{opt}. Without
 specifications, the default values of \code{opt} are used.}
 
 \item{crit}{The names of the list elements in the output of \code{opt} to be saved after
-the optimization. Must contain \code{z}.}
+the optimization. The values \code{v} and \code{z} are automatically added.}
 }
 \value{
 An object of class \code{optimizer}, which can be passed to

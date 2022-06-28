@@ -4,7 +4,7 @@
 \alias{set_optimizer}
 \title{Specify a numerical optimizer}
 \usage{
-set_optimizer(opt, f, p, z, ..., crit = c(z))
+set_optimizer(opt, f, p, v, z, ..., crit = character(0))
 }
 \arguments{
 \item{opt}{An object of class \code{function}, a numerical optimizer.}
@@ -13,13 +13,15 @@ set_optimizer(opt, f, p, z, ..., crit = c(z))
 
 \item{p}{The name of the starting parameter values input of \code{opt}.}
 
+\item{v}{The name of the optimal function value in the output list of \code{opt}.}
+
 \item{z}{The name of the optimal parameter vector in the output list of \code{opt}.}
 
 \item{...}{Additional arguments to be passed to the optimizer \code{opt}. Without
 specifications, the default values of \code{opt} are used.}
 
 \item{crit}{The names of the list elements in the output of \code{opt} to be saved after
-the optimization. Must contain \code{z}.}
+the optimization. The values \code{v} and \code{z} are automatically added.}
 }
 \value{
 An object of class \code{optimizer}, which can be passed to
@@ -37,8 +39,8 @@ following requirements:
 \item it must have an input \code{p} for the starting parameter values,
 \item it must have a \code{...} argument for additional parameters to
 \code{f},
-\item the output must be a named list, including the optimal parameter
-vector.
+\item the output must be a named list, including the optimal function value
+(named \code{v}) and parameter vector (named \code{z}).
 }
 }
 \examples{
@@ -46,6 +48,7 @@ set_optimizer(
   opt = pracma::nelder_mead,
   f = "fn",
   p = "x0",
+  v = "fmin",
   z = "xmin",
   tol = 1e-6,
   crit = c("xmin", "fcount")

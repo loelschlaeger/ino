@@ -13,7 +13,20 @@
 
 \item{...}{Named functions for computing statistics.}
 }
+\value{
+A \code{data.frame}.
+}
 \description{
 This function gives an overview of the optimization runs in an \code{ino}
 object.
 }
+\details{
+The following values are available for each \code{ino} object:
+\itemize{
+\item \code{.strategy}, the name of the initialization strategy,
+\item \code{.optimizer}, the name of the optimizer,
+\item \code{.time}, the optimization time,
+\item \code{.optimum}, the function value at the optimum.
+}
+}
+\keyword{evaluation}

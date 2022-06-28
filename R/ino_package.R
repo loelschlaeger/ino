@@ -210,10 +210,12 @@ subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
     } else if (how == "first") {
       subset_ind <- 1:arg_val_subset_length
     } else if (how == "kmeans") {
-      if (!is.null(col_ign)) arg_val <- arg_val[, -col_ign, drop = FALSE]
+      arg_val_ign <- arg_val
+      if (!is.null(col_ign))
+        arg_val_ign <- arg_val_ign[, -col_ign, drop = FALSE]
       kmeans_out <- do.call(
         what = stats::kmeans,
-        args = c(list("x" = arg_val), kmeans_arg)
+        args = c(list("x" = arg_val_ign), kmeans_arg)
       )
       nc <- ceiling(arg_val_subset_length / kmeans_arg[["centers"]])
       subset_ind <- c()

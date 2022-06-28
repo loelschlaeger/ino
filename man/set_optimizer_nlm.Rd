@@ -4,14 +4,14 @@
 \alias{set_optimizer_nlm}
 \title{Specify the \code{\link[stats]{nlm}} optimizer}
 \usage{
-set_optimizer_nlm(..., crit = c("minimum", "estimate", "code", "iterations"))
+set_optimizer_nlm(..., crit = c("code", "iterations"))
 }
 \arguments{
 \item{...}{Additional arguments to be passed to the optimizer \code{opt}. Without
 specifications, the default values of \code{opt} are used.}
 
 \item{crit}{The names of the list elements in the output of \code{opt} to be saved after
-the optimization. Must contain \code{z}.}
+the optimization. The values \code{v} and \code{z} are automatically added.}
 }
 \value{
 An object of class \code{optimizer}, which can be passed to

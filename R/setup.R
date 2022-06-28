@@ -182,6 +182,28 @@ grid_ino <- function(x) {
 #' This helper function saves the results of an optimization run into the
 #' submitted \code{ino} object.
 #'
+#' @details
+#' The results are saved at \code{x$runs}, which is a list of two elements:
+#' \itemize{
+#'   \item \code{table} is a \code{data.frame} with the optimization runs as
+#'         rows and optimization results as columns.
+#'         Per default, the following columns are created:
+#'         \itemize{
+#'           \item \code{.strategy}, the name of the initialization strategy,
+#'           \item \code{.optimizer}, the name of the optimizer,
+#'           \item \code{.time}, the optimization time,
+#'           \item \code{.optimum}, the function value at the optimum.
+#'         }
+#'   \item \code{pars} is a \code{list}, where the following values are saved
+#'         for each optimization run:
+#'         \itemize{
+#'           \item \code{.init}, the initial value,
+#'           \item \code{.estimate}, the optimal parameter values,
+#'           \item and any non-single valued output of the optimizer that was
+#'                 specified via \code{crit} in \code{\link{set_optimizer}}.
+#'         }
+#' }
+#'
 #' @param x
 #' An object of class \code{ino}.
 #' @param strategy
@@ -207,10 +229,14 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
   ### save optimization results
   x[["runs"]][["table"]][nopt, ".strategy"] <- strategy
   x[["runs"]][["table"]][nopt, ".time"] <- result$time
+  v <- x$opt[[opt_name]]$base_arg_names[3]
+  x[["runs"]][["table"]][nopt, ".optimum"] <- result$res[[v]]
   x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
   x[["runs"]][["table"]][nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
   x[["runs"]][["pars"]][[nopt]] <- list()
   x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
+  z <- x$opt[[opt_name]]$base_arg_names[4]
+  x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
   opt_crit <- x$opt[[opt_name]]$crit
   crit_val <- result$res[opt_crit]
   for(i in 1:length(opt_crit)) {
@@ -395,8 +421,8 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #'   \item it must have an input \code{p} for the starting parameter values,
 #'   \item it must have a \code{...} argument for additional parameters to
 #'         \code{f},
-#'   \item the output must be a named list, including the optimal parameter
-#'         vector.
+#'   \item the output must be a named list, including the optimal function value
+#'         (named \code{v}) and parameter vector (named \code{z}).
 #' }
 #'
 #' @param opt
@@ -405,6 +431,8 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' The name of the function input of \code{opt}.
 #' @param p
 #' The name of the starting parameter values input of \code{opt}.
+#' @param v
+#' The name of the optimal function value in the output list of \code{opt}.
 #' @param z
 #' The name of the optimal parameter vector in the output list of \code{opt}.
 #' @param ...
@@ -412,7 +440,7 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' specifications, the default values of \code{opt} are used.
 #' @param crit
 #' The names of the list elements in the output of \code{opt} to be saved after
-#' the optimization. Must contain \code{z}.
+#' the optimization. The values \code{v} and \code{z} are automatically added.
 #'
 #' @return
 #' An object of class \code{optimizer}, which can be passed to
@@ -429,6 +457,7 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #'   opt = pracma::nelder_mead,
 #'   f = "fn",
 #'   p = "x0",
+#'   v = "fmin",
 #'   z = "xmin",
 #'   tol = 1e-6,
 #'   crit = c("xmin", "fcount")
@@ -437,44 +466,53 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' @keywords
 #' specification
 
-set_optimizer <- function(opt, f, p, z, ..., crit = c(z)) {
+set_optimizer <- function(opt, f, p, v, z, ..., crit = character(0)) {
 
   ### check inputs
   if (missing(opt)) {
-    stop("'opt' must be specified.")
+    stop("'opt' must be specified.", call. = FALSE)
   }
   if (class(opt) != "function") {
-    stop("'opt' must be of class function.")
+    stop("'opt' must be of class function.", call. = FALSE)
   }
   if (missing(f)) {
-    stop("'f' must be specified.")
+    stop("'f' must be specified.", call. = FALSE)
   }
   if (!is.character(f) || length(f) != 1) {
-    stop("'f' must be a character.")
+    stop("'f' must be a character.", call. = FALSE)
   }
   if (missing(p)) {
-    stop("'p' must be specified.")
+    stop("'p' must be specified.", call. = FALSE)
   }
   if (!is.character(p) || length(p) != 1) {
-    stop("'p' must be a character.")
+    stop("'p' must be a character.", call. = FALSE)
+  }
+  if (missing(v)) {
+    stop("'v' must be specified.", call. = FALSE)
+  }
+  if (!is.character(v) || length(v) != 1) {
+    stop("'v' must be a character.", call. = FALSE)
   }
   if (missing(z)) {
-    stop("'z' must be specified.")
+    stop("'z' must be specified.", call. = FALSE)
   }
   if (!is.character(z) || length(z) != 1) {
-    stop("'z' must be a character.")
+    stop("'z' must be a character.", call. = FALSE)
   }
   if (!is.character(crit)) {
-    stop("'crit' must be a character (vector).")
+    stop("'crit' must be a character (vector).", call. = FALSE)
+  }
+  if (!v %in% crit) {
+    crit <- c(crit, v)
   }
   if (!z %in% crit) {
-    stop("'z' must be contained in 'crit'.")
+    crit <- c(crit, z)
   }
 
   ### build and return optimizer object
   optimizer <- list()
   optimizer$f <- opt
-  optimizer$base_arg_names <- c(f,p,z)
+  optimizer$base_arg_names <- c(f,p,v,z)
   optimizer$args <- unlist(list(...)[[1]], recursive = FALSE)
   optimizer$crit <- crit
   optimizer$name <- deparse(substitute(opt))
@@ -505,11 +543,11 @@ print.optimizer <- function(x, ...) {
 #' @keywords
 #' specification
 
-set_optimizer_nlm <- function(
-  ..., crit = c("minimum", "estimate", "code", "iterations")
-  ) {
-  set_optimizer(opt = stats::nlm, f = "f", p = "p", z = "estimate",
-                list(...), crit = crit)
+set_optimizer_nlm <- function(..., crit = c("code", "iterations")) {
+  set_optimizer(
+    opt = stats::nlm, f = "f", p = "p", v = "minimum" , z = "estimate",
+    list(...), crit = crit
+  )
 }
 
 #' Specify the \code{\link[stats]{optim}} optimizer
@@ -528,11 +566,11 @@ set_optimizer_nlm <- function(
 #' @keywords
 #' specification
 
-set_optimizer_optim <- function(
-  ..., crit = c("value", "par", "convergence")
-  ) {
-  set_optimizer(opt = stats::optim, f = "fn", p = "par", z = "par",
-                list(...), crit = crit)
+set_optimizer_optim <- function(..., crit = c("convergence")) {
+  set_optimizer(
+    opt = stats::optim, f = "fn", p = "par", v = "value", z = "par", list(...),
+    crit = crit
+  )
 }
 
 #' Clear optimization runs

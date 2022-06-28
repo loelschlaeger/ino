@@ -155,12 +155,14 @@ subset_initialization <- function(
                    "verbose" = verbose)
 
   ### subset 'arg' argument in 'x', optimize on subset, and extract estimates
-  x_subset <- subset_arg(x = clear_ino(x), arg = arg, how = how,
-                         prop = prop, by_row = by_row, col_ign = col_ign,
-                         kmeans_arg = kmeans_arg)
+  x_subset <- subset_arg(
+    x = clear_ino(x), arg = arg, how = how, prop = prop, by_row = by_row,
+    col_ign = col_ign, kmeans_arg = kmeans_arg
+  )
   x_subset <- do.call(
     what = rlang::call_name(initialization),
-    args = c(list("x" = x_subset), rlang::call_args(initialization)))
+    args = c(list("x" = x_subset), rlang::call_args(initialization))
+  )
   initial_time <- x_subset$runs$table$.time
   strategy_name <- x_subset$runs$table$.strategy[1]
   init <- lapply(x_subset$runs$pars, "[[", "estimate")
@@ -209,11 +211,6 @@ subset_initialization <- function(
        args = c(base_args, f_args, opt$args),
        headstart = initial_time[i])
    )
-   if(inherits(result, "fail")) {
-     warning("Optimization failed with message", result, immediate. = TRUE)
-   }
-
-   ### return results of current loop
    list("pars" = pars, "result" = result, "opt_name" = names(x$opt)[o])
   }
 
@@ -223,14 +220,18 @@ subset_initialization <- function(
   ### save optimization results
   strategy_name <- paste("subset", strategy_name, sep = ">")
   for(res in seq_along(loop_res)){
-    x <- do.call(what = result_ino,
-                 args = append(list("x" = x, "strategy" = strategy_name),
-                               loop_res[[res]]))
+    if (inherits(loop_res[[res]]$result,"fail")) {
+      warning("Optimization failed with message", loop_res[[res]]$result,
+              immediate. = TRUE)
+    } else {
+      x <- do.call(what = result_ino,
+                   args = append(list("x" = x, "strategy" = strategy_name),
+                                 loop_res[[res]]))
+    }
   }
 
   ### return ino object
   return(x)
-
 }
 
 #' Fixed initialization
@@ -308,11 +309,6 @@ fixed_initialization <- function(
     result <- try_silent(
       do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
     )
-    if(inherits(result, "fail")) {
-      warning("Optimization failed with message", result, immediate. = TRUE)
-    }
-
-    ### return result of current loop
     list("pars" = pars, "result" = result, "opt_name" = names(x$opt)[o])
   }
 
@@ -321,9 +317,14 @@ fixed_initialization <- function(
 
   ### save optimization results
   for(res in seq_along(loop_res)){
-    x <- do.call(what = result_ino,
-                 args = append(list("x" = x, "strategy" = "fixed"),
-                               loop_res[[res]]))
+    if (inherits(loop_res[[res]]$result,"fail")) {
+      warning("Optimization failed with message", loop_res[[res]]$result,
+              immediate. = TRUE)
+    } else {
+      x <- do.call(what = result_ino,
+                   args = append(list("x" = x, "strategy" = "fixed"),
+                                 loop_res[[res]]))
+    }
   }
 
   ### return (invisibly) updated ino object
@@ -439,11 +440,6 @@ random_initialization <- function(
     result <- try_silent(
       do.call_timed(what = opt$f, args = c(base_args, f_args, opt$args))
     )
-    if(inherits(result, "fail")) {
-      warning("Optimization failed with message", result, immediate. = TRUE)
-    }
-
-    ### return result of current loop
     list("pars" = pars, "result" = result, "opt_name" = names(x$opt)[o])
   }
 
@@ -452,9 +448,14 @@ random_initialization <- function(
 
   ### save optimization results
   for(res in seq_along(loop_res)){
-    x <- do.call(what = result_ino,
-                 args = append(list("x" = x, "strategy" = "random"),
-                               loop_res[[res]]))
+    if (inherits(loop_res[[res]]$result,"fail")) {
+      warning("Optimization failed with message", loop_res[[res]]$result,
+              immediate. = TRUE)
+    } else {
+      x <- do.call(
+        what = result_ino,
+        args = append(list("x" = x, "strategy" = "random"), loop_res[[res]]))
+    }
   }
 
   ### return (invisibly) updated ino object
