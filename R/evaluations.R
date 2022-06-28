@@ -36,14 +36,16 @@ summary.ino <- function(object, group = c(".strategy", ".optimizer"), ...) {
   if (!inherits(object, "ino")) {
     stop("'object' must be of class 'ino'.")
   }
-  if (nrow(object$runs$table) == 0){
+  if (nrow(object$runs$table) == 0) {
     stop("No optimization runs found.", call. = FALSE)
   }
 
   ### if group is empty, print the entire table
-  if(length(group) > 0) {
-    opt <- dplyr::group_by_at(object$runs$table,
-                              dplyr::vars(dplyr::all_of(group)))
+  if (length(group) > 0) {
+    opt <- dplyr::group_by_at(
+      object$runs$table,
+      dplyr::vars(dplyr::all_of(group))
+    )
     opt <- dplyr::summarize(opt, "runs" = dplyr::n(), ...)
     opt <- dplyr::ungroup(opt)
   } else {
@@ -59,7 +61,7 @@ summary.ino <- function(object, group = c(".strategy", ".optimizer"), ...) {
 #' @export
 
 print.summary.ino <- function(x, digits = NULL, ...) {
-  if(!is.null(digits)){
+  if (!is.null(digits)) {
     x <- dplyr::mutate_if(x, is.numeric, digits, digits = digits)
   }
   print(as.data.frame(x))
@@ -105,33 +107,38 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   if (nrow(optimization_df) == 0) {
     stop("Optimization runs have not yet been performed.", call. = FALSE)
   }
-  if(length(var) > 1) {
+  if (length(var) > 1) {
     stop("Only one summary statistic can be selected in 'var'.", call. = FALSE)
   }
-  if(!(type %in% c("boxplot", "histogram", "barplot"))) {
+  if (!(type %in% c("boxplot", "histogram", "barplot"))) {
     stop("'type' only allows 'boxplot', 'histogram', or 'barplot'.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
-  if(!(var %in% colnames(optimization_df))) {
+  if (!(var %in% colnames(optimization_df))) {
     stop(paste0("Column '", var, "' does not exist."), call. = FALSE)
   }
-  if(sum(!(by %in% colnames(optimization_df))) > 0) {
-    stop(paste0("Column '", by[!(by %in% colnames(optimization_df))],
-                "' does not exist."),
-         call. = FALSE)
+  if (sum(!(by %in% colnames(optimization_df))) > 0) {
+    stop(paste0(
+      "Column '", by[!(by %in% colnames(optimization_df))],
+      "' does not exist."
+    ),
+    call. = FALSE
+    )
   }
 
   ### build plot
-  if(type == "boxplot"){
+  if (type == "boxplot") {
     out_plot <- ggplot(optimization_df, aes(y = .data[[var]])) +
-      geom_boxplot() + facet_wrap(by, labeller = "label_both")
+      geom_boxplot() +
+      facet_wrap(by, labeller = "label_both")
   }
-  if(type == "histogram"){
+  if (type == "histogram") {
     out_plot <- ggplot(optimization_df, aes(x = .data[[var]])) +
       geom_histogram(position = "dodge") +
       facet_wrap(by, labeller = "label_both")
   }
-  if(type == "barplot"){
+  if (type == "barplot") {
     out_plot <- ggplot(optimization_df, aes(x = .data[[var]])) +
       geom_bar(position = "dodge") +
       facet_wrap(by, labeller = "label_both")
@@ -171,10 +178,12 @@ overview_optima <- function(x, digits = 2, plot = FALSE) {
   out <- as.data.frame(table(optima_found))
   colnames(out) <- c("optimum", "frequency")
   if (!plot) {
-    return (out)
+    return(out)
   } else {
-    out_plot <- ggplot2::ggplot(out, ggplot2::aes(x = .data$optimum,
-                                                  y = .data$frequency)) +
+    out_plot <- ggplot2::ggplot(out, ggplot2::aes(
+      x = .data$optimum,
+      y = .data$frequency
+    )) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::theme_minimal() +
       ggplot2::xlab("optimum")

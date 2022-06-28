@@ -126,9 +126,9 @@ ino_check_inputs <- function(...) {
         ))
       }
       if (arg %in% x$f$mpvs &&
-          !all(sapply(x$f$add[[arg]], inherits, c("matrix", "data.frame"))) ||
+        !all(sapply(x$f$add[[arg]], inherits, c("matrix", "data.frame"))) ||
         !arg %in% x$f$mpvs &&
-        !inherits(x$f$add[[arg]], c("matrix", "data.frame"))) {
+          !inherits(x$f$add[[arg]], c("matrix", "data.frame"))) {
         stop0(paste0(
           "The argument 'arg' = '", arg, "' does not seem to be of class ",
           "'matrix' or 'data.frame'."
@@ -211,8 +211,9 @@ subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
       subset_ind <- 1:arg_val_subset_length
     } else if (how == "kmeans") {
       arg_val_ign <- arg_val
-      if (!is.null(col_ign))
+      if (!is.null(col_ign)) {
         arg_val_ign <- arg_val_ign[, -col_ign, drop = FALSE]
+      }
       kmeans_out <- do.call(
         what = stats::kmeans,
         args = c(list("x" = arg_val_ign), kmeans_arg)

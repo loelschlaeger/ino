@@ -44,36 +44,39 @@
 #' @keywords
 #' strategy
 
-standardize_initialization <- function(
-  x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE, col_ign = NULL,
-  initialization = random_initialization(),
-  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")
-  ) {
+standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE, col_ign = NULL,
+                                       initialization = random_initialization(),
+                                       ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
-  if(missing(x)) return(ino_call(match.call(expand.dots = TRUE)))
+  if (missing(x)) {
+    return(ino_call(match.call(expand.dots = TRUE)))
+  }
 
   ### check inputs
   ino_check_inputs(
     "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
     "ncores" = ncores, "col_ign" = col_ign, "initialization" = initialization,
-    "verbose" = verbose)
+    "verbose" = verbose
+  )
 
   ### initial  message
   ino_status(msg = "standardize initialization", verbose = verbose)
 
   ### standardize 'arg' argument(s) in 'x'
   x_tmp <- clear_ino(x)
-  for(arg_name in arg) {
+  for (arg_name in arg) {
     x_standardized <- standardize_arg(
       x = clear_ino(x), arg = arg_name, by_col = by_col, center = center,
-      scale = scale, col_ign = col_ign)
+      scale = scale, col_ign = col_ign
+    )
   }
 
   ### optimize on standardized 'x'
   x_standardized <- do.call(
     what = rlang::call_name(initialization),
-    args = c(list("x" = x_standardized), rlang::call_args(initialization)))
+    args = c(list("x" = x_standardized), rlang::call_args(initialization))
+  )
   name <- paste("standardize", x_standardized$runs$table$.strategy, sep = ">")
   x_standardized$runs$table$.strategy <- name
 
@@ -82,7 +85,6 @@ standardize_initialization <- function(
 
   ### return ino object
   return(x)
-
 }
 
 #' Subset initialization
@@ -139,20 +141,22 @@ standardize_initialization <- function(
 #'
 #' @importFrom stats kmeans
 
-subset_initialization <- function(
-  x, arg = "data", how = "random", prop = 0.5, by_row = TRUE, col_ign = NULL,
-  kmeans_arg = list("centers" = 2), initialization = random_initialization(),
-  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")
-  ) {
+subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5, by_row = TRUE, col_ign = NULL,
+                                  kmeans_arg = list("centers" = 2), initialization = random_initialization(),
+                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
-  if(missing(x)) return(ino_call(match.call(expand.dots = TRUE)))
+  if (missing(x)) {
+    return(ino_call(match.call(expand.dots = TRUE)))
+  }
 
   ### check inputs
-  ino_check_inputs("x" = x, "arg" = arg, "how" = how, "prop" = prop,
-                   "by_row" = by_row, "ncores" = ncores, "col_ign" = col_ign,
-                   "kmeans_arg" = kmeans_arg, "initialization" = initialization,
-                   "verbose" = verbose)
+  ino_check_inputs(
+    "x" = x, "arg" = arg, "how" = how, "prop" = prop,
+    "by_row" = by_row, "ncores" = ncores, "col_ign" = col_ign,
+    "kmeans_arg" = kmeans_arg, "initialization" = initialization,
+    "verbose" = verbose
+  )
 
   ### subset 'arg' argument in 'x', optimize on subset, and extract estimates
   x_subset <- subset_arg(
@@ -183,35 +187,36 @@ subset_initialization <- function(
   loop_res <- foreach::foreach(
     i = 1:nrow(loop_grid), .inorder = FALSE, .packages = "ino",
     .options.snow = opts
-    ) %dopar% {
+  ) %dopar% {
 
-   ### extract current loop indices
-   p <- loop_grid[i,"p"]
-   o <- loop_grid[i,"o"]
+    ### extract current loop indices
+    p <- loop_grid[i, "p"]
+    o <- loop_grid[i, "o"]
 
-   ### extract current parameter set
-   pars <- grid[[p]]
+    ### extract current parameter set
+    pars <- grid[[p]]
 
-   ### extract current optimizer
-   opt <- x$opt[[o]]
+    ### extract current optimizer
+    opt <- x$opt[[o]]
 
-   ### extract initial value
-   pars[[x$f$target_arg]] <- init[[i]]
+    ### extract initial value
+    pars[[x$f$target_arg]] <- init[[i]]
 
-   ### base arguments of the optimizer
-   base_args <- list(x$f$f, pars[[x$f$target_arg]])
-   names(base_args) <- opt$base_arg_names[1:2]
-   f_args <- pars
-   f_args[[x$f$target_arg]] <- NULL
+    ### base arguments of the optimizer
+    base_args <- list(x$f$f, pars[[x$f$target_arg]])
+    names(base_args) <- opt$base_arg_names[1:2]
+    f_args <- pars
+    f_args[[x$f$target_arg]] <- NULL
 
-   ### optimize
-   result <- try_silent(
-     do.call_timed(
-       what = opt$f,
-       args = c(base_args, f_args, opt$args),
-       headstart = initial_time[i])
-   )
-   list("pars" = pars, "result" = result, "opt_name" = names(x$opt)[o])
+    ### optimize
+    result <- try_silent(
+      do.call_timed(
+        what = opt$f,
+        args = c(base_args, f_args, opt$args),
+        headstart = initial_time[i]
+      )
+    )
+    list("pars" = pars, "result" = result, "opt_name" = names(x$opt)[o])
   }
 
   ### terminate cluster
@@ -219,14 +224,19 @@ subset_initialization <- function(
 
   ### save optimization results
   strategy_name <- paste("subset", strategy_name, sep = ">")
-  for(res in seq_along(loop_res)){
-    if (inherits(loop_res[[res]]$result,"fail")) {
+  for (res in seq_along(loop_res)) {
+    if (inherits(loop_res[[res]]$result, "fail")) {
       warning("Optimization failed with message", loop_res[[res]]$result,
-              immediate. = TRUE)
+        immediate. = TRUE
+      )
     } else {
-      x <- do.call(what = result_ino,
-                   args = append(list("x" = x, "strategy" = strategy_name),
-                                 loop_res[[res]]))
+      x <- do.call(
+        what = result_ino,
+        args = append(
+          list("x" = x, "strategy" = strategy_name),
+          loop_res[[res]]
+        )
+      )
     }
   }
 
@@ -260,12 +270,12 @@ subset_initialization <- function(
 #' @keywords
 #' strategy
 
-fixed_initialization <- function(
-  x, at, ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")
-  ) {
+fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
-  if(missing(x)) return(ino_call(match.call(expand.dots = TRUE)))
+  if (missing(x)) {
+    return(ino_call(match.call(expand.dots = TRUE)))
+  }
 
   ### initial message
   ino_status(msg = "fixed initialization", verbose = verbose)
@@ -283,12 +293,14 @@ fixed_initialization <- function(
   pb <- ino_pb(title = "  grid set ", total = nrow(loop_grid))
   opts <- list(progress = function(n) ino_pp(pb, verbose = verbose))
   i <- 0
-  loop_res <- foreach::foreach(i = 1:nrow(loop_grid), .packages = "ino",
-                               .options.snow = opts) %dopar% {
+  loop_res <- foreach::foreach(
+    i = 1:nrow(loop_grid), .packages = "ino",
+    .options.snow = opts
+  ) %dopar% {
 
     ### extract current loop indices
-    p <- loop_grid[i,"p"]
-    o <- loop_grid[i,"o"]
+    p <- loop_grid[i, "p"]
+    o <- loop_grid[i, "o"]
 
     ### extract current parameter set
     pars <- grid[[p]]
@@ -316,14 +328,19 @@ fixed_initialization <- function(
   parallel::stopCluster(cluster)
 
   ### save optimization results
-  for(res in seq_along(loop_res)){
-    if (inherits(loop_res[[res]]$result,"fail")) {
+  for (res in seq_along(loop_res)) {
+    if (inherits(loop_res[[res]]$result, "fail")) {
       warning("Optimization failed with message", loop_res[[res]]$result,
-              immediate. = TRUE)
+        immediate. = TRUE
+      )
     } else {
-      x <- do.call(what = result_ino,
-                   args = append(list("x" = x, "strategy" = "fixed"),
-                                 loop_res[[res]]))
+      x <- do.call(
+        what = result_ino,
+        args = append(
+          list("x" = x, "strategy" = "fixed"),
+          loop_res[[res]]
+        )
+      )
     }
   }
 
@@ -368,20 +385,22 @@ fixed_initialization <- function(
 #' @importFrom utils capture.output
 #' @importFrom foreach %dopar%
 
-random_initialization <- function(
-  x, sampler = stats::rnorm, ..., ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress")
-  ) {
+random_initialization <- function(x, sampler = stats::rnorm, ..., ncores = getOption("ino_ncores"),
+                                  verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
-  if(missing(x)) return(ino_call(match.call(expand.dots = TRUE)))
+  if (missing(x)) {
+    return(ino_call(match.call(expand.dots = TRUE)))
+  }
 
   ### initial message
   ino_status(msg = "random initialization", verbose = verbose)
 
   ### check inputs
-  ino_check_inputs("x" = x, "sampler" = sampler, "ncores" = ncores,
-                   "verbose" = verbose)
+  ino_check_inputs(
+    "x" = x, "sampler" = sampler, "ncores" = ncores,
+    "verbose" = verbose
+  )
 
   ### check sampler
   npar <- NULL
@@ -396,9 +415,10 @@ random_initialization <- function(
   }
   if (!is.numeric(try_sampler) || length(try_sampler) != x$f$npar) {
     stop("'sampler' must return a numeric vector of length 'x$f$npar'.\n",
-         "Instead, 'sampler' returned:\n",
-         paste(capture.output(str(try_sampler)), collapse = "\n"),
-         call. = FALSE)
+      "Instead, 'sampler' returned:\n",
+      paste(capture.output(str(try_sampler)), collapse = "\n"),
+      call. = FALSE
+    )
   }
 
   ### create parameter grid
@@ -411,12 +431,14 @@ random_initialization <- function(
   pb <- ino_pb(title = "  grid set ", total = nrow(loop_grid))
   opts <- list(progress = function(n) ino_pp(pb = pb, verbose = verbose))
   i <- 0
-  loop_res <- foreach::foreach(i = 1:nrow(loop_grid), .packages = "ino",
-                               .options.snow = opts) %dopar% {
+  loop_res <- foreach::foreach(
+    i = 1:nrow(loop_grid), .packages = "ino",
+    .options.snow = opts
+  ) %dopar% {
 
     ### extract current loop indices
-    p <- loop_grid[i,"p"]
-    o <- loop_grid[i,"o"]
+    p <- loop_grid[i, "p"]
+    o <- loop_grid[i, "o"]
 
     ### extract current parameter set
     pars <- grid[[p]]
@@ -447,14 +469,16 @@ random_initialization <- function(
   parallel::stopCluster(cluster)
 
   ### save optimization results
-  for(res in seq_along(loop_res)){
-    if (inherits(loop_res[[res]]$result,"fail")) {
+  for (res in seq_along(loop_res)) {
+    if (inherits(loop_res[[res]]$result, "fail")) {
       warning("Optimization failed with message", loop_res[[res]]$result,
-              immediate. = TRUE)
+        immediate. = TRUE
+      )
     } else {
       x <- do.call(
         what = result_ino,
-        args = append(list("x" = x, "strategy" = "random"), loop_res[[res]]))
+        args = append(list("x" = x, "strategy" = "random"), loop_res[[res]])
+      )
     }
   }
 
