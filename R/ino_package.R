@@ -139,11 +139,6 @@ ino_check_inputs <- function(...) {
       if (!how %in% c("random", "first", "kmeans")) {
         stop0("'how' must be one of 'random', 'first', or 'kmeans'.")
       }
-      if ("x" %in% n) {
-        if (how == "kmeans") {
-          # TODO: add check if columns are numeric
-        }
-      }
     }
     if ("prop" %in% n) {
       if (!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
@@ -169,9 +164,6 @@ ino_check_inputs <- function(...) {
       if (!(is.logical(scale) || length(scale) == 1)) {
         stop0("'scale' must be either 'TRUE' or 'FALSE'.")
       }
-    }
-    if ("kmeans_arg" %in% n) {
-      # TODO: add check for 'kmeans_arg'
     }
     if (all(c("at", "x") %in% n)) {
       if (length(at) > x$f$npar) {
