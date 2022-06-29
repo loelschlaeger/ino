@@ -12,7 +12,7 @@ test_that("ino setups work", {
   expect_s3_class(out, "ino")
   expect_type(grid_ino(out), "list")
   expect_s3_class(clear_ino(out), "ino")
-  expect_s3_class(merge_ino(out,out), "ino")
+  expect_s3_class(merge_ino(out, out), "ino")
 })
 
 test_that("set optimizer works", {

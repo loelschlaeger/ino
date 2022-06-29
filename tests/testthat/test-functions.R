@@ -27,7 +27,7 @@ test_that("MNP likelihood works", {
 })
 
 test_that("MNP data simulation works", {
-  data <- sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
+  data <- sim_mnp(N = 3, T = 2, b = c(1, -1), Omega = diag(2), Sigma = diag(2))
   expect_true(is.data.frame(data))
 })
 
@@ -39,6 +39,6 @@ test_that("MNL likelihood works", {
 })
 
 test_that("MNL data simulation works", {
-  data <- sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
+  data <- sim_mnl(N = 3, T = 2, J = 3, b = c(-2, 0.5, 2), Omega = diag(3))
   expect_true(is.data.frame(data))
 })

@@ -11,13 +11,19 @@ test_that("trying an expression silently works", {
 })
 
 test_that("interruption of long evaluations works", {
-  foo <- function(x) { Sys.sleep(x); return(x) }
+  foo <- function(x) {
+    Sys.sleep(x)
+    return(x)
+  }
   expect_equal(timed(foo(0.9), 1), 0.9)
   expect_null(timed(foo(1.1), 1))
 })
 
 test_that("measuring computation time works", {
-  what <- function(s) { Sys.sleep(s); return(s) }
+  what <- function(s) {
+    Sys.sleep(s)
+    return(s)
+  }
   args <- list(s = 1)
   out <- do.call_timed(what = what, args = args, headstart = 1)
   expect_type(out, "list")

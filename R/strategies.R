@@ -44,10 +44,9 @@
 #' @keywords
 #' strategy
 
-standardize_initialization <- function(
-  x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE, col_ign = NULL,
-  initialization = random_initialization(), ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress")) {
+standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE, col_ign = NULL,
+                                       initialization = random_initialization(), ncores = getOption("ino_ncores"),
+                                       verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
   if (missing(x)) {
@@ -141,10 +140,9 @@ standardize_initialization <- function(
 #'
 #' @importFrom stats kmeans
 
-subset_initialization <- function(
-  x, arg = "data", how = "random", prop = 0.5, by_row = TRUE, col_ign = NULL,
-  kmeans_arg = list("centers" = 2), initialization = random_initialization(),
-  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")) {
+subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5, by_row = TRUE, col_ign = NULL,
+                                  kmeans_arg = list("centers" = 2), initialization = random_initialization(),
+                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
   if (missing(x)) {
@@ -271,9 +269,8 @@ subset_initialization <- function(
 #' @keywords
 #' strategy
 
-fixed_initialization <- function(
-  x, at, ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress")) {
+fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
+                                 verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
   if (missing(x)) {
@@ -388,9 +385,8 @@ fixed_initialization <- function(
 #' @importFrom utils capture.output
 #' @importFrom foreach %dopar%
 
-random_initialization <- function(
-  x, sampler = stats::rnorm, ..., ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress")) {
+random_initialization <- function(x, sampler = stats::rnorm, ..., ncores = getOption("ino_ncores"),
+                                  verbose = getOption("ino_progress")) {
 
   ### capture function call if 'x' is not specified
   if (missing(x)) {
