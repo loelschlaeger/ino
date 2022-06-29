@@ -19,7 +19,5 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Documentation
 
-- [ ] Vignette introduction + workflow (L\*\*\*) with example standard numerical problems + geysir data (M**)
-- [ ] Vignette example HMM (M**)
 - [ ] Vignette example probit (next package version)
 - [ ] Vignette example logit (next package version)
