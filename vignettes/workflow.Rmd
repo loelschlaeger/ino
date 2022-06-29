@@ -57,10 +57,9 @@ sequenceDiagram
 ### 0. Load {ino}
 
 ```{r, setup}
-# install.packages("ino")
-library(ino)
-library(magrittr) # for better code readability
-library(ggplot2)  # for visualizations
+library("ino")
+library("magrittr")
+library("ggplot2")
 ```
 
 ### 1. Specify the optimization problem
