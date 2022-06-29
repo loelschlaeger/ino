@@ -78,17 +78,50 @@ for(i in 1:3)
 
 ### Subset initialization
 
+To illustrate the subset initialization strategy, we fit the 2-state HMM to the first half of the time series (`prop = 0.5`). The starting values for this subset are chosen randomly. The model is then fitted again to the entire sample using the estimates obtained for the subset as initial values.
+
+```{r}
+# hmm_ino <- subset_initialization(
+#     hmm_ino, arg = "data", how = "first", prop = 0.5,
+#     initialization = random_initialization()
+#     )
+```
+
+
 ## Evaluating the optimization runs
 
 ### Local optima
 
-```{r echo=TRUE}
+Selecting the starting values for HMMs is a well-known issue, as poor starting values may likely result in local maxima. Other R packages designed to fit HMMs discuss this topic in more detail (see, e.g., https://cran.r-project.org/web/packages/moveHMM/vignettes/moveHMM-starting-values.pdf). We thus first evaluate the optimizations by comparing the likelihood values at convergence, which can be plotted using `overview_optima()`:
+
+```{r}
 overview_optima(hmm_ino)
+```
+
+The frequency table indicates that `r overview_optima(hmm_ino)[1,2]` runs converged to the same likelihood value (`r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`), which is the global maximum (note these are the negative log-likelihood values).  
+
+When comparing the likelihood values across the strategies, we see that the random starting values did sometimes result in a local maximum:
+
+```{r}
 plot(hmm_ino, var = "minimum", by = ".strategy", type = "barplot")
+```
+
+Using `summary`, we can investigate all optimization runs:
+
+```{r}
+summary(hmm_ino, group = NULL)
+```
+
+The table further indicates that (e.g.) the fourth optimization converged to the global optimum. We can extract the corresponding initial values and estimates as follows:
+
+```{r}
+hmm_ino$runs$pars[[4]]
 ```
 
 
 ### Optimization time
+
+We use the `plot()` function to investigate the computation time. Intuitively, the optimization runs with fixed starting values should be faster than with random starting values, since we have carefully chosen the fixed starting values by investigating the data. The boxplots confirm this intuition: 
 
 ```{r}
 plot(hmm_ino, var = ".time", by = ".strategy")
