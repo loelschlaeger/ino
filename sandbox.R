@@ -1,6 +1,6 @@
 # Installation ------------------------------------------------------------
 
-# ppath <- "../ino_0.0.0.9000.tar.gz"
+# ppath <- "../ino_0.1.0.tar.gz"
 # install.packages(ppath, repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
 devtools::load_all()
 
