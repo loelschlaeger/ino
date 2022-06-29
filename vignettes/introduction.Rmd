@@ -176,8 +176,8 @@ If the data set considered shows some complex structures or is simply very large
 The function `subset_initialization` allows to use a subsample from the original data via the argument `prop`. We can then fit our model to that using either fixed or random initialization. For example, the following code snippet randomly samples 30\% of the observations and uses random initialization:
 
 ```{r}
-# geyser_ino <- subset_initialization(
-#      geyser_ino, prop = 0.3, initialization = random_initialization())
+geyser_ino <- subset_initialization(
+     geyser_ino, prop = 0.75, initialization = random_initialization())
 
 # for(i in 1:5)
 #   geyser_ino <- subset_initialization(
