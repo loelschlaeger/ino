@@ -472,7 +472,7 @@ set_optimizer <- function(opt, f, p, v, z, ..., crit = character(0)) {
   if (missing(opt)) {
     stop("'opt' must be specified.", call. = FALSE)
   }
-  if (class(opt) != "function") {
+  if (!inherits(opt,"function")) {
     stop("'opt' must be of class function.", call. = FALSE)
   }
   if (missing(f)) {

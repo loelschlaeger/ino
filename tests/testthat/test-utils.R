@@ -16,7 +16,7 @@ test_that("interruption of long evaluations works", {
     return(x)
   }
   expect_equal(timed(foo(0.9), 1), 0.9)
-  expect_null(timed(foo(1.1), 1))
+  if(.Platform$OS.type == "windows") expect_null(timed(foo(1.1), 1))
 })
 
 test_that("measuring computation time works", {
