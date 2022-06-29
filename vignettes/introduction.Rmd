@@ -16,46 +16,28 @@ knitr::opts_chunk$set(
   fig.dim = c(8, 6),
   out.width = "100%"
 )
-```
-
-```{r setup}
 library("ino")
 options(ino_progress = FALSE)
 library("ggplot2")
 ```
 
-This is the introductory vignette of {ino} explaining the purpose and giving a first example. The vignette was built using R `r paste(R.Version()[6:7], collapse = ".")` with the ino `r utils::packageVersion("ino")` package. 
+## The motivation behind {ino}
 
-## Getting started with {ino}
+Whenever we numerically optimize a function, the optimization algorithm and chosen starting values can have a substantial effect on the computational cost or even on the results. The purpose of the {ino} package is to provide a comprehensive toolbox for comparing such different settings when performing numerical optimization. 
 
-Whenever we numerically optimize a function, we need to take care of several things: the chosen starting values, optimization algorithm, and optimization strategy (such as subset optimization) can have a substantial effect on the computational cost or even on the results. The purpose of the {ino} package is to provide a comprehensive toolbox for comparing such different settings when performing numerical optimization. 
+In the following, we demonstrate the main functionality of {ino}. In particular, we show how to numerically optimize a likelihood function using {ino}, thereby applying different strategies for the choice of the starting values and the optimization strategy.
 
-Throughout this vignette, we will demonstrate the main functions of {ino}. In particular, we will show how to numerically optimize a likelihood function using {ino}, thereby applying different strategies for the choice of the starting values and the optimization strategy.
+## Example: Fitting a Gaussian mixture using {ino}
 
-As an example data set, we consider the popular `faithful` data set that is provided via in base R. This data set contains information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
-
-
-### Example data
-
-The faithful data set contains two variables: the eruption time and the waiting time to the next eruption (both given in minutes). There are many published analyses of data relating to the Old Faithful geyser (see, e.g., refs).
+We consider the popular `faithful` data set that is provided via base R.^[The data set contains information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA: the eruption time and the waiting time to the next eruption (both given in minutes). There are many published analyses of data relating to the Old Faithful geyser (see, e.g., refs).] The histogram of eruption times indicate two clusters with short and long eruption times, respectively:
 
 ```{r}
 data("faithful")
-head(faithful)
-```
-
-Focussing on the eruption time, the following histogram indicates two clusters with short and long eruption times, respectively.
-
-```{r}
 ggplot(faithful, aes(x = eruptions, y = ..density..)) + 
-  geom_histogram() + xlab("Eruption time (min)") + ylab("density")
+  geom_histogram(bins = 30) + xlab("Eruption time (min)") + ylab("density")
 ```
 
-## Fitting a Gaussian mixture using {ino}
-
-
-The figure above indicates that the geyser erupts either for about two minutes or about 4.5 minutes. For both clusters, we assume a normal distribution here, such that we consider a mixture of two normal distributions for the eruption times. The log-likelihood is then given by
-
+For both clusters, we assume a normal distribution here, such that we consider a mixture of two normal distributions for the eruption times. The log-likelihood is then given by
 
 $$
 \ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \pi f_{\mu_1, \sigma_1^2}(x_i) + (1-\pi)f_{\mu_2,\sigma_2^2} (x_i) \Big),
@@ -78,7 +60,7 @@ normal_mixture_llk <- function(theta, data, column){
 
 Since we are using the function `nlm()` here, which uses unconstrained optimization, we restrict the standard deviations `sigma` to be positive and `pi` to be between 0 and 1. As `nlm()` *minimizes* a function, we return the negative log-likelihood.
 
-To optimize the likelihood function with potentially different sets of starting values, we first setup an ino object using the function `setup_ino`. Here, `f` constitutes the function to be optimized (i.e. `normal_mixture_llk`), `npar` gives the number of parameters, `data` gives the vector of observations as required by our likelihood function, and `opt` sets the optimizer.
+To optimize the likelihood function with potentially different sets of starting values, we first setup an `ino` object using the function `setup_ino`. Here, `f` constitutes the function to be optimized (i.e. `normal_mixture_llk`), `npar` gives the number of parameters, `data` gives the vector of observations as required by our likelihood function, and `opt` sets the optimizer.
 
 Behind the scenes, `setup_ino` runs several checks of the inputs, such as checking whether a function and a optimizer have been provided and whether the function f can be called. If `verbose` is set to `TRUE`, all checks are printed.
 
@@ -93,7 +75,7 @@ geyser_ino <- setup_ino(
 )
 ```
 
-We can print `geyser_ino` to obtain a quick overview of our ino setup, which includes the name of the function, the number of parameters to estimate, whether multiple data sets or functions specifications have been provided (mpvs), and information about the selected optimizer and its arguments:
+We can print `geyser_ino` to obtain a quick overview of our `ino` setup, which includes the name of the function, the number of parameters to estimate, whether multiple data sets or functions specifications have been provided (mpvs), and information about the selected optimizer and its arguments:
 
 ```{r}
 print(geyser_ino)
@@ -102,7 +84,7 @@ print(geyser_ino)
 
 ### Fixed starting values
 
-With the ino object `geyser_ino`, we can now optimize the likelihood function. We will first consider fixed starting values. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. For the variances, we set the starting values to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). We will use two sets of starting values where the means are lower and larger than 2 and 4, respectively. For both sets, the starting value for the mixing proportion is 0.5. 
+With the `ino` object `geyser_ino`, we can now optimize the likelihood function. We will first consider fixed starting values. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. For the variances, we set the starting values to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). We will use two sets of starting values where the means are lower and larger than 2 and 4, respectively. For both sets, the starting value for the mixing proportion is 0.5. 
 To compare the results of different optimization runs, we also select a set of starting values which are somewhat unplausible.
 
 ```{r}
@@ -213,6 +195,6 @@ summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 In addition to selecting subsamples at random, we can specify two further options using the argument `how`. When dealing with time series data, we usually do not want to delete single observations at random. Instead, we can select a proportion of the first rows by specifying `how="first`. We could also cluster our data first using `how="kmeans"`. 
 For all subset optimization strategies, `subset_initialization()` first fits the model to the chosen subset and stores the resulting estimates. These estimates are then used as initial values in the second step where the model is fitted to the entire data. 
 
-In some of the examples above, we combined two optimization strategies. For example, we have chosen random starting values for a subset. The flexibility of ino also allows more than two combinations. We could, for example, select a subset, standardize the data, and then use random starting values.
+In some of the examples above, we combined two optimization strategies. For example, we have chosen random starting values for a subset. The flexibility of {ino} also allows more than two combinations. We could, for example, select a subset, standardize the data, and then use random starting values.
 
 
