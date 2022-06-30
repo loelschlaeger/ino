@@ -1,15 +1,16 @@
 Package: ino
 Title: Initialization of Numerical Optimization
 Version: 0.1.0
-Authors@R: 
+Authors@R: c(
     person("Lennart", "Oelschl\u00e4ger", 
-           email = "lennart.oelschlaeger@uni-bielefeld.de", 
+           email = "oelschlaeger.lennart@gmail.com", 
            role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0001-5421-9313"))
+           comment = c(ORCID = "0000-0001-5421-9313")),
     person("Marius", "\u00d6etting", 
            email = "marius.oetting@uni-bielefeld.de", 
-           role = c("aut", "cre"),
+           role = c("aut"),
            comment = c(ORCID = "0000-0002-9373-0365"))
+           )
 Description: Implementation of several initialization strategies for the 
     numerical optimization of real-valued functions, in particular likelihood
     functions of statistical models.
