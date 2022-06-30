@@ -243,7 +243,7 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
   x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
   opt_crit <- x$opt[[opt_name]]$crit
   crit_val <- result$res[opt_crit]
-  for(i in seq_length(opt_crit)) {
+  for(i in seq_along(opt_crit)) {
     if(is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1){
       x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
     } else {

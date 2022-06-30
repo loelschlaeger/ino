@@ -68,7 +68,7 @@ ino_status <- function(msg, verbose = getOption("ino_progress")) {
 
 ino_call <- function(call) {
   call$ncores <- 1
-  call$verbose <- TRUE
+  call$verbose <- FALSE
   class(call) <- c("ino_call", class(call))
   return(call)
 }

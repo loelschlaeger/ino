@@ -168,7 +168,7 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5, b
   )
   initial_time <- x_subset$runs$table$.time
   strategy_name <- x_subset$runs$table$.strategy[1]
-  init <- lapply(x_subset$runs$pars, "[[", "estimate")
+  init <- lapply(x_subset$runs$pars, "[[", ".estimate")
 
   ### create parameter grid
   grid <- grid_ino(x)
