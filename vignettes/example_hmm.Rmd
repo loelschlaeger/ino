@@ -88,7 +88,7 @@ for(i in 1:3)
 
 ### Local optima
 
-Selecting the starting values for HMMs is a well-known issue, as poor starting values may likely result in local maxima. Other R packages designed to fit HMMs discuss this topic in more detail (see, e.g., https://cran.r-project.org/web/packages/moveHMM/vignettes/moveHMM-starting-values.pdf). We thus first evaluate the optimizations by comparing the likelihood values at convergence, which can be displayed using `overview_optima()`:
+Selecting the starting values for HMMs is a well-known issue, as poor starting values may likely result in local maxima. Other R packages designed to fit HMMs discuss this topic in more detail (see, e.g., https://cran.r-project.org/package=moveHMM). We thus first evaluate the optimizations by comparing the likelihood values at convergence, which can be displayed using `overview_optima()`:
 
 ```{r}
 overview_optima(hmm_ino)

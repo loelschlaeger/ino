@@ -53,13 +53,13 @@ Simulate data from a (normally mixed) multinomial probit model
 }
 \details{
 The normally mixed multinomial probit model formula is
-\deqn{U_{nt} = X_{nt} \beta_n + \eps_{nt},}
+\deqn{U_{nt} = X_{nt} \beta_n + \epsilon_{nt},}
 where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
 of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
 \eqn{X_{nt}} is the choice occasion-specific \eqn{J} times \eqn{P} covariate
 matrix, \eqn{\beta_n} is the decider-specific random effect vector with
-\deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and \eqn{\eps_{nt}} is the choice
-occasion-specific error term with \deqn{\eps_{nt}\sim\text{MVN}_J(0,\Sigma).}
+\deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and \eqn{\epsilon_{nt}} is the choice
+occasion-specific error term with \deqn{\epsilon_{nt}\sim\text{MVN}_J(0,\Sigma).}
 The choice \eqn{y_{nt}} of decider \eqn{n} at choice occasion \eqn{t} is
 linked to the utilities via \deqn{y_{nt} = \arg \max U_{nt}} (hence assuming
 utility maximizing behavior). For parameter identification (utility is
