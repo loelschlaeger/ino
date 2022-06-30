@@ -231,15 +231,19 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
   x[["runs"]][["table"]][nopt, ".time"] <- result$time
   v <- x$opt[[opt_name]]$base_arg_names[3]
   x[["runs"]][["table"]][nopt, ".optimum"] <- result$res[[v]]
-  x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
-  x[["runs"]][["table"]][nopt, attr(pars, "par_name")] <- attr(pars, "par_id")
+  if(length(x$opt) > 1)
+    x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
+  for(i in seq_along(attr(pars, "par_name")))
+    if(attr(pars, "par_name")[i] %in% x$f$mpvs)
+      x[["runs"]][["table"]][nopt, attr(pars, "par_name")[i]] <-
+    attr(pars, "par_id")[i]
   x[["runs"]][["pars"]][[nopt]] <- list()
   x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
   z <- x$opt[[opt_name]]$base_arg_names[4]
   x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
   opt_crit <- x$opt[[opt_name]]$crit
   crit_val <- result$res[opt_crit]
-  for(i in 1:length(opt_crit)) {
+  for(i in seq_length(opt_crit)) {
     if(is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1){
       x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
     } else {
@@ -390,7 +394,8 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
   cat(crayon::underline("Function to be optimized\n"))
   cat("- name:", x$f$name, "\n")
   cat("- npar:", x$f$npar, "\n")
-  cat("- mpvs:", x$f$mpvs, "\n")
+  if(length(x$f$mpvs) > 0)
+    cat("- mpvs:", x$f$mpvs, "\n")
   if(show_arguments){
     cat("- arguments:\n")
     utils::str(x$f$add, no.list = TRUE, give.head = FALSE)
@@ -439,8 +444,8 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
 #' Additional arguments to be passed to the optimizer \code{opt}. Without
 #' specifications, the default values of \code{opt} are used.
 #' @param crit
-#' The names of the list elements in the output of \code{opt} to be saved after
-#' the optimization. The values \code{v} and \code{z} are automatically added.
+#' The names of additional elements in the output of \code{opt} to be saved
+#' after the optimization.
 #'
 #' @return
 #' An object of class \code{optimizer}, which can be passed to
@@ -502,11 +507,11 @@ set_optimizer <- function(opt, f, p, v, z, ..., crit = character(0)) {
   if (!is.character(crit)) {
     stop("'crit' must be a character (vector).", call. = FALSE)
   }
-  if (!v %in% crit) {
-    crit <- c(crit, v)
+  if (v %in% crit) {
+    crit <- crit[-which(v==crit)]
   }
-  if (!z %in% crit) {
-    crit <- c(crit, z)
+  if (z %in% crit) {
+    crit <- crit[-which(z==crit)]
   }
 
   ### build and return optimizer object

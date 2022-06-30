@@ -4,12 +4,13 @@
 \alias{summary.ino}
 \title{Summary of an \code{ino} object}
 \usage{
-\method{summary}{ino}(object, group = c(".strategy", ".optimizer"), ...)
+\method{summary}{ino}(object, group = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class \code{ino}.}
 
-\item{group}{A character vector for grouping the optimization results.}
+\item{group}{A character vector for grouping the optimization results, or \code{NULL}
+(default) for no grouping.}
 
 \item{...}{Named functions for computing statistics.}
 }
@@ -24,7 +25,7 @@ object.
 The following values are available for each \code{ino} object:
 \itemize{
 \item \code{.strategy}, the name of the initialization strategy,
-\item \code{.optimizer}, the name of the optimizer,
+\item \code{.optimizer}, the name of the optimizer (if more than one),
 \item \code{.time}, the optimization time,
 \item \code{.optimum}, the function value at the optimum.
 }

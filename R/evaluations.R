@@ -8,7 +8,7 @@
 #' The following values are available for each \code{ino} object:
 #' \itemize{
 #'   \item \code{.strategy}, the name of the initialization strategy,
-#'   \item \code{.optimizer}, the name of the optimizer,
+#'   \item \code{.optimizer}, the name of the optimizer (if more than one),
 #'   \item \code{.time}, the optimization time,
 #'   \item \code{.optimum}, the function value at the optimum.
 #' }
@@ -16,7 +16,8 @@
 #' @param object
 #' An object of class \code{ino}.
 #' @param group
-#' A character vector for grouping the optimization results.
+#' A character vector for grouping the optimization results, or \code{NULL}
+#' (default) for no grouping.
 #' @param ...
 #' Named functions for computing statistics.
 #'
@@ -30,14 +31,15 @@
 #'
 #' @importFrom dplyr group_by_at summarize n across all_of
 
-summary.ino <- function(object, group = c(".strategy", ".optimizer"), ...) {
+summary.ino <- function(object, group = NULL, ...) {
 
   ### check input
   if (!inherits(object, "ino")) {
     stop("'object' must be of class 'ino'.")
   }
   if (nrow(object$runs$table) == 0) {
-    stop("No optimization runs found.", call. = FALSE)
+    warning("No optimization runs found.")
+    return(data.frame())
   }
 
   ### if group is empty, print the entire table
