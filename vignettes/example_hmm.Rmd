@@ -13,22 +13,21 @@ editor_options:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.dim = c(8, 6),
-  out.width = "100%"
+  fig.align = "center",
+  fig.dim = c(8, 6), 
+  out.width = "75%"
 )
-```
-
-```{r setup}
-library("ino") 
+library("ino")
 options(ino_progress = FALSE)
 library("ggplot2")
+set.seed(1)
 ```
 
-This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of an hidden Markov model (HMM). The aim of this vignette is to learn about the functions and the workflow of ino, for more technical details about HMMs see, e.g.,  Zucchini et al. (2016).
+This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of an hidden Markov model (HMM). For more technical details about HMMs see, e.g.,  Zucchini et al. (2016).
 
 ## Data
 
-The example data set considered throughout this vignette covers a series of earthquake counts. The data set is also included in the ino package.
+The example data set considered throughout this vignette covers a series of earthquake counts. The data set is also included in the {ino} package.
 
 ```{r}
 data("earthquakes")
@@ -49,8 +48,8 @@ hmm_ino <- setup_ino(
   data = ino::earthquakes,
   N = 2,
   neg = TRUE,
-  opt = set_optimizer_nlm(),
-  verbose = FALSE)
+  opt = set_optimizer_nlm()
+)
 ```
 
 ### Random initialization
@@ -69,20 +68,19 @@ For choosing fixed starting values, we set the two values for the tpm to -2, cor
 
 ```{r}
 starting_values <- list(c(-2, -2, log(20), log(40)), 
-           c(-2, -2, log(15), log(25)),
-           c(-2, -2, log(10), log(20)))
+                        c(-2, -2, log(15), log(25)),
+                        c(-2, -2, log(10), log(20)))
 for(val in starting_values)
   hmm_ino <- fixed_initialization(hmm_ino, at = val)
 ```
 
 ### Subset initialization
 
-To illustrate the subset initialization strategy, we fit our HMM to the first 50\% and 60\% of the observations, respectively. The starting values for these subsets are chosen randomly. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
+To illustrate the subset initialization strategy, we fit our HMM to the first 50\% of the observation. The starting values for these subsets are chosen randomly. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
 
 ```{r}
-props <- c(0.5, 0.6)
-for(i in 1:length(props))
-  hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = props[i])
+for(i in 1:3)
+  hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.5)
 ```
 
 
@@ -98,16 +96,10 @@ overview_optima(hmm_ino)
 
 The frequency table indicates that `r overview_optima(hmm_ino)[1,2]` runs converged to the same likelihood value (`r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`), which is the global maximum (note these are the negative log-likelihood values).  
 
-When comparing the likelihood values across the strategies, we see that the random starting values resulted in a local maximum:
-
-```{r}
-plot(hmm_ino, var = "minimum", by = ".strategy", type = "barplot")
-```
-
 Using `summary`, we can investigate all optimization runs:
 
 ```{r}
-summary(hmm_ino, group = NULL)
+summary(hmm_ino)
 ```
 
 The table further indicates that (e.g.) the fourth optimization converged to the global optimum. We can extract the corresponding initial values and estimates as follows:

@@ -95,6 +95,13 @@ Let's look at the results:
 summary(geyser_ino)
 ```
 
+The last run (with the unplausible starting values) converged to a local optimum. We discard this run from further comparisons:
+
+```{r}
+geyser_ino <- clear_ino(geyser_ino, which = 3)
+```
+
+
 ### Randomly chosen starting values
 
 When using randomly chosen starting values, we apply the function `random_initialization()`. The most simple (yet __not__ necessarily effective) function call would be as follows:
@@ -109,53 +116,38 @@ Here, `npar` starting values are randomly drawn from a standard normal distribut
 geyser_ino <- random_initialization(geyser_ino, sampler = stats::rnorm, mean = 2, sd = 0.5)
 ```
 
-The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. As it was done above for fixed starting values, we could of course also use a loop here to run multiple optimizations.
-
-
+The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. As it was done above for fixed starting values, we could of course also use a loop here to run multiple optimization.
 
 ## Evaluating the optimization runs
 
-The `geyser_ino` object now contains the results and further information on five optimization runs (three runs with fixed and two with randomly selected starting values). As we have chosen one rather unplausible set of fixed starting values, we first delete this (i.e., the third) run:
-
-```{r}
-geyser_ino <- clear_ino(geyser_ino, which = 3)
-```
-
-We can use `summary()` to obtain summary statistics for the optimization runs conducted. Moreover, we also can add grouping variables, for example to compare the average computation time for the two approaches:
+The `geyser_ino` object now contains the results and further information on four optimization runs (two runs with fixed and two with randomly selected starting values). We can use `summary()` to obtain summary statistics for the optimization runs conducted. Moreover, we also can add grouping variables, for example to compare the average computation time for the two approaches:
 
 ```{r}
 summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 ```
 
 In addition, `summary()` by default prints the number of optimization runs for each group.
+
 Due to the relatively simple statistical model considered in this example, the average computation time in our examples is fairly low. However, when considering more complex models, the computation time can substantially differ across different optimization strategies.
 
 If we do not set any group, `summary()` prints the entire table displaying all optimization runs.
 
 ```{r}
-summary(geyser_ino, group = NULL)
+summary(geyser_ino)
 ```
 
-Here, the first run with fixed chosen starting values requires `r summary(geyser_ino, group = NULL)[1,8]` iterations until convergence --- much less than the optimizations with randomly chosen starting values. The final (negative) log-likelihood value (column `minimum`) further indicates that the optimization run with random starting values drawn from a $\mathcal{N}(0,1)$ distribution (the third row) resulted in a local minimum.
-
-Aside from summary statistics, we can also visually inspect the optimization results. Using the `plot()` function, we can compare the computation using boxplots:
-
-```{r}
-plot(geyser_ino, var = ".time", by = ".strategy", type = "boxplot")
-```
-
+Here, the runs with fixed chosen starting values require much less iterations until convergence than the optimization with randomly chosen starting values. The final (negative) log-likelihood value (column `.optimum`) further indicates that the convergence to local optimum for the random initialized runs.
 
 ## More involved initialization strategies 
 
 ### Standardized initialization
 
-For standardized initialization, we standardize all columns in our data before running the optimization. Specifically, after standardizing the data, we can again select to use either fixed or randomly chosen starting values. In the example code snippet shown below, we consider five sets of randomly selected starting values, each drawn from a $\mathcal{N}(0,0.5)$ distribution:
+For standardized initialization, we standardize all columns in our data before running the optimization. Specifically, after standardizing the data, we can again select to use either fixed or randomly chosen starting values. In the example code snippet shown below, we consider five sets of randomly selected starting values:
 
 ```{r}
 for(i in 1:5)
-  geyser_ino <- standardize_initialization(geyser_ino, 
-                                           initialization = 
-                                             random_initialization(sampler = stats::rnorm, mean = 0, sd = 0.5))
+  geyser_ino <- standardize_initialization(
+    geyser_ino, initialization = random_initialization())
 summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 ```
 
@@ -163,11 +155,12 @@ summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 
 If the data set considered shows some complex structures or is very large, numerical optimization may become computationally costly. In such cases, *subset initialization* can be a helpful tool. 
 
-The function `subset_initialization` uses a subsample from the data via the argument `prop` to optimize the likelihood. We can then fit our model to the subset using either fixed or random starting values. For example, the following code snippet randomly samples 75\% of the observations and uses random initialization:
+The function `subset_initialization` uses a subsample from the data via the argument `prop` to optimize the likelihood. We can then fit our model to the subset using either fixed or random starting values. For example, the following code snippet randomly samples 50\% of the observations and uses random initialization:
 
 ```{r}
-geyser_ino <- subset_initialization(
-     geyser_ino, prop = 0.75, initialization = random_initialization())
+for(i in 1:5)
+  geyser_ino <- subset_initialization(
+       geyser_ino, prop = 0.5, initialization = random_initialization())
 ```
 
 After having optimized the likelihood on the subsample, `subset_initialization()` automatically fits the model to the entire data set using the resulting parameter estimates of the subset as starting values. The resulting optimization run is labelled as `subset>random` in the `summary()` table:
