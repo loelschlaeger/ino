@@ -44,7 +44,7 @@ alternative 1) error term covariance matrix \code{Sigma}.
 data <- ino:::sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
 theta <- attr(data, "true")
 ino:::f_ll_mnp(theta = theta, data = data)
-\dontrun{
+\donttest{
 nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 }
 

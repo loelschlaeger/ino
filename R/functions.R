@@ -207,7 +207,7 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' data <- ino:::sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
 #' theta <- attr(data, "true")
 #' ino:::f_ll_mnp(theta = theta, data = data)
-#' \dontrun{
+#' \donttest{
 #' nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 #' }
 #'
@@ -417,7 +417,7 @@ sim_mnp <- function(
 #' data <- ino:::sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
 #' theta <- attr(data, "true")
 #' ino:::f_ll_mnl(theta = theta, data = data)
-#' \dontrun{
+#' \donttest{
 #' nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
 #' }
 #'
