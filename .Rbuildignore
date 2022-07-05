@@ -5,3 +5,4 @@
 ^\.github$
 sandbox.R
 TODO.md
+cran-comments.md
