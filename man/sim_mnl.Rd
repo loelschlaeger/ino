@@ -48,16 +48,6 @@ alternatives), \code{"P"} (the number of choice covariates), and \code{"mix"}
 \description{
 Simulate data from a (normally mixed) multinomial logit model
 }
-\details{
-The normally mixed multinomial logit model formula is
-\deqn{U_{nt} = X_{nt} \beta_n + \epsilon_{nt},}
-where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
-of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
-\eqn{X_{nt}} is the decider- and choice occasion-specific \eqn{J} times
-\eqn{P} covariate matrix, \eqn{\beta_n} is the decider-specific random
-coefficient vector with \deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and
-\eqn{\epsilon_{nt}} is the error term that is iid extreme value distributed.
-}
 \examples{
 ino:::sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
 

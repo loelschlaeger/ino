@@ -273,21 +273,6 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
 
 #' Simulate data from a (normally mixed) multinomial probit model
 #'
-#' @details
-#' The normally mixed multinomial probit model formula is
-#' \deqn{U_{nt} = X_{nt} \beta_n + \epsilon_{nt},}
-#' where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
-#' of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
-#' \eqn{X_{nt}} is the choice occasion-specific \eqn{J} times \eqn{P} covariate
-#' matrix, \eqn{\beta_n} is the decider-specific random effect vector with
-#' \deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and \eqn{\epsilon_{nt}} is the choice
-#' occasion-specific error term with \deqn{\epsilon_{nt}\sim\text{MVN}_J(0,\Sigma).}
-#' The choice \eqn{y_{nt}} of decider \eqn{n} at choice occasion \eqn{t} is
-#' linked to the utilities via \deqn{y_{nt} = \arg \max U_{nt}} (hence assuming
-#' utility maximizing behavior). For parameter identification (utility is
-#' indifferent towards level and scale), utility differences with respect to the
-#' first alternative are taken and the first effect is fixed to one.
-#'
 #' @seealso
 #' [f_ll_mnp()] for computing the log-likelihood of a (normally mixed)
 #' multinomial probit model.
@@ -480,15 +465,6 @@ f_ll_mnl <- function(theta, data, R = 100, neg = FALSE) {
 
 #' Simulate data from a (normally mixed) multinomial logit model
 #'
-#' @details
-#' The normally mixed multinomial logit model formula is
-#' \deqn{U_{nt} = X_{nt} \beta_n + \epsilon_{nt},}
-#' where \eqn{U_{nt}} is the vector of length \eqn{J} of utilities for each
-#' of the \eqn{J} alternatives for decider \eqn{n} at choice occasion \eqn{t},
-#' \eqn{X_{nt}} is the decider- and choice occasion-specific \eqn{J} times
-#' \eqn{P} covariate matrix, \eqn{\beta_n} is the decider-specific random
-#' coefficient vector with \deqn{beta_n\sim\text{MVN}_P(b,\Omega),} and
-#' \eqn{\epsilon_{nt}} is the error term that is iid extreme value distributed.
 #'
 #' @seealso
 #' [f_ll_mnp()] for computing the log-likelihood of a (normally mixed)
