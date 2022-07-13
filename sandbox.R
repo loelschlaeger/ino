@@ -63,10 +63,19 @@ plot(hmm_ino, var = ".time", by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
+set.seed(1)
+probit_data <- list()
+for(i in 1:100){
+  b <- c(1,rnorm(2, sd = 3))
+  Sigma <- RprobitB::rwishart(3,diag(3))$W
+  name <- paste0("data",i)
+  probit_data[[name]] <- ino:::sim_mnp(N = 100, b = b, Sigma = Sigma, seed = i)
+}
+
 probit_ino <- setup_ino(
   f = ino:::f_ll_mnp,
   npar = 11,
-  data = ino::probit_data[1:2],
+  data = probit_data[1:2],
   neg = TRUE,
   opt = set_optimizer_nlm(),
   mpvs = "data"
@@ -88,10 +97,19 @@ plot(probit_ino, var = ".time")
 
 # Example: Logit LL -------------------------------------------------------
 
+set.seed(1)
+logit_data <- list()
+for(i in 1:100){
+  b <- rnorm(3, sd = 3)
+  Omega <- RprobitB::rwishart(3,diag(3))$W
+  name <- paste0("data",i)
+  logit_data[[name]] <- ino:::sim_mnl(N = 300, J = 3, b = b, Omega = Omega, seed = i)
+}
+
 logit_ino <- setup_ino(
   f = ino:::f_ll_mnl,
   npar = 9,
-  data = ino::logit_data[[1]],
+  data = logit_data[[1]],
   R = list("R1" = 10, "R2" = 100),
   neg = TRUE,
   opt = set_optimizer_nlm(),

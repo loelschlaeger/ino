@@ -19,26 +19,18 @@ test_that("HMM likelihood works", {
   expect_type(ll, "double")
 })
 
-test_that("MNP likelihood works", {
-  data <- ino::probit_data[[1]]
-  theta <- attr(data, "true")
-  ll <- f_ll_mnp(theta = theta, data = data)
-  expect_type(ll, "double")
-})
-
-test_that("MNP data simulation works", {
+test_that("MNP data simulation and likelihood computation works", {
   data <- sim_mnp(N = 3, T = 2, b = c(1, -1), Omega = diag(2), Sigma = diag(2))
   expect_true(is.data.frame(data))
-})
-
-test_that("MNL likelihood works", {
-  data <- ino::logit_data[[1]]
   theta <- attr(data, "true")
-  ll <- f_ll_mnl(theta = theta, data = data)
-  expect_type(ll, "double")
+  ll <- f_ll_mnp(theta = theta, data = data)
+  expect_true(is.numeric(ll))
 })
 
-test_that("MNL data simulation works", {
+test_that("MNL data simulation and likelihood computation works", {
   data <- sim_mnl(N = 3, T = 2, J = 3, b = c(-2, 0.5, 2), Omega = diag(3))
   expect_true(is.data.frame(data))
+  theta <- attr(data, "true")
+  ll <- f_ll_mnl(theta = theta, data = data)
+  expect_true(is.numeric(ll))
 })
