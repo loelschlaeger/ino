@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{set_optimizer_nlm}
 \alias{set_optimizer_nlm}
-\title{Specify the \code{\link[stats]{nlm}} optimizer}
+\title{Specify \code{\link[stats]{nlm}} optimizer}
 \usage{
 set_optimizer_nlm(..., crit = c("code", "iterations"))
 }
@@ -18,7 +18,7 @@ An object of class \code{optimizer}, which can be passed to
 \code{\link{setup_ino}}.
 }
 \description{
-Specify the \code{\link[stats]{nlm}} optimizer
+Specify \code{\link[stats]{nlm}} optimizer
 }
 \seealso{
 \code{\link[=set_optimizer]{set_optimizer()}} for specifying a different optimizer.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{setup_ino}
 \alias{setup_ino}
-\title{Setup of an \code{ino} object}
+\title{Setup}
 \usage{
 setup_ino(
   f,
@@ -96,9 +96,9 @@ setup_ino(
 }
 \examples{
 setup_ino(
-  f = ino:::f_ll_hmm,
+  f = f_ll_hmm,
   npar = 4,
-  data = ino::earthquakes,
+  data = earthquakes,
   N = 2,
   neg = TRUE,
   opt = set_optimizer_nlm()

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{f_ll_hmm}
 \alias{f_ll_hmm}
-\title{The log-likelihood function of the Poisson-hidden Markov model}
+\title{Log-likelihood function of the Poisson-hidden Markov model}
 \usage{
 f_ll_hmm(theta, data, N = 2, neg = FALSE)
 }
@@ -19,7 +19,7 @@ f_ll_hmm(theta, data, N = 2, neg = FALSE)
 The log-likelihood value at \code{theta}.
 }
 \description{
-The log-likelihood function of the Poisson-hidden Markov model
+Log-likelihood function of the Poisson-hidden Markov model
 }
 \details{
 The example uses a data set that covers the number of major earthquakes
@@ -27,10 +27,11 @@ The example uses a data set that covers the number of major earthquakes
 }
 \examples{
 data(earthquakes, package = "ino")
-ino:::f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
+f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
 
 }
 \references{
 https://en.wikipedia.org/wiki/Hidden_Markov_model
 }
 \keyword{function}
+\keyword{internal}

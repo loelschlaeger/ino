@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{f_matyas}
 \alias{f_matyas}
-\title{The Matyas function}
+\title{Matyas function}
 \usage{
 f_matyas(x)
 }
@@ -13,16 +13,17 @@ f_matyas(x)
 The function value at \code{x}, a single numeric value.
 }
 \description{
-The Matyas function
+Matyas function
 }
 \details{
 The function has multiple local minima and one global minimum in the origin.
 }
 \examples{
-ino:::f_matyas(c(0, 0))
+f_matyas(c(0, 0))
 
 }
 \references{
 https://en.wikipedia.org/wiki/Test_functions_for_optimization
 }
 \keyword{function}
+\keyword{internal}

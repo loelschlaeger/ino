@@ -52,7 +52,7 @@ which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 Simulate data from a (normally mixed) multinomial probit model
 }
 \examples{
-ino:::sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
+sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 
 }
 \seealso{
@@ -60,3 +60,4 @@ ino:::sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 multinomial probit model.
 }
 \keyword{function}
+\keyword{internal}

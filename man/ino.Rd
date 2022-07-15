@@ -3,9 +3,27 @@
 \docType{package}
 \name{ino}
 \alias{ino}
+\alias{ino-package}
 \title{ino: Initialization strategies for numerical optimization}
 \description{
 This package implements tools for the analysis of the initialization of
 numerical optimization.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/loelschlaeger/ino}
+  \item Report bugs at \url{https://github.com/loelschlaeger/ino/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Lennart Oelschläger \email{oelschlaeger.lennart@gmail.com} (\href{https://orcid.org/0000-0001-5421-9313}{ORCID})
+
+Authors:
+\itemize{
+  \item Marius Ötting \email{marius.oetting@uni-bielefeld.de} (\href{https://orcid.org/0000-0002-9373-0365}{ORCID})
+}
+
 }
 \keyword{internal}

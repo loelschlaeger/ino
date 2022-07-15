@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaluations.R
 \name{plot.ino}
 \alias{plot.ino}
-\title{Visualization of an \code{ino} object}
+\title{Visualization of initialization}
 \usage{
 \method{plot}{ino}(x, var = ".time", by = ".strategy", type = "boxplot", ...)
 }
@@ -22,7 +22,7 @@
 An \code{ggplot} object.
 }
 \description{
-This function plots one or multiple summary statistics on the optimization
+This function plots one or multiple summary statistics on the initialization
 runs in an \code{ino} object.
 }
 \keyword{evaluation}

@@ -1,4 +1,4 @@
-#' The Ackley function
+#' Ackley function
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Ackley_function
@@ -10,13 +10,15 @@
 #' A numeric vector of length 2.
 #'
 #' @examples
-#' ino:::f_ackley(c(0, 0))
+#' f_ackley(c(0, 0))
 #'
 #' @return
 #' The function value at \code{x}, a single numeric value.
 #'
 #' @keywords
-#' function
+#' internal function
+#'
+#' @export
 
 f_ackley <- function(x) {
   stopifnot(is.numeric(x), length(x) == 2)
@@ -24,7 +26,7 @@ f_ackley <- function(x) {
     exp(0.5 * (cos(2 * pi * x[1]) + cos(2 * pi * x[2]))) + exp(1) + 20
 }
 
-#' The Beale function
+#' Beale function
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Test_functions_for_optimization
@@ -36,13 +38,15 @@ f_ackley <- function(x) {
 #' A numeric vector of length 2.
 #'
 #' @examples
-#' ino:::f_beale(c(3, 0.5))
+#' f_beale(c(3, 0.5))
 #'
 #' @return
 #' The function value at \code{x}, a single numeric value.
 #'
 #' @keywords
-#' function
+#' internal function
+#'
+#' @export
 
 f_beale <- function(x) {
   stopifnot(is.numeric(x), length(x) == 2)
@@ -50,7 +54,7 @@ f_beale <- function(x) {
     (2.625 - x[1] + x[1] * x[2]^3)^2
 }
 
-#' The Matyas function
+#' Matyas function
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Test_functions_for_optimization
@@ -62,20 +66,22 @@ f_beale <- function(x) {
 #' A numeric vector of length 2.
 #'
 #' @examples
-#' ino:::f_matyas(c(0, 0))
+#' f_matyas(c(0, 0))
 #'
 #' @return
 #' The function value at \code{x}, a single numeric value.
 #'
+#' @export
+#'
 #' @keywords
-#' function
+#' internal function
 
 f_matyas <- function(x) {
   stopifnot(is.numeric(x), length(x) == 2)
   0.26 * (x[1]^2 +  x[2]^2) - 0.48 * x[1] * x[2]
 }
 
-#' The Easom function
+#' Easom function
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Test_functions_for_optimization
@@ -87,20 +93,22 @@ f_matyas <- function(x) {
 #' A numeric vector of length 2.
 #'
 #' @examples
-#' ino:::f_easom(c(pi, pi))
+#' f_easom(c(pi, pi))
 #'
 #' @return
 #' The function value at \code{x}, a single numeric value.
 #'
 #' @keywords
-#' function
+#' internal function
+#'
+#' @export
 
 f_easom <- function(x) {
   stopifnot(is.numeric(x), length(x) == 2)
   -cos(x[1]) * cos(x[2]) * exp(-((x[1] - pi)^2 + (x[2] - pi)^2))
 }
 
-#' The log-likelihood function of the Poisson-hidden Markov model
+#' Log-likelihood function of the Poisson-hidden Markov model
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Hidden_Markov_model
@@ -120,7 +128,7 @@ f_easom <- function(x) {
 #'
 #' @examples
 #' data(earthquakes, package = "ino")
-#' ino:::f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
+#' f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
 #'
 #' @importFrom stats dpois
 #'
@@ -128,7 +136,9 @@ f_easom <- function(x) {
 #' The log-likelihood value at \code{theta}.
 #'
 #' @keywords
-#' function
+#' internal function
+#'
+#' @export
 
 f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 
@@ -164,7 +174,7 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
   return(ifelse(neg, -llk, llk))
 }
 
-#' The log-likelihood function of the (normally mixed) multinomial probit model
+#' Log-likelihood function of the (normally mixed) multinomial probit model
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Multinomial_probit
@@ -204,15 +214,17 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' The log-likelihood value at \code{theta}.
 #'
 #' @examples
-#' data <- ino:::sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
+#' data <- sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
 #' theta <- attr(data, "true")
-#' ino:::f_ll_mnp(theta = theta, data = data)
+#' f_ll_mnp(theta = theta, data = data)
 #' \donttest{
-#' nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
+#' nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 #' }
 #'
 #' @keywords
-#' function
+#' internal function
+#'
+#' @export
 #'
 #' @importFrom RprobitB delta
 #' @importFrom mvtnorm pmvnorm
@@ -312,12 +324,14 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
 #' which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 #'
 #' @examples
-#' ino:::sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
+#' sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 #'
 #' @importFrom stats rnorm
 #'
 #' @keywords
-#' function
+#' internal function
+#'
+#' @export
 
 sim_mnp <- function(
   N, T = 1, b, Omega = NULL, Sigma, seed = NULL,
@@ -384,7 +398,7 @@ sim_mnp <- function(
   return(data)
 }
 
-#' The log-likelihood function of the (normally mixed) multinomial logit model
+#' Log-likelihood function of the (normally mixed) multinomial logit model
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Multinomial_logistic_regression
@@ -414,18 +428,20 @@ sim_mnp <- function(
 #' The log-likelihood value at \code{theta}.
 #'
 #' @examples
-#' data <- ino:::sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
+#' data <- sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
 #' theta <- attr(data, "true")
-#' ino:::f_ll_mnl(theta = theta, data = data)
+#' f_ll_mnl(theta = theta, data = data)
 #' \donttest{
-#' nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
+#' nlm(f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
 #' }
 #'
 #' @importFrom mvtnorm pmvnorm
 #' @importFrom stats rnorm
 #'
+#' @export
+#'
 #' @keywords
-#' function
+#' internal function
 
 f_ll_mnl <- function(theta, data, R = 100, neg = FALSE) {
 
@@ -502,13 +518,15 @@ f_ll_mnl <- function(theta, data, R = 100, neg = FALSE) {
 #' (a boolean which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 #'
 #' @examples
-#' ino:::sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
+#' sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
 #'
 #' @importFrom evd rgumbel
 #' @importFrom stats rnorm
 #'
+#' @export
+#'
 #' @keywords
-#' function
+#' internal function
 
 sim_mnl <- function(N, T = 1, J, b, Omega = NULL, seed = NULL,
                     covariate = function() rnorm(n = 1, mean = 0, sd = 9)) {

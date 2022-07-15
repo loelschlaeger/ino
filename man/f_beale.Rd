@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{f_beale}
 \alias{f_beale}
-\title{The Beale function}
+\title{Beale function}
 \usage{
 f_beale(x)
 }
@@ -13,16 +13,17 @@ f_beale(x)
 The function value at \code{x}, a single numeric value.
 }
 \description{
-The Beale function
+Beale function
 }
 \details{
 The function has multiple local minima and one global minimum in (3, 0.5).
 }
 \examples{
-ino:::f_beale(c(3, 0.5))
+f_beale(c(3, 0.5))
 
 }
 \references{
 https://en.wikipedia.org/wiki/Test_functions_for_optimization
 }
 \keyword{function}
+\keyword{internal}

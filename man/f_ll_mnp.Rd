@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{f_ll_mnp}
 \alias{f_ll_mnp}
-\title{The log-likelihood function of the (normally mixed) multinomial probit model}
+\title{Log-likelihood function of the (normally mixed) multinomial probit model}
 \usage{
 f_ll_mnp(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE)
 }
@@ -27,7 +27,7 @@ and return a single numeric value.}
 The log-likelihood value at \code{theta}.
 }
 \description{
-The log-likelihood function of the (normally mixed) multinomial probit model
+Log-likelihood function of the (normally mixed) multinomial probit model
 }
 \details{
 The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
@@ -41,11 +41,11 @@ alternative 1) error term covariance matrix \code{Sigma}.
 }
 }
 \examples{
-data <- ino:::sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
+data <- sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
 theta <- attr(data, "true")
-ino:::f_ll_mnp(theta = theta, data = data)
+f_ll_mnp(theta = theta, data = data)
 \donttest{
-nlm(ino:::f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
+nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 }
 
 }
@@ -56,3 +56,4 @@ https://en.wikipedia.org/wiki/Multinomial_probit
 \code{\link[=sim_mnp]{sim_mnp()}} for simulating a data set from a probit model.
 }
 \keyword{function}
+\keyword{internal}

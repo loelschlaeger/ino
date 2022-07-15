@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaluations.R
 \name{summary.ino}
 \alias{summary.ino}
-\title{Summary of an \code{ino} object}
+\title{Summary of initialization}
 \usage{
 \method{summary}{ino}(object, group = NULL, ...)
 }
@@ -18,7 +18,7 @@
 A \code{data.frame}.
 }
 \description{
-This function gives an overview of the optimization runs in an \code{ino}
+This function gives an overview of the initialization runs in an \code{ino}
 object.
 }
 \details{

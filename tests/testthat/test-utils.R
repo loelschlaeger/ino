@@ -7,7 +7,7 @@ test_that("check for numbers works", {
 
 test_that("trying an expression silently works", {
   expect_equal(try_silent(1 + 1), 2)
-  expect_s3_class(ino:::try_silent(1 + "1"), "fail")
+  expect_s3_class(try_silent(1 + "1"), "fail")
 })
 
 test_that("interruption of long evaluations works", {

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{f_ll_mnl}
 \alias{f_ll_mnl}
-\title{The log-likelihood function of the (normally mixed) multinomial logit model}
+\title{Log-likelihood function of the (normally mixed) multinomial logit model}
 \usage{
 f_ll_mnl(theta, data, R = 100, neg = FALSE)
 }
@@ -20,7 +20,7 @@ choice probabilities.}
 The log-likelihood value at \code{theta}.
 }
 \description{
-The log-likelihood function of the (normally mixed) multinomial logit model
+Log-likelihood function of the (normally mixed) multinomial logit model
 }
 \details{
 The order of \code{theta} is supposed to be \code{c(b,o)}, where
@@ -31,11 +31,11 @@ Cholesky root of \code{Omega} (if any).
 }
 }
 \examples{
-data <- ino:::sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
+data <- sim_mnl(N = 300, J = 3, b = c(1,3), seed = 1)
 theta <- attr(data, "true")
-ino:::f_ll_mnl(theta = theta, data = data)
+f_ll_mnl(theta = theta, data = data)
 \donttest{
-nlm(ino:::f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
+nlm(f_ll_mnl, p = theta, data = data, neg = TRUE)$estimate
 }
 
 }
@@ -46,3 +46,4 @@ https://en.wikipedia.org/wiki/Multinomial_logistic_regression
 \code{\link[=sim_mnl]{sim_mnl()}} for simulating a data set from a logit model.
 }
 \keyword{function}
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaluations.R
 \name{overview_optima}
 \alias{overview_optima}
-\title{Overview of found optima}
+\title{Overview of optima}
 \usage{
 overview_optima(x, digits = 2, plot = FALSE)
 }
@@ -18,6 +18,6 @@ Either a \code{data.frame} (if \code{plot = FALSE}), or otherwise a
 \code{ggplot} object.
 }
 \description{
-This function provides an overview of the number of optima found.
+This function provides an overview of the identified optima.
 }
 \keyword{evaluation}

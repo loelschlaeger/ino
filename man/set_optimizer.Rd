@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{set_optimizer}
 \alias{set_optimizer}
-\title{Specify a numerical optimizer}
+\title{Specify numerical optimizer}
 \usage{
 set_optimizer(opt, f, p, v, z, ..., crit = character(0))
 }

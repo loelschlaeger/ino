@@ -43,7 +43,7 @@ We consider an 2-state HMM (`N = 2`) with four parameters (`npar = 4`) to be est
 
 ```{r}
 hmm_ino <- setup_ino(
-  f = ino:::f_ll_hmm,
+  f = f_ll_hmm,
   npar = 4,
   data = ino::earthquakes,
   N = 2,

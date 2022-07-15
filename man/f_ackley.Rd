@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{f_ackley}
 \alias{f_ackley}
-\title{The Ackley function}
+\title{Ackley function}
 \usage{
 f_ackley(x)
 }
@@ -13,16 +13,17 @@ f_ackley(x)
 The function value at \code{x}, a single numeric value.
 }
 \description{
-The Ackley function
+Ackley function
 }
 \details{
 The function has multiple local minima and one global minimum in the origin.
 }
 \examples{
-ino:::f_ackley(c(0, 0))
+f_ackley(c(0, 0))
 
 }
 \references{
 https://en.wikipedia.org/wiki/Ackley_function
 }
 \keyword{function}
+\keyword{internal}

@@ -23,10 +23,5 @@ This function measures the computation time of a \code{do.call} call.
 \details{
 This function is a wrapper for \code{\link[base]{do.call}}.
 }
-\examples{
-what <- function(s) { Sys.sleep(s); return(s) }
-args <- list(s = 1)
-ino:::do.call_timed(what = what, args = args, headstart = 1)
-
-}
+\keyword{internal}
 \keyword{utils}

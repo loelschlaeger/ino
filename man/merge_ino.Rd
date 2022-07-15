@@ -2,12 +2,12 @@
 % Please edit documentation in R/setup.R
 \name{merge_ino}
 \alias{merge_ino}
-\title{Merge multiple \code{ino} objects}
+\title{Merge initialization runs}
 \usage{
 merge_ino(...)
 }
 \arguments{
-\item{...}{Arbitrary many \code{ino} objects, of which the optimization results are
+\item{...}{Arbitrary many \code{ino} objects, of which the initialization results are
 merged into the first object, which is then returned.}
 }
 \value{

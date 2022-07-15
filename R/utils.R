@@ -10,11 +10,8 @@
 #' @return
 #' A logical vector of the same length as \code{x}.
 #'
-#' @examples
-#' ino:::is_number(c(0, 1, 1.5))
-#'
 #' @keywords
-#' utils
+#' internal utils
 
 is_number <- function(x) {
   sapply(x, function(x) is.numeric(x) && x > 0 && x %% 1 == 0, USE.NAMES = F)
@@ -36,12 +33,8 @@ is_number <- function(x) {
 #' Either the value of \code{expr} or in case of a failure an object of class
 #' \code{fail}, which contains the error message.
 #'
-#' @examples
-#' ino:::try_silent(1 + 1)
-#' ino:::try_silent(1 + "1")
-#'
 #' @keywords
-#' utils
+#' internal utils
 
 try_silent <- function(expr) {
   out <- suppressWarnings(try(expr, silent = TRUE))
@@ -71,13 +64,8 @@ try_silent <- function(expr) {
 #' Either the value of \code{expr} or \code{NULL} if the evaluation time
 #' exceeded \code{secs} seconds.
 #'
-#' @examples
-#' foo <- function(x) { Sys.sleep(x); return(x) }
-#' ino:::timed(foo(0.9), 1)
-#' ino:::timed(foo(1.1), 1)
-#'
 #' @keywords
-#' utils
+#' internal utils
 
 timed <- function(expr, secs) {
   if (!(length(secs) == 1 && is_number(secs))) {
@@ -117,13 +105,8 @@ timed <- function(expr, secs) {
 #' A list of the two elements \code{"res"} (the results of the \code{do.call}
 #' call) and \code{"time"} (the computation time).
 #'
-#' @examples
-#' what <- function(s) { Sys.sleep(s); return(s) }
-#' args <- list(s = 1)
-#' ino:::do.call_timed(what = what, args = args, headstart = 1)
-#'
 #' @keywords
-#' utils
+#' internal utils
 
 do.call_timed <- function(what, args, headstart = 0) {
   stopifnot(length(headstart) == 1, headstart >= 0)

@@ -7,7 +7,7 @@ devtools::load_all()
 # Example: Ackley ---------------------------------------------------------
 
 x <- setup_ino(
-  f = ino:::f_ackley,
+  f = f_ackley,
   npar = 2,
   opt = list("nlm"   = set_optimizer_nlm(),
              "optim" = set_optimizer_optim())
@@ -28,7 +28,7 @@ overview_optima(x, digits = 2)
 # Example: HMM LL ---------------------------------------------------------
 
 hmm_ino <- setup_ino(
-  f = ino:::f_ll_hmm,
+  f = f_ll_hmm,
   npar = 4,
   data = ino::earthquakes,
   N = 2,
@@ -69,11 +69,11 @@ for(i in 1:100){
   b <- c(1,rnorm(2, sd = 3))
   Sigma <- RprobitB::rwishart(3,diag(3))$W
   name <- paste0("data",i)
-  probit_data[[name]] <- ino:::sim_mnp(N = 100, b = b, Sigma = Sigma, seed = i)
+  probit_data[[name]] <- sim_mnp(N = 100, b = b, Sigma = Sigma, seed = i)
 }
 
 probit_ino <- setup_ino(
-  f = ino:::f_ll_mnp,
+  f = f_ll_mnp,
   npar = 11,
   data = probit_data[1:2],
   neg = TRUE,
@@ -103,11 +103,11 @@ for(i in 1:100){
   b <- rnorm(3, sd = 3)
   Omega <- RprobitB::rwishart(3,diag(3))$W
   name <- paste0("data",i)
-  logit_data[[name]] <- ino:::sim_mnl(N = 300, J = 3, b = b, Omega = Omega, seed = i)
+  logit_data[[name]] <- sim_mnl(N = 300, J = 3, b = b, Omega = Omega, seed = i)
 }
 
 logit_ino <- setup_ino(
-  f = ino:::f_ll_mnl,
+  f = f_ll_mnl,
   npar = 9,
   data = logit_data[[1]],
   R = list("R1" = 10, "R2" = 100),

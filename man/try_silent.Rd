@@ -20,9 +20,5 @@ error message if the execution failed.
 \details{
 This function is a wrapper for \code{\link[base]{try}}.
 }
-\examples{
-ino:::try_silent(1 + 1)
-ino:::try_silent(1 + "1")
-
-}
+\keyword{internal}
 \keyword{utils}

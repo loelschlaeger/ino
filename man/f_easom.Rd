@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{f_easom}
 \alias{f_easom}
-\title{The Easom function}
+\title{Easom function}
 \usage{
 f_easom(x)
 }
@@ -13,16 +13,17 @@ f_easom(x)
 The function value at \code{x}, a single numeric value.
 }
 \description{
-The Easom function
+Easom function
 }
 \details{
 The function has multiple local minima and one global minimum in (pi, pi).
 }
 \examples{
-ino:::f_easom(c(pi, pi))
+f_easom(c(pi, pi))
 
 }
 \references{
 https://en.wikipedia.org/wiki/Test_functions_for_optimization
 }
 \keyword{function}
+\keyword{internal}

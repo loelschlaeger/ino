@@ -1,4 +1,4 @@
-#' Setup of an \code{ino} object
+#' Setup
 #'
 #' @description
 #' Use this function to specify the numerical optimization problem. The function
@@ -75,9 +75,9 @@
 #'
 #' @examples
 #' setup_ino(
-#'   f = ino:::f_ll_hmm,
+#'   f = f_ll_hmm,
 #'   npar = 4,
-#'   data = ino::earthquakes,
+#'   data = earthquakes,
 #'   N = 2,
 #'   neg = TRUE,
 #'   opt = set_optimizer_nlm()
@@ -93,11 +93,14 @@ setup_ino <- function(
 
   ### check inputs
   if (missing(f))
-    stop("Please specify 'f'.", call. = FALSE)
+    stop("Please specify 'f'.",
+         call. = FALSE)
   if (missing(npar))
-    stop("Plase specify 'npar'.", call. = FALSE)
+    stop("Plase specify 'npar'.",
+         call. = FALSE)
   if (length(verbose) != 1 || !is.logical(verbose))
-    stop("'verbose' must be a boolean.", call. = FALSE)
+    stop("'verbose' must be a boolean.",
+         call. = FALSE)
 
   ### build ino object
   x <- list()
@@ -125,267 +128,7 @@ setup_ino <- function(
   return(x)
 }
 
-#' Create grid of parameter combinations
-#'
-#' @description
-#' This helper function creates a grid of all parameter combinations for an
-#' \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#'
-#' @return
-#' A \code{list}, where each element is a parameter set. Each parameter set
-#' contains at least a placeholder for the target parameter, which is set to
-#' \code{NA} and has to be filled by the initialization strategies.
-#' Additionally, each parameter set contains further arguments for the target
-#' function if available. In this case, the parameter names and identifier for
-#' the parameter values are added as attributes \code{"par_name"} and
-#' \code{"par_id"} to the parameter set.
-#'
-#' @keywords
-#' internal
-
-grid_ino <- function(x) {
-
-  ### build grid of parameter identifiers
-  grid_par <- as.list(names(x$f$add))
-  names(grid_par) <- names(x$f$add)
-  for(mpv in x$f$mpvs) grid_par[[mpv]] <- names(x$f$add[[mpv]])
-  grid_par <- expand.grid(grid_par, stringsAsFactors = FALSE)
-
-  ### build list of parameter sets
-  par_sets <- list()
-  for(i in 1:max(1,nrow(grid_par))) {
-    target <- list(NA)
-    names(target) <- x$f$target_arg
-    par_set <- c(target, x$f$add)
-    for(p in colnames(grid_par)) {
-      if(p %in% x$f$mpvs) {
-        par_set[p] <- par_set[[p]][grid_par[i,p]]
-      } else {
-        par_set[p] <- par_set[p][grid_par[i,p]]
-      }
-    }
-    attr(par_set, "par_name") <- as.character(names(x$f$add))
-    attr(par_set, "par_id") <- as.character(grid_par[i,])
-    par_sets[[i]] <- par_set
-  }
-
-  ### return list of parameter sets
-  return(par_sets)
-}
-
-#' Save results of optimization run
-#'
-#' @description
-#' This helper function saves the results of an optimization run into the
-#' submitted \code{ino} object.
-#'
-#' @details
-#' The results are saved at \code{x$runs}, which is a list of two elements:
-#' \itemize{
-#'   \item \code{table} is a \code{data.frame} with the optimization runs as
-#'         rows and optimization results as columns.
-#'         Per default, the following columns are created:
-#'         \itemize{
-#'           \item \code{.strategy}, the name of the initialization strategy,
-#'           \item \code{.optimizer}, the name of the optimizer,
-#'           \item \code{.time}, the optimization time,
-#'           \item \code{.optimum}, the function value at the optimum.
-#'         }
-#'   \item \code{pars} is a \code{list}, where the following values are saved
-#'         for each optimization run:
-#'         \itemize{
-#'           \item \code{.init}, the initial value,
-#'           \item \code{.estimate}, the optimal parameter values,
-#'           \item and any non-single valued output of the optimizer that was
-#'                 specified via \code{crit} in \code{\link{set_optimizer}}.
-#'         }
-#' }
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param strategy
-#' A character, the name of the initialization strategy.
-#' @param pars
-#' A list of parameter values for the optimization run.
-#' @param result
-#' The output of \code{\link{do.call_timed}}.
-#' @param opt_name
-#' The name of the optimizer.
-#'
-#' @return
-#' The updated object \code{x} (invisibly).
-#'
-#' @keywords
-#' internal
-
-result_ino <- function(x, strategy, pars, result, opt_name) {
-
-  ### determine number of new optimization result
-  nopt <- nrow(x[["runs"]][["table"]]) + 1
-
-  ### save optimization results
-  x[["runs"]][["table"]][nopt, ".strategy"] <- strategy
-  x[["runs"]][["table"]][nopt, ".time"] <- result$time
-  v <- x$opt[[opt_name]]$base_arg_names[3]
-  x[["runs"]][["table"]][nopt, ".optimum"] <- result$res[[v]]
-  if(length(x$opt) > 1)
-    x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
-  for(i in seq_along(attr(pars, "par_name")))
-    if(attr(pars, "par_name")[i] %in% x$f$mpvs)
-      x[["runs"]][["table"]][nopt, attr(pars, "par_name")[i]] <-
-    attr(pars, "par_id")[i]
-  x[["runs"]][["pars"]][[nopt]] <- list()
-  x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
-  z <- x$opt[[opt_name]]$base_arg_names[4]
-  x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
-  opt_crit <- x$opt[[opt_name]]$crit
-  crit_val <- result$res[opt_crit]
-  for(i in seq_along(opt_crit)) {
-    if(is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1){
-      x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
-    } else {
-      x[["runs"]][["pars"]][[nopt]][[opt_crit[i]]] <- crit_val[[i]]
-    }
-  }
-
-  ### return (invisibly) updated ino object
-  return(invisible(x))
-}
-
-
-#' Test of an \code{ino} object
-#'
-#' @description
-#' This helper function tests the specification of an \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param verbose
-#' Set to \code{TRUE} (\code{FALSE}) to print (hide) the test results of the
-#' setup at the console.
-#'
-#' @return
-#' The updated object \code{x} (invisibly).
-#'
-#' @keywords
-#' internal
-#'
-#' @importFrom stats rnorm
-
-test_ino <- function(x, verbose = getOption("ino_progress")) {
-
-  ### helper functions
-  ll <- NULL
-  step <- function(desc) pline(desc)
-  res <- function(msg = NULL, succ = FALSE, warn = FALSE) {
-    if(succ) {
-      cat(crayon::green("\U2713 "))
-    } else if(warn){
-      cat(crayon::yellow("X "))
-      warning(msg, call. = FALSE, immediate. =  TRUE)
-      ll <<- NULL
-    } else {
-      cat("\n")
-      stop(msg, call. = FALSE)
-    }
-  }
-  pline <- function(line = NULL) {
-    if(!is.null(ll)) cat(crayon::silver(ll), "\n", sep = "")
-    ll <<- line
-    cat(line, "\r")
-    Sys.sleep(ifelse(verbose,0.1,0))
-    return(line)
-  }
-
-  ### start tests
-  if(!verbose) { sink(tempfile()); on.exit(sink()) }
-
-  ### check data types
-  step("check that 'f' is of class 'function'")
-  res(msg = "",
-      succ = "function" %in% class(x$f$f))
-  step("check that 'npar' is a numeric")
-  res(msg = "",
-      succ = is.numeric(x$f$npar))
-  step("check that 'npar' is of length 1")
-  res(succ = length(x$f$npar) == 1)
-  step("check that 'npar' is a whole number")
-  res(msg = "",
-      succ = x$f$npar %% 1 == 0)
-  step("check that 'npar' is non-negative")
-  res(msg = "",
-      succ = x$f$npar > 0)
-  step("check that 'opt' is of class 'optimizer' or a list of those")
-  res(msg = "'opt' is not of class 'optimizer' or a list of those",
-      succ = all(sapply(x$opt, function(x) "optimizer" %in% class(x))))
-  step("check that 'mpvs' is a character (vector)")
-  res(msg = "",
-      succ = is.character(x$f$mpvs))
-
-  ### check names of parameters with mpvs
-  if(length(x$f$mpvs) > 0) {
-    for(mpv in x$f$mpvs){
-      step(paste0("check names for parameter '",mpv,"'"))
-      if(length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
-        res(succ = TRUE)
-      } else {
-        res(msg = paste0("re-named '", mpv, "' by '", mpv, "1:",
-                         length(x$f$add[[mpv]]),"'"),
-            succ = FALSE,
-            warn = TRUE)
-        names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
-      }
-    }
-  }
-
-  ### check that function and optimizer can be called
-  step("check name of target parameter in 'f'")
-  res(succ = is.character(x$f$target_arg))
-  rvx <- round(rnorm(x$f$npar),1)
-  step(paste0("try to draw value of length 'npar' = ", x$f$npar, ": ",
-              paste(rvx, collapse = " ")))
-  res(succ = (length(rvx) == x$f$npar))
-  step("try to create grid of parameter sets")
-  grid <- grid_ino(x)
-  res(succ = is.list(grid))
-  for(i in 1:min(length(grid),10)){
-    step(paste("check call to 'f' with parameter set", i))
-    pars <- grid[[i]]
-    pars[[x$f$target_arg]] <- rvx
-    f_return <- try_silent(
-      timed(expr = do.call(what = x$f$f,
-                           args = pars),
-            secs = 1)
-    )
-    res(msg = f_return,
-        succ = !inherits(f_return, "fail"))
-    for(o in seq_along(x$opt)) {
-      step(paste0("check call to '", names(x$opt)[o],
-                  "' with parameter set ", i))
-      opt <- x$opt[[o]]
-      base_args <- list(x$f$f, pars[[x$f$target_arg]])
-      names(base_args) <- opt$base_arg_names[1:2]
-      f_args <- pars
-      f_args[[x$f$target_arg]] <- NULL
-      o_return <- try_silent(
-        timed(expr = do.call(what = opt$f,
-                             args = c(base_args, f_args, opt$args)),
-              secs = 1)
-      )
-      res(msg = o_return,
-          succ = !inherits(o_return, "fail"))
-    }
-  }
-
-  ### return (invisibly) updated ino object
-  step("completed test cases\n")
-  return(invisible(x))
-}
-
-#' @export
+#' @exportS3Method
 #' @noRd
 #' @importFrom crayon underline
 #' @importFrom utils str
@@ -412,7 +155,7 @@ print.ino <- function(x, show_arguments = FALSE, ...) {
   }
 }
 
-#' Specify a numerical optimizer
+#' Specify numerical optimizer
 #'
 #' @description
 #' Use this function to specify a numerical optimizer for the optimization
@@ -518,21 +261,21 @@ set_optimizer <- function(opt, f, p, v, z, ..., crit = character(0)) {
   optimizer <- list()
   optimizer$f <- opt
   optimizer$base_arg_names <- c(f,p,v,z)
-  optimizer$args <- unlist(list(...)[[1]], recursive = FALSE)
+  optimizer$args <- list(...)[[1]]
   optimizer$crit <- crit
   optimizer$name <- deparse(substitute(opt))
   class(optimizer) <- c("optimizer","list")
   return(optimizer)
 }
 
-#' @export
+#' @exportS3Method
 #' @noRd
 
 print.optimizer <- function(x, ...) {
   cat("<optimizer ",x$name,">", sep = "")
 }
 
-#' Specify the \code{\link[stats]{nlm}} optimizer
+#' Specify \code{\link[stats]{nlm}} optimizer
 #'
 #' @inheritParams set_optimizer
 #'
@@ -555,7 +298,7 @@ set_optimizer_nlm <- function(..., crit = c("code", "iterations")) {
   )
 }
 
-#' Specify the \code{\link[stats]{optim}} optimizer
+#' Specify \code{\link[stats]{optim}} optimizer
 #'
 #' @inheritParams set_optimizer
 #'
@@ -578,15 +321,15 @@ set_optimizer_optim <- function(..., crit = c("convergence")) {
   )
 }
 
-#' Clear optimization runs
+#' Clear initialization runs
 #'
 #' @description
-#' This function clears optimization runs saved in an \code{ino} object.
+#' This function clears initialization runs saved in an \code{ino} object.
 #'
 #' @param x
 #' An object of class \code{ino}.
 #' @param which
-#' Either \code{"all"} to clear all optimization runs, or alternatively a
+#' Either \code{"all"} to clear all initialization runs, or alternatively a
 #' numeric vector of row numbers in \code{x$runs$table}.
 #'
 #' @return
@@ -610,13 +353,13 @@ clear_ino <- function(x, which = "all") {
   return(x)
 }
 
-#' Merge multiple \code{ino} objects
+#' Merge initialization runs
 #'
 #' @description
 #' This function merges multiple \code{ino} objects.
 #'
 #' @param ...
-#' Arbitrary many \code{ino} objects, of which the optimization results are
+#' Arbitrary many \code{ino} objects, of which the initialization results are
 #' merged into the first object, which is then returned.
 #'
 #' @return

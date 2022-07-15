@@ -2,20 +2,20 @@
 % Please edit documentation in R/setup.R
 \name{clear_ino}
 \alias{clear_ino}
-\title{Clear optimization runs}
+\title{Clear initialization runs}
 \usage{
 clear_ino(x, which = "all")
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{which}{Either \code{"all"} to clear all optimization runs, or alternatively a
+\item{which}{Either \code{"all"} to clear all initialization runs, or alternatively a
 numeric vector of row numbers in \code{x$runs$table}.}
 }
 \value{
 The updated \code{ino} object.
 }
 \description{
-This function clears optimization runs saved in an \code{ino} object.
+This function clears initialization runs saved in an \code{ino} object.
 }
 \keyword{specification}

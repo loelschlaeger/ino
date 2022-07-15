@@ -49,7 +49,7 @@ alternatives), \code{"P"} (the number of choice covariates), and \code{"mix"}
 Simulate data from a (normally mixed) multinomial logit model
 }
 \examples{
-ino:::sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
+sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
 
 }
 \seealso{
@@ -57,3 +57,4 @@ ino:::sim_mnl(N = 3, T = 2, J = 3, b = c(-2,0.5,2), Omega = diag(3))
 multinomial logit model.
 }
 \keyword{function}
+\keyword{internal}

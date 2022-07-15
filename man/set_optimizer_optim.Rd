@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{set_optimizer_optim}
 \alias{set_optimizer_optim}
-\title{Specify the \code{\link[stats]{optim}} optimizer}
+\title{Specify \code{\link[stats]{optim}} optimizer}
 \usage{
 set_optimizer_optim(..., crit = c("convergence"))
 }
@@ -18,7 +18,7 @@ An object of class \code{optimizer}, which can be passed to
 \code{\link{setup_ino}}.
 }
 \description{
-Specify the \code{\link[stats]{optim}} optimizer
+Specify \code{\link[stats]{optim}} optimizer
 }
 \seealso{
 \code{\link[=set_optimizer]{set_optimizer()}} for specifying a different optimizer.

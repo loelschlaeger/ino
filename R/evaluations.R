@@ -1,7 +1,7 @@
-#' Summary of an \code{ino} object
+#' Summary of initialization
 #'
 #' @description
-#' This function gives an overview of the optimization runs in an \code{ino}
+#' This function gives an overview of the initialization runs in an \code{ino}
 #' object.
 #'
 #' @details
@@ -69,10 +69,10 @@ print.summary.ino <- function(x, digits = NULL, ...) {
   print(as.data.frame(x))
 }
 
-#' Visualization of an \code{ino} object
+#' Visualization of initialization
 #'
 #' @description
-#' This function plots one or multiple summary statistics on the optimization
+#' This function plots one or multiple summary statistics on the initialization
 #' runs in an \code{ino} object.
 #'
 #' @param x
@@ -107,10 +107,12 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 
   ### check input
   if (nrow(optimization_df) == 0) {
-    stop("Optimization runs have not yet been performed.", call. = FALSE)
+    stop("Optimization runs have not yet been performed.",
+         call. = FALSE)
   }
   if (length(var) > 1) {
-    stop("Only one summary statistic can be selected in 'var'.", call. = FALSE)
+    stop("Only one summary statistic can be selected in 'var'.",
+         call. = FALSE)
   }
   if (!(type %in% c("boxplot", "histogram", "barplot"))) {
     stop("'type' only allows 'boxplot', 'histogram', or 'barplot'.",
@@ -118,7 +120,8 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
     )
   }
   if (!(var %in% colnames(optimization_df))) {
-    stop(paste0("Column '", var, "' does not exist."), call. = FALSE)
+    stop(paste0("Column '", var, "' does not exist."),
+         call. = FALSE)
   }
   if (sum(!(by %in% colnames(optimization_df))) > 0) {
     stop(paste0(
@@ -150,10 +153,10 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   return(out_plot)
 }
 
-#' Overview of found optima
+#' Overview of optima
 #'
 #' @description
-#' This function provides an overview of the number of optima found.
+#' This function provides an overview of the identified optima.
 #'
 #' @param x
 #' An object of class \code{ino}.
