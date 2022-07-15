@@ -108,11 +108,13 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   ### check input
   if (nrow(optimization_df) == 0) {
     stop("Optimization runs have not yet been performed.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   if (length(var) > 1) {
     stop("Only one summary statistic can be selected in 'var'.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   if (!(type %in% c("boxplot", "histogram", "barplot"))) {
     stop("'type' only allows 'boxplot', 'histogram', or 'barplot'.",
@@ -121,7 +123,8 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   }
   if (!(var %in% colnames(optimization_df))) {
     stop(paste0("Column '", var, "' does not exist."),
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   if (sum(!(by %in% colnames(optimization_df))) > 0) {
     stop(paste0(
