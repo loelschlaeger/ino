@@ -75,15 +75,18 @@ timed <- function(expr, secs) {
   on.exit({
     setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
   })
-  tryCatch({
-    expr
-  }, error = function(e) {
-    if (grepl("reached elapsed time limit|reached CPU time limit", e$message)) {
-      return(NULL)
-    } else {
-      stop(e)
+  tryCatch(
+    {
+      expr
+    },
+    error = function(e) {
+      if (grepl("reached elapsed time limit|reached CPU time limit", e$message)) {
+        return(NULL)
+      } else {
+        stop(e)
+      }
     }
-  })
+  )
 }
 
 #' Measure computation time

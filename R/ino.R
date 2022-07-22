@@ -88,24 +88,24 @@ grid_ino <- function(x) {
   ### build grid of parameter identifiers
   grid_par <- as.list(names(x$f$add))
   names(grid_par) <- names(x$f$add)
-  for(mpv in x$f$mpvs) grid_par[[mpv]] <- names(x$f$add[[mpv]])
+  for (mpv in x$f$mpvs) grid_par[[mpv]] <- names(x$f$add[[mpv]])
   grid_par <- expand.grid(grid_par, stringsAsFactors = FALSE)
 
   ### build list of parameter sets
   par_sets <- list()
-  for(i in 1:max(1,nrow(grid_par))) {
+  for (i in 1:max(1, nrow(grid_par))) {
     target <- list(NA)
     names(target) <- x$f$target_arg
     par_set <- c(target, x$f$add)
-    for(p in colnames(grid_par)) {
-      if(p %in% x$f$mpvs) {
-        par_set[p] <- par_set[[p]][grid_par[i,p]]
+    for (p in colnames(grid_par)) {
+      if (p %in% x$f$mpvs) {
+        par_set[p] <- par_set[[p]][grid_par[i, p]]
       } else {
-        par_set[p] <- par_set[p][grid_par[i,p]]
+        par_set[p] <- par_set[p][grid_par[i, p]]
       }
     }
     attr(par_set, "par_name") <- as.character(names(x$f$add))
-    attr(par_set, "par_id") <- as.character(grid_par[i,])
+    attr(par_set, "par_id") <- as.character(grid_par[i, ])
     par_sets[[i]] <- par_set
   }
 
@@ -168,20 +168,23 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
   x[["runs"]][["table"]][nopt, ".time"] <- result$time
   v <- x$opt[[opt_name]]$base_arg_names[3]
   x[["runs"]][["table"]][nopt, ".optimum"] <- result$res[[v]]
-  if(length(x$opt) > 1)
+  if (length(x$opt) > 1) {
     x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
-  for(i in seq_along(attr(pars, "par_name")))
-    if(attr(pars, "par_name")[i] %in% x$f$mpvs)
+  }
+  for (i in seq_along(attr(pars, "par_name"))) {
+    if (attr(pars, "par_name")[i] %in% x$f$mpvs) {
       x[["runs"]][["table"]][nopt, attr(pars, "par_name")[i]] <-
-    attr(pars, "par_id")[i]
+        attr(pars, "par_id")[i]
+    }
+  }
   x[["runs"]][["pars"]][[nopt]] <- list()
   x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
   z <- x$opt[[opt_name]]$base_arg_names[4]
   x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
   opt_crit <- x$opt[[opt_name]]$crit
   crit_val <- result$res[opt_crit]
-  for(i in seq_along(opt_crit)) {
-    if(is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1){
+  for (i in seq_along(opt_crit)) {
+    if (is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1) {
       x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
     } else {
       x[["runs"]][["pars"]][[nopt]][[opt_crit[i]]] <- crit_val[[i]]
@@ -218,11 +221,11 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
   ll <- NULL
   step <- function(desc) pline(desc)
   res <- function(msg = NULL, succ = FALSE, warn = FALSE) {
-    if(succ) {
+    if (succ) {
       cat(crayon::green("\U2713 "))
-    } else if(warn){
+    } else if (warn) {
       cat(crayon::yellow("X "))
-      warning(msg, call. = FALSE, immediate. =  TRUE)
+      warning(msg, call. = FALSE, immediate. = TRUE)
       ll <<- NULL
     } else {
       cat("\n")
@@ -230,50 +233,69 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
     }
   }
   pline <- function(line = NULL) {
-    if(!is.null(ll)) cat(crayon::silver(ll), "\n", sep = "")
+    if (!is.null(ll)) cat(crayon::silver(ll), "\n", sep = "")
     ll <<- line
     cat(line, "\r")
-    Sys.sleep(ifelse(verbose,0.1,0))
+    Sys.sleep(ifelse(verbose, 0.1, 0))
     return(line)
   }
 
   ### start tests
-  if(!verbose) { sink(tempfile()); on.exit(sink()) }
+  if (!verbose) {
+    sink(tempfile())
+    on.exit(sink())
+  }
 
   ### check data types
   step("check that 'f' is of class 'function'")
-  res(msg = "",
-      succ = "function" %in% class(x$f$f))
+  res(
+    msg = "",
+    succ = "function" %in% class(x$f$f)
+  )
   step("check that 'npar' is a numeric")
-  res(msg = "",
-      succ = is.numeric(x$f$npar))
+  res(
+    msg = "",
+    succ = is.numeric(x$f$npar)
+  )
   step("check that 'npar' is of length 1")
   res(succ = length(x$f$npar) == 1)
   step("check that 'npar' is a whole number")
-  res(msg = "",
-      succ = x$f$npar %% 1 == 0)
+  res(
+    msg = "",
+    succ = x$f$npar %% 1 == 0
+  )
   step("check that 'npar' is non-negative")
-  res(msg = "",
-      succ = x$f$npar > 0)
+  res(
+    msg = "",
+    succ = x$f$npar > 0
+  )
   step("check that 'opt' is of class 'optimizer' or a list of those")
-  res(msg = "'opt' is not of class 'optimizer' or a list of those",
-      succ = all(sapply(x$opt, function(x) "optimizer" %in% class(x))))
+  res(
+    msg = "'opt' is not of class 'optimizer' or a list of those",
+    succ = all(sapply(x$opt, function(x) "optimizer" %in% class(x)))
+  )
   step("check that 'mpvs' is a character (vector)")
-  res(msg = "",
-      succ = is.character(x$f$mpvs))
+  res(
+    msg = "",
+    succ = is.character(x$f$mpvs)
+  )
 
   ### check names of parameters with mpvs
-  if(length(x$f$mpvs) > 0) {
-    for(mpv in x$f$mpvs){
-      step(paste0("check names for parameter '",mpv,"'"))
-      if(length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
+  if (length(x$f$mpvs) > 0) {
+    for (mpv in x$f$mpvs) {
+      step(paste0("check names for parameter '", mpv, "'"))
+      if (length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
         res(succ = TRUE)
       } else {
-        res(msg = paste0("re-named '", mpv, "' by '", mpv, "1:",
-                         length(x$f$add[[mpv]]),"'"),
-            succ = FALSE,
-            warn = TRUE)
-        names(x$f$add[[mpv]]) <- paste0(mpv,1:length(x$f$add[[mpv]]))
+        res(
+          msg = paste0(
+            "re-named '", mpv, "' by '", mpv, "1:",
+            length(x$f$add[[mpv]]), "'"
+          ),
+          succ = FALSE,
+          warn = TRUE
+        )
+        names(x$f$add[[mpv]]) <- paste0(mpv, 1:length(x$f$add[[mpv]]))
       }
     }
   }
@@ -281,39 +303,55 @@ test_ino <- function(x, verbose = getOption("ino_progress")) {
   ### check that function and optimizer can be called
   step("check name of target parameter in 'f'")
   res(succ = is.character(x$f$target_arg))
-  rvx <- round(rnorm(x$f$npar),1)
-  step(paste0("try to draw value of length 'npar' = ", x$f$npar, ": ",
-              paste(rvx, collapse = " ")))
+  rvx <- round(rnorm(x$f$npar), 1)
+  step(paste0(
+    "try to draw value of length 'npar' = ", x$f$npar, ": ",
+    paste(rvx, collapse = " ")
+  ))
   res(succ = (length(rvx) == x$f$npar))
   step("try to create grid of parameter sets")
   grid <- grid_ino(x)
   res(succ = is.list(grid))
-  for(i in 1:min(length(grid),10)){
+  for (i in 1:min(length(grid), 10)) {
     step(paste("check call to 'f' with parameter set", i))
     pars <- grid[[i]]
     pars[[x$f$target_arg]] <- rvx
     f_return <- try_silent(
-      timed(expr = do.call(what = x$f$f,
-                           args = pars),
-            secs = 1)
+      timed(
+        expr = do.call(
+          what = x$f$f,
+          args = pars
+        ),
+        secs = 1
+      )
     )
-    res(msg = f_return,
-        succ = !inherits(f_return, "fail"))
-    for(o in seq_along(x$opt)) {
-      step(paste0("check call to '", names(x$opt)[o],
-                  "' with parameter set ", i))
+    res(
+      msg = f_return,
+      succ = !inherits(f_return, "fail")
+    )
+    for (o in seq_along(x$opt)) {
+      step(paste0(
+        "check call to '", names(x$opt)[o],
+        "' with parameter set ", i
+      ))
       opt <- x$opt[[o]]
       base_args <- list(x$f$f, pars[[x$f$target_arg]])
       names(base_args) <- opt$base_arg_names[1:2]
       f_args <- pars
       f_args[[x$f$target_arg]] <- NULL
       o_return <- try_silent(
-        timed(expr = do.call(what = opt$f,
-                             args = c(base_args, f_args, opt$args)),
-              secs = 1)
+        timed(
+          expr = do.call(
+            what = opt$f,
+            args = c(base_args, f_args, opt$args)
+          ),
+          secs = 1
+        )
       )
-      res(msg = o_return,
-          succ = !inherits(o_return, "fail"))
+      res(
+        msg = o_return,
+        succ = !inherits(o_return, "fail")
+      )
     }
   }
 
