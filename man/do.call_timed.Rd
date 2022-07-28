@@ -4,14 +4,12 @@
 \alias{do.call_timed}
 \title{Measure computation time}
 \usage{
-do.call_timed(what, args, headstart = 0)
+do.call_timed(what, args)
 }
 \arguments{
 \item{what}{Passed to \code{\link[base]{do.call}}.}
 
 \item{args}{Passed to \code{\link[base]{do.call}}.}
-
-\item{headstart}{A positive numeric value that is added to the total computation time.}
 }
 \value{
 A list of the two elements \code{"res"} (the results of the \code{do.call}
@@ -22,6 +20,12 @@ This function measures the computation time of a \code{do.call} call.
 }
 \details{
 This function is a wrapper for \code{\link[base]{do.call}}.
+}
+\examples{
+what <- function(s) { Sys.sleep(s); return(s) }
+args <- list(s = 1)
+do.call_timed(what = what, args = args)
+
 }
 \keyword{internal}
 \keyword{utils}

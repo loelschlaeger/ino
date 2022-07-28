@@ -22,5 +22,11 @@ This function evaluates \code{expr} and interrupts the evaluation after
 \details{
 This function is a wrapper for \code{\link[R.utils]{withTimeout}}.
 }
+\examples{
+foo <- function(x) { Sys.sleep(x); return(x) }
+timed(foo(0.5), 1)
+timed(foo(1.5), 1)
+
+}
 \keyword{internal}
 \keyword{utils}

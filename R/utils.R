@@ -10,6 +10,11 @@
 #' @return
 #' A logical vector of the same length as \code{x}.
 #'
+#' @export
+#'
+#' @examples
+#' is_number(c(0, 1, 1.5))
+#'
 #' @keywords
 #' internal utils
 
@@ -33,14 +38,19 @@ is_number <- function(x) {
 #' Either the value of \code{expr} or in case of a failure an object of class
 #' \code{fail}, which contains the error message.
 #'
+#' @export
+#'
+#' @examples
+#' try_silent(1 + 1)
+#' try_silent(1 + "1")
+#'
 #' @keywords
 #' internal utils
 
 try_silent <- function(expr) {
   out <- suppressWarnings(try(expr, silent = TRUE))
   if ("try-error" %in% class(out)) {
-    out <- out[1]
-    class(out) <- "fail"
+    out <- structure(out[1], class = "fail")
   }
   return(out)
 }
@@ -56,13 +66,19 @@ try_silent <- function(expr) {
 #'
 #' @param expr
 #' An R expression to evaluate.
-#'
 #' @param secs
 #' The number of seconds.
 #'
 #' @return
 #' Either the value of \code{expr} or \code{NULL} if the evaluation time
 #' exceeded \code{secs} seconds.
+#'
+#' @export
+#'
+#' @examples
+#' foo <- function(x) { Sys.sleep(x); return(x) }
+#' timed(foo(0.5), 1)
+#' timed(foo(1.5), 1)
 #'
 #' @keywords
 #' internal utils
@@ -89,6 +105,41 @@ timed <- function(expr, secs) {
   )
 }
 
+#' Interruption of silently tried evaluations
+#'
+#' @description
+#' This function tries to evaluate \code{expr} and interrupts the try after
+#' \code{secs} seconds.
+#'
+#' @details
+#' This function is a wrapper for \code{\link{try_silent}} in combination with
+#' \code{\link{timed}}.
+#'
+#' @param expr
+#' An R expression to try.
+#' @param secs
+#' The number of seconds.
+#'
+#' @return
+#' Either the value of \code{expr}, or (in case of a failure) an object of class
+#' \code{fail} (which contains the error message), or \code{NULL} (if the
+#' evaluation time exceeded \code{secs} seconds).
+#'
+#' @export
+#'
+#' @examples
+#' foo <- function(x, y) { Sys.sleep(x); return(x + y) }
+#' try_silent_timed(foo(0.5, 1), 1)
+#' try_silent_timed(foo(0.5, "1"), 1)
+#' try_silent_timed(foo(1.5, 1), 1)
+#'
+#' @keywords
+#' internal utils
+
+try_silent_timed <- function(expr, secs) {
+  try_silent(expr = timed(expr = expr, secs = secs))
+}
+
 #' Measure computation time
 #'
 #' @description
@@ -101,21 +152,27 @@ timed <- function(expr, secs) {
 #' Passed to \code{\link[base]{do.call}}.
 #' @param args
 #' Passed to \code{\link[base]{do.call}}.
-#' @param headstart
-#' A positive numeric value that is added to the total computation time.
 #'
 #' @return
 #' A list of the two elements \code{"res"} (the results of the \code{do.call}
 #' call) and \code{"time"} (the computation time).
 #'
+#' @export
+#'
+#' @examples
+#' what <- function(s) { Sys.sleep(s); return(s) }
+#' args <- list(s = 1)
+#' do.call_timed(what = what, args = args)
+#'
 #' @keywords
 #' internal utils
 
-do.call_timed <- function(what, args, headstart = 0) {
-  stopifnot(length(headstart) == 1, headstart >= 0)
+do.call_timed <- function(what, args) {
   start <- Sys.time()
   res <- do.call(what = what, args = args)
   end <- Sys.time()
-  total <- difftime(end, start) + headstart
+  total <- difftime(end, start)
   return(list("res" = res, "time" = total))
 }
+
+#' Merge and name lists

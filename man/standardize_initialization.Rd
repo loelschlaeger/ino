@@ -2,8 +2,20 @@
 % Please edit documentation in R/strategies.R
 \name{standardize_initialization}
 \alias{standardize_initialization}
-\title{Standardize initialization}
+\title{Alternating optimization initialization}
 \usage{
+standardize_initialization(
+  x,
+  arg = "data",
+  by_col = TRUE,
+  center = TRUE,
+  scale = TRUE,
+  col_ign = NULL,
+  initialization = random_initialization(),
+  ncores = getOption("ino_ncores"),
+  verbose = getOption("ino_progress")
+)
+
 standardize_initialization(
   x,
   arg = "data",
@@ -46,12 +58,20 @@ initialization.}
 }
 \value{
 The updated \code{ino} object.
+
+The updated \code{ino} object.
 }
 \description{
+This function is an implementation of the alternating optimization
+initialization strategy.
+
 This function is an implementation of the standardize initialization
 strategy.
 }
 \details{
+For more details see the help vignette:
+\code{vignette("workflow", package = "ino")}
+
 For more details see the help vignette:
 \code{vignette("workflow", package = "ino")}
 }

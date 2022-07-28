@@ -1,65 +1,550 @@
-#' ino: Initialization strategies for numerical optimization
+#' Setup
 #'
 #' @description
-#' This package implements tools for the analysis of the initialization of
-#' numerical optimization.
+#' Use this function to specify the numerical optimization problem. The function
+#' returns an object of class \code{ino} that contains all specifications.
 #'
-#' @docType package
-#' @name ino
+#' @details
+#' ### Specifying a function
+#' One real-valued function \code{f} must be specified per \code{ino} object.
+#' The function is optimized over its first argument, the target argument, which
+#' must be a numeric vector of length \code{npar}, followed by any other
+#' arguments specified via the \code{...} argument.
+#'
+#' ### Specifying multiple parameter values
+#' You can specify multiple values for each \code{...} parameter. Such arguments
+#' must be in \code{list} format, where each list element must be a valid
+#' parameter value. The names of the \code{...} parameters with multiple values
+#' must be added to the \code{mpvs} input to make clear that you want to iterate
+#' over them.
+#'
+#' ### Specifying an optimizer
+#' The numerical optimizer must be specified via the \code{opt} argument as the
+#' output of \code{\link{set_optimizer}}. You can specify multiple optimizer for
+#' comparison by passing a list of optimizers to \code{opt}.
+#'
+#' ### An example
+#' Let \code{nll} be a negative log-likelihood function.
+#' Its first argument is a numeric vector of length \code{5}.
+#' The function has the additional argument \code{data}.
+#' Say that you want to conduct an experiment of the initialization effect for
+#' \code{nll} for two different data sets.
+#' And say that you want to compare the \code{\link[stats]{nlm}} and the
+#' \code{\link[stats]{optim}} optimizer.
+#' Then, specify
+#' \preformatted{
+#' setup_ino(
+#'   f = nll,
+#'   npar = 5,
+#'   data = list("data1" = <data set 1>,
+#'               "data2" = <data set 2>),
+#'   mpvs = "data",
+#'   opt = list("nlm"   = set_optimizer_nlm(),
+#'              "optim" = set_optimizer_optim())
+#' )
+#' }
+#'
+#' @format
+#' The format of an \code{ino} object is documented in \code{\link{new_ino}}.
+#'
+#' @param ...
+#' Additional and named arguments to be passed to \code{f} (optional).
+#' @inheritParams new_ino
+#' @inheritParams validate_ino
+#'
+#' @return
+#' An object of class \code{ino}.
+#'
+#' @seealso
+#' [set_optimizer()] to specify an optimizer.
+#'
+#' @export
+#'
+#' @examples
+#' setup_ino(
+#'   f = f_ll_hmm,
+#'   npar = 4,
+#'   data = earthquakes,
+#'   N = 2,
+#'   neg = TRUE
+#' )
+#'
 #' @keywords
-#' internal
-"_PACKAGE"
+#' specification
 
-#' @noRd
-#' @importFrom progress progress_bar
-#' @keywords
-#' internal
-
-ino_pb <- function(title = "", total) {
-  progress::progress_bar$new(
-    format = paste0(title, ":current/:total"),
-    total = total,
-    show_after = 0,
-    clear = FALSE
+setup_ino <- function(
+    f, npar, ..., mpvs = character(), opt = set_optimizer_nlm(),
+    test_par = list(
+      validate = TRUE,
+      init_rest = list("lower" = -1, "upper" = 1),
+      init_digits = 2,
+      f_checks = 10,
+      f_checks_time = 1,
+      opt_checks = 10,
+      opt_checks_time = 1
+    )
+) {
+  if (missing(f)) {
+    ino_stop(
+      "Argument 'f' is not specified."
+    )
+  }
+  if (missing(npar)) {
+    ino_stop(
+      "Argument 'npar' is not specified."
+    )
+  }
+  validate_ino(
+    x = new_ino(
+      f = f, npar = par, add = list(...), mpvs = mpvs,
+      f_name = deparse(substitute(f)), f_target = names(formals(f))[1],
+      opt = opt
+    ),
+    test_par = test_par
   )
 }
 
-#' @noRd
+#' Constructor
+#'
+#' @description
+#' This function constructs an \code{ino} object.
+#'
+#' @format
+#' An \code{ino} object is a list of three elements:
+#' * The \code{prob} element is an object of class \code{prob}.
+#'   It defines the optimization problem and is documented in
+#'   \code{\link{new_prob}}.
+#' * The \code{opti} element is an object of class \code{opti}.
+#'   It defines the optimizer and is documented in \code{\link{new_opti}}.
+#' * The \code{runs} element is an object of class \code{runs}.
+#'   It is the storage space for the optimization results and documented in
+#'   \code{\link{new_runs}}.
+#'
+#' @param x
+#' A list.
+#' @inheritParams new_prob
+#' @inheritParams new_opti
+#'
+#' @return
+#' An object of class \code{ino}.
+#'
 #' @keywords
 #' internal
 
-ino_pp <- function(pb, verbose = getOption("ino_progress")) {
-  if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
+new_ino <- function(
+    x = list(), f = function() {}, npar = integer(), add = list(),
+    mpvs = character(), f_name = character(), f_target = character(),
+    opt = list()
+) {
+  stopifnot(is.list(x))
+  stopifnot(is.function(f))
+  if(is.numeric(npar)) {
+    npar <- as.integer(npar)
+  }
+  stopifnot(is_number(npar))
+  stopifnot(is.list(add))
+  stopifnot(is.character(mpvs))
+  stopifnot(is.character(f_name))
+  stopifnot(is.character(f_target))
+  stopifnot(is.list(opt))
+  x[["prob"]] <- new_prob(
+    f = f, npar = npar, add = add, mpvs = mpvs, f_name = f_name,
+    f_target = f_target)
+  x[["opti"]] <- new_opti(opt = opt)
+  x[["runs"]] <- new_runs()
+  structure(x, class = "ino")
 }
 
-#' @noRd
+#' Validator
+#'
+#' @description
+#' This function validates an \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param test_par
+#' A list of test parameters for an \code{ino} object:
+#' * \code{validate}, a Boolean, set to \code{TRUE} (\code{FALSE}) to (not)
+#'   validate the \code{ino} object. Per default, \code{validate = TRUE}.
+#' * \code{init_rest}, a list of two elements, \code{lower} and \code{upper},
+#'   with lower and upper limits, respectively, for test values for \code{f}.
+#'   Can be single values (for joint limits) or numeric vectors of length
+#'   \code{npar} (for individual limits).
+#'   Per default, \code{lower = -1} and \code{upper = 1}.
+#' * \code{init_digits}, the number of decimal places for the test initial
+#'   values. Per default, \code{init_digits = 2}.
+#' * \code{f_checks}, the number of checks for \code{f} with random input values
+#'   (that fulfill the \code{init_rest} restrictions).
+#'   Per default, \code{f_checks = 10}.
+#' * \code{f_check_time}, the maximum number of seconds for a single check for
+#'   \code{f}.
+#'   A check is considered to be successful, if no error occurred
+#'   within \code{f_check_time} seconds.
+#'   Per default, \code{f_check_time = 1}.
+#' * \code{opt_checks}, the number of checks for \code{opt} with random initial
+#'   values (that fulfill the \code{init_rest} restrictions).
+#'   Per default, \code{opt_checks = 10}.
+#' * \code{opt_check_time}, the maximum number of seconds for a single check for
+#'   \code{opt}.
+#'   A check is considered to be successful, if no error occurred
+#'   within \code{opt_check_time} seconds.
+#'
+#' @return
+#' The validated input \code{x}.
+#'
 #' @keywords
 #' internal
 
-ino_status <- function(msg, verbose = getOption("ino_progress")) {
-  if (verbose) message("* ", msg)
+validate_ino <- function(x = new_ino(), test_par = list()) {
+  stopifnot(inherits(x, "ino"))
+  stopifnot(is.list(test_par))
+  if (!exists("validate", where = test_par)) {
+    test_par[["validate"]] <- TRUE
+  }
+  if (test_par[["validate"]]) {
+    if (!exists("init_rest", where = test_par)) {
+      test_par[["init_rest"]] <- list("lower" = -1, "upper" = 1)
+    }
+    test_par[["init_rest"]] <- lapply(
+      test_par[["init_rest"]], rep_len, length.out = test_par[["npar"]]
+    )
+    if (!exists("init_digits", where = test_par)) {
+      test_par[["init_digits"]] <- 2
+    }
+    if (!exists("f_checks", where = test_par)) {
+      test_par[["f_checks"]] <- 10
+    }
+    if (!exists("f_checks_time", where = test_par)) {
+      test_par[["f_checks_time"]] <- 1
+    }
+    if (!exists("opt_checks", where = test_par)) {
+      test_par[["opt_checks"]] <- 10
+    }
+    if (!exists("opt_checks_time", where = test_par)) {
+      test_par[["opt_checks_time"]] <- 1
+    }
+    x$prob <- validate_prob(x = x$prob, test_par = test_par)
+    x$opti <- validate_opti(x = x$opti, test_par = test_par)
+    x$runs <- validate_runs(x = x$runs)
+  }
+  return(x)
 }
 
+#' @exportS3Method
 #' @noRd
-#' @keywords
-#' internal
+#' @keywords internal
+#' @importFrom crayon underline
 
-.onLoad <- function(lib, pkg) {
-  options("ino_progress" = TRUE)
-  options("ino_ncores" = 1)
+print.ino <- function(x, show_args = FALSE, ...) {
+  cat(crayon::underline("Function to be optimized\n"))
+  print(x$prob, show_args = show_args, ...)
+  cat("\n")
+  cat(crayon::underline("Numerical optimizer\n"))
+  print(x$opti, show_args = show_args, ...)
+  cat("\n")
+  cat(crayon::underline("Optimization runs\n"))
+  print(x$runs, show_args = show_args, ...)
+  cat("\n")
 }
 
-#' @noRd
-#' @importFrom utils packageVersion
+#' Constructor
+#'
+#' @description
+#' This function constructs a \code{prob} object.
+#'
+#' @details
+#' The \code{prob} object specifies the optimization problem.
+#'
+#' @format
+#' A \code{prob} object is a list of five elements:
+#' * The \code{f} element is the function to be optimized.
+#' * The \code{npar} element is the length of the first argument of \code{f},
+#'   i.e. the argument over which \code{f} is optimized.
+#' * The \code{add} element is a named list, where each element is a list of
+#'   one (or more) additional function elements for \code{f}. The names of the
+#'   arguments with multiple parameter values are saved as the character vector
+#'   \code{mpvs} in the attributes of \code{add}.
+#' * The \code{f_name} element is the name of \code{f}.
+#' * The \code{f_target} element is the name of the first argument of \code{f}.
+#'
+#' @param x
+#' A list.
+#' @param f
+#' An object of class \code{function}, the function to be optimized.
+#' @param npar
+#' The length of the first argument of \code{f}, i.e. the argument over which
+#' \code{f} is optimized.
+#' @param add
+#' A list of additional and named arguments to be passed to \code{f}.
+#' @param mpvs
+#' A character vector of the argument names with multiple parameter values.
+#' None per default.
+#' @param f_name
+#' A character, the name of \code{f}.
+#' @param f_target
+#' A character, the name of the first argument of \code{f}.
+#'
+#' @return
+#' An object of class \code{prob}.
+#'
 #' @keywords
 #' internal
 
-.onAttach <- function(lib, pkg) {
-  msg <- paste0(
-    "Thanks for using {ino} ", utils::packageVersion("ino"), "."
-  )
-  packageStartupMessage(msg)
-  invisible()
+new_prob <- function(
+    x = list(), f = function() {}, npar = integer(), add = list(),
+    mpvs = character(), f_name = character(), f_target = character()
+) {
+  if (is.numeric(npar)) {
+    npar <- as.integer(npar)
+  }
+  stopifnot(is.list(x))
+  stopifnot(is.function(f))
+  stopifnot(is_number(npar))
+  stopifnot(is.list(add))
+  stopifnot(is.character(mpvs))
+  stopifnot(is.character(f_name))
+  stopifnot(is.character(f_target))
+  x[["f"]] <- f
+  x[["npar"]] <- npar
+  for(add_name in names(add)) {
+    if(!add_name %in% mpvs) {
+      add[[add_name]] <- list(add[[add_name]])
+    }
+  }
+  x[["add"]] <- structure(add, mpvs = mpvs)
+  x[["f_name"]] <- f_name
+  x[["f_target"]] <- f_target
+  structure(x, class = "prob")
+}
+
+#' Validator
+#'
+#' @description
+#' This function validates a \code{prob} object.
+#'
+#' @param x
+#' An object of class \code{prob}.
+#' @inheritParams validate_ino
+#'
+#' @return
+#' The validated input \code{x}.
+#'
+#' @keywords
+#' internal
+
+validate_prob <- function(x = new_prob(), test_par = list()) {
+  stopifnot(inherits(x, "prob"))
+  stopifnot(typeof(x) == "list")
+  ingr_x <- c("f", "npar", "add", "f_name", "f_target")
+  stopifnot(ingr_x %in% names(x))
+  stopifnot(names(x) %in% ingr_x)
+  stopifnot(is.function(x$f))
+  stopifnot(is_number(x$npar))
+  stopifnot(length(x$npar) == 1)
+  stopifnot(x$npar >= 1)
+  stopifnot(is.list(x$add))
+  stopifnot("mpvs" %in% names(attributes(x$add)))
+  if (length(x$add) > 0) {
+    stopifnot(sapply(x$add, function(x) is.list(x)))
+  }
+  for (run in seq_len(test_par[["f_checks"]])) {
+    init <- sapply(
+      X = seq_len(x[["npar"]]),
+      FUN = function(s) {
+        round(
+          x = runif(
+            n = 1, min = test_par[["init_rest"]][["lower"]],
+            max = test_par[["init_rest"]][["upper"]]
+          ),
+          digits = test_par[["init_digits"]]
+        )
+      }
+    )
+    ### TODO: extract elements from add lists
+    f_out <- try_silent_timed(
+      expr = do.call(
+        what = x[["f"]],
+        args = c(
+          structure(list(init), names = x[["f_target"]]),
+          x[["add"]]
+        )
+      ),
+      secs = test_par[["f_checks_time"]]
+    )
+    if (is.null(f_out)) {
+      ino_warn(
+        event = paste(
+          "Function test run", run, "cannot be validated."
+        ),
+        debug = paste(
+          "Initial values:", paste(init, collapse = " "), "\n",
+          "The test run returned NULL. The evaluation most likely reached",
+          "the time limit. Try to increase 'f_checks_time'."
+        ),
+        immediate. = TRUE
+      )
+    } else if (inherits(f_out, "fail")) {
+      ino_stop(
+        event = paste(
+          "Function test run", run, "failed."
+        ),
+        debug = paste(
+          opt_out, "\nInitial values:", paste(init, collapse = " ")
+        )
+      )
+    } else {
+      if (!(is.numeric(f_out) && length(f_out) == 1)) {
+        ino_stop(
+          event = "Function output is not a single numeric."
+        )
+      }
+    }
+  }
+  return(x)
+}
+
+#' @exportS3Method
+#' @noRd
+#' @keywords internal
+#' @importFrom crayon underline
+
+print.prob <- function(x, show_args = FALSE, ...) {
+  cat("missing")
+}
+
+#' Constructor
+#'
+#' @description
+#' This function constructs an \code{opti} object.
+#'
+#' @details
+#' The \code{opti} object specifies the numerical optimizer(s).
+#'
+#' @format
+#' A \code{opti} object is a list, where each element is a \code{optimizer}
+#' object. See \code{\link{new_optimizer}} for the documentation of an
+#' \code{optimizer} object.
+#'
+#' @param x
+#' A list.
+#' @param opt
+#' The output of \code{\link{set_optimizer}}, which is an object of class
+#' \code{optimizer}.
+#' Per default, \code{opt = set_optimizer_nlm()}, which specifies the
+#' \code{\link[stats]{nlm}} optimizer.
+#' Can also be a list of multiple \code{optimizer} objects.
+#'
+#' @return
+#' An object of class \code{prob}.
+#'
+#' @keywords
+#' internal
+
+new_opti <- function(x = list(), opt = set_optimizer_nlm()) {
+  if (inherits(opt, "optimizer")) {
+    opt <- list(opt)
+  }
+  stopifnot(is.list(opt))
+  x <- opt
+  structure(x, class = "opti")
+}
+
+#' Validator
+#'
+#' @description
+#' This function validates an \code{opti} object.
+#'
+#' @param x
+#' An object of class \code{opti}.
+#'
+#' @return
+#' The validated input \code{x}.
+#'
+#' @keywords
+#' internal
+
+validate_opti <- function(x = new_opti()) {
+  stopifnot(inherits(x, "opti"))
+  stopifnot(typeof(x) == "list")
+  stopifnot(sapply(x, function(x) inherits(x, "optimizer")))
+  return(x)
+}
+
+#' @exportS3Method
+#' @noRd
+#' @keywords internal
+#' @importFrom crayon underline
+
+print.opti <- function(x, show_args = FALSE, ...) {
+  cat("missing")
+}
+
+#' Constructor
+#'
+#' @description
+#' This function constructs a \code{runs} object.
+#'
+#' @details
+#' The \code{runs} object contains results of the optimization runs.
+#'
+#' @format
+#' A \code{runs} object is a list of two elements:
+#' * The \code{table} element is a data frame. It has a row for each
+#'   recorded optimization run, columns contain optimization results. It stores
+#'   only single-value results, e.g. the optimal function value and the
+#'   optimization time.
+#' * The \code{pars} element is a list. It has an element for each recorded
+#'   optimization run. It stores all multi-value optimization results, e.g.
+#'   the initial parameter vector and the optimal parameter vector.
+#'
+#' @param x
+#' A list.
+#'
+#' @return
+#' An object of class \code{runs}.
+#'
+#' @keywords
+#' internal
+
+new_runs <- function(x = list()) {
+  stopifnot(is.list(x))
+  x[["table"]] <- data.frame()
+  x[["pars"]] <- list()
+  structure(x, class = "runs")
+}
+
+#' Validator
+#'
+#' @description
+#' This function validates a \code{runs} object.
+#'
+#' @param x
+#' An object of class \code{runs}.
+#'
+#' @return
+#' The validated input \code{x}.
+#'
+#' @keywords
+#' internal
+
+validate_runs <- function(x = new_runs()) {
+  stopifnot(inherits(x, "runs"))
+  stopifnot(typeof(x) == "list")
+  stopifnot(c("table", "pars") %in% names(x))
+  stopifnot(names(x) %in% c("table", "pars"))
+  stopifnot(is.data.frame(x$table))
+  stopifnot(is.list(x$pars))
+  stopifnot(nrow(x$table) == length(x$pars))
+  return(x)
+}
+
+#' @exportS3Method
+#' @noRd
+#' @keywords internal
+#' @importFrom crayon underline
+
+print.runs <- function(x, ...) {
+  cat("Records:", nrow(x$table))
 }
 
 #' Create grid of parameter combinations
@@ -84,33 +569,92 @@ ino_status <- function(msg, verbose = getOption("ino_progress")) {
 #' internal
 
 grid_ino <- function(x) {
-
-  ### build grid of parameter identifiers
-  grid_par <- as.list(names(x$f$add))
-  names(grid_par) <- names(x$f$add)
-  for (mpv in x$f$mpvs) grid_par[[mpv]] <- names(x$f$add[[mpv]])
-  grid_par <- expand.grid(grid_par, stringsAsFactors = FALSE)
-
-  ### build list of parameter sets
-  par_sets <- list()
-  for (i in 1:max(1, nrow(grid_par))) {
-    target <- list(NA)
-    names(target) <- x$f$target_arg
-    par_set <- c(target, x$f$add)
-    for (p in colnames(grid_par)) {
-      if (p %in% x$f$mpvs) {
-        par_set[p] <- par_set[[p]][grid_par[i, p]]
-      } else {
-        par_set[p] <- par_set[p][grid_par[i, p]]
-      }
-    }
-    attr(par_set, "par_name") <- as.character(names(x$f$add))
-    attr(par_set, "par_id") <- as.character(grid_par[i, ])
-    par_sets[[i]] <- par_set
+  grid_par <- as.list(names(x$prob$add))
+  names(grid_par) <- names(x$prob$add)
+  for (mpv in attr(x$prob$add, "mpvs")) {
+    grid_par[[mpv]] <- names(x$prob$add[[mpv]])
   }
+  grid_par <- expand.grid(grid_par, stringsAsFactors = FALSE)
+  grid <- list()
+  for (i in 1:max(1, nrow(grid_par))) {
+    par_set <- structure(list(NA), names = x$prob$f_target)
+    par_set <- c(target, x$prob$add)
+    for (p in colnames(grid_par)) {
+      par_set[p] <- par_set[[p]][grid_par[i, p]]
+    }
+    attr(par_set, "par_id") <- as.character(grid_par[i, ])
+    grid[[i]] <- par_set
+  }
+  return(grid)
+}
 
-  ### return list of parameter sets
-  return(par_sets)
+#' Clear initialization runs
+#'
+#' @description
+#' This function clears initialization runs saved in an \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param which
+#' Either \code{"all"} to clear all initialization runs, or alternatively a
+#' numeric vector of row numbers in \code{x$runs$table}.
+#'
+#' @return
+#' The updated \code{ino} object.
+#'
+#' @export
+#'
+#' @keywords
+#' specification
+
+clear_ino <- function(x, which = "all") {
+  ino_check_inputs("x" = x, "which" = which)
+  if(identical(which, "all")) {
+    x[["runs"]][["table"]] <- data.frame()
+    x[["runs"]][["pars"]] <- list()
+  } else {
+    x[["runs"]][["table"]] <- x[["runs"]][["table"]][-which, , drop = FALSE]
+    rownames(x[["runs"]][["table"]]) <- NULL
+    x[["runs"]][["pars"]] <- x[["runs"]][["pars"]][-which, drop = FALSE]
+  }
+  return(x)
+}
+
+#' Merge initialization runs
+#'
+#' @description
+#' This function merges multiple \code{ino} objects.
+#'
+#' @param ...
+#' Arbitrary many \code{ino} objects, of which the initialization results are
+#' merged into the first object, which is then returned.
+#'
+#' @return
+#' The updated \code{ino} object.
+#'
+#' @export
+#'
+#' @keywords
+#' specification
+
+merge_ino <- function(...) {
+  ino_objects <- list(...)
+  if(length(ino_objects) == 0) {
+    return()
+  }
+  class <- sapply(lapply(ino_objects, class), function(x) any("ino" %in% x))
+  if(any(!class)){
+    stop("Object(s) at position(s) ", paste(which(!class), collapse = ", "),
+         " not of class 'ino'.", call. = FALSE)
+  }
+  base <- ino_objects[[1]]
+  if(length(ino_objects) > 1) {
+    for(i in 2:length(ino_objects)) {
+      base$runs$table <- rbind(base$runs$table, ino_objects[[i]]$runs$table)
+      base$runs$pars <- c(base$runs$pars, ino_objects[[i]]$runs$pars)
+    }
+  }
+  return(base)
 }
 
 #' Save results of optimization run
@@ -195,376 +739,3 @@ result_ino <- function(x, strategy, pars, result, opt_name) {
   return(invisible(x))
 }
 
-
-#' Test of an \code{ino} object
-#'
-#' @description
-#' This helper function tests the specification of an \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param verbose
-#' Set to \code{TRUE} (\code{FALSE}) to print (hide) the test results of the
-#' setup at the console.
-#'
-#' @return
-#' The updated object \code{x} (invisibly).
-#'
-#' @keywords
-#' internal
-#'
-#' @importFrom stats rnorm
-
-test_ino <- function(x, verbose = getOption("ino_progress")) {
-
-  ### helper functions
-  ll <- NULL
-  step <- function(desc) pline(desc)
-  res <- function(msg = NULL, succ = FALSE, warn = FALSE) {
-    if (succ) {
-      cat(crayon::green("\U2713 "))
-    } else if (warn) {
-      cat(crayon::yellow("X "))
-      warning(msg, call. = FALSE, immediate. = TRUE)
-      ll <<- NULL
-    } else {
-      cat("\n")
-      stop(msg, call. = FALSE)
-    }
-  }
-  pline <- function(line = NULL) {
-    if (!is.null(ll)) cat(crayon::silver(ll), "\n", sep = "")
-    ll <<- line
-    cat(line, "\r")
-    Sys.sleep(ifelse(verbose, 0.1, 0))
-    return(line)
-  }
-
-  ### start tests
-  if (!verbose) {
-    sink(tempfile())
-    on.exit(sink())
-  }
-
-  ### check data types
-  step("check that 'f' is of class 'function'")
-  res(
-    msg = "",
-    succ = "function" %in% class(x$f$f)
-  )
-  step("check that 'npar' is a numeric")
-  res(
-    msg = "",
-    succ = is.numeric(x$f$npar)
-  )
-  step("check that 'npar' is of length 1")
-  res(succ = length(x$f$npar) == 1)
-  step("check that 'npar' is a whole number")
-  res(
-    msg = "",
-    succ = x$f$npar %% 1 == 0
-  )
-  step("check that 'npar' is non-negative")
-  res(
-    msg = "",
-    succ = x$f$npar > 0
-  )
-  step("check that 'opt' is of class 'optimizer' or a list of those")
-  res(
-    msg = "'opt' is not of class 'optimizer' or a list of those",
-    succ = all(sapply(x$opt, function(x) "optimizer" %in% class(x)))
-  )
-  step("check that 'mpvs' is a character (vector)")
-  res(
-    msg = "",
-    succ = is.character(x$f$mpvs)
-  )
-
-  ### check names of parameters with mpvs
-  if (length(x$f$mpvs) > 0) {
-    for (mpv in x$f$mpvs) {
-      step(paste0("check names for parameter '", mpv, "'"))
-      if (length(names(x$f$add[[mpv]])) == length(x$f$add[[mpv]])) {
-        res(succ = TRUE)
-      } else {
-        res(
-          msg = paste0(
-            "re-named '", mpv, "' by '", mpv, "1:",
-            length(x$f$add[[mpv]]), "'"
-          ),
-          succ = FALSE,
-          warn = TRUE
-        )
-        names(x$f$add[[mpv]]) <- paste0(mpv, 1:length(x$f$add[[mpv]]))
-      }
-    }
-  }
-
-  ### check that function and optimizer can be called
-  step("check name of target parameter in 'f'")
-  res(succ = is.character(x$f$target_arg))
-  rvx <- round(rnorm(x$f$npar), 1)
-  step(paste0(
-    "try to draw value of length 'npar' = ", x$f$npar, ": ",
-    paste(rvx, collapse = " ")
-  ))
-  res(succ = (length(rvx) == x$f$npar))
-  step("try to create grid of parameter sets")
-  grid <- grid_ino(x)
-  res(succ = is.list(grid))
-  for (i in 1:min(length(grid), 10)) {
-    step(paste("check call to 'f' with parameter set", i))
-    pars <- grid[[i]]
-    pars[[x$f$target_arg]] <- rvx
-    f_return <- try_silent(
-      timed(
-        expr = do.call(
-          what = x$f$f,
-          args = pars
-        ),
-        secs = 1
-      )
-    )
-    res(
-      msg = f_return,
-      succ = !inherits(f_return, "fail")
-    )
-    for (o in seq_along(x$opt)) {
-      step(paste0(
-        "check call to '", names(x$opt)[o],
-        "' with parameter set ", i
-      ))
-      opt <- x$opt[[o]]
-      base_args <- list(x$f$f, pars[[x$f$target_arg]])
-      names(base_args) <- opt$base_arg_names[1:2]
-      f_args <- pars
-      f_args[[x$f$target_arg]] <- NULL
-      o_return <- try_silent(
-        timed(
-          expr = do.call(
-            what = opt$f,
-            args = c(base_args, f_args, opt$args)
-          ),
-          secs = 1
-        )
-      )
-      res(
-        msg = o_return,
-        succ = !inherits(o_return, "fail")
-      )
-    }
-  }
-
-  ### return (invisibly) updated ino object
-  step("completed test cases\n")
-  return(invisible(x))
-}
-
-#' @noRd
-#' @keywords
-#' internal
-
-ino_call <- function(call) {
-  call$ncores <- 1
-  call$verbose <- FALSE
-  class(call) <- c("ino_call", class(call))
-  return(call)
-}
-
-#' @noRd
-#' @export
-#' @keywords
-#' internal
-
-print.ino_call <- function(x, ...) {
-  cat("<ino_call>")
-}
-
-#' @noRd
-#' @keywords
-#' internal
-
-ino_check_inputs <- function(...) {
-  stop0 <- function(msg) stop(msg, call. = FALSE)
-  inputs <- list(...)
-  arg <- at <- by_col <- by_row <- center <- how <- prop <- runs <- NULL
-  sampler <- x <- NULL
-  within(inputs, {
-    n <- names(inputs)
-    if ("x" %in% n) {
-      if (!inherits(x, "ino")) {
-        stop0("'x' must be of class 'ino'.")
-      }
-    }
-    if ("runs" %in% n) {
-      if (!length(runs) == 1 && is_number(runs)) {
-        stop0("'runs' must be an integer.")
-      }
-    }
-    if ("sampler" %in% n) {
-      if (!is.function(sampler)) {
-        stop0("'sampler' must be a function.")
-      }
-    }
-    if ("at" %in% n) {
-      if (!is.numeric(at)) {
-        stop0("'at' must be a numeric vector.")
-      }
-    }
-    if ("arg" %in% n) {
-      if (!is.character(arg)) {
-        stop0("'arg' must be a character.")
-      }
-    }
-    if (all(c("arg", "x") %in% n)) {
-      if (!arg %in% names(x$f$add)) {
-        stop0(paste0(
-          "'arg' = '", arg, "' does not seem to be an argument of '",
-          x$f$name, "'."
-        ))
-      }
-      if (arg %in% x$f$mpvs &&
-        !all(sapply(x$f$add[[arg]], inherits, c("matrix", "data.frame"))) ||
-        !arg %in% x$f$mpvs &&
-          !inherits(x$f$add[[arg]], c("matrix", "data.frame"))) {
-        stop0(paste0(
-          "The argument 'arg' = '", arg, "' does not seem to be of class ",
-          "'matrix' or 'data.frame'."
-        ))
-      }
-    }
-    if ("how" %in% n) {
-      if (!how %in% c("random", "first", "kmeans")) {
-        stop0("'how' must be one of 'random', 'first', or 'kmeans'.")
-      }
-    }
-    if ("prop" %in% n) {
-      if (!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
-        stop0("(Each element of) 'prop' must be between 0 and 1.")
-      }
-    }
-    if ("by_col" %in% n) {
-      if (!(is.logical(by_col) || length(by_col) == 1)) {
-        stop0("'by_col' must be either 'TRUE' or 'FALSE'.")
-      }
-    }
-    if ("by_row" %in% n) {
-      if (!(is.logical(by_row) || length(by_row) == 1)) {
-        stop0("'by_row' must be either 'TRUE' or 'FALSE'.")
-      }
-    }
-    if ("center" %in% n) {
-      if (!(is.logical(center) || length(center) == 1)) {
-        stop0("'center' must be either 'TRUE' or 'FALSE'.")
-      }
-    }
-    if ("scale" %in% n) {
-      if (!(is.logical(scale) || length(scale) == 1)) {
-        stop0("'scale' must be either 'TRUE' or 'FALSE'.")
-      }
-    }
-    if (all(c("at", "x") %in% n)) {
-      if (length(at) > x$f$npar) {
-        stop0("'at' has more entries than the function has parameters.")
-      }
-    }
-    if (all(c("at", "x") %in% n)) {
-      if (length(at) < x$f$npar) {
-        stop0("'at' has less entries than the function has parameters.")
-      }
-    }
-  })
-
-  return(invisible(NULL))
-}
-
-#' @noRd
-#' @keywords
-#' internal
-
-subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
-
-  ### check inputs
-  ino_check_inputs(
-    "x" = x, "arg" = arg, "how" = how, "prop" = prop, "by_row" = by_row,
-    "col_ign" = col_ign, "kmeans_arg" = kmeans_arg
-  )
-
-  ### function for subsetting
-  do_subset_arg <- function(arg_val) {
-    if (!by_row) arg_val <- t(arg_val)
-    arg_val_length <- nrow(arg_val)
-    arg_val_subset_length <- ceiling(arg_val_length * prop)
-    if (how == "random") {
-      subset_ind <- sort(sample.int(arg_val_length, arg_val_subset_length))
-    } else if (how == "first") {
-      subset_ind <- 1:arg_val_subset_length
-    } else if (how == "kmeans") {
-      arg_val_ign <- arg_val
-      if (!is.null(col_ign)) {
-        arg_val_ign <- arg_val_ign[, -col_ign, drop = FALSE]
-      }
-      kmeans_out <- do.call(
-        what = stats::kmeans,
-        args = c(list("x" = arg_val_ign), kmeans_arg)
-      )
-      nc <- ceiling(arg_val_subset_length / kmeans_arg[["centers"]])
-      subset_ind <- c()
-      for (i in 1:kmeans_arg[["centers"]]) {
-        subset_ind_i <- which(kmeans_out$cluster == i)
-        subset_ind <- c(subset_ind, sample(
-          x = subset_ind_i,
-          size = min(nc, length(subset_ind_i))
-        ))
-      }
-      subset_ind <- sort(subset_ind)
-    }
-    arg_val_subset <- arg_val[subset_ind, , drop = FALSE]
-    if (!by_row) arg_val_subset <- t(arg_val_subset)
-    return(arg_val_subset)
-  }
-
-  ### perform subsetting
-  if (arg %in% x$f$mpvs) {
-    x$f$add[[arg]] <- lapply(x$f$add[[arg]], do_subset_arg)
-  } else {
-    x$f$add[[arg]] <- do_subset_arg(x$f$add[[arg]])
-  }
-
-  ### return updated ino object
-  return(x)
-}
-
-#' @noRd
-#' @keywords
-#' internal
-
-standardize_arg <- function(x, arg, by_col, center, scale, col_ign) {
-
-  ### check inputs
-  ino_check_inputs(
-    "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
-    "col_ign" = col_ign
-  )
-
-  ### function for standardizing
-  do_standardize_arg <- function(arg_val) {
-    if (!by_col) arg_val <- t(arg_val)
-    for (i in 1:ncol(arg_val)) {
-      if (i %in% col_ign) next()
-      arg_val[, i] <- scale(arg_val[, i], center = center, scale = scale)
-    }
-    if (!by_col) arg_val <- t(arg_val)
-    return(arg_val)
-  }
-
-  ### perform subsetting
-  if (arg %in% x$f$mpvs) {
-    x$f$add[[arg]] <- lapply(x$f$add[[arg]], do_standardize_arg)
-  } else {
-    x$f$add[[arg]] <- do_standardize_arg(x$f$add[[arg]])
-  }
-
-  ### return updated ino object
-  return(x)
-}

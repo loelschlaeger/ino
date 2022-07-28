@@ -1,7 +1,7 @@
 # Installation ------------------------------------------------------------
 
-# ppath <- "../ino_0.1.0.tar.gz"
-# install.packages(ppath, repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
+# path <- "../ino_0.1.0.tar.gz"
+# install.packages(path, repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
 devtools::load_all()
 
 # Example: Ackley ---------------------------------------------------------
@@ -30,7 +30,7 @@ overview_optima(x, digits = 2)
 hmm_ino <- setup_ino(
   f = f_ll_hmm,
   npar = 4,
-  data = ino::earthquakes,
+  data = earthquakes,
   N = 2,
   neg = TRUE,
   opt = set_optimizer_nlm()

@@ -25,7 +25,7 @@ test_that("measuring computation time works", {
     return(s)
   }
   args <- list(s = 1)
-  out <- do.call_timed(what = what, args = args, headstart = 1)
+  out <- do.call_timed(what = what, args = args)
   expect_type(out, "list")
   expect_length(out, 2)
   expect_equal(out[["res"]], 1)
