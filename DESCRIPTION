@@ -30,7 +30,8 @@ Imports:
     progress,
     dplyr,
     foreach,
-    doSNOW
+    doSNOW,
+    lifecycle
 Suggests: 
     knitr,
     rmarkdown,
@@ -42,4 +43,5 @@ URL: https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Depends:
-    R (>= 4.0.0)
+    R (>= 4.0.0),
+    optimizeR

@@ -114,7 +114,7 @@ setup_ino <- function(
 #' * The \code{prob} element is an object of class \code{prob}.
 #'   It defines the optimization problem and is documented in
 #'   \code{\link{new_prob}}.
-#' * The \code{opti} element is an object of class \code{opti}.
+#' * The \code{opts} element is an object of class \code{opts}.
 #'   It defines the optimizer and is documented in \code{\link{new_opti}}.
 #' * The \code{runs} element is an object of class \code{runs}.
 #'   It is the storage space for the optimization results and documented in
@@ -150,7 +150,7 @@ new_ino <- function(
   x[["prob"]] <- new_prob(
     f = f, npar = npar, add = add, mpvs = mpvs, f_name = f_name,
     f_target = f_target)
-  x[["opti"]] <- new_opti(opt = opt)
+  x[["opts"]] <- new_opti(opt = opt)
   x[["runs"]] <- new_runs()
   structure(x, class = "ino")
 }
@@ -224,7 +224,7 @@ validate_ino <- function(x = new_ino(), test_par = list()) {
       test_par[["opt_checks_time"]] <- 1
     }
     x$prob <- validate_prob(x = x$prob, test_par = test_par)
-    x$opti <- validate_opti(x = x$opti, test_par = test_par)
+    x$opts <- validate_opti(x = x$opts, test_par = test_par)
     x$runs <- validate_runs(x = x$runs)
   }
   return(x)
@@ -240,7 +240,7 @@ print.ino <- function(x, show_args = FALSE, ...) {
   print(x$prob, show_args = show_args, ...)
   cat("\n")
   cat(crayon::underline("Numerical optimizer\n"))
-  print(x$opti, show_args = show_args, ...)
+  print(x$opts, show_args = show_args, ...)
   cat("\n")
   cat(crayon::underline("Optimization runs\n"))
   print(x$runs, show_args = show_args, ...)
@@ -415,13 +415,13 @@ print.prob <- function(x, show_args = FALSE, ...) {
 #' Constructor
 #'
 #' @description
-#' This function constructs an \code{opti} object.
+#' This function constructs an \code{opts} object.
 #'
 #' @details
-#' The \code{opti} object specifies the numerical optimizer(s).
+#' The \code{opts} object specifies the numerical optimizer(s).
 #'
 #' @format
-#' A \code{opti} object is a list, where each element is a \code{optimizer}
+#' A \code{opts} object is a list, where each element is a \code{optimizer}
 #' object. See \code{\link{new_optimizer}} for the documentation of an
 #' \code{optimizer} object.
 #'
@@ -446,16 +446,16 @@ new_opti <- function(x = list(), opt = set_optimizer_nlm()) {
   }
   stopifnot(is.list(opt))
   x <- opt
-  structure(x, class = "opti")
+  structure(x, class = "opts")
 }
 
 #' Validator
 #'
 #' @description
-#' This function validates an \code{opti} object.
+#' This function validates an \code{opts} object.
 #'
 #' @param x
-#' An object of class \code{opti}.
+#' An object of class \code{opts}.
 #'
 #' @return
 #' The validated input \code{x}.
@@ -464,7 +464,7 @@ new_opti <- function(x = list(), opt = set_optimizer_nlm()) {
 #' internal
 
 validate_opti <- function(x = new_opti()) {
-  stopifnot(inherits(x, "opti"))
+  stopifnot(inherits(x, "opts"))
   stopifnot(typeof(x) == "list")
   stopifnot(sapply(x, function(x) inherits(x, "optimizer")))
   return(x)
@@ -475,7 +475,7 @@ validate_opti <- function(x = new_opti()) {
 #' @keywords internal
 #' @importFrom crayon underline
 
-print.opti <- function(x, show_args = FALSE, ...) {
+print.opts <- function(x, show_args = FALSE, ...) {
   cat("missing")
 }
 
