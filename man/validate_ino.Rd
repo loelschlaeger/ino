@@ -28,13 +28,6 @@ Per default, \code{f_checks = 10}.
 A check is considered to be successful, if no error occurred
 within \code{f_check_time} seconds.
 Per default, \code{f_check_time = 1}.
-\item \code{opt_checks}, the number of checks for \code{opt} with random initial
-values (that fulfill the \code{init_rest} restrictions).
-Per default, \code{opt_checks = 10}.
-\item \code{opt_check_time}, the maximum number of seconds for a single check for
-\code{opt}.
-A check is considered to be successful, if no error occurred
-within \code{opt_check_time} seconds.
 }}
 }
 \value{

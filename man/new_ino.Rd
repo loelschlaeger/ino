@@ -9,8 +9,8 @@ An \code{ino} object is a list of three elements:
 \item The \code{prob} element is an object of class \code{prob}.
 It defines the optimization problem and is documented in
 \code{\link{new_prob}}.
-\item The \code{opti} element is an object of class \code{opti}.
-It defines the optimizer and is documented in \code{\link{new_opti}}.
+\item The \code{opts} element is an object of class \code{opts}.
+It defines the optimizer(s) and is documented in \code{\link{new_opts}}.
 \item The \code{runs} element is an object of class \code{runs}.
 It is the storage space for the optimization results and documented in
 \code{\link{new_runs}}.

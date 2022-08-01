@@ -22,11 +22,10 @@ The log-likelihood value at \code{theta}.
 Log-likelihood function of the Poisson-hidden Markov model
 }
 \details{
-The example uses a data set that covers the number of major earthquakes
-(magnitude 7 or greater) in the world from 1900 until 2006.
+The example uses a data set from {ino} that covers the number of major
+earthquakes (magnitude 7 or greater) in the world from 1900 until 2006.
 }
 \examples{
-data(earthquakes, package = "ino")
 f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
 
 }

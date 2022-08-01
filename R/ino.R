@@ -15,13 +15,15 @@
 #' You can specify multiple values for each \code{...} parameter. Such arguments
 #' must be in \code{list} format, where each list element must be a valid
 #' parameter value. The names of the \code{...} parameters with multiple values
-#' must be added to the \code{mpvs} input to make clear that you want to iterate
-#' over them.
+#' must be added to the \code{mpvs} input.
 #'
 #' ### Specifying an optimizer
-#' The numerical optimizer must be specified via the \code{opt} argument as the
-#' output of \code{\link{set_optimizer}}. You can specify multiple optimizer for
-#' comparison by passing a list of optimizers to \code{opt}.
+#' The numerical optimizer must be specified via the \code{opt} argument as an
+#' \code{optimizer} object.
+#' Such \code{optimizer} objects can be created via the function
+#' \code{\link[optimizeR]{set_optimizer}}.
+#' You can specify multiple \code{optimizer} objects for comparison by passing
+#' a list of optimizers to \code{opt}.
 #'
 #' ### An example
 #' Let \code{nll} be a negative log-likelihood function.
@@ -63,7 +65,7 @@
 #' @examples
 #' setup_ino(
 #'   f = f_ll_hmm,
-#'   npar = 4,
+#'   npar = 0,
 #'   data = earthquakes,
 #'   N = 2,
 #'   neg = TRUE
@@ -79,9 +81,7 @@ setup_ino <- function(
       init_rest = list("lower" = -1, "upper" = 1),
       init_digits = 2,
       f_checks = 10,
-      f_checks_time = 1,
-      opt_checks = 10,
-      opt_checks_time = 1
+      f_checks_time = 1
     )
 ) {
   if (missing(f)) {
@@ -96,7 +96,7 @@ setup_ino <- function(
   }
   validate_ino(
     x = new_ino(
-      f = f, npar = par, add = list(...), mpvs = mpvs,
+      f = f, npar = npar, add = list(...), mpvs = mpvs,
       f_name = deparse(substitute(f)), f_target = names(formals(f))[1],
       opt = opt
     ),
@@ -115,7 +115,7 @@ setup_ino <- function(
 #'   It defines the optimization problem and is documented in
 #'   \code{\link{new_prob}}.
 #' * The \code{opts} element is an object of class \code{opts}.
-#'   It defines the optimizer and is documented in \code{\link{new_opti}}.
+#'   It defines the optimizer(s) and is documented in \code{\link{new_opts}}.
 #' * The \code{runs} element is an object of class \code{runs}.
 #'   It is the storage space for the optimization results and documented in
 #'   \code{\link{new_runs}}.
@@ -123,7 +123,7 @@ setup_ino <- function(
 #' @param x
 #' A list.
 #' @inheritParams new_prob
-#' @inheritParams new_opti
+#' @inheritParams new_opts
 #'
 #' @return
 #' An object of class \code{ino}.
@@ -141,7 +141,7 @@ new_ino <- function(
   if(is.numeric(npar)) {
     npar <- as.integer(npar)
   }
-  stopifnot(is_number(npar))
+  stopifnot(is.integer(npar))
   stopifnot(is.list(add))
   stopifnot(is.character(mpvs))
   stopifnot(is.character(f_name))
@@ -150,7 +150,7 @@ new_ino <- function(
   x[["prob"]] <- new_prob(
     f = f, npar = npar, add = add, mpvs = mpvs, f_name = f_name,
     f_target = f_target)
-  x[["opts"]] <- new_opti(opt = opt)
+  x[["opts"]] <- new_opts(opt = opt)
   x[["runs"]] <- new_runs()
   structure(x, class = "ino")
 }
@@ -181,13 +181,6 @@ new_ino <- function(
 #'   A check is considered to be successful, if no error occurred
 #'   within \code{f_check_time} seconds.
 #'   Per default, \code{f_check_time = 1}.
-#' * \code{opt_checks}, the number of checks for \code{opt} with random initial
-#'   values (that fulfill the \code{init_rest} restrictions).
-#'   Per default, \code{opt_checks = 10}.
-#' * \code{opt_check_time}, the maximum number of seconds for a single check for
-#'   \code{opt}.
-#'   A check is considered to be successful, if no error occurred
-#'   within \code{opt_check_time} seconds.
 #'
 #' @return
 #' The validated input \code{x}.
@@ -197,34 +190,13 @@ new_ino <- function(
 
 validate_ino <- function(x = new_ino(), test_par = list()) {
   stopifnot(inherits(x, "ino"))
-  stopifnot(is.list(test_par))
+  test_par <- as.list(test_par)
   if (!exists("validate", where = test_par)) {
     test_par[["validate"]] <- TRUE
   }
   if (test_par[["validate"]]) {
-    if (!exists("init_rest", where = test_par)) {
-      test_par[["init_rest"]] <- list("lower" = -1, "upper" = 1)
-    }
-    test_par[["init_rest"]] <- lapply(
-      test_par[["init_rest"]], rep_len, length.out = test_par[["npar"]]
-    )
-    if (!exists("init_digits", where = test_par)) {
-      test_par[["init_digits"]] <- 2
-    }
-    if (!exists("f_checks", where = test_par)) {
-      test_par[["f_checks"]] <- 10
-    }
-    if (!exists("f_checks_time", where = test_par)) {
-      test_par[["f_checks_time"]] <- 1
-    }
-    if (!exists("opt_checks", where = test_par)) {
-      test_par[["opt_checks"]] <- 10
-    }
-    if (!exists("opt_checks_time", where = test_par)) {
-      test_par[["opt_checks_time"]] <- 1
-    }
     x$prob <- validate_prob(x = x$prob, test_par = test_par)
-    x$opts <- validate_opti(x = x$opts, test_par = test_par)
+    x$opts <- validate_opts(x = x$opts)
     x$runs <- validate_runs(x = x$runs)
   }
   return(x)
@@ -235,15 +207,15 @@ validate_ino <- function(x = new_ino(), test_par = list()) {
 #' @keywords internal
 #' @importFrom crayon underline
 
-print.ino <- function(x, show_args = FALSE, ...) {
+print.ino <- function(x, ...) {
   cat(crayon::underline("Function to be optimized\n"))
-  print(x$prob, show_args = show_args, ...)
+  print(x$prob, ...)
   cat("\n")
   cat(crayon::underline("Numerical optimizer\n"))
-  print(x$opts, show_args = show_args, ...)
+  print(x$opts, ...)
   cat("\n")
   cat(crayon::underline("Optimization runs\n"))
-  print(x$runs, show_args = show_args, ...)
+  print(x$runs, ...)
   cat("\n")
 }
 
@@ -299,7 +271,6 @@ new_prob <- function(
   }
   stopifnot(is.list(x))
   stopifnot(is.function(f))
-  stopifnot(is_number(npar))
   stopifnot(is.list(add))
   stopifnot(is.character(mpvs))
   stopifnot(is.character(f_name))
@@ -347,10 +318,25 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
   if (length(x$add) > 0) {
     stopifnot(sapply(x$add, function(x) is.list(x)))
   }
+  if (!exists("init_rest", where = test_par)) {
+    test_par[["init_rest"]] <- list("lower" = -1, "upper" = 1)
+  }
+  test_par[["init_rest"]] <- lapply(
+    test_par[["init_rest"]], rep_len, length.out = x[["npar"]]
+  )
+  if (!exists("init_digits", where = test_par)) {
+    test_par[["init_digits"]] <- 2
+  }
+  if (!exists("f_checks", where = test_par)) {
+    test_par[["f_checks"]] <- 10
+  }
+  if (!exists("f_checks_time", where = test_par)) {
+    test_par[["f_checks_time"]] <- 1
+  }
   for (run in seq_len(test_par[["f_checks"]])) {
     init <- sapply(
-      X = seq_len(x[["npar"]]),
-      FUN = function(s) {
+      seq_len(x[["npar"]]),
+      function(s) {
         round(
           x = runif(
             n = 1, min = test_par[["init_rest"]][["lower"]],
@@ -360,13 +346,19 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
         )
       }
     )
-    ### TODO: extract elements from add lists
+    add_extract <- lapply(names(x$add), function(name) {
+      if(name %in% attr(x$add, "mpvs")) {
+        x$add[[name]][[1]]
+      } else {
+        x$add[[name]][[1]]
+      }
+    })
     f_out <- try_silent_timed(
       expr = do.call(
         what = x[["f"]],
         args = c(
           structure(list(init), names = x[["f_target"]]),
-          x[["add"]]
+          add_extract
         )
       ),
       secs = test_par[["f_checks_time"]]
@@ -378,7 +370,7 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
         ),
         debug = paste(
           "Initial values:", paste(init, collapse = " "), "\n",
-          "The test run returned NULL. The evaluation most likely reached",
+          "The test run returned 'NULL'. The evaluation most likely reached",
           "the time limit. Try to increase 'f_checks_time'."
         ),
         immediate. = TRUE
@@ -389,7 +381,7 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
           "Function test run", run, "failed."
         ),
         debug = paste(
-          opt_out, "\nInitial values:", paste(init, collapse = " ")
+          f_out, "\nInitial values:", paste(init, collapse = " ")
         )
       )
     } else {
@@ -406,10 +398,12 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
 #' @exportS3Method
 #' @noRd
 #' @keywords internal
-#' @importFrom crayon underline
 
-print.prob <- function(x, show_args = FALSE, ...) {
-  cat("missing")
+print.prob <- function(x, ...) {
+  cat("f:", x$f_name, "\n")
+  cat("npar:", x$npar, "\n")
+  mpvs <- attr(x$add, "mpvs")
+  if(length(mpvs) > 0) cat("mpvs:", mpvs)
 }
 
 #' Constructor
@@ -440,12 +434,13 @@ print.prob <- function(x, show_args = FALSE, ...) {
 #' @keywords
 #' internal
 
-new_opti <- function(x = list(), opt = set_optimizer_nlm()) {
+new_opts <- function(x = list(), opt = set_optimizer_nlm()) {
   if (inherits(opt, "optimizer")) {
     opt <- list(opt)
   }
   stopifnot(is.list(opt))
   x <- opt
+  names(x) <- paste0("opt", 1:length(x))
   structure(x, class = "opts")
 }
 
@@ -463,7 +458,7 @@ new_opti <- function(x = list(), opt = set_optimizer_nlm()) {
 #' @keywords
 #' internal
 
-validate_opti <- function(x = new_opti()) {
+validate_opts <- function(x = new_opts()) {
   stopifnot(inherits(x, "opts"))
   stopifnot(typeof(x) == "list")
   stopifnot(sapply(x, function(x) inherits(x, "optimizer")))
@@ -473,10 +468,13 @@ validate_opti <- function(x = new_opti()) {
 #' @exportS3Method
 #' @noRd
 #' @keywords internal
-#' @importFrom crayon underline
 
-print.opts <- function(x, show_args = FALSE, ...) {
-  cat("missing")
+print.opts <- function(x, ...) {
+  for(i in 1:length(x)) {
+    if(length(x) > 1) cat("'", names(x)[i], "': ", sep = "")
+    print(x[[i]])
+    cat("\n")
+  }
 }
 
 #' Constructor
@@ -541,7 +539,6 @@ validate_runs <- function(x = new_runs()) {
 #' @exportS3Method
 #' @noRd
 #' @keywords internal
-#' @importFrom crayon underline
 
 print.runs <- function(x, ...) {
   cat("Records:", nrow(x$table))

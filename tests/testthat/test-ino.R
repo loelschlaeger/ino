@@ -1,37 +1,27 @@
-test_that("runs object can be constructed", {
+test_that("runs object can be constructed and validated", {
   x <- new_runs()
   expect_s3_class(x, "runs")
   expect_type(x, "list")
   expect_named(x, c("table", "pars"))
   expect_true(is.data.frame(x$table))
   expect_true(is.list(x$pars))
-  expect_equal(nrow(x$table), length(x$pars))
-})
-
-test_that("runs object can be validated", {
-  x <- validate_runs(new_runs())
+  x <- validate_runs(x)
   expect_s3_class(x, "runs")
 })
 
-test_that("opti object can be constructed", {
-  x <- new_opti()
-  expect_s3_class(x, "opti")
+test_that("opts object can be constructed and validated", {
+  x <- new_opts()
+  expect_s3_class(x, "opts")
   expect_type(x, "list")
   expect_true(all(sapply(x, function(x) inherits(x, "optimizer"))))
+  x <- validate_opts(x)
+  expect_s3_class(x, "opts")
 })
 
-test_that("opti object can be validated", {
-  x <- validate_opti(new_opti())
-  expect_s3_class(x, "opti")
-})
-
-test_that("prob object can be constructed", {
-  x <- new_prob()
+test_that("prob object can be constructed and validated", {
+  x <- new_prob(f = function(x) x^2, npar = 1, f_name = "test", f_target = "x")
   expect_type(x, "list")
   expect_s3_class(x, "prob")
-})
-
-test_that("prob object can be validated", {
-  x <- validate_prob(new_prob())
+  x <- validate_prob(x)
   expect_s3_class(x, "prob")
 })

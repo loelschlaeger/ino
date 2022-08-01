@@ -14,7 +14,7 @@ setup_ino(
   mpvs = character(),
   opt = set_optimizer_nlm(),
   test_par = list(validate = TRUE, init_rest = list(lower = -1, upper = 1), init_digits =
-    2, f_checks = 10, f_checks_time = 1, opt_checks = 10, opt_checks_time = 1)
+    2, f_checks = 10, f_checks_time = 1)
 )
 }
 \arguments{
@@ -53,13 +53,6 @@ Per default, \code{f_checks = 10}.
 A check is considered to be successful, if no error occurred
 within \code{f_check_time} seconds.
 Per default, \code{f_check_time = 1}.
-\item \code{opt_checks}, the number of checks for \code{opt} with random initial
-values (that fulfill the \code{init_rest} restrictions).
-Per default, \code{opt_checks = 10}.
-\item \code{opt_check_time}, the maximum number of seconds for a single check for
-\code{opt}.
-A check is considered to be successful, if no error occurred
-within \code{opt_check_time} seconds.
 }}
 }
 \value{
@@ -83,15 +76,17 @@ arguments specified via the \code{...} argument.
 You can specify multiple values for each \code{...} parameter. Such arguments
 must be in \code{list} format, where each list element must be a valid
 parameter value. The names of the \code{...} parameters with multiple values
-must be added to the \code{mpvs} input to make clear that you want to iterate
-over them.
+must be added to the \code{mpvs} input.
 }
 
 \subsection{Specifying an optimizer}{
 
-The numerical optimizer must be specified via the \code{opt} argument as the
-output of \code{\link{set_optimizer}}. You can specify multiple optimizer for
-comparison by passing a list of optimizers to \code{opt}.
+The numerical optimizer must be specified via the \code{opt} argument as an
+\code{optimizer} object.
+Such \code{optimizer} objects can be created via the function
+\code{\link[optimizeR]{set_optimizer}}.
+You can specify multiple \code{optimizer} objects for comparison by passing
+a list of optimizers to \code{opt}.
 }
 
 \subsection{An example}{
@@ -120,7 +115,7 @@ setup_ino(
 \examples{
 setup_ino(
   f = f_ll_hmm,
-  npar = 4,
+  npar = 0,
   data = earthquakes,
   N = 2,
   neg = TRUE

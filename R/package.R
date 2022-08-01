@@ -5,9 +5,13 @@
 #' numerical optimization.
 #'
 #' @docType package
+#'
 #' @name ino
+#'
 #' @keywords
 #' internal
+#'
+#' @import optimizeR
 "_PACKAGE"
 
 ## usethis namespace: start
