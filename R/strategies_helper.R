@@ -185,3 +185,138 @@ standardize_arg <- function(x, arg, by_col, center, scale, col_ign) {
   ### return updated ino object
   return(x)
 }
+
+#' Save results of optimization run
+#'
+#' @description
+#' This helper function saves the results of an optimization run into the
+#' submitted \code{ino} object.
+#'
+#' @details
+#' The results are saved at \code{x$runs}, which is a list of two elements:
+#' \itemize{
+#'   \item \code{table} is a \code{data.frame} with the optimization runs as
+#'         rows and optimization results as columns.
+#'         Per default, the following columns are created:
+#'         \itemize{
+#'           \item \code{.strategy}, the name of the initialization strategy,
+#'           \item \code{.optimizer}, the name of the optimizer,
+#'           \item \code{.time}, the optimization time,
+#'           \item \code{.optimum}, the function value at the optimum.
+#'         }
+#'   \item \code{pars} is a \code{list}, where the following values are saved
+#'         for each optimization run:
+#'         \itemize{
+#'           \item \code{.init}, the initial value,
+#'           \item \code{.estimate}, the optimal parameter values,
+#'           \item and any non-single valued output of the optimizer that was
+#'                 specified via \code{crit} in \code{\link{set_optimizer}}.
+#'         }
+#' }
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param strategy
+#' A character, the name of the initialization strategy.
+#' @param pars
+#' A list of parameter values for the optimization run.
+#' @param result
+#' The output of \code{\link{do.call_timed}}.
+#' @param opt_name
+#' The name of the optimizer.
+#'
+#' @return
+#' The updated object \code{x} (invisibly).
+#'
+#' @keywords
+#' internal
+
+save_result <- function(x, strategy, pars, result, opt_name) {
+
+  ### determine number of new optimization result
+  nopt <- nrow(x[["runs"]][["table"]]) + 1
+
+  ### save optimization results
+  x[["runs"]][["table"]][nopt, ".strategy"] <- strategy
+  x[["runs"]][["table"]][nopt, ".time"] <- result$time
+  v <- x$opt[[opt_name]]$base_arg_names[3]
+  x[["runs"]][["table"]][nopt, ".optimum"] <- result$res[[v]]
+  if (length(x$opt) > 1) {
+    x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
+  }
+  for (i in seq_along(attr(pars, "par_name"))) {
+    if (attr(pars, "par_name")[i] %in% x$f$mpvs) {
+      x[["runs"]][["table"]][nopt, attr(pars, "par_name")[i]] <-
+        attr(pars, "par_id")[i]
+    }
+  }
+  x[["runs"]][["pars"]][[nopt]] <- list()
+  x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
+  z <- x$opt[[opt_name]]$base_arg_names[4]
+  x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
+  opt_crit <- x$opt[[opt_name]]$crit
+  crit_val <- result$res[opt_crit]
+  for (i in seq_along(opt_crit)) {
+    if (is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1) {
+      x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
+    } else {
+      x[["runs"]][["pars"]][[nopt]][[opt_crit[i]]] <- crit_val[[i]]
+    }
+  }
+
+  ### return (invisibly) updated ino object
+  return(invisible(x))
+}
+
+#' @noRd
+#' @keywords
+#' internal
+
+strategy_call <- function(call) {
+  call$ncores <- 1
+  class(call) <- c("strategy_call", class(call))
+  return(call)
+}
+
+#' @exportS3Method
+#' @noRd
+#' @keywords
+#' internal
+
+print.strategy_call <- function(x, ...) {
+  cat("<strategy call>")
+}
+
+#' Check sampler
+#'
+#' @description
+#' This function ...
+#'
+#' @param sampler
+#' The sampler for random initial values. Can be any function that
+#' \itemize{
+#'   \item has as first argument an integer, say \code{npar},
+#'   \item and returns a numeric vector of length \code{npar}.
+#' }
+#' Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
+#' standard normal distribution as initial value.
+
+check_sampler <- function() {
+  npar <- NULL
+  sampler_first_arg <- alist(npar)
+  names(sampler_first_arg) <- names(formals(sampler))[1]
+  sampler_add_args <- list(...)
+  sampler_args <- c(sampler_first_arg, sampler_add_args)
+  sampler_init <- function(npar) do.call(what = sampler, args = sampler_args)
+  try_sampler <- try_silent(sampler_init(x$f$npar))
+  if (inherits(try_sampler, "fail")) {
+    stop("'sampler' failed with error message:\n", try_sampler, call. = FALSE)
+  }
+  if (!is.numeric(try_sampler) || length(try_sampler) != x$f$npar) {
+    stop("'sampler' must return a numeric vector of length 'x$f$npar'.\n",
+         "Instead, 'sampler' returned:\n",
+         paste(capture.output(str(try_sampler)), collapse = "\n"),
+         call. = FALSE
+    )
+  }
+}

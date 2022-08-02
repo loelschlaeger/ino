@@ -31,7 +31,7 @@
 #' @keywords
 #' strategy
 
-standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE, col_ign = NULL,
+ao_initialization <- function(x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE, col_ign = NULL,
                                        initialization = random_initialization(), ncores = getOption("ino_ncores"),
                                        verbose = getOption("ino_progress")) {
 
@@ -345,8 +345,10 @@ subset_initialization <- function(x, arg = "data", how = "random", prop = 0.5, b
 #' @keywords
 #' strategy
 
-fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
-                                 verbose = getOption("ino_progress")) {
+fixed_initialization <- function(
+    x, at, ncores = getOption("ino_ncores"),
+    verbose = getOption("ino_progress")
+) {
 
   ### capture function call if 'x' is not specified
   if (missing(x)) {
@@ -435,18 +437,10 @@ fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
 #'
 #' @param x
 #' An object of class \code{ino}.
-#' @param sampler
-#' The sampler for random initial values. Can be any function that
-#' \itemize{
-#'   \item has as first argument an integer, say \code{npar},
-#'   \item and returns a numeric vector of length \code{npar}.
-#' }
-#' Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
-#' standard normal distribution as initial value.
-#' @param ...
-#' Additional argument to \code{sampler} (optional).
+#' @inheritParams check_sampler
 #' @param ncores
-#' This function is parallelized, set the number of cores here.
+#' The number of cores for parallel computation.
+#' The default is
 #' @param verbose
 #' Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
 #'
@@ -461,41 +455,28 @@ fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
 #' @importFrom utils capture.output
 #' @importFrom foreach %dopar%
 
-random_initialization <- function(x, sampler = stats::rnorm, ..., ncores = getOption("ino_ncores"),
-                                  verbose = getOption("ino_progress")) {
-
-  ### capture function call if 'x' is not specified
+random_initialization <- function(
+    x, sampler, ncores = getOption("ino_ncores"),
+    verbose = getOption("ino_progress")
+) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
-
-  ### initial message
-  ino_status(msg = "random initialization", verbose = verbose)
-
-  ### check inputs
-  ino_check_inputs(
-    "x" = x, "sampler" = sampler, "ncores" = ncores,
-    "verbose" = verbose
+  ino_status(
+    msg = "random initialization",
+    verbose = verbose
   )
-
-  ### check sampler
-  npar <- NULL
-  sampler_first_arg <- alist(npar)
-  names(sampler_first_arg) <- names(formals(sampler))[1]
-  sampler_add_args <- list(...)
-  sampler_args <- c(sampler_first_arg, sampler_add_args)
-  sampler_init <- function(npar) do.call(what = sampler, args = sampler_args)
-  try_sampler <- try_silent(sampler_init(x$f$npar))
-  if (inherits(try_sampler, "fail")) {
-    stop("'sampler' failed with error message:\n", try_sampler, call. = FALSE)
-  }
-  if (!is.numeric(try_sampler) || length(try_sampler) != x$f$npar) {
-    stop("'sampler' must return a numeric vector of length 'x$f$npar'.\n",
-      "Instead, 'sampler' returned:\n",
-      paste(capture.output(str(try_sampler)), collapse = "\n"),
-      call. = FALSE
+  ino_check_inputs(
+    "x" = x, "ncores" = ncores, "verbose" = verbose
+  )
+  if (missing(sampler)) {
+    sampler <- function() stats::rnorm(x$prob$npar)
+  } else {
+    sampler <- check_sampler(
+      npar = x$prob$npar, sampler = sampler
     )
   }
+
 
   ### create parameter grid
   grid <- grid_ino(x)
@@ -560,24 +541,4 @@ random_initialization <- function(x, sampler = stats::rnorm, ..., ncores = getOp
 
   ### return (invisibly) updated ino object
   return(invisible(x))
-}
-
-#' @noRd
-#' @keywords
-#' internal
-
-strategy_call <- function(call) {
-  call$ncores <- 1
-  call$verbose <- FALSE
-  class(call) <- c("strategy_call", class(call))
-  return(call)
-}
-
-#' @exportS3Method
-#' @noRd
-#' @keywords
-#' internal
-
-print.strategy_call <- function(x, ...) {
-  cat("<strategy call>")
 }

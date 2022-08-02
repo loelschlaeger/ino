@@ -10,13 +10,14 @@ grid_ino(x)
 \item{x}{An object of class \code{ino}.}
 }
 \value{
-A \code{list}, where each element is a parameter set. Each parameter set
-contains at least a placeholder for the target parameter, which is set to
-\code{NA} and has to be filled by the initialization strategies.
+An object of class \code{grid}, which is a \code{list}, where each element is
+a parameter set.
+Each parameter set contains at least a placeholder for the target parameter,
+which is set to \code{NA} and has to be filled by the initialization
+strategies.
 Additionally, each parameter set contains further arguments for the target
-function if available. In this case, the parameter names and identifier for
-the parameter values are added as attributes \code{"par_name"} and
-\code{"par_id"} to the parameter set.
+function if available. In this case, the parameter identifier for the
+parameter values are added as attribute \code{"par_id"} to the parameter set.
 }
 \description{
 This helper function creates a grid of all parameter combinations for an

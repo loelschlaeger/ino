@@ -403,7 +403,14 @@ print.prob <- function(x, ...) {
   cat("f:", x$f_name, "\n")
   cat("npar:", x$npar, "\n")
   mpvs <- attr(x$add, "mpvs")
-  if(length(mpvs) > 0) cat("mpvs:", mpvs)
+  if(length(mpvs) > 0) {
+    cat(
+      "mpvs:",
+      paste0(mpvs, " (", sapply(mpvs, function(m) length(x$add[[m]])), ") ",
+             collapse = ", "),
+      "\n"
+    )
+  }
 }
 
 #' Constructor
@@ -554,13 +561,14 @@ print.runs <- function(x, ...) {
 #' An object of class \code{ino}.
 #'
 #' @return
-#' A \code{list}, where each element is a parameter set. Each parameter set
-#' contains at least a placeholder for the target parameter, which is set to
-#' \code{NA} and has to be filled by the initialization strategies.
+#' An object of class \code{grid}, which is a \code{list}, where each element is
+#' a parameter set.
+#' Each parameter set contains at least a placeholder for the target parameter,
+#' which is set to \code{NA} and has to be filled by the initialization
+#' strategies.
 #' Additionally, each parameter set contains further arguments for the target
-#' function if available. In this case, the parameter names and identifier for
-#' the parameter values are added as attributes \code{"par_name"} and
-#' \code{"par_id"} to the parameter set.
+#' function if available. In this case, the parameter identifier for the
+#' parameter values are added as attribute \code{"par_id"} to the parameter set.
 #'
 #' @keywords
 #' internal
@@ -573,19 +581,31 @@ grid_ino <- function(x) {
   }
   grid_par <- expand.grid(grid_par, stringsAsFactors = FALSE)
   grid <- list()
+  attr(grid, "par_names") <- colnames(grid_par)
   for (i in 1:max(1, nrow(grid_par))) {
     par_set <- structure(list(NA), names = x$prob$f_target)
-    par_set <- c(target, x$prob$add)
+    par_set <- c(par_set, x$prob$add)
     for (p in colnames(grid_par)) {
       par_set[p] <- par_set[[p]][grid_par[i, p]]
     }
     attr(par_set, "par_id") <- as.character(grid_par[i, ])
     grid[[i]] <- par_set
   }
-  return(grid)
+  structure(grid, class = "grid")
 }
 
-#' Clear initialization runs
+#' @exportS3Method
+#' @noRd
+#' @keywords internal
+
+print.grid <- function(x, ...) {
+  par_id <- lapply(grid, attr, "par_id")
+  table <- data.frame(do.call(rbind, par_id))
+  colnames(table) <- attr(x, "par_names")
+  print(table)
+}
+
+#' Clear records
 #'
 #' @description
 #' This function clears initialization runs saved in an \code{ino} object.
@@ -594,18 +614,20 @@ grid_ino <- function(x) {
 #' An object of class \code{ino}.
 #' @param which
 #' Either \code{"all"} to clear all initialization runs, or alternatively a
-#' numeric vector of row numbers in \code{x$runs$table}.
+#' numeric vector of row numbers in \code{summary(x)}.
 #'
 #' @return
-#' The updated \code{ino} object.
+#' The updated input \code{x}.
 #'
 #' @export
+#'
+#' @examples
+#' TODO: Add example
 #'
 #' @keywords
 #' specification
 
 clear_ino <- function(x, which = "all") {
-  ino_check_inputs("x" = x, "which" = which)
   if(identical(which, "all")) {
     x[["runs"]][["table"]] <- data.frame()
     x[["runs"]][["pars"]] <- list()
@@ -617,7 +639,7 @@ clear_ino <- function(x, which = "all") {
   return(x)
 }
 
-#' Merge initialization runs
+#' Merge results
 #'
 #' @description
 #' This function merges multiple \code{ino} objects.
@@ -630,6 +652,9 @@ clear_ino <- function(x, which = "all") {
 #' The updated \code{ino} object.
 #'
 #' @export
+#'
+#' @examples
+#' TODO: Add example
 #'
 #' @keywords
 #' specification
@@ -653,86 +678,3 @@ merge_ino <- function(...) {
   }
   return(base)
 }
-
-#' Save results of optimization run
-#'
-#' @description
-#' This helper function saves the results of an optimization run into the
-#' submitted \code{ino} object.
-#'
-#' @details
-#' The results are saved at \code{x$runs}, which is a list of two elements:
-#' \itemize{
-#'   \item \code{table} is a \code{data.frame} with the optimization runs as
-#'         rows and optimization results as columns.
-#'         Per default, the following columns are created:
-#'         \itemize{
-#'           \item \code{.strategy}, the name of the initialization strategy,
-#'           \item \code{.optimizer}, the name of the optimizer,
-#'           \item \code{.time}, the optimization time,
-#'           \item \code{.optimum}, the function value at the optimum.
-#'         }
-#'   \item \code{pars} is a \code{list}, where the following values are saved
-#'         for each optimization run:
-#'         \itemize{
-#'           \item \code{.init}, the initial value,
-#'           \item \code{.estimate}, the optimal parameter values,
-#'           \item and any non-single valued output of the optimizer that was
-#'                 specified via \code{crit} in \code{\link{set_optimizer}}.
-#'         }
-#' }
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param strategy
-#' A character, the name of the initialization strategy.
-#' @param pars
-#' A list of parameter values for the optimization run.
-#' @param result
-#' The output of \code{\link{do.call_timed}}.
-#' @param opt_name
-#' The name of the optimizer.
-#'
-#' @return
-#' The updated object \code{x} (invisibly).
-#'
-#' @keywords
-#' internal
-
-result_ino <- function(x, strategy, pars, result, opt_name) {
-
-  ### determine number of new optimization result
-  nopt <- nrow(x[["runs"]][["table"]]) + 1
-
-  ### save optimization results
-  x[["runs"]][["table"]][nopt, ".strategy"] <- strategy
-  x[["runs"]][["table"]][nopt, ".time"] <- result$time
-  v <- x$opt[[opt_name]]$base_arg_names[3]
-  x[["runs"]][["table"]][nopt, ".optimum"] <- result$res[[v]]
-  if (length(x$opt) > 1) {
-    x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
-  }
-  for (i in seq_along(attr(pars, "par_name"))) {
-    if (attr(pars, "par_name")[i] %in% x$f$mpvs) {
-      x[["runs"]][["table"]][nopt, attr(pars, "par_name")[i]] <-
-        attr(pars, "par_id")[i]
-    }
-  }
-  x[["runs"]][["pars"]][[nopt]] <- list()
-  x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
-  z <- x$opt[[opt_name]]$base_arg_names[4]
-  x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
-  opt_crit <- x$opt[[opt_name]]$crit
-  crit_val <- result$res[opt_crit]
-  for (i in seq_along(opt_crit)) {
-    if (is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1) {
-      x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
-    } else {
-      x[["runs"]][["pars"]][[nopt]][[opt_crit[i]]] <- crit_val[[i]]
-    }
-  }
-
-  ### return (invisibly) updated ino object
-  return(invisible(x))
-}
-

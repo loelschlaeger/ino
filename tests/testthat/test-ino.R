@@ -25,3 +25,22 @@ test_that("prob object can be constructed and validated", {
   x <- validate_prob(x)
   expect_s3_class(x, "prob")
 })
+
+test_that("ino setup works", {
+  x <- setup_ino(f = f_ackley, npar = 2)
+  expect_s3_class(x, "ino")
+})
+
+test_that("ino grid can be created", {
+  x <- setup_ino(
+    f = f_ll_hmm,
+    npar = 4,
+    data = list("data1" = earthquakes, "data2" = earthquakes),
+    N = 2,
+    neg = TRUE,
+    mpvs = "data",
+    opt = set_optimizer_nlm()
+  )
+  grid <- grid_ino(x)
+  expect_s3_class(grid, "grid")
+})
