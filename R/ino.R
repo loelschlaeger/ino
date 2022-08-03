@@ -12,10 +12,11 @@
 #' arguments specified via the \code{...} argument.
 #'
 #' ### Specifying multiple parameter values
-#' You can specify multiple values for each \code{...} parameter. Such arguments
-#' must be in \code{list} format, where each list element must be a valid
-#' parameter value. The names of the \code{...} parameters with multiple values
-#' must be added to the \code{mpvs} input.
+#' You can specify multiple values for each \code{...} parameter for comparison.
+#' Such arguments must be in \code{list} format, where each list element must be
+#' a valid parameter value. The list elements can be named.
+#' The names of the \code{...} parameters with multiple values must be added to
+#' the \code{mpvs} input.
 #'
 #' ### Specifying an optimizer
 #' The numerical optimizer must be specified via the \code{opt} argument as an
@@ -23,7 +24,7 @@
 #' Such \code{optimizer} objects can be created via the function
 #' \code{\link[optimizeR]{set_optimizer}}.
 #' You can specify multiple \code{optimizer} objects for comparison by passing
-#' a list of optimizers to \code{opt}.
+#' a (named) list of optimizers to \code{opt}.
 #'
 #' ### An example
 #' Let \code{nll} be a negative log-likelihood function.
@@ -219,6 +220,26 @@ print.ino <- function(x, ...) {
   cat("\n")
 }
 
+#' Number of parameters
+#'
+#' @description
+#' This function extracts the \code{npar} element from an \code{ino} object,
+#' which is the length of the parameter vector over which the target function is
+#' optimized.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#'
+#' @return
+#' An integer, the number of parameters.
+#'
+#' @keywords internal
+
+npar <- function(x) {
+  stopifnot(inherits(x, "ino"))
+  as.integer(x$prob$npar)
+}
+
 #' Constructor
 #'
 #' @description
@@ -317,6 +338,11 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
   stopifnot("mpvs" %in% names(attributes(x$add)))
   if (length(x$add) > 0) {
     stopifnot(sapply(x$add, function(x) is.list(x)))
+    for(mpv in attr(x$add, "mpvs")) {
+      if (is.null(names(x$add[[mpv]]))) {
+        names(x$add[[mpv]]) <- paste0(mpv, 1:length(x$add[[mpv]]))
+      }
+    }
   }
   if (!exists("init_rest", where = test_par)) {
     test_par[["init_rest"]] <- list("lower" = -1, "upper" = 1)
@@ -406,7 +432,7 @@ print.prob <- function(x, ...) {
   if(length(mpvs) > 0) {
     cat(
       "mpvs:",
-      paste0(mpvs, " (", sapply(mpvs, function(m) length(x$add[[m]])), ") ",
+      paste0(mpvs, " (", sapply(mpvs, function(m) length(x$add[[m]])), ")",
              collapse = ", "),
       "\n"
     )
@@ -447,7 +473,9 @@ new_opts <- function(x = list(), opt = set_optimizer_nlm()) {
   }
   stopifnot(is.list(opt))
   x <- opt
-  names(x) <- paste0("opt", 1:length(x))
+  if (is.null(names(x))) {
+    names(x) <- paste0("opt", 1:length(x))
+  }
   structure(x, class = "opts")
 }
 
@@ -496,12 +524,16 @@ print.opts <- function(x, ...) {
 #' A \code{runs} object is a list of two elements:
 #' * The \code{table} element is a data frame. It has a row for each
 #'   recorded optimization run, columns contain optimization results. It stores
-#'   only single-value results, e.g. the optimal function value and the
-#'   optimization time.
+#'   * the name of the initialization strategy \code{.strategy},
+#'   * the optimization time \code{.time} (\code{difftime} object),
+#'   * the function value at the optimum \code{.optimum},
+#'   * the identifier for the optimizer \code{.optimizer},
+#'   * and identifier for additional parameters for the target function.
 #' * The \code{pars} element is a list. It has an element for each recorded
-#'   optimization run. It stores all multi-value optimization results, e.g.
-#'   the initial parameter vector and the optimal parameter vector.
-#'
+#'   optimization run. It stores
+#'   * the initial parameter vector \code{.init},
+#'   * the parameter estimate \code{.estimate},
+#'   * and additional outputs of the optimizer.
 #' @param x
 #' A list.
 #'
@@ -551,45 +583,49 @@ print.runs <- function(x, ...) {
   cat("Records:", nrow(x$table))
 }
 
-#' Create grid of parameter combinations
+#' Create grid
 #'
 #' @description
-#' This helper function creates a grid of all parameter combinations for an
-#' \code{ino} object.
+#' This helper function creates a grid of all parameter combinations and
+#' optimizers for an \code{ino} object.
 #'
 #' @param x
 #' An object of class \code{ino}.
+#' @param initial_values
+#' A numeric vector of length \code{npar(x)} with initial values.
 #'
 #' @return
-#' An object of class \code{grid}, which is a \code{list}, where each element is
-#' a parameter set.
-#' Each parameter set contains at least a placeholder for the target parameter,
-#' which is set to \code{NA} and has to be filled by the initialization
-#' strategies.
-#' Additionally, each parameter set contains further arguments for the target
-#' function if available. In this case, the parameter identifier for the
-#' parameter values are added as attribute \code{"par_id"} to the parameter set.
+#' An object of class \code{grid}, which is a \code{list}, where each element
+#' contains
+#' * the \code{initial_values} vector,
+#' * an \class{optimizer} object,
+#' * and (optionally) additional parameters to the target function.
+#' The \code{grid} object has an attribute \code{overview}, which is a data
+#' frame where the identifiers for the optimizers and additional parameters are
+#' saved.
 #'
 #' @keywords
 #' internal
 
 grid_ino <- function(x) {
-  grid_par <- as.list(names(x$prob$add))
-  names(grid_par) <- names(x$prob$add)
+  grid_par <- c(
+    grid_par <- list(".optimizer" = names(x$opts)),
+    structure(as.list(names(x$prob$add)), "names" = names(x$prob$add))
+  )
   for (mpv in attr(x$prob$add, "mpvs")) {
     grid_par[[mpv]] <- names(x$prob$add[[mpv]])
   }
   grid_par <- expand.grid(grid_par, stringsAsFactors = FALSE)
-  grid <- list()
-  attr(grid, "par_names") <- colnames(grid_par)
-  for (i in 1:max(1, nrow(grid_par))) {
-    par_set <- structure(list(NA), names = x$prob$f_target)
-    par_set <- c(par_set, x$prob$add)
-    for (p in colnames(grid_par)) {
-      par_set[p] <- par_set[[p]][grid_par[i, p]]
+  grid <- structure(list(), "overview" = grid_par)
+  for (i in 1:nrow(grid_par)) {
+    grid[[i]] <- list(".optimizer" = x$opts[[grid_par[i,".optimizer"]]])
+    for (p in names(x$prob$add)) {
+      grid[[i]][[p]] <- if (p %in% attr(x$prob$add, "mpvs")) {
+        x$prob$add[[p]][[grid_par[i,p]]]
+      } else {
+        x$prob$add[[p]][[1]]
+      }
     }
-    attr(par_set, "par_id") <- as.character(grid_par[i, ])
-    grid[[i]] <- par_set
   }
   structure(grid, class = "grid")
 }
@@ -599,10 +635,7 @@ grid_ino <- function(x) {
 #' @keywords internal
 
 print.grid <- function(x, ...) {
-  par_id <- lapply(grid, attr, "par_id")
-  table <- data.frame(do.call(rbind, par_id))
-  colnames(table) <- attr(x, "par_names")
-  print(table)
+  print(attr(x, "overview"))
 }
 
 #' Clear records

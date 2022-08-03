@@ -1,4 +1,4 @@
-#' Summary of initialization
+#' Summary of initialization runs
 #'
 #' @description
 #' This function gives an overview of the initialization runs in an \code{ino}
@@ -6,12 +6,10 @@
 #'
 #' @details
 #' The following values are available for each \code{ino} object:
-#' \itemize{
-#'   \item \code{.strategy}, the name of the initialization strategy,
-#'   \item \code{.optimizer}, the name of the optimizer (if more than one),
-#'   \item \code{.time}, the optimization time,
-#'   \item \code{.optimum}, the function value at the optimum.
-#' }
+#' * \code{.strategy}, the name of the initialization strategy
+#' * \code{.time}, the optimization time
+#' * \code{.optimum}, the function value at the optimum
+#' * \code{.optimizer}, the identifier of the optimizer
 #'
 #' @param object
 #' An object of class \code{ino}.
@@ -19,10 +17,10 @@
 #' A character vector for grouping the optimization results, or \code{NULL}
 #' (default) for no grouping.
 #' @param ...
-#' Named functions for computing statistics.
+#' Named functions for computing statistics. Ignored if \code{group = NULL}.
 #'
 #' @return
-#' A \code{data.frame}.
+#' A data frame.
 #'
 #' @keywords
 #' evaluation
@@ -32,31 +30,22 @@
 #' @importFrom dplyr group_by_at summarize n across all_of
 
 summary.ino <- function(object, group = NULL, ...) {
-
-  ### check input
-  if (!inherits(object, "ino")) {
-    stop("'object' must be of class 'ino'.")
-  }
   if (nrow(object$runs$table) == 0) {
-    warning("No optimization runs found.")
-    return(data.frame())
+    ino_stop(
+      event = "No records found."
+    )
   }
-
-  ### if group is empty, print the entire table
-  if (length(group) > 0) {
+  if (!is.null(group)) {
     opt <- dplyr::group_by_at(
       object$runs$table,
       dplyr::vars(dplyr::all_of(group))
     )
-    opt <- dplyr::summarize(opt, "runs" = dplyr::n(), ...)
+    opt <- dplyr::summarize(opt, "records" = dplyr::n(), ...)
     opt <- dplyr::ungroup(opt)
   } else {
     opt <- object$runs$table
   }
-
-  ### return summary
-  class(opt) <- c("summary.ino", class(opt))
-  return(opt)
+  structure(opt, class = c("summary.ino", "data.frame"))
 }
 
 #' @noRd
@@ -64,7 +53,7 @@ summary.ino <- function(object, group = NULL, ...) {
 
 print.summary.ino <- function(x, digits = NULL, ...) {
   if (!is.null(digits)) {
-    x <- dplyr::mutate_if(x, is.numeric, digits, digits = digits)
+    x <- dplyr::mutate_if(x, is.numeric, round, digits = digits)
   }
   print(as.data.frame(x))
 }
@@ -103,12 +92,12 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   ### extract optimization
   optimization_df <- x$runs$table
   optimization_df$.time <- as.numeric(optimization_df$.time)
-  optimization_df$minimum <- round(optimization_df$.optimum, digits = 2)
+  #optimization_df$minimum <- round(optimization_df$.optimum, digits = 2)
 
   ### check input
   if (nrow(optimization_df) == 0) {
-    stop("Optimization runs have not yet been performed.",
-      call. = FALSE
+    ino_stop(
+      event = "No records found."
     )
   }
   if (length(var) > 1) {
@@ -156,7 +145,7 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
   return(out_plot)
 }
 
-#' Overview of optima
+#' Optima overview
 #'
 #' @description
 #' This function provides an overview of the identified optima.
@@ -165,36 +154,18 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 #' An object of class \code{ino}.
 #' @param digits
 #' The number of digits of the optima values.
-#' @param plot
-#' Set to \code{TRUE} for a visualization.
 #'
 #' @return
-#' Either a \code{data.frame} (if \code{plot = FALSE}), or otherwise a
-#' \code{ggplot} object.
+#' A data frame.
 #'
 #' @export
-#'
-#' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_bar theme_minimal xlab
 #'
 #' @keywords
 #' evaluation
 
-overview_optima <- function(x, digits = 2, plot = FALSE) {
-  optima_found <- x$runs$table$.optimum
-  optima_found <- round(optima_found, digits = digits)
-  out <- as.data.frame(table(optima_found))
-  colnames(out) <- c("optimum", "frequency")
-  if (!plot) {
-    return(out)
-  } else {
-    out_plot <- ggplot2::ggplot(out, ggplot2::aes(
-      x = .data$optimum,
-      y = .data$frequency
-    )) +
-      ggplot2::geom_bar(stat = "identity") +
-      ggplot2::theme_minimal() +
-      ggplot2::xlab("optimum")
-    return(out_plot)
-  }
+overview_optima <- function(x, digits = 2) {
+  structure(
+    as.data.frame(table(round(x$runs$table[[".optimum"]], digits = digits))),
+    names = c("optimum", "frequency")
+  )
 }

@@ -2,20 +2,17 @@
 % Please edit documentation in R/evaluations.R
 \name{overview_optima}
 \alias{overview_optima}
-\title{Overview of optima}
+\title{Optima overview}
 \usage{
-overview_optima(x, digits = 2, plot = FALSE)
+overview_optima(x, digits = 2)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
 \item{digits}{The number of digits of the optima values.}
-
-\item{plot}{Set to \code{TRUE} for a visualization.}
 }
 \value{
-Either a \code{data.frame} (if \code{plot = FALSE}), or otherwise a
-\code{ggplot} object.
+A data frame.
 }
 \description{
 This function provides an overview of the identified optima.

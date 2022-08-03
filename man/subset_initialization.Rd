@@ -10,7 +10,7 @@ subset_initialization(
   how = "random",
   prop = 0.5,
   by_row = TRUE,
-  col_ign = NULL,
+  ind_ign = NULL,
   kmeans_arg = list(centers = 2),
   initialization = random_initialization(),
   ncores = getOption("ino_ncores"),
@@ -32,7 +32,7 @@ Can be one of \code{"random"} (default), \code{"first"}, and \code{"kmeans"}.}
 \item{by_row}{A boolean, set to \code{TRUE} (the default) to subset by row, set to
 \code{FALSE} to subset by column.}
 
-\item{col_ign}{A numeric vector of column indices (or row indices if \code{by_row = FALSE})
+\item{ind_ign}{A numeric vector of column indices (or row indices if \code{by_row = FALSE})
 that are ignored when clustering.
 Only relevant if \code{how = "kmeans"}.}
 
@@ -56,9 +56,5 @@ The updated \code{ino} object.
 }
 \description{
 This function is an implementation of the subset initialization strategy.
-}
-\details{
-For more details see the help vignette:
-\code{vignette("workflow", package = "ino")}
 }
 \keyword{strategy}

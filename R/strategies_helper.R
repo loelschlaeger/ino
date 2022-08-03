@@ -2,54 +2,149 @@
 #' @keywords
 #' internal
 
-ino_check_inputs <- function(...) {
+strategy_call <- function(call) {
+  class(call) <- c("strategy_call", class(call))
+  return(call)
+}
+
+#' @exportS3Method
+#' @noRd
+#' @keywords
+#' internal
+
+print.strategy_call <- function(x, ...) {
+  cat("<strategy_call>")
+}
+
+#' Check inputs
+#'
+#' @description
+#' This helper function centralizes several input checks.
+#'
+#' @param ...
+#' Named inputs to be checked.
+#'
+#' @return
+#' Returns \code{NULL} invisibly.
+#'
+#' @keywords
+#' internal
+
+check_inputs <- function(...) {
   inputs <- list(...)
-  arg <- at <- by_col <- by_row <- center <- how <- prop <- runs <- NULL
-  sampler <- x <- NULL
   within(inputs, {
     n <- names(inputs)
     if ("x" %in% n) {
       if (!inherits(x, "ino")) {
-        ino_stop("'x' must be of class 'ino'.")
-      }
-    }
-    if ("runs" %in% n) {
-      if (!length(runs) == 1 && is_number(runs)) {
-        ino_stop("'runs' must be an integer.")
+        ino_stop(
+          event = "'x' must be of class 'ino'."
+        )
       }
     }
     if ("sampler" %in% n) {
       if (!is.function(sampler)) {
-        ino_stop("'sampler' must be a function.")
+        ino_stop(
+          event = "'sampler' must be a function."
+        )
+      }
+      sampler_try <- try_silent(sampler())
+      if (!is.numeric(sampler_try) || length(sampler_try) != npar(x)) {
+        ino_stop(
+          event = "'sampler' must return a numeric vector of length 'npar(x)'."
+        )
+      }
+    }
+    if ("ncores" %in% n) {
+      if(length(ncores) != 1 || !is_number(ncores) ) {
+        ino_stop(
+          event = "'ncores' must be a positive integer."
+        )
+      }
+    }
+    if ("verbose" %in% n) {
+      if(length(verbose) != 1 || (!isTRUE(verbose) && !isFALSE(verbose))) {
+        no_stop(
+          event = "'verbose' must be either TRUE or FALSE."
+        )
       }
     }
     if ("at" %in% n) {
-      if (!is.numeric(at)) {
-        ino_stop("'at' must be a numeric vector.")
+      if (!is.numeric(at) || length(at) != npar(x)) {
+        ino_stop(
+          event = "'at' must be a numeric vector of length 'npar(x)'."
+        )
       }
     }
     if ("arg" %in% n) {
-      if (!is.character(arg)) {
-        ino_stop("'arg' must be a character.")
+      if (!is.character(arg) || length(arg) != 1) {
+        ino_stop(
+          event = "'arg' must be a character."
+        )
+      }
+      if (!arg %in% names(x$prob$add)) {
+        ino_stop(
+          event = paste0(
+            "'", arg, "' is not an argument of '", x$prob$f_name, "'."
+          )
+        )
+      }
+      if (!all(
+        sapply(x$prob$add[[arg]], inherits, c("matrix", "data.frame")))
+      ) {
+        ino_stop(
+          event = paste0(
+            "Argument '", arg, "' is not a matrix or data frame'."
+          )
+        )
       }
     }
-    if (all(c("arg", "x") %in% n)) {
-      if (!arg %in% names(x$f$add)) {
-        ino_stop(paste0(
-          "'arg' = '", arg, "' does not seem to be an argument of '",
-          x$f$name, "'."
-        ))
-      }
-      if (arg %in% x$f$mpvs &&
-          !all(sapply(x$f$add[[arg]], inherits, c("matrix", "data.frame"))) ||
-          !arg %in% x$f$mpvs &&
-          !inherits(x$f$add[[arg]], c("matrix", "data.frame"))) {
-        ino_stop(paste0(
-          "The argument 'arg' = '", arg, "' does not seem to be of class ",
-          "'matrix' or 'data.frame'."
-        ))
+    if ("by_col" %in% n) {
+      if (length(by_col) != 1 || (!isFALSE(by_col) && !isTRUE(by_col))) {
+        ino_stop(
+          event = "'by_col' must be either TRUE or FALSE."
+        )
       }
     }
+    if ("center" %in% n) {
+      if (length(center) != 1 || (!isFALSE(center) && !isTRUE(center))) {
+        ino_stop(
+          event = "'center' must be either TRUE or FALSE."
+        )
+      }
+    }
+    if ("scale" %in% n) {
+      if (length(scale) != 1 || (!isFALSE(scale) && !isTRUE(scale))) {
+        ino_stop(
+          event = "'scale' must be either TRUE or FALSE."
+        )
+      }
+    }
+    if ("ind_ign" %in% n) {
+      if (!is.numeric(ind_ign)) {
+        ino_stop(
+          event = "'ind_ign' must be a numeric vector."
+        )
+      }
+      if (any(
+        sapply(x$prob$add[[arg]],
+               function(a) {
+                bound <- ifelse(by_col, ncol(a), nrow(a))
+                any(!ind_ign %in% seq_len(bound))
+               }))
+      ) {
+        ino_stop(
+          event = "'ind_ign' is out of bound."
+        )
+      }
+    }
+    if ("initialization" %in% n) {
+      if (!inherits(initialization, "strategy_call")) {
+        ino_stop(
+          event = "'initialization' must be of class 'strategy_call'."
+        )
+      }
+    }
+    ###
     if ("how" %in% n) {
       if (!how %in% c("random", "first", "kmeans")) {
         ino_stop("'how' must be one of 'random', 'first', or 'kmeans'.")
@@ -60,51 +155,146 @@ ino_check_inputs <- function(...) {
         ino_stop("(Each element of) 'prop' must be between 0 and 1.")
       }
     }
-    if ("by_col" %in% n) {
-      if (!(is.logical(by_col) || length(by_col) == 1)) {
-        ino_stop("'by_col' must be either 'TRUE' or 'FALSE'.")
-      }
-    }
+
     if ("by_row" %in% n) {
       if (!(is.logical(by_row) || length(by_row) == 1)) {
         ino_stop("'by_row' must be either 'TRUE' or 'FALSE'.")
       }
     }
-    if ("center" %in% n) {
-      if (!(is.logical(center) || length(center) == 1)) {
-        ino_stop("'center' must be either 'TRUE' or 'FALSE'.")
-      }
-    }
-    if ("scale" %in% n) {
-      if (!(is.logical(scale) || length(scale) == 1)) {
-        ino_stop("'scale' must be either 'TRUE' or 'FALSE'.")
-      }
-    }
-    if (all(c("at", "x") %in% n)) {
-      if (length(at) > x$f$npar) {
-        ino_stop("'at' has more entries than the function has parameters.")
-      }
-    }
-    if (all(c("at", "x") %in% n)) {
-      if (length(at) < x$f$npar) {
-        ino_stop("'at' has less entries than the function has parameters.")
-      }
-    }
-  })
 
+  })
   return(invisible(NULL))
+}
+
+#' Optimization
+#'
+#' @description
+#' This helper function performs numerical optimization based on an \code{ino}
+#' object and initial values.
+#'
+#' @param init
+#' A numeric vector of length \code{npar(x)}.
+#' @inheritParams random_initialization
+#'
+#' @return
+#' A list, each element contains
+#' * the set number \code{i} corresponding to \code{grid_ino(x)}
+#' * and the list output of \code{\link[optimizeR]{optimizeR}}.
+#'
+#' @keywords
+#' internal
+#'
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW
+#' @importFrom foreach foreach %dopar%
+#' @importFrom optimizeR optimizeR
+
+optimize <- function(x, init, ncores, verbose) {
+  stopifnot(is.numeric(init), length(init) == npar(x))
+  grid <- grid_ino(x)
+  cluster <- parallel::makeCluster(ncores)
+  on.exit(parallel::stopCluster(cluster))
+  doSNOW::registerDoSNOW(cluster)
+  pb <- ino_pb(title = "  grid set ", total = length(grid))
+  opts <- list(progress = function(n) ino_pp(pb = pb, verbose = verbose))
+  i <- 1
+  foreach::foreach(
+    i = 1:length(grid), .packages = c("optimizeR"), .options.snow = opts,
+    .inorder = FALSE
+  ) %dopar% {
+    opt <- grid[[i]][[".optimizer"]]
+    grid[[i]][[".optimizer"]] <- NULL
+    result <- try_silent(
+      do.call(
+        what = optimizeR::optimizeR,
+        args = c(
+          list(
+            "optimizer" = opt,
+            "f" = x$prob$f,
+            "p" = init
+          ),
+          grid[[i]]
+        )
+      )
+    )
+    list("i" = i, "result" = result)
+  }
+}
+
+#' Save results
+#'
+#' @description
+#' This helper function saves the results of optimization runs into the
+#' submitted \code{ino} object.
+#'
+#' @details
+#' The results are saved at \code{x$runs}, which is a list of two elements:
+#' * The \code{table} element is a data frame. It has a row for each
+#'   recorded optimization run, columns contain optimization results. It stores
+#'   * the name of the initialization strategy \code{.strategy},
+#'   * the optimization time \code{.time} (\code{difftime} object),
+#'   * the function value at the optimum \code{.optimum},
+#'   * the identifier for the optimizer \code{.optimizer},
+#'   * and identifier for additional parameters for the target function.
+#' * The \code{pars} element is a list. It has an element for each recorded
+#'   optimization run. It stores
+#'   * the initial parameter vector \code{.init},
+#'   * the parameter estimate \code{.estimate},
+#'   * and additional outputs of the optimizer.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @param result
+#' The output of \code{\link{optimize}}.
+#' @param strategy
+#' The name of the initialization strategy.
+#'
+#' @return
+#' The updated object \code{x}.
+#'
+#' @keywords
+#' internal
+
+save_result <- function(x, result, strategy, init) {
+  stopifnot(inherits(x, "ino"), is.list(result), is.character(strategy),
+            length(strategy) == 1)
+  grid <- grid_ino(x)
+  grid_overview <- attr(grid, "overview")
+  names_grid_overview <- colnames(grid_overview)
+  nopt <- nrow(x$runs$table)
+  res_seq <- sapply(result, `[[`, "i")
+  res <- lapply(result, `[[`, "result")
+  res_fail <- sum(sapply(res, inherits, "fail"))
+  if (res_fail > 0) {
+    ino_warn(
+      event = paste(res_fail, "of", length(res), "runs failed.")
+    )
+  }
+  for (s in res_seq) {
+    if (!inherits(res[[s]], "fail")) {
+      x$runs$table[nopt + s, ".strategy"] <- strategy
+      x$runs$table[nopt + s, ".time"] <- res[[s]][["time"]]
+      x$runs$table[nopt + s, ".optimum"] <- res[[s]][["v"]]
+      x$runs$table[nopt + s, names_grid_overview] <- grid_overview[s,]
+      x$runs$pars[[nopt + s]] <- c(
+        list(".init" = init, ".estimate" = res[[s]]$z),
+        res[[s]][!names(res[[s]]) %in% c("v","z","time")]
+      )
+    }
+  }
+  return(x)
 }
 
 #' @noRd
 #' @keywords
 #' internal
 
-subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
+subset_arg <- function(x, arg, how, prop, by_row, ind_ign, kmeans_arg) {
 
   ### check inputs
   ino_check_inputs(
     "x" = x, "arg" = arg, "how" = how, "prop" = prop, "by_row" = by_row,
-    "col_ign" = col_ign, "kmeans_arg" = kmeans_arg
+    "ind_ign" = ind_ign, "kmeans_arg" = kmeans_arg
   )
 
   ### function for subsetting
@@ -118,8 +308,8 @@ subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
       subset_ind <- 1:arg_val_subset_length
     } else if (how == "kmeans") {
       arg_val_ign <- arg_val
-      if (!is.null(col_ign)) {
-        arg_val_ign <- arg_val_ign[, -col_ign, drop = FALSE]
+      if (!is.null(ind_ign)) {
+        arg_val_ign <- arg_val_ign[, -ind_ign, drop = FALSE]
       }
       kmeans_out <- do.call(
         what = stats::kmeans,
@@ -152,171 +342,3 @@ subset_arg <- function(x, arg, how, prop, by_row, col_ign, kmeans_arg) {
   return(x)
 }
 
-#' @noRd
-#' @keywords
-#' internal
-
-standardize_arg <- function(x, arg, by_col, center, scale, col_ign) {
-
-  ### check inputs
-  ino_check_inputs(
-    "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
-    "col_ign" = col_ign
-  )
-
-  ### function for standardizing
-  do_standardize_arg <- function(arg_val) {
-    if (!by_col) arg_val <- t(arg_val)
-    for (i in 1:ncol(arg_val)) {
-      if (i %in% col_ign) next()
-      arg_val[, i] <- scale(arg_val[, i], center = center, scale = scale)
-    }
-    if (!by_col) arg_val <- t(arg_val)
-    return(arg_val)
-  }
-
-  ### perform subsetting
-  if (arg %in% x$f$mpvs) {
-    x$f$add[[arg]] <- lapply(x$f$add[[arg]], do_standardize_arg)
-  } else {
-    x$f$add[[arg]] <- do_standardize_arg(x$f$add[[arg]])
-  }
-
-  ### return updated ino object
-  return(x)
-}
-
-#' Save results of optimization run
-#'
-#' @description
-#' This helper function saves the results of an optimization run into the
-#' submitted \code{ino} object.
-#'
-#' @details
-#' The results are saved at \code{x$runs}, which is a list of two elements:
-#' \itemize{
-#'   \item \code{table} is a \code{data.frame} with the optimization runs as
-#'         rows and optimization results as columns.
-#'         Per default, the following columns are created:
-#'         \itemize{
-#'           \item \code{.strategy}, the name of the initialization strategy,
-#'           \item \code{.optimizer}, the name of the optimizer,
-#'           \item \code{.time}, the optimization time,
-#'           \item \code{.optimum}, the function value at the optimum.
-#'         }
-#'   \item \code{pars} is a \code{list}, where the following values are saved
-#'         for each optimization run:
-#'         \itemize{
-#'           \item \code{.init}, the initial value,
-#'           \item \code{.estimate}, the optimal parameter values,
-#'           \item and any non-single valued output of the optimizer that was
-#'                 specified via \code{crit} in \code{\link{set_optimizer}}.
-#'         }
-#' }
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param strategy
-#' A character, the name of the initialization strategy.
-#' @param pars
-#' A list of parameter values for the optimization run.
-#' @param result
-#' The output of \code{\link{do.call_timed}}.
-#' @param opt_name
-#' The name of the optimizer.
-#'
-#' @return
-#' The updated object \code{x} (invisibly).
-#'
-#' @keywords
-#' internal
-
-save_result <- function(x, strategy, pars, result, opt_name) {
-
-  ### determine number of new optimization result
-  nopt <- nrow(x[["runs"]][["table"]]) + 1
-
-  ### save optimization results
-  x[["runs"]][["table"]][nopt, ".strategy"] <- strategy
-  x[["runs"]][["table"]][nopt, ".time"] <- result$time
-  v <- x$opt[[opt_name]]$base_arg_names[3]
-  x[["runs"]][["table"]][nopt, ".optimum"] <- result$res[[v]]
-  if (length(x$opt) > 1) {
-    x[["runs"]][["table"]][nopt, ".optimizer"] <- opt_name
-  }
-  for (i in seq_along(attr(pars, "par_name"))) {
-    if (attr(pars, "par_name")[i] %in% x$f$mpvs) {
-      x[["runs"]][["table"]][nopt, attr(pars, "par_name")[i]] <-
-        attr(pars, "par_id")[i]
-    }
-  }
-  x[["runs"]][["pars"]][[nopt]] <- list()
-  x[["runs"]][["pars"]][[nopt]][[".init"]] <- pars[[x$f$target_arg]]
-  z <- x$opt[[opt_name]]$base_arg_names[4]
-  x[["runs"]][["pars"]][[nopt]][[".estimate"]] <- result$res[[z]]
-  opt_crit <- x$opt[[opt_name]]$crit
-  crit_val <- result$res[opt_crit]
-  for (i in seq_along(opt_crit)) {
-    if (is.numeric(crit_val[[i]]) && length(crit_val[[i]]) == 1) {
-      x[["runs"]][["table"]][nopt, opt_crit[i]] <- crit_val[[i]]
-    } else {
-      x[["runs"]][["pars"]][[nopt]][[opt_crit[i]]] <- crit_val[[i]]
-    }
-  }
-
-  ### return (invisibly) updated ino object
-  return(invisible(x))
-}
-
-#' @noRd
-#' @keywords
-#' internal
-
-strategy_call <- function(call) {
-  call$ncores <- 1
-  class(call) <- c("strategy_call", class(call))
-  return(call)
-}
-
-#' @exportS3Method
-#' @noRd
-#' @keywords
-#' internal
-
-print.strategy_call <- function(x, ...) {
-  cat("<strategy call>")
-}
-
-#' Check sampler
-#'
-#' @description
-#' This function ...
-#'
-#' @param sampler
-#' The sampler for random initial values. Can be any function that
-#' \itemize{
-#'   \item has as first argument an integer, say \code{npar},
-#'   \item and returns a numeric vector of length \code{npar}.
-#' }
-#' Per default, \code{sampler = stats::rnorm}, i.e. independent draws from a
-#' standard normal distribution as initial value.
-
-check_sampler <- function() {
-  npar <- NULL
-  sampler_first_arg <- alist(npar)
-  names(sampler_first_arg) <- names(formals(sampler))[1]
-  sampler_add_args <- list(...)
-  sampler_args <- c(sampler_first_arg, sampler_add_args)
-  sampler_init <- function(npar) do.call(what = sampler, args = sampler_args)
-  try_sampler <- try_silent(sampler_init(x$f$npar))
-  if (inherits(try_sampler, "fail")) {
-    stop("'sampler' failed with error message:\n", try_sampler, call. = FALSE)
-  }
-  if (!is.numeric(try_sampler) || length(try_sampler) != x$f$npar) {
-    stop("'sampler' must return a numeric vector of length 'x$f$npar'.\n",
-         "Instead, 'sampler' returned:\n",
-         paste(capture.output(str(try_sampler)), collapse = "\n"),
-         call. = FALSE
-    )
-  }
-}

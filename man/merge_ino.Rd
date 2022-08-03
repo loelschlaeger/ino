@@ -2,7 +2,7 @@
 % Please edit documentation in R/ino.R
 \name{merge_ino}
 \alias{merge_ino}
-\title{Merge initialization runs}
+\title{Merge results}
 \usage{
 merge_ino(...)
 }
@@ -15,5 +15,9 @@ The updated \code{ino} object.
 }
 \description{
 This function merges multiple \code{ino} objects.
+}
+\examples{
+TODO: Add example
+
 }
 \keyword{specification}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaluations.R
 \name{summary.ino}
 \alias{summary.ino}
-\title{Summary of initialization}
+\title{Summary of initialization runs}
 \usage{
 \method{summary}{ino}(object, group = NULL, ...)
 }
@@ -12,10 +12,10 @@
 \item{group}{A character vector for grouping the optimization results, or \code{NULL}
 (default) for no grouping.}
 
-\item{...}{Named functions for computing statistics.}
+\item{...}{Named functions for computing statistics. Ignored if \code{group = NULL}.}
 }
 \value{
-A \code{data.frame}.
+A data frame.
 }
 \description{
 This function gives an overview of the initialization runs in an \code{ino}
@@ -24,10 +24,10 @@ object.
 \details{
 The following values are available for each \code{ino} object:
 \itemize{
-\item \code{.strategy}, the name of the initialization strategy,
-\item \code{.optimizer}, the name of the optimizer (if more than one),
-\item \code{.time}, the optimization time,
-\item \code{.optimum}, the function value at the optimum.
+\item \code{.strategy}, the name of the initialization strategy
+\item \code{.time}, the optimization time
+\item \code{.optimum}, the function value at the optimum
+\item \code{.optimizer}, the identifier of the optimizer
 }
 }
 \keyword{evaluation}

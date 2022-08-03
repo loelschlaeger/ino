@@ -2,7 +2,7 @@
 % Please edit documentation in R/ino.R
 \name{clear_ino}
 \alias{clear_ino}
-\title{Clear initialization runs}
+\title{Clear records}
 \usage{
 clear_ino(x, which = "all")
 }
@@ -10,12 +10,16 @@ clear_ino(x, which = "all")
 \item{x}{An object of class \code{ino}.}
 
 \item{which}{Either \code{"all"} to clear all initialization runs, or alternatively a
-numeric vector of row numbers in \code{x$runs$table}.}
+numeric vector of row numbers in \code{summary(x)}.}
 }
 \value{
-The updated \code{ino} object.
+The updated input \code{x}.
 }
 \description{
 This function clears initialization runs saved in an \code{ino} object.
+}
+\examples{
+TODO: Add example
+
 }
 \keyword{specification}

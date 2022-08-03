@@ -73,10 +73,11 @@ arguments specified via the \code{...} argument.
 
 \subsection{Specifying multiple parameter values}{
 
-You can specify multiple values for each \code{...} parameter. Such arguments
-must be in \code{list} format, where each list element must be a valid
-parameter value. The names of the \code{...} parameters with multiple values
-must be added to the \code{mpvs} input.
+You can specify multiple values for each \code{...} parameter for comparison.
+Such arguments must be in \code{list} format, where each list element must be
+a valid parameter value. The list elements can be named.
+The names of the \code{...} parameters with multiple values must be added to
+the \code{mpvs} input.
 }
 
 \subsection{Specifying an optimizer}{
@@ -86,7 +87,7 @@ The numerical optimizer must be specified via the \code{opt} argument as an
 Such \code{optimizer} objects can be created via the function
 \code{\link[optimizeR]{set_optimizer}}.
 You can specify multiple \code{optimizer} objects for comparison by passing
-a list of optimizers to \code{opt}.
+a (named) list of optimizers to \code{opt}.
 }
 
 \subsection{An example}{

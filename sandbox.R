@@ -13,15 +13,13 @@ x <- setup_ino(
              "optim" = set_optimizer_optim())
 )
 
-for(i in 1:5)
+for(i in 1:100)
   x <- random_initialization(x)
 
-for(at in list(c(1, 0.5), c(0.3, 2)))
-  x <- fixed_initialization(x, at = at)
+summary(x, group = ".optimizer", "mean_time" = mean(.time),
+        "sd_time" = sd(.time))
 
-summary(x, "average_time" = mean(.time))
-
-plot(x, var = ".time", by = ".strategy") + ggplot2::theme_minimal()
+plot(x, var = ".time", by = ".optimizer") + ggplot2::theme_minimal()
 
 overview_optima(x, digits = 2)
 
@@ -36,28 +34,17 @@ hmm_ino <- setup_ino(
   opt = set_optimizer_nlm()
 )
 
-for(i in 1:5)
+for(i in 1:10) {
   hmm_ino <- random_initialization(hmm_ino)
-
-for(at in list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
-  hmm_ino <- fixed_initialization(hmm_ino, at = at)
-
-for(i in 1:5)
   hmm_ino <- subset_initialization(
-    hmm_ino, arg = "data", how = "first", prop = 0.2,
-    initialization = random_initialization())
+    hmm_ino, arg = "data", how = "first", prop = 0.5,
+    initialization = random_initialization()
+  )
+}
 
-for(at in list(c(-1, -1, 1, 2), c(-1, -1, 0.1, 0.2)))
-  hmm_ino <- subset_initialization(
-    hmm_ino, arg = "data", how = "first", prop = 0.2,
-    initialization = fixed_initialization(at = at))
+summary(hmm_ino, group = ".strategy", "mean" = mean(.time))
 
-for(i in 1:5)
-  hmm_ino <- standardize_initialization(hmm_ino)
-
-summary(hmm_ino, "mean" = mean(.time))
-
-overview_optima(hmm_ino, digits = 2)
+overview_optima(hmm_ino)
 
 plot(hmm_ino, var = ".time", by = ".strategy")
 
