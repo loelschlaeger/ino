@@ -268,7 +268,7 @@ random_initialization <- function(
   ino_status(msg = "random initialization", verbose = verbose)
   init <- sampler()
   result <- optimize(x = x, init = init, ncores = ncores, verbose = verbose)
-  xx <- save_result(x = x, result = result, strategy = "random", init = init)
+  save_result(x = x, result = result, strategy = "random", init = init)
 }
 
 #' Fixed initialization

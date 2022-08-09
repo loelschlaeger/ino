@@ -68,30 +68,28 @@ ino_pp <- function(pb, verbose = getOption("ino_progress")) {
 }
 
 #' @noRd
+#' @importFrom cli cli_art_info
 #' @keywords
 #' internal
 
 ino_status <- function(msg, verbose = getOption("ino_progress")) {
-  if (verbose) {
-    message("* ", msg)
-  }
+  if (verbose) cli::cli_alert_info(msg)
 }
 
 #' @noRd
+#' @importFrom cli cli_abort
 #' @keywords
 #' internal
 
-ino_stop <- function(event, debug = character(), call. = FALSE) {
-  msg <- paste(event, debug, sep = "\n", collapse = "")
-  stop(msg, call. = call.)
+ino_stop <- function(event, debug = character()) {
+  cli::cli_abort(c("x" = event, "i" = debug))
 }
 
 #' @noRd
+#' @importFrom cli cli_warn
 #' @keywords
 #' internal
 
-ino_warn <- function(event, debug = character(),
-                     call. = FALSE, immediate. = FALSE) {
-  msg <- paste(event, debug, sep = "\n", collapse = "")
-  warning(msg, call. = call., immediate. = immediate.)
+ino_warn <- function(event, debug = character()) {
+  cli::cli_warn(c(event, "i" = debug))
 }

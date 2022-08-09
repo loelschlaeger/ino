@@ -641,12 +641,12 @@ print.grid <- function(x, ...) {
 #' Clear records
 #'
 #' @description
-#' This function clears initialization runs saved in an \code{ino} object.
+#' This function clears initialization records saved in an \code{ino} object.
 #'
 #' @param x
 #' An object of class \code{ino}.
 #' @param which
-#' Either \code{"all"} to clear all initialization runs, or alternatively a
+#' Either \code{"all"} to clear all records, or alternatively a
 #' numeric vector of row numbers in \code{summary(x)}.
 #'
 #' @return
@@ -654,60 +654,79 @@ print.grid <- function(x, ...) {
 #'
 #' @export
 #'
-#' @examples
-#' TODO: Add example
-#'
 #' @keywords
 #' specification
 
-clear_ino <- function(x, which = "all") {
+clear_ino <- function(x, which) {
+  if (missing(x)) {
+    ino_stop(
+      "Argument 'x' is not specified."
+    )
+  }
+  if (missing(which)) {
+    ino_stop(
+      "Argument 'which' is not specified.",
+      "Either 'all' or a numeric vector of row indices of 'summary(x)'."
+    )
+  }
   if(identical(which, "all")) {
     x[["runs"]][["table"]] <- data.frame()
     x[["runs"]][["pars"]] <- list()
+    ino_status("Cleared all initialization records.")
   } else {
-    x[["runs"]][["table"]] <- x[["runs"]][["table"]][-which, , drop = FALSE]
-    rownames(x[["runs"]][["table"]]) <- NULL
-    x[["runs"]][["pars"]] <- x[["runs"]][["pars"]][-which, drop = FALSE]
+    if (!is.numerical(which) || any(which < 0)) {
+      ino_stop(
+        "Argument 'which' is misspecified.",
+        "Either 'all' or a numeric vector of row indices of 'summary(x)'."
+      )
+    } else {
+      x[["runs"]][["table"]] <- x[["runs"]][["table"]][-which, , drop = FALSE]
+      rownames(x[["runs"]][["table"]]) <- NULL
+      x[["runs"]][["pars"]] <- x[["runs"]][["pars"]][-which, drop = FALSE]
+      ino_status("Cleared specified initialization records.")
+    }
   }
   return(x)
 }
 
-#' Merge results
+#' Merge records
 #'
 #' @description
-#' This function merges multiple \code{ino} objects.
+#' This function merges the records of multiple \code{ino} objects.
 #'
 #' @param ...
-#' Arbitrary many \code{ino} objects, of which the initialization results are
-#' merged into the first object, which is then returned.
+#' Arbitrary many \code{ino} objects, which are merged into the first one.
 #'
 #' @return
 #' The updated \code{ino} object.
 #'
 #' @export
 #'
-#' @examples
-#' TODO: Add example
-#'
 #' @keywords
 #' specification
 
 merge_ino <- function(...) {
   ino_objects <- list(...)
-  if(length(ino_objects) == 0) {
+  if (length(ino_objects) == 0) {
+    ino_warn(
+      "No 'ino' objects supplied."
+    )
     return()
-  }
-  class <- sapply(lapply(ino_objects, class), function(x) any("ino" %in% x))
-  if(any(!class)){
-    stop("Object(s) at position(s) ", paste(which(!class), collapse = ", "),
-         " not of class 'ino'.", call. = FALSE)
-  }
-  base <- ino_objects[[1]]
-  if(length(ino_objects) > 1) {
-    for(i in 2:length(ino_objects)) {
-      base$runs$table <- rbind(base$runs$table, ino_objects[[i]]$runs$table)
-      base$runs$pars <- c(base$runs$pars, ino_objects[[i]]$runs$pars)
+  } else {
+
+    class <- sapply(lapply(ino_objects, class), function(x) any("ino" %in% x))
+    if (!all(sapply(ino_objects, inherits, "ino"))) {
+      ino_stop(
+        "Not all objects are of class 'ino'."
+      )
     }
+    base <- ino_objects[[1]]
+    if(length(ino_objects) > 1) {
+      for(i in 2:length(ino_objects)) {
+        base$runs$table <- rbind(base$runs$table, ino_objects[[i]]$runs$table)
+        base$runs$pars <- c(base$runs$pars, ino_objects[[i]]$runs$pars)
+      }
+    }
+    return(base)
   }
-  return(base)
 }

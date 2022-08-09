@@ -36,10 +36,10 @@ hmm_ino <- setup_ino(
 
 for(i in 1:10) {
   hmm_ino <- random_initialization(hmm_ino)
-  hmm_ino <- subset_initialization(
-    hmm_ino, arg = "data", how = "first", prop = 0.5,
-    initialization = random_initialization()
-  )
+  # hmm_ino <- subset_initialization(
+  #   hmm_ino, arg = "data", how = "first", prop = 0.5,
+  #   initialization = random_initialization()
+  # )
 }
 
 summary(hmm_ino, group = ".strategy", "mean" = mean(.time))
