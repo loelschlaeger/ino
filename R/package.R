@@ -26,7 +26,7 @@ NULL
 .onLoad <- function(lib, pkg) {
   options("ino_progress" = TRUE)
   options("ino_ncores" = 1)
-  options("ino_depth" = 0)
+  options("cli.progress_clear" = FALSE)
 }
 
 #' @noRd
@@ -67,21 +67,4 @@ ino_stop <- function(event, debug = character()) {
 
 ino_warn <- function(event, debug = character()) {
   cli::cli_warn(c(event, "i" = debug), call = NULL)
-}
-
-#' @noRd
-#' @keywords
-#' internal
-
-ino_inc_depth <- function(i) {
-  depth <- getOption("ino_depth")
-  if (is.null(depth)) depth <- 0
-  depth <- max(0, depth + i)
-  options("ino_depth" = depth)
-}
-
-ino_set_depth <- function(msg) {
-  depth <- getOption("ino_depth")
-  if (is.null(depth)) depth <- 0
-  paste(rep("*", depth), msg)
 }

@@ -36,7 +36,7 @@ hmm_ino <- setup_ino(
 hmm_ino <- random_initialization(hmm_ino, runs = 10)
 
 hmm_ino <- subset_initialization(
-  hmm_ino, arg = "data", how = "first", prop = 0.5,
+  hmm_ino, arg = "data", how = "first", prop = 0.5, full = FALSE,
   initialization = random_initialization(runs = 10)
 )
 
