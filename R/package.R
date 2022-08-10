@@ -68,7 +68,7 @@ ino_pp <- function(pb, verbose = getOption("ino_progress")) {
 }
 
 #' @noRd
-#' @importFrom cli cli_art_info
+#' @importFrom cli cli_alert_info
 #' @keywords
 #' internal
 

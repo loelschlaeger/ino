@@ -4,22 +4,18 @@
 \alias{clear_ino}
 \title{Clear records}
 \usage{
-clear_ino(x, which = "all")
+clear_ino(x, which)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{which}{Either \code{"all"} to clear all initialization runs, or alternatively a
+\item{which}{Either \code{"all"} to clear all records, or alternatively a
 numeric vector of row numbers in \code{summary(x)}.}
 }
 \value{
 The updated input \code{x}.
 }
 \description{
-This function clears initialization runs saved in an \code{ino} object.
-}
-\examples{
-TODO: Add example
-
+This function clears initialization records saved in an \code{ino} object.
 }
 \keyword{specification}
