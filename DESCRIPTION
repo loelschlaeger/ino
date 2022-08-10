@@ -27,6 +27,7 @@ Imports:
     mvtnorm,
     evd,
     crayon,
+    cli,
     progress,
     dplyr,
     foreach,

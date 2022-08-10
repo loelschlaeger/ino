@@ -372,13 +372,8 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
         )
       }
     )
-    add_extract <- lapply(names(x$add), function(name) {
-      if(name %in% attr(x$add, "mpvs")) {
-        x$add[[name]][[1]]
-      } else {
-        x$add[[name]][[1]]
-      }
-    })
+    add_extract <- lapply(names(x$add), function(name) x$add[[name]][[1]])
+    names(add_extract) <- names(x$add)
     f_out <- try_silent_timed(
       expr = do.call(
         what = x[["f"]],
@@ -398,8 +393,7 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
           "Initial values:", paste(init, collapse = " "), "\n",
           "The test run returned 'NULL'. The evaluation most likely reached",
           "the time limit. Try to increase 'f_checks_time'."
-        ),
-        immediate. = TRUE
+        )
       )
     } else if (inherits(f_out, "fail")) {
       ino_stop(
@@ -672,7 +666,6 @@ clear_ino <- function(x, which) {
   if(identical(which, "all")) {
     x[["runs"]][["table"]] <- data.frame()
     x[["runs"]][["pars"]] <- list()
-    ino_status("Cleared all initialization records.")
   } else {
     if (!is.numerical(which) || any(which < 0)) {
       ino_stop(
@@ -683,7 +676,6 @@ clear_ino <- function(x, which) {
       x[["runs"]][["table"]] <- x[["runs"]][["table"]][-which, , drop = FALSE]
       rownames(x[["runs"]][["table"]]) <- NULL
       x[["runs"]][["pars"]] <- x[["runs"]][["pars"]][-which, drop = FALSE]
-      ino_status("Cleared specified initialization records.")
     }
   }
   return(x)

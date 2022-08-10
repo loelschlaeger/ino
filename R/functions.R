@@ -245,7 +245,8 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
     theta <- theta[-(1:(P-1))]
   }
   if(mix) {
-    o <- theta[1:(P*(P+1)/2)]; theta <- theta[-(1:(P*(P+1)/2))]
+    o <- theta[1:(P*(P+1)/2)]
+    theta <- theta[-(1:(P*(P+1)/2))]
   }
   l <- theta
   if(mix) {

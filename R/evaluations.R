@@ -32,7 +32,8 @@
 summary.ino <- function(object, group = NULL, ...) {
   if (nrow(object$runs$table) == 0) {
     ino_stop(
-      event = "No records found."
+      event = "No records found in 'x'.",
+      debug = "Run some initialization strategies first."
     )
   }
   if (!is.null(group)) {

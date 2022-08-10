@@ -13,8 +13,7 @@ x <- setup_ino(
              "optim" = set_optimizer_optim())
 )
 
-for(i in 1:100)
-  x <- random_initialization(x)
+x <- random_initialization(x, runs = 10)
 
 summary(x, group = ".optimizer", "mean_time" = mean(.time),
         "sd_time" = sd(.time))
@@ -34,13 +33,12 @@ hmm_ino <- setup_ino(
   opt = set_optimizer_nlm()
 )
 
-for(i in 1:10) {
-  hmm_ino <- random_initialization(hmm_ino)
-  # hmm_ino <- subset_initialization(
-  #   hmm_ino, arg = "data", how = "first", prop = 0.5,
-  #   initialization = random_initialization()
-  # )
-}
+hmm_ino <- random_initialization(hmm_ino, runs = 10)
+
+hmm_ino <- subset_initialization(
+  hmm_ino, arg = "data", how = "first", prop = 0.5,
+  initialization = random_initialization(runs = 10)
+)
 
 summary(hmm_ino, group = ".strategy", "mean" = mean(.time))
 
@@ -54,27 +52,30 @@ set.seed(1)
 probit_data <- list()
 for(i in 1:100){
   b <- c(1,rnorm(2, sd = 3))
-  Sigma <- RprobitB::rwishart(3,diag(3))$W
+  Sigma <- RprobitB::rwishart(3, diag(3))$W
   name <- paste0("data",i)
   probit_data[[name]] <- sim_mnp(N = 100, b = b, Sigma = Sigma, seed = i)
 }
 
 probit_ino <- setup_ino(
   f = f_ll_mnp,
-  npar = 11,
-  data = probit_data[1:2],
+  npar = 5,
+  data = probit_data[1:10],
   neg = TRUE,
   opt = set_optimizer_nlm(),
   mpvs = "data"
 )
 
-for(i in 1:10)
-  probit_ino <- random_initialization(probit_ino)
+probit_ino <- random_initialization(probit_ino, runs = 10)
 
-for(i in 1:10)
-  probit_ino <- subset_initialization(
-    probit_ino, arg = "data", how = "kmeans", prop = 0.5, by_row = TRUE,
-    col_ign = c(1,2), initialization = random_initialization())
+probit_ino <- standardize_initialization(
+  probit_ino, ind_ign = 1:2, initialization = random_initialization(runs = 10)
+)
+
+probit_ino <- subset_initialization(
+  probit_ino, arg = "data", how = "kmeans", prop = 0.5, by_row = TRUE,
+  col_ign = c(1,2), initialization = random_initialization(runs = 10)
+)
 
 summary(probit_ino)
 
