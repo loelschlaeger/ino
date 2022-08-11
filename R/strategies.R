@@ -21,6 +21,8 @@
 #' Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
 #' The default is \code{getOption("ino_progress")}, which is set to \code{TRUE}
 #' when the package is loaded.
+#' @param label
+#' A character, the label for the initialization strategy.
 #'
 #' @return
 #' The updated \code{ino} object.
@@ -35,14 +37,15 @@
 
 random_initialization <- function(
     x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")
+    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+    label = "random"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
     "x" = x, "runs" = runs, "sampler" = sampler, "ncores" = ncores,
-    "verbose" = verbose
+    "verbose" = verbose, "label" = label
   )
   msg <- "Random initial values"
   format <- "Run {cli::pb_current}/{cli::pb_total} | {cli::pb_eta_str}"
@@ -52,7 +55,7 @@ random_initialization <- function(
   for(run in 1:runs) {
     init <- sampler()
     result <- optimize(x = x, init = init, ncores = ncores, verbose = verbose)
-    x <- save_result(x = x, result = result, strategy = "random", init = init)
+    x <- save_result(x = x, result = result, strategy = label, init = init)
     if (verbose) cli::cli_progress_update()
   }
   return(x)
@@ -79,18 +82,19 @@ random_initialization <- function(
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
 fixed_initialization <- function(
-    x, at, ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")
+    x, at, ncores = getOption("ino_ncores"),
+    verbose = getOption("ino_progress"), label = "fixed"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
-    "x" = x, "at" = at, "ncores" = ncores, "verbose" = verbose
+    "x" = x, "at" = at, "ncores" = ncores, "verbose" = verbose, "label" = label
   )
   msg <- ino_set_depth("Fixed initial values")
   ino_status(msg, verbose = verbose)
   result <- optimize(x = x, init = at, ncores = ncores, verbose = verbose)
-  save_result(x = x, result = result, strategy = "fixed", init = at)
+  save_result(x = x, result = result, strategy = label, init = at)
 }
 
 #' Standardize initialization
@@ -133,7 +137,8 @@ fixed_initialization <- function(
 standardize_initialization <- function(
     x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
     ind_ign = integer(), initialization = random_initialization(),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")
+    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+    label = "standardize"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
@@ -141,7 +146,7 @@ standardize_initialization <- function(
   check_inputs(
     "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
     "ind_ign" = ind_ign, "initialization" = initialization, "ncores" = ncores,
-    "verbose" = verbose
+    "verbose" = verbose, "label" = label
   )
   ino_status("Standardizing", verbose = verbose)
   x_st <- clear_ino(x, which = "all")
@@ -168,7 +173,7 @@ standardize_initialization <- function(
     )
   )
   x_st$runs$table[[".strategy"]] <- paste(
-    "standardize", x_st$runs$table$.strategy, sep = " > ")
+    label, x_st$runs$table$.strategy, sep = " > ")
   merge_ino(x, x_st)
 }
 
@@ -189,9 +194,6 @@ standardize_initialization <- function(
 #' Can be one of \code{"random"} (default), \code{"first"}, and \code{"kmeans"}.
 #' @param prop
 #' A numeric between 0 and 1, specifying the proportion of the subset.
-#' @param full
-#' A boolean, set to \code{TRUE} (the default) to optimize on the full set
-#' with estimates on the subset as initial values.
 #' @param ind_ign
 #' A numeric vector of column indices (or row indices if \code{by_row = FALSE})
 #' that are ignored when clustering.
@@ -214,17 +216,18 @@ standardize_initialization <- function(
 #' @importFrom stats kmeans
 
 subset_initialization <- function(
-    x, arg = "data", by_row = TRUE, how = "random", prop = 0.5, full = TRUE,
+    x, arg = "data", by_row = TRUE, how = "random", prop = 0.5,
     ind_ign = integer(), kmeans_arg = list("centers" = 2),
     initialization = random_initialization(),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress")
+    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+    label = paste0("subset(",how,",",prop,")")
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
     "x" = x, "arg" = arg, "by_row" = by_row, "how" = how, "prop" = prop,
-    "full" = full, "ind_ign" = ind_ign, "kmeans_arg" = kmeans_arg,
+    "ind_ign" = ind_ign, "kmeans_arg" = kmeans_arg,
     "initialization" = initialization, "ncores" = ncores, "verbose" = verbose
   )
   ino_status("Subsetting", verbose = verbose)
@@ -268,48 +271,7 @@ subset_initialization <- function(
     what = rlang::call_name(initialization),
     args = c(list("x" = x_subset), rlang::call_args(initialization))
   )
-  if (!full) {
-    merge_ino(x, x_subset)
-  } else {
-    ### TODO: fixed initialization with 'init'
-    initial_time <- x_subset$runs$table$.time
-    strategy_name <- x_subset$runs$table$.strategy[1]
-    init <- lapply(x_subset$runs$pars, "[[", ".estimate")
-  }
-}
-
-#' Alternating optimization initialization
-#'
-#' @description
-#' This function is an implementation of the alternating optimization
-#' initialization strategy.
-#'
-#'
-#' @inheritParams standardize_initialization
-#'
-#' @return
-#' The updated \code{ino} object.
-#'
-#' @export
-#'
-#' @keywords
-#' strategy
-
-ao_initialization <- function(
-    x, partition, iterations = 10L, tolerance = 1e-6,
-    initialization = random_initialization(), ncores = getOption("ino_ncores"),
-    verbose = getOption("ino_progress")
-) {
-  if (missing(x)) {
-    return(strategy_call(match.call(expand.dots = TRUE)))
-  }
-  check_inputs(
-    "x" = x, "partition" = partition, "iterations" = iterations,
-    "tolerance" = tolerance, "initialization" = initialization,
-    "ncores" = ncores, "verbose" = verbose
-  )
-  ino_status(msg = "Alternating optimization")
-  # TODO: implement
+  merge_ino(x, x_subset)
 }
 
 #' @noRd
@@ -339,7 +301,7 @@ print.strategy_call <- function(x, ...) {
 #' Named inputs to be checked.
 #'
 #' @return
-#' Returns \code{NULL} invisibly.
+#' No return value, called for side effects.
 #'
 #' @keywords
 #' internal
@@ -454,26 +416,28 @@ check_inputs <- function(...) {
         )
       }
     }
-    ###
     if ("how" %in% n) {
       if (!how %in% c("random", "first", "kmeans")) {
-        ino_stop("'how' must be one of 'random', 'first', or 'kmeans'.")
+        ino_stop(
+          event = "'how' must be one of 'random', 'first', or 'kmeans'."
+        )
       }
     }
     if ("prop" %in% n) {
       if (!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
-        ino_stop("(Each element of) 'prop' must be between 0 and 1.")
+        ino_stop(
+          event = "'prop' must be between 0 and 1."
+        )
       }
     }
-
     if ("by_row" %in% n) {
       if (!(is.logical(by_row) || length(by_row) == 1)) {
-        ino_stop("'by_row' must be either 'TRUE' or 'FALSE'.")
+        ino_stop(
+          event = "'by_row' must be either 'TRUE' or 'FALSE'."
+        )
       }
     }
-
   })
-  return(invisible(NULL))
 }
 
 #' Optimization
