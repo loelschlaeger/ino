@@ -76,7 +76,7 @@
 #' specification
 
 setup_ino <- function(
-    f, npar, ..., mpvs = character(), opt = set_optimizer_nlm(),
+    f, npar, global = NULL, ..., mpvs = character(), opt = set_optimizer_nlm(),
     test_par = list(
       validate = TRUE,
       init_rest = list("lower" = -1, "upper" = 1),
@@ -97,7 +97,7 @@ setup_ino <- function(
   }
   validate_ino(
     x = new_ino(
-      f = f, npar = npar, add = list(...), mpvs = mpvs,
+      f = f, npar = npar, global = global, add = list(...), mpvs = mpvs,
       f_name = deparse(substitute(f)), f_target = names(formals(f))[1],
       opt = opt
     ),
@@ -133,9 +133,9 @@ setup_ino <- function(
 #' internal
 
 new_ino <- function(
-    x = list(), f = function() {}, npar = integer(), add = list(),
-    mpvs = character(), f_name = character(), f_target = character(),
-    opt = list()
+    x = list(), f = function() {}, npar = integer(), global = numeric(),
+    add = list(), mpvs = character(), f_name = character(),
+    f_target = character(), opt = list()
 ) {
   stopifnot(is.list(x))
   stopifnot(is.function(f))
@@ -143,14 +143,15 @@ new_ino <- function(
     npar <- as.integer(npar)
   }
   stopifnot(is.integer(npar))
+  stopifnot(is.numeric(global) || is.null(global))
   stopifnot(is.list(add))
   stopifnot(is.character(mpvs))
   stopifnot(is.character(f_name))
   stopifnot(is.character(f_target))
   stopifnot(is.list(opt))
   x[["prob"]] <- new_prob(
-    f = f, npar = npar, add = add, mpvs = mpvs, f_name = f_name,
-    f_target = f_target)
+    f = f, npar = npar, global = global, add = add, mpvs = mpvs,
+    f_name = f_name, f_target = f_target)
   x[["opts"]] <- new_opts(opt = opt)
   x[["runs"]] <- new_runs()
   structure(x, class = "ino")
@@ -249,10 +250,12 @@ npar <- function(x) {
 #' The \code{prob} object specifies the optimization problem.
 #'
 #' @format
-#' A \code{prob} object is a list of five elements:
+#' A \code{prob} object is a list of six elements:
 #' * The \code{f} element is the function to be optimized.
 #' * The \code{npar} element is the length of the first argument of \code{f},
 #'   i.e. the argument over which \code{f} is optimized.
+#' * The \code{global} element is the point where \code{f} obtains its global
+#'   optimum. If it is not specified, it is \code{NULL}.
 #' * The \code{add} element is a named list, where each element is a list of
 #'   one (or more) additional function elements for \code{f}. The names of the
 #'   arguments with multiple parameter values are saved as the character vector
@@ -267,6 +270,9 @@ npar <- function(x) {
 #' @param npar
 #' The length of the first argument of \code{f}, i.e. the argument over which
 #' \code{f} is optimized.
+#' @param global
+#' Either \code{NULL} or the point where \code{f} obtains its global optimum
+#' (i.e., a numeric vector of length \code{npar}).
 #' @param add
 #' A list of additional and named arguments to be passed to \code{f}.
 #' @param mpvs
@@ -284,14 +290,16 @@ npar <- function(x) {
 #' internal
 
 new_prob <- function(
-    x = list(), f = function() {}, npar = integer(), add = list(),
-    mpvs = character(), f_name = character(), f_target = character()
+    x = list(), f = function() {}, global = numeric(), npar = integer(),
+    add = list(), mpvs = character(), f_name = character(),
+    f_target = character()
 ) {
   if (is.numeric(npar)) {
     npar <- as.integer(npar)
   }
   stopifnot(is.list(x))
   stopifnot(is.function(f))
+  stopifnot(is.numeric(global) || is.null(global))
   stopifnot(is.list(add))
   stopifnot(is.character(mpvs))
   stopifnot(is.character(f_name))
@@ -303,6 +311,7 @@ new_prob <- function(
       add[[add_name]] <- list(add[[add_name]])
     }
   }
+  x[["global"]] <- global
   x[["add"]] <- structure(add, mpvs = mpvs)
   x[["f_name"]] <- f_name
   x[["f_target"]] <- f_target
@@ -327,13 +336,17 @@ new_prob <- function(
 validate_prob <- function(x = new_prob(), test_par = list()) {
   stopifnot(inherits(x, "prob"))
   stopifnot(typeof(x) == "list")
-  ingr_x <- c("f", "npar", "add", "f_name", "f_target")
+  ingr_x <- c("f", "npar", "global", "add", "f_name", "f_target")
   stopifnot(ingr_x %in% names(x))
   stopifnot(names(x) %in% ingr_x)
   stopifnot(is.function(x$f))
   stopifnot(is_number(x$npar))
   stopifnot(length(x$npar) == 1)
   stopifnot(x$npar >= 1)
+  stopifnot(is.numeric(x$global) || is.null(x$global))
+  if (!is.null(x$global)) {
+    stopifnot(length(x$global) == x$npar)
+  }
   stopifnot(is.list(x$add))
   stopifnot("mpvs" %in% names(attributes(x$add)))
   if (length(x$add) > 0) {

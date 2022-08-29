@@ -458,7 +458,7 @@ check_inputs <- function(...) {
 #' @keywords
 #' internal
 #'
-#' @importFrom parallel makeCluster stopCluster
+#' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%
 #' @importFrom optimizeR optimizeR
@@ -467,6 +467,9 @@ check_inputs <- function(...) {
 optimize <- function(x, init, ncores, verbose) {
   stopifnot(is.numeric(init), length(init) == npar(x))
   grid <- grid_ino(x)
+  if (length(grid) < ncores) {
+    ncores == length(grid)
+  }
   cluster <- parallel::makeCluster(ncores)
   on.exit(parallel::stopCluster(cluster))
   doSNOW::registerDoSNOW(cluster)

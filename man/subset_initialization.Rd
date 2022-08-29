@@ -10,12 +10,12 @@ subset_initialization(
   by_row = TRUE,
   how = "random",
   prop = 0.5,
-  full = TRUE,
   ind_ign = integer(),
   kmeans_arg = list(centers = 2),
   initialization = random_initialization(),
   ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress")
+  verbose = getOption("ino_progress"),
+  label = paste0("subset(", how, ",", prop, ")")
 )
 }
 \arguments{
@@ -32,9 +32,6 @@ Per default, \code{arg = "data"}.}
 Can be one of \code{"random"} (default), \code{"first"}, and \code{"kmeans"}.}
 
 \item{prop}{A numeric between 0 and 1, specifying the proportion of the subset.}
-
-\item{full}{A boolean, set to \code{TRUE} (the default) to optimize on the full set
-with estimates on the subset as initial values.}
 
 \item{ind_ign}{A numeric vector of column indices (or row indices if \code{by_row = FALSE})
 that are ignored when clustering.
@@ -60,6 +57,8 @@ when the package is loaded.}
 Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
 The default is \code{getOption("ino_progress")}, which is set to \code{TRUE}
 when the package is loaded.}
+
+\item{label}{A character, the label for the initialization strategy.}
 }
 \value{
 The updated \code{ino} object.

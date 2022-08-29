@@ -4,11 +4,13 @@
 \alias{new_prob}
 \title{Constructor}
 \format{
-A \code{prob} object is a list of five elements:
+A \code{prob} object is a list of six elements:
 \itemize{
 \item The \code{f} element is the function to be optimized.
 \item The \code{npar} element is the length of the first argument of \code{f},
 i.e. the argument over which \code{f} is optimized.
+\item The \code{global} element is the point where \code{f} obtains its global
+optimum. If it is not specified, it is \code{NULL}.
 \item The \code{add} element is a named list, where each element is a list of
 one (or more) additional function elements for \code{f}. The names of the
 arguments with multiple parameter values are saved as the character vector
@@ -22,6 +24,7 @@ new_prob(
   x = list(),
   f = function() {
  },
+  global = numeric(),
   npar = integer(),
   add = list(),
   mpvs = character(),
@@ -33,6 +36,9 @@ new_prob(
 \item{x}{A list.}
 
 \item{f}{An object of class \code{function}, the function to be optimized.}
+
+\item{global}{Either \code{NULL} or the point where \code{f} obtains its global optimum
+(i.e., a numeric vector of length \code{npar}).}
 
 \item{npar}{The length of the first argument of \code{f}, i.e. the argument over which
 \code{f} is optimized.}

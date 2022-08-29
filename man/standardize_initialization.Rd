@@ -13,7 +13,8 @@ standardize_initialization(
   ind_ign = integer(),
   initialization = random_initialization(),
   ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress")
+  verbose = getOption("ino_progress"),
+  label = "standardize"
 )
 }
 \arguments{
@@ -48,6 +49,8 @@ when the package is loaded.}
 Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
 The default is \code{getOption("ino_progress")}, which is set to \code{TRUE}
 when the package is loaded.}
+
+\item{label}{A character, the label for the initialization strategy.}
 }
 \value{
 The updated \code{ino} object.

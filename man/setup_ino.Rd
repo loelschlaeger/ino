@@ -10,6 +10,7 @@ The format of an \code{ino} object is documented in \code{\link{new_ino}}.
 setup_ino(
   f,
   npar,
+  global = NULL,
   ...,
   mpvs = character(),
   opt = set_optimizer_nlm(),
@@ -22,6 +23,9 @@ setup_ino(
 
 \item{npar}{The length of the first argument of \code{f}, i.e. the argument over which
 \code{f} is optimized.}
+
+\item{global}{Either \code{NULL} or the point where \code{f} obtains its global optimum
+(i.e., a numeric vector of length \code{npar}).}
 
 \item{...}{Additional and named arguments to be passed to \code{f} (optional).}
 

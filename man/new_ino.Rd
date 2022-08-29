@@ -22,6 +22,7 @@ new_ino(
   f = function() {
  },
   npar = integer(),
+  global = numeric(),
   add = list(),
   mpvs = character(),
   f_name = character(),
@@ -36,6 +37,9 @@ new_ino(
 
 \item{npar}{The length of the first argument of \code{f}, i.e. the argument over which
 \code{f} is optimized.}
+
+\item{global}{Either \code{NULL} or the point where \code{f} obtains its global optimum
+(i.e., a numeric vector of length \code{npar}).}
 
 \item{add}{A list of additional and named arguments to be passed to \code{f}.}
 

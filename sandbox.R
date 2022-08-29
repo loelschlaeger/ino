@@ -9,18 +9,20 @@ devtools::load_all()
 x <- setup_ino(
   f = f_ackley,
   npar = 2,
-  opt = list("nlm"   = set_optimizer_nlm(),
+  global = c(0,0),
+  opt = list("nlm" = set_optimizer_nlm(),
              "optim" = set_optimizer_optim())
 )
 
 x <- random_initialization(x, runs = 10)
 
-summary(x, group = ".optimizer", "mean_time" = mean(.time),
-        "sd_time" = sd(.time))
-
-plot(x, var = ".time", by = ".optimizer") + ggplot2::theme_minimal()
-
 overview_optima(x, digits = 2)
+
+summary(x) %>%
+  group_by(.optimizer) %>%
+  ggplot(aes(x = .optimizer, y = .time)) +
+  geom_boxplot()
+
 
 # Example: HMM LL ---------------------------------------------------------
 

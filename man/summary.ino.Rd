@@ -4,15 +4,15 @@
 \alias{summary.ino}
 \title{Summary of initialization runs}
 \usage{
-\method{summary}{ino}(object, group = NULL, ...)
+\method{summary}{ino}(object, dgp = function(global, par) sqrt(sum((global - par)^2)), ...)
 }
 \arguments{
 \item{object}{An object of class \code{ino}.}
 
+\item{...}{Named functions for computing statistics. Ignored if \code{group = NULL}.}
+
 \item{group}{A character vector for grouping the optimization results, or \code{NULL}
 (default) for no grouping.}
-
-\item{...}{Named functions for computing statistics. Ignored if \code{group = NULL}.}
 }
 \value{
 A data frame.

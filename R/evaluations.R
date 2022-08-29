@@ -1,3 +1,23 @@
+overview_pars <- function(x) {
+  out_1 <- out_2 <- data.frame(name = NULL)
+  table <- x$runs$table
+  out_1$name <- colnames(table)
+  for (n in out_1$name) {
+
+  }
+  pars <- x$runs$pars
+  out_2 <- unique(unlist(lapply(pars, names)))
+  for (n in out_2$name) {
+
+  }
+  rbind(out_1, out_2)
+}
+
+rename_pars <- function(x, old_name, new_name, merge = TRUE) {
+
+}
+
+
 #' Summary of initialization runs
 #'
 #' @description
@@ -18,6 +38,10 @@
 #' (default) for no grouping.
 #' @param ...
 #' Named functions for computing statistics. Ignored if \code{group = NULL}.
+#' For example
+#' \preformatted{
+#' dgp = function(global, par) sqrt(sum((global - par) ^ 2))
+#' }
 #'
 #' @return
 #' A data frame.
@@ -26,124 +50,27 @@
 #' evaluation
 #'
 #' @export
-#'
-#' @importFrom dplyr group_by_at summarize n across all_of
 
-summary.ino <- function(object, group = NULL, ...) {
+summary.ino <- function(object, ...) {
   if (nrow(object$runs$table) == 0) {
-    ino_stop(
-      event = "No records found in 'x'.",
+    ino_warn(
+      event = "No records found.",
       debug = "Run some initialization strategies first."
     )
-  }
-  if (!is.null(group)) {
-    opt <- dplyr::group_by_at(
-      object$runs$table,
-      dplyr::vars(dplyr::all_of(group))
-    )
-    opt <- dplyr::summarize(opt, "records" = dplyr::n(), ...)
-    opt <- dplyr::ungroup(opt)
-  } else {
-    opt <- object$runs$table
+    return(invisible(NULL))
   }
   structure(opt, class = c("summary.ino", "data.frame"))
 }
 
 #' @noRd
 #' @export
+#' @importFrom dplyr mutate_if
 
 print.summary.ino <- function(x, digits = NULL, ...) {
   if (!is.null(digits)) {
     x <- dplyr::mutate_if(x, is.numeric, round, digits = digits)
   }
-  print(as.data.frame(x))
-}
-
-#' Visualization of initialization
-#'
-#' @description
-#' This function plots one or multiple summary statistics on the initialization
-#' runs in an \code{ino} object.
-#'
-#' @param x
-#' An object of class \code{ino}.
-#' @param var
-#' The name of the statistic to be plotted.
-#' @param by
-#' Plots the summary statistic \code{var} for all groups listed in \code{by}.
-#' @param type
-#' Governs the type of plot. Either \code{"boxplot"}, \code{"histogram"}, or
-#' \code{"barplot"}.
-#' @param ...
-#' Additional arguments to be passed to the plotting function.
-#'
-#' @return
-#' An \code{ggplot} object.
-#'
-#' @export
-#'
-#' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_bar geom_histogram geom_boxplot facet_wrap
-#'
-#' @keywords
-#' evaluation
-
-plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) {
-
-  ### extract optimization
-  optimization_df <- x$runs$table
-  optimization_df$.time <- as.numeric(optimization_df$.time)
-  #optimization_df$minimum <- round(optimization_df$.optimum, digits = 2)
-
-  ### check input
-  if (nrow(optimization_df) == 0) {
-    ino_stop(
-      event = "No records found."
-    )
-  }
-  if (length(var) > 1) {
-    stop("Only one summary statistic can be selected in 'var'.",
-      call. = FALSE
-    )
-  }
-  if (!(type %in% c("boxplot", "histogram", "barplot"))) {
-    stop("'type' only allows 'boxplot', 'histogram', or 'barplot'.",
-      call. = FALSE
-    )
-  }
-  if (!(var %in% colnames(optimization_df))) {
-    stop(paste0("Column '", var, "' does not exist."),
-      call. = FALSE
-    )
-  }
-  if (sum(!(by %in% colnames(optimization_df))) > 0) {
-    stop(paste0(
-      "Column '", by[!(by %in% colnames(optimization_df))],
-      "' does not exist."
-    ),
-    call. = FALSE
-    )
-  }
-
-  ### build plot
-  if (type == "boxplot") {
-    out_plot <- ggplot(optimization_df, aes(y = .data[[var]])) +
-      geom_boxplot() +
-      facet_wrap(by, labeller = "label_both")
-  }
-  if (type == "histogram") {
-    out_plot <- ggplot(optimization_df, aes(x = .data[[var]])) +
-      geom_histogram(position = "dodge") +
-      facet_wrap(by, labeller = "label_both")
-  }
-  if (type == "barplot") {
-    out_plot <- ggplot(optimization_df, aes(x = .data[[var]])) +
-      geom_bar(position = "dodge") +
-      facet_wrap(by, labeller = "label_both")
-  }
-
-  ### return plot
-  return(out_plot)
+  print(x)
 }
 
 #' Optima overview
@@ -165,6 +92,13 @@ plot.ino <- function(x, var = ".time", by = ".strategy", type = "boxplot", ...) 
 #' evaluation
 
 overview_optima <- function(x, digits = 2) {
+  if (nrow(x$runs$table) == 0) {
+    ino_warn(
+      event = "No records found.",
+      debug = "Run some initialization strategies first."
+    )
+    return(invisible(NULL))
+  }
   structure(
     as.data.frame(table(round(x$runs$table[[".optimum"]], digits = digits))),
     names = c("optimum", "frequency")

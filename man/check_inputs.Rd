@@ -10,7 +10,7 @@ check_inputs(...)
 \item{...}{Named inputs to be checked.}
 }
 \value{
-Returns \code{NULL} invisibly.
+No return value, called for side effects.
 }
 \description{
 This helper function centralizes several input checks.
