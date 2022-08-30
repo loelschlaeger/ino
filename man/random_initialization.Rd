@@ -16,7 +16,8 @@ random_initialization(
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{runs}{An integer, the number of random initializations. The default is \code{1}.}
+\item{runs}{An integer, the number of random initializations.
+The default is \code{1}.}
 
 \item{sampler}{A function without any arguments which returns a numeric vector of length
 \code{npar(x)} with (random) initial values.

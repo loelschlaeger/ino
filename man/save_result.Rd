@@ -12,6 +12,8 @@ save_result(x, result, strategy, init)
 \item{result}{The output of \code{\link{optimize}}.}
 
 \item{strategy}{The name of the initialization strategy.}
+
+\item{A}{numeric vector of initial parameters of length \code{npar(x)}.}
 }
 \value{
 The updated object \code{x}.
@@ -21,24 +23,7 @@ This helper function saves the results of optimization runs into the
 submitted \code{ino} object.
 }
 \details{
-The results are saved at \code{x$runs}, which is a list of two elements:
-\itemize{
-\item The \code{table} element is a data frame. It has a row for each
-recorded optimization run, columns contain optimization results. It stores
-\itemize{
-\item the name of the initialization strategy \code{.strategy},
-\item the optimization time \code{.time} (\code{difftime} object),
-\item the function value at the optimum \code{.optimum},
-\item the identifier for the optimizer \code{.optimizer},
-\item and identifier for additional parameters for the target function.
-}
-\item The \code{pars} element is a list. It has an element for each recorded
-optimization run. It stores
-\itemize{
-\item the initial parameter vector \code{.init},
-\item the parameter estimate \code{.estimate},
-\item and additional outputs of the optimizer.
-}
-}
+The results are saved at \code{x$runs}, which is an object of class
+\code{runs}. See \code{\link{new_runs}} for its documentation.
 }
 \keyword{internal}

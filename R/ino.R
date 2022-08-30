@@ -28,7 +28,8 @@
 #'
 #' ### An example
 #' Let \code{nll} be a negative log-likelihood function.
-#' Its first argument is a numeric vector of length \code{5}.
+#' Its first argument is a numeric vector of length \code{2}.
+#' The global optimum is obtained in the origin.
 #' The function has the additional argument \code{data}.
 #' Say that you want to conduct an experiment of the initialization effect for
 #' \code{nll} for two different data sets.
@@ -38,7 +39,8 @@
 #' \preformatted{
 #' setup_ino(
 #'   f = nll,
-#'   npar = 5,
+#'   npar = 2,
+#'   global = c(0,0),
 #'   data = list("data1" = <data set 1>,
 #'               "data2" = <data set 2>),
 #'   mpvs = "data",
@@ -133,7 +135,7 @@ setup_ino <- function(
 #' internal
 
 new_ino <- function(
-    x = list(), f = function() {}, npar = integer(), global = numeric(),
+    x = list(), f = function() {}, npar = integer(), global = NULL,
     add = list(), mpvs = character(), f_name = character(),
     f_target = character(), opt = list()
 ) {
@@ -234,10 +236,13 @@ print.ino <- function(x, ...) {
 #' @return
 #' An integer, the number of parameters.
 #'
-#' @keywords internal
+#' @export
+#'
+#' @keywords
+#' specification
 
 npar <- function(x) {
-  stopifnot(inherits(x, "ino"))
+  check_inputs(x = x)
   as.integer(x$prob$npar)
 }
 
@@ -271,8 +276,8 @@ npar <- function(x) {
 #' The length of the first argument of \code{f}, i.e. the argument over which
 #' \code{f} is optimized.
 #' @param global
-#' Either \code{NULL} or the point where \code{f} obtains its global optimum
-#' (i.e., a numeric vector of length \code{npar}).
+#' Either \code{NULL} (default) or the point where \code{f} obtains its global
+#' optimum (i.e., a numeric vector of length \code{npar}).
 #' @param add
 #' A list of additional and named arguments to be passed to \code{f}.
 #' @param mpvs
@@ -290,7 +295,7 @@ npar <- function(x) {
 #' internal
 
 new_prob <- function(
-    x = list(), f = function() {}, global = numeric(), npar = integer(),
+    x = list(), f = function() {}, npar = integer(), global = NULL,
     add = list(), mpvs = character(), f_name = character(),
     f_target = character()
 ) {
@@ -336,7 +341,7 @@ new_prob <- function(
 validate_prob <- function(x = new_prob(), test_par = list()) {
   stopifnot(inherits(x, "prob"))
   stopifnot(typeof(x) == "list")
-  ingr_x <- c("f", "npar", "global", "add", "f_name", "f_target")
+  ingr_x <- c("f", "npar", "add", "f_name", "f_target")
   stopifnot(ingr_x %in% names(x))
   stopifnot(names(x) %in% ingr_x)
   stopifnot(is.function(x$f))
@@ -528,19 +533,16 @@ print.opts <- function(x, ...) {
 #' The \code{runs} object contains results of the optimization runs.
 #'
 #' @format
-#' A \code{runs} object is a list of two elements:
-#' * The \code{table} element is a data frame. It has a row for each
-#'   recorded optimization run, columns contain optimization results. It stores
-#'   * the name of the initialization strategy \code{.strategy},
-#'   * the optimization time \code{.time} (\code{difftime} object),
-#'   * the function value at the optimum \code{.optimum},
-#'   * the identifier for the optimizer \code{.optimizer},
-#'   * and identifier for additional parameters for the target function.
-#' * The \code{pars} element is a list. It has an element for each recorded
-#'   optimization run. It stores
-#'   * the initial parameter vector \code{.init},
-#'   * the parameter estimate \code{.estimate},
-#'   * and additional outputs of the optimizer.
+#' A \code{runs} object is a list. For each recorded optimization run, it has
+#' a list that stores
+#' * the name of the initialization strategy \code{.strategy},
+#' * the optimization time \code{.time} (as a \code{difftime} object),
+#' * the function value at the optimum \code{.optimum},
+#' * the identifier for the optimizer \code{.optimizer},
+#' * identifier for additional parameters for the target function (if any),
+#' * the initial parameter vector \code{.init},
+#' * the parameter estimate \code{.estimate},
+#' * and additional outputs of the optimizer (if any).
 #' @param x
 #' A list.
 #'
@@ -552,8 +554,6 @@ print.opts <- function(x, ...) {
 
 new_runs <- function(x = list()) {
   stopifnot(is.list(x))
-  x[["table"]] <- data.frame()
-  x[["pars"]] <- list()
   structure(x, class = "runs")
 }
 
@@ -574,11 +574,6 @@ new_runs <- function(x = list()) {
 validate_runs <- function(x = new_runs()) {
   stopifnot(inherits(x, "runs"))
   stopifnot(typeof(x) == "list")
-  stopifnot(c("table", "pars") %in% names(x))
-  stopifnot(names(x) %in% c("table", "pars"))
-  stopifnot(is.data.frame(x$table))
-  stopifnot(is.list(x$pars))
-  stopifnot(nrow(x$table) == length(x$pars))
   return(x)
 }
 
@@ -587,7 +582,29 @@ validate_runs <- function(x = new_runs()) {
 #' @keywords internal
 
 print.runs <- function(x, ...) {
-  cat("Records:", nrow(x$table))
+  cat("Records:", length(x))
+}
+
+#' Number of optimization runs
+#'
+#' @description
+#' This function returns the number of optimization runs saved in an \code{ino}
+#' object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#'
+#' @return
+#' An integer, the number of recorded optimization runs.
+#'
+#' @export
+#'
+#' @keywords
+#' specification
+
+nruns <- function(x) {
+  check_inputs(x = x)
+  length(x$runs)
 }
 
 #' Create grid
@@ -615,6 +632,7 @@ print.runs <- function(x, ...) {
 #' internal
 
 grid_ino <- function(x) {
+  check_inputs(x = x)
   grid_par <- c(
     grid_par <- list(".optimizer" = names(x$opts)),
     structure(as.list(names(x$prob$add)), "names" = names(x$prob$add))
@@ -665,6 +683,7 @@ print.grid <- function(x, ...) {
 #' specification
 
 clear_ino <- function(x, which) {
+  # TODO: check this function
   if (missing(x)) {
     ino_stop(
       "Argument 'x' is not specified."
@@ -711,6 +730,7 @@ clear_ino <- function(x, which) {
 #' specification
 
 merge_ino <- function(...) {
+  # TODO: check this function
   ino_objects <- list(...)
   if (length(ino_objects) == 0) {
     ino_warn(
@@ -718,7 +738,6 @@ merge_ino <- function(...) {
     )
     return()
   } else {
-
     class <- sapply(lapply(ino_objects, class), function(x) any("ino" %in% x))
     if (!all(sapply(ino_objects, inherits, "ino"))) {
       ino_stop(
@@ -734,4 +753,153 @@ merge_ino <- function(...) {
     }
     return(base)
   }
+}
+
+#' Check inputs
+#'
+#' @description
+#' This helper function centralizes several input checks.
+#'
+#' @param ...
+#' Named inputs to be checked.
+#'
+#' @return
+#' No return value, called for side effects.
+#'
+#' @keywords
+#' internal
+
+check_inputs <- function(...) {
+  inputs <- list(...)
+  within(inputs, {
+    n <- names(inputs)
+    if ("x" %in% n) {
+      if (!inherits(x, "ino")) {
+        ino_stop(
+          event = "'x' must be of class 'ino'."
+        )
+      }
+    }
+    if ("runs" %in% n) {
+      if (length(runs) > 1 || !is_number(runs)) {
+        ino_stop(
+          event = "'runs' must be a positive number."
+        )
+      }
+    }
+    if ("sampler" %in% n) {
+      if (!is.function(sampler)) {
+        ino_stop(
+          event = "'sampler' must be a function."
+        )
+      }
+      sampler_try <- try_silent(sampler())
+      if (!is.numeric(sampler_try) || length(sampler_try) != npar(x)) {
+        ino_stop(
+          event = "'sampler' must return a numeric vector of length 'npar(x)'."
+        )
+      }
+    }
+    if ("ncores" %in% n) {
+      if(length(ncores) != 1 || !is_number(ncores) ) {
+        ino_stop(
+          event = "'ncores' must be a positive integer."
+        )
+      }
+    }
+    if ("verbose" %in% n) {
+      if(length(verbose) != 1 || (!isTRUE(verbose) && !isFALSE(verbose))) {
+        no_stop(
+          event = "'verbose' must be either TRUE or FALSE."
+        )
+      }
+    }
+    if ("at" %in% n) {
+      if (!is.numeric(at) || length(at) != npar(x)) {
+        ino_stop(
+          event = "'at' must be a numeric vector of length 'npar(x)'."
+        )
+      }
+    }
+    if ("arg" %in% n) {
+      if (!is.character(arg) || length(arg) != 1) {
+        ino_stop(
+          event = "'arg' must be a character."
+        )
+      }
+      if (!arg %in% names(x$prob$add)) {
+        ino_stop(
+          event = paste0(
+            "'", arg, "' is not an argument of '", x$prob$f_name, "'."
+          )
+        )
+      }
+      if (!all(
+        sapply(x$prob$add[[arg]], inherits, c("matrix", "data.frame")))
+      ) {
+        ino_stop(
+          event = paste0(
+            "Argument '", arg, "' is not a matrix or data frame'."
+          )
+        )
+      }
+    }
+    if ("by_col" %in% n) {
+      if (length(by_col) != 1 || (!isFALSE(by_col) && !isTRUE(by_col))) {
+        ino_stop(
+          event = "'by_col' must be either TRUE or FALSE."
+        )
+      }
+    }
+    if ("center" %in% n) {
+      if (length(center) != 1 || (!isFALSE(center) && !isTRUE(center))) {
+        ino_stop(
+          event = "'center' must be either TRUE or FALSE."
+        )
+      }
+    }
+    if ("scale" %in% n) {
+      if (length(scale) != 1 || (!isFALSE(scale) && !isTRUE(scale))) {
+        ino_stop(
+          event = "'scale' must be either TRUE or FALSE."
+        )
+      }
+    }
+    if ("ind_ign" %in% n) {
+      if (!is.numeric(ind_ign)) {
+        ino_stop(
+          event = "'ind_ign' must be a numeric vector."
+        )
+      }
+    }
+    if ("initialization" %in% n) {
+      if (!inherits(initialization, "strategy_call")) {
+        ino_stop(
+          event = "'initialization' must be of class 'strategy_call'."
+        )
+      }
+    }
+    if ("how" %in% n) {
+      if (!how %in% c("random", "first", "kmeans")) {
+        ino_stop(
+          event = "'how' must be one of 'random', 'first', or 'kmeans'."
+        )
+      }
+    }
+    if ("prop" %in% n) {
+      if (!(is.numeric(prop) && all(prop <= 1) && all(prop >= 0))) {
+        ino_stop(
+          event = "'prop' must be between 0 and 1."
+        )
+      }
+    }
+    if ("by_row" %in% n) {
+      if (!(is.logical(by_row) || length(by_row) == 1)) {
+        ino_stop(
+          event = "'by_row' must be either 'TRUE' or 'FALSE'."
+        )
+      }
+    }
+  })
+  invisible()
 }

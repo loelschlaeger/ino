@@ -1,7 +1,7 @@
 #' ino: Initialization strategies for numerical optimization
 #'
 #' @description
-#' This package implements tools for the analysis of the initialization of
+#' This package implements tools for analyzing the initialization of
 #' numerical optimization.
 #'
 #' @docType package
@@ -14,25 +14,19 @@
 #' @import optimizeR
 "_PACKAGE"
 
-## usethis namespace: start
-#' @importFrom lifecycle deprecated
-## usethis namespace: end
-NULL
-
 #' @noRd
-#' @keywords
-#' internal
+#' @keywords internal
 
 .onLoad <- function(lib, pkg) {
   options("ino_progress" = TRUE)
   options("ino_ncores" = 1)
+  options("ino_save_failures" = FALSE)
   options("cli.progress_clear" = FALSE)
 }
 
 #' @noRd
 #' @importFrom utils packageVersion
-#' @keywords
-#' internal
+#' @keywords internal
 
 .onAttach <- function(lib, pkg) {
   msg <- paste0(
@@ -44,8 +38,7 @@ NULL
 
 #' @noRd
 #' @importFrom cli cli_alert_info
-#' @keywords
-#' internal
+#' @keywords internal
 
 ino_status <- function(msg, verbose = getOption("ino_progress")) {
   if (verbose) cli::cli_alert_info(msg)
@@ -53,8 +46,7 @@ ino_status <- function(msg, verbose = getOption("ino_progress")) {
 
 #' @noRd
 #' @importFrom cli cli_abort
-#' @keywords
-#' internal
+#' @keywords internal
 
 ino_stop <- function(event, debug = character()) {
   cli::cli_abort(c("x" = event, "i" = debug), call = NULL)
@@ -62,8 +54,7 @@ ino_stop <- function(event, debug = character()) {
 
 #' @noRd
 #' @importFrom cli cli_warn
-#' @keywords
-#' internal
+#' @keywords internal
 
 ino_warn <- function(event, debug = character()) {
   cli::cli_warn(c(event, "i" = debug), call = NULL)

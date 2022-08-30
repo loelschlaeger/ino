@@ -6,7 +6,7 @@
 \alias{ino-package}
 \title{ino: Initialization strategies for numerical optimization}
 \description{
-This package implements tools for the analysis of the initialization of
+This package implements tools for analyzing the initialization of
 numerical optimization.
 }
 \seealso{

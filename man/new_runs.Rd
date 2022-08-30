@@ -4,24 +4,17 @@
 \alias{new_runs}
 \title{Constructor}
 \format{
-A \code{runs} object is a list of two elements:
-\itemize{
-\item The \code{table} element is a data frame. It has a row for each
-recorded optimization run, columns contain optimization results. It stores
+A \code{runs} object is a list. For each recorded optimization run, it has
+a list that stores
 \itemize{
 \item the name of the initialization strategy \code{.strategy},
-\item the optimization time \code{.time} (\code{difftime} object),
+\item the optimization time \code{.time} (as a \code{difftime} object),
 \item the function value at the optimum \code{.optimum},
 \item the identifier for the optimizer \code{.optimizer},
-\item and identifier for additional parameters for the target function.
-}
-\item The \code{pars} element is a list. It has an element for each recorded
-optimization run. It stores
-\itemize{
+\item identifier for additional parameters for the target function (if any),
 \item the initial parameter vector \code{.init},
 \item the parameter estimate \code{.estimate},
-\item and additional outputs of the optimizer.
-}
+\item and additional outputs of the optimizer (if any).
 }
 }
 \usage{

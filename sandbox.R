@@ -3,6 +3,7 @@
 # path <- "../ino_0.1.0.tar.gz"
 # install.packages(path, repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
 devtools::load_all()
+library(tidyverse)
 
 # Example: Ackley ---------------------------------------------------------
 
@@ -18,7 +19,9 @@ x <- random_initialization(x, runs = 10)
 
 overview_optima(x, digits = 2)
 
-summary(x) %>%
+overview_vars(x)
+
+summary(x, dist_global = "sqrt(sum((.global-.estimate)^2))") %>%
   group_by(.optimizer) %>%
   ggplot(aes(x = .optimizer, y = .time)) +
   geom_boxplot()
@@ -53,7 +56,7 @@ plot(hmm_ino, var = ".time", by = ".strategy")
 set.seed(1)
 probit_data <- list()
 for(i in 1:100){
-  b <- c(1,rnorm(2, sd = 3))
+  b <- c(1, rnorm(2, sd = 3))
   Sigma <- RprobitB::rwishart(3, diag(3))$W
   name <- paste0("data",i)
   probit_data[[name]] <- sim_mnp(N = 100, b = b, Sigma = Sigma, seed = i)

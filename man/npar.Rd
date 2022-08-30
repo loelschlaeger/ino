@@ -17,4 +17,4 @@ This function extracts the \code{npar} element from an \code{ino} object,
 which is the length of the parameter vector over which the target function is
 optimized.
 }
-\keyword{internal}
+\keyword{specification}

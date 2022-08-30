@@ -4,30 +4,28 @@
 \alias{summary.ino}
 \title{Summary of initialization runs}
 \usage{
-\method{summary}{ino}(object, dgp = function(global, par) sqrt(sum((global - par)^2)), ...)
+\method{summary}{ino}(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{ino}.}
 
-\item{...}{Named functions for computing statistics. Ignored if \code{group = NULL}.}
-
-\item{group}{A character vector for grouping the optimization results, or \code{NULL}
-(default) for no grouping.}
+\item{...}{Named function for computing statistics.
+See function ... for an overview.}
 }
 \value{
-A data frame.
+A data frame, optimization runs as rows and variables as columns.
 }
 \description{
 This function gives an overview of the initialization runs in an \code{ino}
 object.
 }
 \details{
-The following values are available for each \code{ino} object:
-\itemize{
-\item \code{.strategy}, the name of the initialization strategy
-\item \code{.time}, the optimization time
-\item \code{.optimum}, the function value at the optimum
-\item \code{.optimizer}, the identifier of the optimizer
+The following variables are available for each \code{ino} object:
+\describe{
+\item{.strategy}{the name of the initialization strategy}
+\item{.time}{the optimization time}
+\item{.optimum}{the function value at the optimum}
+\item{.optimizer}{the identifier of the optimizer}
 }
 }
 \keyword{evaluation}

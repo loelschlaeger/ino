@@ -24,8 +24,8 @@ setup_ino(
 \item{npar}{The length of the first argument of \code{f}, i.e. the argument over which
 \code{f} is optimized.}
 
-\item{global}{Either \code{NULL} or the point where \code{f} obtains its global optimum
-(i.e., a numeric vector of length \code{npar}).}
+\item{global}{Either \code{NULL} (default) or the point where \code{f} obtains its global
+optimum (i.e., a numeric vector of length \code{npar}).}
 
 \item{...}{Additional and named arguments to be passed to \code{f} (optional).}
 
@@ -97,7 +97,8 @@ a (named) list of optimizers to \code{opt}.
 \subsection{An example}{
 
 Let \code{nll} be a negative log-likelihood function.
-Its first argument is a numeric vector of length \code{5}.
+Its first argument is a numeric vector of length \code{2}.
+The global optimum is obtained in the origin.
 The function has the additional argument \code{data}.
 Say that you want to conduct an experiment of the initialization effect for
 \code{nll} for two different data sets.
@@ -107,7 +108,8 @@ Then, specify
 \preformatted{
 setup_ino(
   f = nll,
-  npar = 5,
+  npar = 2,
+  global = c(0,0),
   data = list("data1" = <data set 1>,
               "data2" = <data set 2>),
   mpvs = "data",
