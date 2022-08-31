@@ -341,9 +341,7 @@ new_prob <- function(
 validate_prob <- function(x = new_prob(), test_par = list()) {
   stopifnot(inherits(x, "prob"))
   stopifnot(typeof(x) == "list")
-  ingr_x <- c("f", "npar", "add", "f_name", "f_target")
-  stopifnot(ingr_x %in% names(x))
-  stopifnot(names(x) %in% ingr_x)
+  stopifnot(names(x) %in% c("f", "npar", "global", "add", "f_name", "f_target"))
   stopifnot(is.function(x$f))
   stopifnot(is_number(x$npar))
   stopifnot(length(x$npar) == 1)
@@ -711,48 +709,6 @@ clear_ino <- function(x, which) {
     }
   }
   return(x)
-}
-
-#' Merge records
-#'
-#' @description
-#' This function merges the records of multiple \code{ino} objects.
-#'
-#' @param ...
-#' Arbitrary many \code{ino} objects, which are merged into the first one.
-#'
-#' @return
-#' The updated \code{ino} object.
-#'
-#' @export
-#'
-#' @keywords
-#' specification
-
-merge_ino <- function(...) {
-  # TODO: check this function
-  ino_objects <- list(...)
-  if (length(ino_objects) == 0) {
-    ino_warn(
-      "No 'ino' objects supplied."
-    )
-    return()
-  } else {
-    class <- sapply(lapply(ino_objects, class), function(x) any("ino" %in% x))
-    if (!all(sapply(ino_objects, inherits, "ino"))) {
-      ino_stop(
-        "Not all objects are of class 'ino'."
-      )
-    }
-    base <- ino_objects[[1]]
-    if(length(ino_objects) > 1) {
-      for(i in 2:length(ino_objects)) {
-        base$runs$table <- rbind(base$runs$table, ino_objects[[i]]$runs$table)
-        base$runs$pars <- c(base$runs$pars, ino_objects[[i]]$runs$pars)
-      }
-    }
-    return(base)
-  }
 }
 
 #' Check inputs

@@ -17,6 +17,7 @@ A data frame with columns
 }
 }
 \description{
-This function provides an overview of the available optimization variables.
+This function provides an overview of the available variables for the
+\code{...} argument of \code{\link{summary.ino}}.
 }
 \keyword{evaluation}

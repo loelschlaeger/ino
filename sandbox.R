@@ -15,7 +15,7 @@ x <- setup_ino(
              "optim" = set_optimizer_optim())
 )
 
-x <- random_initialization(x, runs = 10)
+x <- random_initialization(x, runs = 20)
 
 overview_optima(x, digits = 2)
 
@@ -23,7 +23,7 @@ overview_vars(x)
 
 summary(x, dist_global = "sqrt(sum((.global-.estimate)^2))") %>%
   group_by(.optimizer) %>%
-  ggplot(aes(x = .optimizer, y = .time)) +
+  ggplot(aes(x = .optimizer, y = dist_global)) +
   geom_boxplot()
 
 

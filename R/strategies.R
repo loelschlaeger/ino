@@ -59,6 +59,7 @@ random_initialization <- function(
     x <- save_result(x = x, result = result, strategy = label, init = init)
     if (verbose) cli::cli_progress_update()
   }
+  # TODO: add option to simply return optimizer output instead of ino object
   return(x)
 }
 
@@ -176,7 +177,8 @@ standardize_initialization <- function(
   )
   x_st$runs$table[[".strategy"]] <- paste(
     label, x_st$runs$table$.strategy, sep = " > ")
-  merge_ino(x, x_st)
+  x$runs <- c(x$runs, x_st$runs)
+  return(x)
 }
 
 #' Subset initialization
@@ -273,7 +275,8 @@ subset_initialization <- function(
     what = rlang::call_name(initialization),
     args = c(list("x" = x_subset), rlang::call_args(initialization))
   )
-  merge_ino(x, x_subset)
+  x$runs <- c(x$runs, x_subset$runs)
+  return(x)
 }
 
 #' @noRd

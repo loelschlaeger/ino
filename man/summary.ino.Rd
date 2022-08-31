@@ -13,7 +13,7 @@
 See function ... for an overview.}
 }
 \value{
-A data frame, optimization runs as rows and variables as columns.
+A \code{tibble}, optimization runs as rows and variables as columns.
 }
 \description{
 This function gives an overview of the initialization runs in an \code{ino}
