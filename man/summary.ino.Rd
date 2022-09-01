@@ -9,8 +9,7 @@
 \arguments{
 \item{object}{An object of class \code{ino}.}
 
-\item{...}{Named function for computing statistics.
-See function ... for an overview.}
+\item{...}{Expressions of variables from \code{\link{var_names}} as characters.}
 }
 \value{
 A \code{tibble}, optimization runs as rows and variables as columns.

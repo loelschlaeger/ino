@@ -10,7 +10,7 @@ clear_ino(x, which)
 \item{x}{An object of class \code{ino}.}
 
 \item{which}{Either \code{"all"} to clear all records, or alternatively a
-numeric vector of row numbers in \code{summary(x)}.}
+numeric vector of row numbers from \code{summary(x)}.}
 }
 \value{
 The updated input \code{x}.

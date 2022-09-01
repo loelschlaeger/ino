@@ -21,11 +21,7 @@ The default is \code{getOption("ino_progress")}, which is set to \code{TRUE}
 when the package is loaded.}
 }
 \value{
-A list, each element contains
-\itemize{
-\item the set number \code{i} corresponding to \code{grid_ino(x)}
-\item and the list output of \code{\link[optimizeR]{optimizeR}}.
-}
+A list of outputs of \code{\link[optimizeR]{optimizeR}}.
 }
 \description{
 This helper function performs numerical optimization based on an \code{ino}

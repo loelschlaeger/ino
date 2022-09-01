@@ -5,6 +5,7 @@
 devtools::load_all()
 library(tidyverse)
 
+
 # Example: Ackley ---------------------------------------------------------
 
 x <- setup_ino(
@@ -19,12 +20,16 @@ x <- random_initialization(x, runs = 20)
 
 overview_optima(x, digits = 2)
 
-overview_vars(x)
+var_names(x)
+
+get_vars(x, runs = 2:3, vars = c(".init", ".estimate", "iterations"))
 
 summary(x, dist_global = "sqrt(sum((.global-.estimate)^2))") %>%
   group_by(.optimizer) %>%
   ggplot(aes(x = .optimizer, y = dist_global)) +
   geom_boxplot()
+
+plot(x, by = ".optimizer")
 
 
 # Example: HMM LL ---------------------------------------------------------
@@ -38,18 +43,62 @@ hmm_ino <- setup_ino(
   opt = set_optimizer_nlm()
 )
 
+random_initialization(hmm_ino, return_result = TRUE)
+
 hmm_ino <- random_initialization(hmm_ino, runs = 10)
 
+hmm_ino <- fixed_initialization(hmm_ino, at = c(-1, -1, 0.1, 0.2))
+
 hmm_ino <- subset_initialization(
-  hmm_ino, arg = "data", how = "first", prop = 0.5, full = FALSE,
+  hmm_ino, arg = "data", how = "first", prop = 0.5,
   initialization = random_initialization(runs = 10)
 )
 
-summary(hmm_ino, group = ".strategy", "mean" = mean(.time))
-
 overview_optima(hmm_ino)
 
-plot(hmm_ino, var = ".time", by = ".strategy")
+summary(hmm_ino) %>%
+  group_by(.strategy) %>%
+  summarize("mean_time" = mean(.time))
+
+plot(hmm_ino, by = ".strategy")
+
+
+# Example: Logit LL -------------------------------------------------------
+
+set.seed(1)
+logit_data <- list()
+b <- rnorm(3, sd = 3)
+Omega <- RprobitB::rwishart(3,diag(3))$W
+for(i in 1:10){
+  name <- paste0("data",i)
+  logit_data[[name]] <- sim_mnl(N = 300, J = 3, b = b, Omega = Omega, seed = i)
+}
+
+logit_ino <- setup_ino(
+  f = f_ll_mnl,
+  npar = 9,
+  global = attr(logit_data[[1]], "true"),
+  data = logit_data,
+  R = list("R1" = 10, "R2" = 100),
+  neg = TRUE,
+  opt = set_optimizer_nlm(),
+  mpvs = "R"
+)
+
+for(i in 1:10)
+  logit_ino <- random_initialization(logit_ino)
+
+for(i in 1:10)
+  logit_ino <- subset_initialization(
+    logit_ino, how = "kmeans", initialization = random_initialization()
+  )
+
+summary(logit_ino, group = "R")
+
+overview_optima(logit_ino, digits = 2)
+
+plot(logit_ino, var = ".time", by = c(".strategy", "R"))
+
 
 # Example: Probit LL ------------------------------------------------------
 
@@ -87,38 +136,4 @@ summary(probit_ino)
 overview_optima(probit_ino, digits = 2)
 
 plot(probit_ino, var = ".time")
-
-# Example: Logit LL -------------------------------------------------------
-
-set.seed(1)
-logit_data <- list()
-for(i in 1:100){
-  b <- rnorm(3, sd = 3)
-  Omega <- RprobitB::rwishart(3,diag(3))$W
-  name <- paste0("data",i)
-  logit_data[[name]] <- sim_mnl(N = 300, J = 3, b = b, Omega = Omega, seed = i)
-}
-
-logit_ino <- setup_ino(
-  f = f_ll_mnl,
-  npar = 9,
-  data = logit_data[[1]],
-  R = list("R1" = 10, "R2" = 100),
-  neg = TRUE,
-  opt = set_optimizer_nlm(),
-  mpvs = "R"
-)
-
-for(i in 1:10)
-  logit_ino <- random_initialization(logit_ino)
-
-for(i in 1:10)
-  logit_ino <- subset_initialization(
-    logit_ino, how = "kmeans", initialization = random_initialization())
-
-summary(logit_ino, group = "R")
-
-overview_optima(logit_ino, digits = 2)
-
-plot(logit_ino, var = ".time", by = c(".strategy", "R"))
 

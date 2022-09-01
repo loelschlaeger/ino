@@ -10,6 +10,7 @@ random_initialization(
   sampler = function() stats::rnorm(npar(x)),
   ncores = getOption("ino_ncores"),
   verbose = getOption("ino_progress"),
+  return_result = getOption("ino_return_result"),
   label = "random"
 )
 }

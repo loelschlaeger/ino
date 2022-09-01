@@ -670,7 +670,7 @@ print.grid <- function(x, ...) {
 #' An object of class \code{ino}.
 #' @param which
 #' Either \code{"all"} to clear all records, or alternatively a
-#' numeric vector of row numbers in \code{summary(x)}.
+#' numeric vector of row numbers from \code{summary(x)}.
 #'
 #' @return
 #' The updated input \code{x}.
@@ -681,31 +681,27 @@ print.grid <- function(x, ...) {
 #' specification
 
 clear_ino <- function(x, which) {
-  # TODO: check this function
   if (missing(x)) {
     ino_stop(
-      "Argument 'x' is not specified."
+      event = "Argument 'x' is not specified."
     )
   }
   if (missing(which)) {
     ino_stop(
-      "Argument 'which' is not specified.",
-      "Either 'all' or a numeric vector of row indices of 'summary(x)'."
+      event = "Argument 'which' is not specified.",
+      debug = "Either 'all' or a numeric vector of row indices of 'summary(x)'."
     )
   }
   if(identical(which, "all")) {
-    x[["runs"]][["table"]] <- data.frame()
-    x[["runs"]][["pars"]] <- list()
+    x[["runs"]] <- new_runs()
   } else {
     if (!is.numerical(which) || any(which < 0)) {
       ino_stop(
-        "Argument 'which' is misspecified.",
-        "Either 'all' or a numeric vector of row indices of 'summary(x)'."
+        event = "Argument 'which' is misspecified.",
+        debug = "Either 'all' or a numeric vector of row indices of 'summary(x)'."
       )
     } else {
-      x[["runs"]][["table"]] <- x[["runs"]][["table"]][-which, , drop = FALSE]
-      rownames(x[["runs"]][["table"]]) <- NULL
-      x[["runs"]][["pars"]] <- x[["runs"]][["pars"]][-which, drop = FALSE]
+      x[["runs"]] <- x[["runs"]][-which, drop = FALSE]
     }
   }
   return(x)

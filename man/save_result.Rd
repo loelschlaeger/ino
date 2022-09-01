@@ -16,7 +16,7 @@ save_result(x, result, strategy, init)
 \item{A}{numeric vector of initial parameters of length \code{npar(x)}.}
 }
 \value{
-The updated object \code{x}.
+The updated input \code{x}.
 }
 \description{
 This helper function saves the results of optimization runs into the

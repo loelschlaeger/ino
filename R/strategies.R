@@ -39,7 +39,7 @@
 random_initialization <- function(
     x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
     ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = "random"
+    return_result = getOption("ino_return_result"), label = "random"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
@@ -53,14 +53,20 @@ random_initialization <- function(
     name = msg, total = runs,
     format = "Run {cli::pb_current}/{cli::pb_total} | {cli::pb_eta_str}")
   on.exit(cli::cli_process_done())
+  # TODO: parallelize over runs if ncores > runs
+  results <- list()
   for(run in 1:runs) {
     init <- sampler()
     result <- optimize(x = x, init = init, ncores = ncores, verbose = verbose)
+    results[[run]] <- result
     x <- save_result(x = x, result = result, strategy = label, init = init)
-    if (verbose) cli::cli_progress_update()
+    cli::cli_progress_update()
   }
-  # TODO: add option to simply return optimizer output instead of ino object
-  return(x)
+  if (return_result) {
+    return(results)
+  } else {
+    return(x)
+  }
 }
 
 #' Fixed initialization
@@ -85,19 +91,23 @@ random_initialization <- function(
 
 fixed_initialization <- function(
     x, at, ncores = getOption("ino_ncores"),
-    verbose = getOption("ino_progress"), label = "fixed"
+    verbose = getOption("ino_progress"),
+    return_result = getOption("ino_return_result"), label = "fixed"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
-    "x" = x, "at" = at, "ncores" = ncores, "verbose" = verbose, "label" = label
+    x = x, at = at, ncores = ncores, verbose = verbose, label = label
   )
-  # TODO: what is this function?
-  msg <- ino_set_depth("Fixed initial values")
-  ino_status(msg, verbose = verbose)
+  ino_status("Fixed initial values", verbose = verbose)
   result <- optimize(x = x, init = at, ncores = ncores, verbose = verbose)
-  save_result(x = x, result = result, strategy = label, init = at)
+  x <- save_result(x = x, result = result, strategy = label, init = at)
+  if (return_result) {
+    return(result)
+  } else {
+    return(x)
+  }
 }
 
 #' Standardize initialization
@@ -172,12 +182,12 @@ standardize_initialization <- function(
     what = rlang::call_name(initialization),
     args = c(
       list("x" = x_st),
-      rlang::call_args(initialization)
+      rlang::call_args(initialization),
+      label = label
     )
   )
-  x_st$runs$table[[".strategy"]] <- paste(
-    label, x_st$runs$table$.strategy, sep = " > ")
   x$runs <- c(x$runs, x_st$runs)
+  # TODO: add option to simply return optimization result
   return(x)
 }
 
@@ -230,9 +240,9 @@ subset_initialization <- function(
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
-    "x" = x, "arg" = arg, "by_row" = by_row, "how" = how, "prop" = prop,
-    "ind_ign" = ind_ign, "kmeans_arg" = kmeans_arg,
-    "initialization" = initialization, "ncores" = ncores, "verbose" = verbose
+    x = x, arg = arg, by_row = by_row, how = how, prop = prop,
+    ind_ign = ind_ign, kmeans_arg = kmeans_arg,
+    initialization = initialization, ncores = ncores, verbose = verbose
   )
   ino_status("Subsetting", verbose = verbose)
   x_subset <- clear_ino(x, which = "all")
@@ -273,10 +283,16 @@ subset_initialization <- function(
   )
   x_subset <- do.call(
     what = rlang::call_name(initialization),
-    args = c(list("x" = x_subset), rlang::call_args(initialization))
+    args = c(
+      list("x" = x_subset),
+      rlang::call_args(initialization),
+      label = label
+    )
   )
+  # TODO: run optimization with full set
   x$runs <- c(x$runs, x_subset$runs)
   return(x)
+  # TODO: add option to simply return optimization result
 }
 
 #' @noRd
@@ -308,9 +324,7 @@ print.strategy_call <- function(x, ...) {
 #' @inheritParams random_initialization
 #'
 #' @return
-#' A list, each element contains
-#' * the set number \code{i} corresponding to \code{grid_ino(x)}
-#' * and the list output of \code{\link[optimizeR]{optimizeR}}.
+#' A list of outputs of \code{\link[optimizeR]{optimizeR}}.
 #'
 #' @keywords
 #' internal
@@ -340,12 +354,11 @@ optimize <- function(x, init, ncores, verbose) {
     names = "progress")
   i <- 1
   foreach::foreach(
-    i = 1:length(grid), .packages = c("optimizeR"), .options.snow = opts,
-    .inorder = FALSE
+    i = 1:length(grid), .packages = c("optimizeR"), .options.snow = opts
   ) %dopar% {
     opt <- grid[[i]][[".optimizer"]]
     grid[[i]][[".optimizer"]] <- NULL
-    result <- try_silent(
+    try_silent(
       do.call(
         what = optimizeR::optimizeR,
         args = c(
@@ -358,7 +371,6 @@ optimize <- function(x, init, ncores, verbose) {
         )
       )
     )
-    list("i" = i, "result" = result)
   }
 }
 
@@ -382,7 +394,7 @@ optimize <- function(x, init, ncores, verbose) {
 #' A numeric vector of initial parameters of length \code{npar(x)}.
 #'
 #' @return
-#' The updated object \code{x}.
+#' The updated input \code{x}.
 #'
 #' @keywords internal
 
@@ -391,31 +403,28 @@ save_result <- function(x, result, strategy, init) {
   grid_overview <- attr(grid, "overview")
   names_grid_overview <- colnames(grid_overview)
   nruns <- nruns(x)
-  res_seq <- sapply(result, `[[`, "i")
-  res <- lapply(result, `[[`, "result")
-  res_fail <- sum(sapply(res, inherits, "fail"))
+  res_fail <- sum(sapply(result, inherits, "fail"))
   if (res_fail > 0) {
     ino_warn(
-      event = paste(res_fail, "of", length(res), "runs failed."),
+      event = paste(res_fail, "of", length(result), "runs failed."),
       debug = "The failed runs are not saved."
-      # TODO: add option to save failed runs
     )
   }
-  for (s in res_seq) {
-    if (!inherits(res[[s]], "fail")) {
+  for (s in seq_along(result)) {
+    if (!inherits(result[[s]], "fail")) {
       x$runs[[nruns + s]] <- c(
         list(
           ".strategy" = strategy,
-          ".time" =  res[[s]][["time"]],
-          ".optimum" = res[[s]][["v"]],
+          ".time" =  result[[s]][["time"]],
+          ".optimum" = result[[s]][["v"]],
           ".init" = init,
-          ".estimate" = res[[s]][["z"]]
+          ".estimate" = result[[s]][["z"]]
           ),
         structure(
-          list(grid_overview[s,]),
+          as.list(as.character(grid_overview[s,])),
           names = names_grid_overview
           ),
-        res[[s]][!names(res[[s]]) %in% c("v","z","time")]
+        result[[s]][!names(result[[s]]) %in% c("v","z","time")]
       )
     } else {
       # TODO: add option to save failed runs
