@@ -15,6 +15,7 @@ subset_initialization(
   initialization = random_initialization(),
   ncores = getOption("ino_ncores"),
   verbose = getOption("ino_progress"),
+  return_result = getOption("ino_return_result"),
   label = paste0("subset(", how, ",", prop, ")")
 )
 }
@@ -22,7 +23,7 @@ subset_initialization(
 \item{x}{An object of class \code{ino}.}
 
 \item{arg}{A character, the name of the argument to be subsetted.
-The argument must be of class \code{matrix} or \code{data.frame}.
+Only an argument of class \code{matrix} or \code{data.frame} can be chosen.
 Per default, \code{arg = "data"}.}
 
 \item{by_row}{A boolean, set to \code{TRUE} (the default) to subset by row, set to

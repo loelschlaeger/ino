@@ -33,6 +33,11 @@
 #' @keywords
 #' strategy
 #'
+#' @importFrom progress progress_bar
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW
+#' @importFrom foreach %dopar% %do%
+#'
 #' @seealso
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
@@ -46,25 +51,44 @@ random_initialization <- function(
   }
   check_inputs(
     x = x, runs = runs, sampler = sampler, ncores = ncores, verbose = verbose,
-    label = label)
-  msg <- "Random initial values"
-  ino_status(msg, verbose = verbose)
-  cli::cli_progress_bar(
-    name = msg, total = runs,
-    format = "Run {cli::pb_current}/{cli::pb_total} | {cli::pb_eta_str}")
-  on.exit(cli::cli_process_done())
-  # TODO: parallelize over runs if ncores > runs
-  results <- list()
-  for(run in 1:runs) {
-    init <- sampler()
-    result <- optimize(x = x, init = init, ncores = ncores, verbose = verbose)
-    results[[run]] <- result
-    x <- save_result(x = x, result = result, strategy = label, init = init)
-    cli::cli_progress_update()
+    return_result = return_result, label = label
+  )
+  ino_status("Random initial values", verbose = verbose)
+  inits <- replicate(runs, sampler(), simplify = FALSE)
+  pb <- progress::progress_bar$new(
+    format = "Run :current/:total | :eta", total = runs, clear = FALSE
+  )
+  opts <- structure(
+    list(function(n) {
+      if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
+    }),
+    names = "progress"
+  )
+  parallel <- FALSE
+  if (ncores > 1 && runs > ncores) {
+    parallel <- TRUE
+    cluster <- parallel::makeCluster(ncores)
+    on.exit(parallel::stopCluster(cluster))
+    doSNOW::registerDoSNOW(cluster)
+    ncores <- 1
+    `%par_seq%` <- foreach::`%dopar%`
+    parallel <- TRUE
+  }
+  `%par_seq%` <- ifelse(parallel, foreach::`%dopar%`, foreach::`%do%`)
+  results <- foreach::foreach(
+    run = 1:runs, .packages = c("ino"), .options.snow = opts
+  ) %par_seq% {
+    if(!parallel) pb$tick()
+    optimize(x = x, init = inits[[run]], ncores = ncores, verbose = verbose)
   }
   if (return_result) {
     return(results)
   } else {
+    for(run in 1:runs) {
+      x <- save_result(
+        x = x, result = results[[run]], strategy = label, init = inits[[run]]
+      )
+    }
     return(x)
   }
 }
@@ -98,7 +122,8 @@ fixed_initialization <- function(
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
-    x = x, at = at, ncores = ncores, verbose = verbose, label = label
+    x = x, at = at, ncores = ncores, verbose = verbose,
+    return_result = return_result, label = label
   )
   ino_status("Fixed initial values", verbose = verbose)
   result <- optimize(x = x, init = at, ncores = ncores, verbose = verbose)
@@ -151,15 +176,15 @@ standardize_initialization <- function(
     x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
     ind_ign = integer(), initialization = random_initialization(),
     ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = "standardize"
+    return_result = getOption("ino_return_result"), label = "standardize"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
-    "x" = x, "arg" = arg, "by_col" = by_col, "center" = center, "scale" = scale,
-    "ind_ign" = ind_ign, "initialization" = initialization, "ncores" = ncores,
-    "verbose" = verbose, "label" = label
+    x = x, arg = arg, by_col = by_col, center = center, scale = scale,
+    ind_ign = ind_ign, initialization = initialization, ncores = ncores,
+    verbose = verbose, return_result = return_result, label = label
   )
   ino_status("Standardizing", verbose = verbose)
   x_st <- clear_ino(x, which = "all")
@@ -198,7 +223,7 @@ standardize_initialization <- function(
 #'
 #' @param arg
 #' A character, the name of the argument to be subsetted.
-#' The argument must be of class \code{matrix} or \code{data.frame}.
+#' Only an argument of class \code{matrix} or \code{data.frame} can be chosen.
 #' Per default, \code{arg = "data"}.
 #' @param by_row
 #' A boolean, set to \code{TRUE} (the default) to subset by row, set to
@@ -234,6 +259,7 @@ subset_initialization <- function(
     ind_ign = integer(), kmeans_arg = list("centers" = 2),
     initialization = random_initialization(),
     ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+    return_result = getOption("ino_return_result"),
     label = paste0("subset(",how,",",prop,")")
 ) {
   if (missing(x)) {
@@ -242,7 +268,8 @@ subset_initialization <- function(
   check_inputs(
     x = x, arg = arg, by_row = by_row, how = how, prop = prop,
     ind_ign = ind_ign, kmeans_arg = kmeans_arg,
-    initialization = initialization, ncores = ncores, verbose = verbose
+    initialization = initialization, ncores = ncores, verbose = verbose,
+    return_result = return_result, label = label
   )
   ino_status("Subsetting", verbose = verbose)
   x_subset <- clear_ino(x, which = "all")
@@ -289,7 +316,13 @@ subset_initialization <- function(
       label = label
     )
   )
+
   # TODO: run optimization with full set
+  # inits <- x_subset$runs$.init
+  # result <- optimize()
+  # x <- save_result(x, result, init)
+  # x <- subset_to_full(x, x_subset, initialization)
+
   x$runs <- c(x$runs, x_subset$runs)
   return(x)
   # TODO: add option to simply return optimization result
@@ -300,8 +333,10 @@ subset_initialization <- function(
 #' internal
 
 strategy_call <- function(call) {
-  class(call) <- c("strategy_call", class(call))
-  return(call)
+  structure(
+    call,
+    class = c("strategy_call", class(call))
+  )
 }
 
 #' @exportS3Method
@@ -351,7 +386,8 @@ optimize <- function(x, init, ncores, verbose) {
     list(function(n) {
       if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
     }),
-    names = "progress")
+    names = "progress"
+  )
   i <- 1
   foreach::foreach(
     i = 1:length(grid), .packages = c("optimizeR"), .options.snow = opts
@@ -362,11 +398,7 @@ optimize <- function(x, init, ncores, verbose) {
       do.call(
         what = optimizeR::optimizeR,
         args = c(
-          list(
-            "optimizer" = opt,
-            "f" = x$prob$f,
-            "p" = init
-          ),
+          list("optimizer" = opt, "f" = x$prob$f, "p" = init),
           grid[[i]]
         )
       )
@@ -423,12 +455,47 @@ save_result <- function(x, result, strategy, init) {
         structure(
           as.list(as.character(grid_overview[s,])),
           names = names_grid_overview
-          ),
+        ),
         result[[s]][!names(result[[s]]) %in% c("v","z","time")]
       )
     } else {
-      # TODO: add option to save failed runs
+      # TODO: save failed runs per default, add option to skip failed runs
     }
   }
   return(x)
+}
+
+#' Specify ao optimizer
+#'
+#' @description
+#' This function is a wrapper for \code{\link[optimizeR]{set_optimizer}} with
+#' the \code{\link[ao]{ao}} optimizer.
+#'
+#' @inheritParams optimizeR::set_optimizer
+#'
+#' @return
+#' An object of class \code{optimizer}.
+#'
+#' @export
+#'
+#' @keywords
+#' internal
+#'
+#' @importFrom ao ao
+#' @importFrom optimizeR optimizeR
+
+set_optimizer_ao <- function(..., out_ign = character(), test_par = list()) {
+  if ("partition" %in% names(list(...)) && identical(test_par, list())) {
+    test_par$validate <- FALSE
+  }
+  optimizeR::set_optimizer(
+    opt = ao::ao,
+    f = "f",
+    p = "p",
+    v = "optimum" ,
+    z = "estimate",
+    ...,
+    out_ign = out_ign,
+    test_par = test_par
+  )
 }

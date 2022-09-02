@@ -620,7 +620,7 @@ nruns <- function(x) {
 #' An object of class \code{grid}, which is a \code{list}, where each element
 #' contains
 #' * the \code{initial_values} vector,
-#' * an \class{optimizer} object,
+#' * an \code{optimizer} object,
 #' * and (optionally) additional parameters to the target function.
 #' The \code{grid} object has an attribute \code{overview}, which is a data
 #' frame where the identifiers for the optimizers and additional parameters are

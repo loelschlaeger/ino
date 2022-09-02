@@ -22,7 +22,6 @@
   options("ino_ncores" = 1)
   options("ino_return_result" = FALSE)
   options("ino_save_failures" = FALSE)
-  options("cli.progress_clear" = FALSE)
 }
 
 #' @noRd

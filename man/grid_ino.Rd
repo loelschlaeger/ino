@@ -16,7 +16,7 @@ An object of class \code{grid}, which is a \code{list}, where each element
 contains
 \itemize{
 \item the \code{initial_values} vector,
-\item an \class{optimizer} object,
+\item an \code{optimizer} object,
 \item and (optionally) additional parameters to the target function.
 The \code{grid} object has an attribute \code{overview}, which is a data
 frame where the identifiers for the optimizers and additional parameters are

@@ -23,8 +23,7 @@ var_names <- function(x) {
     )
     return(invisible(NULL))
   }
-  c(unique(as.vector(sapply(x$runs, names))),
-    if(!is.null(x$prob$global)) ".global")
+  c(unique(unlist(lapply(x$runs, names))), if(!is.null(x$prob$global))".global")
 }
 
 #' Get variables
@@ -143,7 +142,7 @@ plot.ino <- function(x, by = NULL, ...) {
   summary(x) %>% ggplot(aes(x = "", y = .time)) +
     scale_y_continuous() +
     geom_boxplot() + {
-      if(!is.null(by)) facet_wrap(by, labeller = label_both)
+      if(!is.null(by)) facet_wrap(by, labeller = "label_both")
     } +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_blank(),
