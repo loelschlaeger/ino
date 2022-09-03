@@ -15,7 +15,6 @@ subset_initialization(
   initialization = random_initialization(),
   ncores = getOption("ino_ncores"),
   verbose = getOption("ino_progress"),
-  return_result = getOption("ino_return_result"),
   label = paste0("subset(", how, ",", prop, ")")
 )
 }

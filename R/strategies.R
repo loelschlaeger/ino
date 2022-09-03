@@ -44,14 +44,14 @@
 random_initialization <- function(
     x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
     ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    return_result = getOption("ino_return_result"), label = "random"
+    label = "random"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
     x = x, runs = runs, sampler = sampler, ncores = ncores, verbose = verbose,
-    return_result = return_result, label = label
+    label = label
   )
   ino_status("Random initial values", verbose = verbose)
   inits <- replicate(runs, sampler(), simplify = FALSE)
@@ -81,16 +81,12 @@ random_initialization <- function(
     if(!parallel) pb$tick()
     optimize(x = x, init = inits[[run]], ncores = ncores, verbose = verbose)
   }
-  if (return_result) {
-    return(results)
-  } else {
-    for(run in 1:runs) {
-      x <- save_result(
-        x = x, result = results[[run]], strategy = label, init = inits[[run]]
-      )
-    }
-    return(x)
+  for(run in 1:runs) {
+    x <- save_result(
+      x = x, result = results[[run]], strategy = label, init = inits[[run]]
+    )
   }
+  return(x)
 }
 
 #' Fixed initialization
@@ -115,24 +111,17 @@ random_initialization <- function(
 
 fixed_initialization <- function(
     x, at, ncores = getOption("ino_ncores"),
-    verbose = getOption("ino_progress"),
-    return_result = getOption("ino_return_result"), label = "fixed"
+    verbose = getOption("ino_progress"), label = "fixed"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
   check_inputs(
-    x = x, at = at, ncores = ncores, verbose = verbose,
-    return_result = return_result, label = label
+    x = x, at = at, ncores = ncores, verbose = verbose, label = label
   )
   ino_status("Fixed initial values", verbose = verbose)
   result <- optimize(x = x, init = at, ncores = ncores, verbose = verbose)
-  x <- save_result(x = x, result = result, strategy = label, init = at)
-  if (return_result) {
-    return(result)
-  } else {
-    return(x)
-  }
+  save_result(x = x, result = result, strategy = label, init = at)
 }
 
 #' Standardize initialization
@@ -176,7 +165,7 @@ standardize_initialization <- function(
     x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
     ind_ign = integer(), initialization = random_initialization(),
     ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    return_result = getOption("ino_return_result"), label = "standardize"
+    label = "standardize"
 ) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
@@ -184,7 +173,7 @@ standardize_initialization <- function(
   check_inputs(
     x = x, arg = arg, by_col = by_col, center = center, scale = scale,
     ind_ign = ind_ign, initialization = initialization, ncores = ncores,
-    verbose = verbose, return_result = return_result, label = label
+    verbose = verbose, label = label
   )
   ino_status("Standardizing", verbose = verbose)
   x_st <- clear_ino(x, which = "all")
@@ -212,7 +201,6 @@ standardize_initialization <- function(
     )
   )
   x$runs <- c(x$runs, x_st$runs)
-  # TODO: add option to simply return optimization result
   return(x)
 }
 
@@ -259,7 +247,6 @@ subset_initialization <- function(
     ind_ign = integer(), kmeans_arg = list("centers" = 2),
     initialization = random_initialization(),
     ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    return_result = getOption("ino_return_result"),
     label = paste0("subset(",how,",",prop,")")
 ) {
   if (missing(x)) {
@@ -269,7 +256,7 @@ subset_initialization <- function(
     x = x, arg = arg, by_row = by_row, how = how, prop = prop,
     ind_ign = ind_ign, kmeans_arg = kmeans_arg,
     initialization = initialization, ncores = ncores, verbose = verbose,
-    return_result = return_result, label = label
+    label = label
   )
   ino_status("Subsetting", verbose = verbose)
   x_subset <- clear_ino(x, which = "all")
@@ -325,7 +312,6 @@ subset_initialization <- function(
 
   x$runs <- c(x$runs, x_subset$runs)
   return(x)
-  # TODO: add option to simply return optimization result
 }
 
 #' @noRd
@@ -459,7 +445,7 @@ save_result <- function(x, result, strategy, init) {
         result[[s]][!names(result[[s]]) %in% c("v","z","time")]
       )
     } else {
-      # TODO: save failed runs per default, add option to skip failed runs
+      # TODO: save failed runs
     }
   }
   return(x)

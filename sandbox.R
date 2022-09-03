@@ -18,15 +18,13 @@ x <- setup_ino(
   )
 )
 
-random_initialization(x, return_result = TRUE)
+random_initialization(x) %>% get_vars()
 
 x <- random_initialization(x, runs = 100)
 
 overview_optima(x, digits = 2)
 
 var_names(x)
-
-get_vars(x, runs = 2:3, vars = c(".init", ".estimate"))
 
 summary(x, dist = "sqrt(sum((.global-.estimate)^2))") %>%
   group_by(.optimizer) %>%
