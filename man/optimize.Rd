@@ -9,7 +9,12 @@ optimize(x, init, ncores, verbose)
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{init}{A numeric vector of length \code{npar(x)}.}
+\item{init}{Either
+\itemize{
+\item a numeric vector of length \code{npar(x)}
+\item or a list of length \code{ngrid(x)}, where each element is a numeric vector
+of length \code{npar(x)}.
+}}
 
 \item{ncores}{The number of cores for parallel computation over parameters and optimizers.
 The default is \code{getOption("ino_ncores")}, which is set to \code{1}

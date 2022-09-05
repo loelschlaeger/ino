@@ -20,7 +20,7 @@ x <- setup_ino(
 
 random_initialization(x) %>% get_vars()
 
-x <- random_initialization(x, runs = 100)
+x <- random_initialization(x, runs = 20)
 
 overview_optima(x, digits = 2)
 
@@ -50,67 +50,63 @@ hmm_ino <- setup_ino(
 
 hmm_ino <- fixed_initialization(hmm_ino, at = c(-1, -1, 0.1, 0.2))
 
-hmm_ino <- random_initialization(hmm_ino, runs = 100)
+hmm_ino <- random_initialization(hmm_ino, runs = 10)
 
 hmm_ino <- subset_initialization(
-  hmm_ino, how = "first", prop = 0.5,
-  initialization = random_initialization(runs = 100)
+  hmm_ino, how = "first", prop = 0.4,
+  initialization = random_initialization(runs = 10)
 )
 
 overview_optima(hmm_ino)
 
 summary(hmm_ino) %>%
-  group_by(.strategy, .optimizer) %>%
+  group_by(.strategy) %>%
   summarize("mean_time" = mean(.time))
 
-plot(hmm_ino, by = ".optimizer")
+plot(hmm_ino, by = ".strategy")
 
 
 # Example: Logit LL -------------------------------------------------------
 
-b <- rnorm(3, sd = 3)
-Omega <- RprobitB::rwishart(3,diag(3))$W
-logit_data <- lapply(1:10, sim_mnl, N = 100, J = 3, b = b, Omega = Omega)
+logit_data <- sim_mnl(N = 100, J = 3, b = rnorm(2), Omega = NULL)
 
 logit_ino <- setup_ino(
   f = f_ll_mnl,
-  npar = 9,
+  npar = 5,
   global = attr(logit_data[[1]], "true"),
   data = logit_data,
-  R = list("R1" = 10, "R2" = 100),
   neg = TRUE,
-  opt = set_optimizer_nlm(),
-  mpvs = "R"
+  opt = set_optimizer_nlm()
 )
 
 logit_ino <- random_initialization(logit_ino, runs = 10)
 
 logit_ino <- subset_initialization(
-  logit_ino, how = "kmeans", prop = 0.5,
+  logit_ino, how = "random", prop = 0.5,
   initialization = random_initialization(runs = 10)
+)
+
+logit_ino <- standardize_initialization(
+  logit_ino, initialization = random_initialization(runs = 10)
 )
 
 summary(logit_ino)
 
 overview_optima(logit_ino, digits = 2)
 
-plot(logit_ino, by = c(".strategy", "R"))
+plot(logit_ino, by = ".strategy")
 
 
 # Example: Probit LL ------------------------------------------------------
 
-set.seed(1)
-probit_data <- list()
-for(i in 1:10){
-  b <- c(1, rnorm(2, sd = 3))
-  Sigma <- RprobitB::rwishart(3, diag(3))$W
-  name <- paste0("data",i)
-  probit_data[[name]] <- sim_mnp(N = 100, b = b, Sigma = Sigma, seed = i)
-}
+b <- c(1, 2)
+Sigma <- RprobitB::rwishart(2, diag(2))$W
+probit_data <- sim_mnp(N = 100, b = b, Sigma = Sigma)
 
 probit_ino <- setup_ino(
   f = f_ll_mnp,
   npar = 5,
+  global = attr(probit_data[[1]], "true"),
   data = probit_data,
   neg = TRUE,
   opt = set_optimizer_nlm(),

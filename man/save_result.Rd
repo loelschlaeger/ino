@@ -4,7 +4,7 @@
 \alias{save_result}
 \title{Save results}
 \usage{
-save_result(x, result, strategy, init)
+save_result(x, result, strategy, init, add_time = NULL)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
@@ -13,7 +13,15 @@ save_result(x, result, strategy, init)
 
 \item{strategy}{The name of the initialization strategy.}
 
-\item{A}{numeric vector of initial parameters of length \code{npar(x)}.}
+\item{init}{Either
+\itemize{
+\item a numeric vector of length \code{npar(x)}
+\item or a list of length \code{ngrid(x)}, where each element is a numeric vector
+of length \code{npar(x)}.
+}}
+
+\item{add_time}{Either \code{NULL} or a list of length \code{ngrid(x)}, where each element is
+a \code{difftime} object.}
 }
 \value{
 The updated input \code{x}.

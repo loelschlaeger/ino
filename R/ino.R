@@ -653,6 +653,27 @@ grid_ino <- function(x) {
   structure(grid, class = "grid")
 }
 
+#' Number of grid elements
+#'
+#' @description
+#' This function returns the number of grid elements of an \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#'
+#' @return
+#' An integer, the number of grid elements.
+#'
+#' @export
+#'
+#' @keywords
+#' specification
+
+ngrid <- function(x) {
+  check_inputs(x = x)
+  length(grid_ino(x))
+}
+
 #' @exportS3Method
 #' @noRd
 #' @keywords internal

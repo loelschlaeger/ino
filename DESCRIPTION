@@ -32,7 +32,8 @@ Imports:
     dplyr,
     foreach,
     doSNOW,
-    lifecycle
+    lifecycle,
+    ao (>= 0.2.3)
 Suggests: 
     knitr,
     rmarkdown,

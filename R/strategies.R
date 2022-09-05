@@ -299,18 +299,48 @@ subset_initialization <- function(
     what = rlang::call_name(initialization),
     args = c(
       list("x" = x_subset),
-      rlang::call_args(initialization),
-      label = label
+      rlang::call_args(initialization)
     )
   )
-
-  # TODO: run optimization with full set
-  # inits <- x_subset$runs$.init
-  # result <- optimize()
-  # x <- save_result(x, result, init)
-  # x <- subset_to_full(x, x_subset, initialization)
-
-  x$runs <- c(x$runs, x_subset$runs)
+  ino_status("Full estimation", verbose = verbose)
+  ngrid <- ngrid(x)
+  inits <- lapply(x_subset$runs, `[[`, ".estimate")
+  runs <- length(inits) / ngrid
+  inits <- split(inits, rep(1:runs, each = ngrid))
+  times <- lapply(x_subset$runs, `[[`, ".time")
+  times <- split(times, rep(1:runs, each = ngrid))
+  pb <- progress::progress_bar$new(
+    format = "Run :current/:total | :eta", total = runs, clear = FALSE
+  )
+  opts <- structure(
+    list(function(n) {
+      if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
+    }),
+    names = "progress"
+  )
+  parallel <- FALSE
+  if (ncores > 1 && runs > ncores) {
+    parallel <- TRUE
+    cluster <- parallel::makeCluster(ncores)
+    on.exit(parallel::stopCluster(cluster))
+    doSNOW::registerDoSNOW(cluster)
+    ncores <- 1
+    `%par_seq%` <- foreach::`%dopar%`
+    parallel <- TRUE
+  }
+  `%par_seq%` <- ifelse(parallel, foreach::`%dopar%`, foreach::`%do%`)
+  results <- foreach::foreach(
+    run = 1:runs, .packages = c("ino"), .options.snow = opts
+  ) %par_seq% {
+    if(!parallel) pb$tick()
+    optimize(x = x, init = inits[[run]], ncores = ncores, verbose = verbose)
+  }
+  for(run in 1:runs) {
+    x <- save_result(
+      x = x, result = results[[run]], strategy = label, init = inits[[run]],
+      add_time = times[[run]]
+    )
+  }
   return(x)
 }
 
@@ -325,15 +355,6 @@ strategy_call <- function(call) {
   )
 }
 
-#' @exportS3Method
-#' @noRd
-#' @keywords
-#' internal
-
-print.strategy_call <- function(x, ...) {
-  cat("<strategy_call>")
-}
-
 #' Optimization
 #'
 #' @description
@@ -341,7 +362,10 @@ print.strategy_call <- function(x, ...) {
 #' object and initial values.
 #'
 #' @param init
-#' A numeric vector of length \code{npar(x)}.
+#' Either
+#' * a numeric vector of length \code{npar(x)}
+#' * or a list of length \code{ngrid(x)}, where each element is a numeric vector
+#'   of length \code{npar(x)}.
 #' @inheritParams random_initialization
 #'
 #' @return
@@ -357,10 +381,14 @@ print.strategy_call <- function(x, ...) {
 #' @importFrom progress progress_bar
 
 optimize <- function(x, init, ncores, verbose) {
-  stopifnot(is.numeric(init), length(init) == npar(x))
+  ngrid <- ngrid(x)
+  if(!is.list(init)) {
+    init <- rep(list(init), ngrid)
+  }
+  stopifnot(is.list(init), length(init) == ngrid)
   grid <- grid_ino(x)
-  if (length(grid) < ncores) {
-    ncores == length(grid)
+  if (ngrid < ncores) {
+    ncores == ngrid
   }
   cluster <- parallel::makeCluster(ncores)
   on.exit(parallel::stopCluster(cluster))
@@ -384,7 +412,7 @@ optimize <- function(x, init, ncores, verbose) {
       do.call(
         what = optimizeR::optimizeR,
         args = c(
-          list("optimizer" = opt, "f" = x$prob$f, "p" = init),
+          list("optimizer" = opt, "f" = x$prob$f, "p" = init[[i]]),
           grid[[i]]
         )
       )
@@ -408,15 +436,30 @@ optimize <- function(x, init, ncores, verbose) {
 #' The output of \code{\link{optimize}}.
 #' @param strategy
 #' The name of the initialization strategy.
-#' @param
-#' A numeric vector of initial parameters of length \code{npar(x)}.
+#' @param init
+#' Either
+#' * a numeric vector of length \code{npar(x)}
+#' * or a list of length \code{ngrid(x)}, where each element is a numeric vector
+#'   of length \code{npar(x)}.
+#' @param add_time
+#' Either \code{NULL} or a list of length \code{ngrid(x)}, where each element is
+#' a \code{difftime} object.
 #'
 #' @return
 #' The updated input \code{x}.
 #'
 #' @keywords internal
 
-save_result <- function(x, result, strategy, init) {
+save_result <- function(x, result, strategy, init, add_time = NULL) {
+  ngrid <- ngrid(x)
+  if(!is.list(init)) {
+    init <- rep(list(init), ngrid)
+  }
+  stopifnot(is.list(init), length(init) == ngrid)
+  if(is.null(add_time)) {
+    add_time <- as.list(rep(0, ngrid))
+  }
+  stopifnot(is.list(add_time), length(add_time) == ngrid)
   grid <- grid_ino(x)
   grid_overview <- attr(grid, "overview")
   names_grid_overview <- colnames(grid_overview)
@@ -425,17 +468,21 @@ save_result <- function(x, result, strategy, init) {
   if (res_fail > 0) {
     ino_warn(
       event = paste(res_fail, "of", length(result), "runs failed."),
-      debug = "The failed runs are not saved."
+      debug = "Use 'get_vars(vars = '.fail') to get the error message."
     )
   }
   for (s in seq_along(result)) {
-    if (!inherits(result[[s]], "fail")) {
+    if (inherits(result[[s]], "fail")) {
+      x$runs[[nruns + s]] <- list(
+        ".fail" = result[[s]]
+      )
+    } else {
       x$runs[[nruns + s]] <- c(
         list(
           ".strategy" = strategy,
-          ".time" =  result[[s]][["time"]],
+          ".time" =  result[[s]][["time"]] + add_time[[s]],
           ".optimum" = result[[s]][["v"]],
-          ".init" = init,
+          ".init" = init[[s]],
           ".estimate" = result[[s]][["z"]]
           ),
         structure(
@@ -444,8 +491,6 @@ save_result <- function(x, result, strategy, init) {
         ),
         result[[s]][!names(result[[s]]) %in% c("v","z","time")]
       )
-    } else {
-      # TODO: save failed runs
     }
   }
   return(x)
