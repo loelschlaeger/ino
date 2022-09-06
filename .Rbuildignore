@@ -8,3 +8,4 @@ TODO.md
 cran-comments.md
 ^CRAN-SUBMISSION$
 benchmark/
+RprobitB_init.R
