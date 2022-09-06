@@ -57,8 +57,7 @@ hmm_ino <- setup_ino(
 We first use randomly chosen starting values. 
 
 ```{r}
-for(i in 1:3)
-  hmm_ino <- random_initialization(hmm_ino)
+hmm_ino <- random_initialization(hmm_ino, runs = 3)
 ```
 
 
@@ -105,7 +104,7 @@ summary(hmm_ino)
 The table further indicates that (e.g.) the fourth optimization converged to the global optimum. We can extract the corresponding initial values and estimates as follows:
 
 ```{r}
-hmm_ino$runs$pars[[4]]
+get_vars(hmm_ino, runs = 4)
 ```
 
 

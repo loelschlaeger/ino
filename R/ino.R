@@ -716,7 +716,7 @@ clear_ino <- function(x, which) {
   if(identical(which, "all")) {
     x[["runs"]] <- new_runs()
   } else {
-    if (!is.numerical(which) || any(which < 0)) {
+    if (!is.numeric(which) || any(which < 0)) {
       ino_stop(
         event = "Argument 'which' is misspecified.",
         debug = "Either 'all' or a numeric vector of row indices of 'summary(x)'."

@@ -113,7 +113,7 @@ geyser_ino <- random_initialization(geyser_ino)
 Here, `npar` starting values are randomly drawn from a standard normal distribution. Depending on the application and the magnitude of the parameters to be estimated, this may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(2, 0.5)$ distribution:
 
 ```{r}
-geyser_ino <- random_initialization(geyser_ino, sampler = stats::rnorm, mean = 2, sd = 0.5)
+geyser_ino <- random_initialization(geyser_ino, sampler = function() stats::rnorm(npar(geyser_ino), mean = 2, sd = 0.5))
 ```
 
 The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. As it was done above for fixed starting values, we could of course also use a loop here to run multiple optimization.
@@ -123,7 +123,7 @@ The argument `sampler` allows to use any random number generator, while further 
 The `geyser_ino` object now contains the results and further information on four optimization runs (two runs with fixed and two with randomly selected starting values). We can use `summary()` to obtain summary statistics for the optimization runs conducted. Moreover, we also can add grouping variables, for example to compare the average computation time for the two approaches:
 
 ```{r}
-summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
+summary(geyser_ino)
 ```
 
 In addition, `summary()` by default prints the number of optimization runs for each group.
@@ -145,9 +145,8 @@ Here, the runs with fixed chosen starting values require much less iterations un
 For standardized initialization, we standardize all columns in our data before running the optimization. Specifically, after standardizing the data, we can again select to use either fixed or randomly chosen starting values. In the example code snippet shown below, we consider five sets of randomly selected starting values:
 
 ```{r}
-for(i in 1:5)
-  geyser_ino <- standardize_initialization(
-    geyser_ino, initialization = random_initialization())
+geyser_ino <- standardize_initialization(
+  geyser_ino, initialization = random_initialization(runs = 5))
 summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
 ```
 
@@ -158,15 +157,14 @@ If the data set considered shows some complex structures or is very large, numer
 The function `subset_initialization` uses a subsample from the data via the argument `prop` to optimize the likelihood. We can then fit our model to the subset using either fixed or random starting values. For example, the following code snippet randomly samples 50\% of the observations and uses random initialization:
 
 ```{r}
-for(i in 1:5)
-  geyser_ino <- subset_initialization(
-       geyser_ino, prop = 0.5, initialization = random_initialization())
+geyser_ino <- subset_initialization(
+    geyser_ino, prop = 0.5, initialization = random_initialization(run = 5))
 ```
 
-After having optimized the likelihood on the subsample, `subset_initialization()` automatically fits the model to the entire data set using the resulting parameter estimates of the subset as starting values. The resulting optimization run is labelled as `subset>random` in the `summary()` table:
+After having optimized the likelihood on the subsample, `subset_initialization()` automatically fits the model to the entire data set using the resulting parameter estimates of the subset as starting values. The resulting optimization run is labelled as `subset(random,0.5)` in the `summary()` table:
 
 ```{r}
-summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
+summary(geyser_ino)
 ```
 
 In addition to selecting subsamples at random, we can specify two further options using the argument `how`. When dealing with time series data, we usually do not want to delete single observations at random. Instead, we can select a proportion of the first rows by specifying `how = "first"`. We could also cluster our data first using `how = "kmeans"`. 
