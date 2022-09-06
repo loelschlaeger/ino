@@ -23,7 +23,7 @@ var_names <- function(x) {
     )
     return(invisible(NULL))
   }
-  c(unique(unlist(lapply(x$runs, names))), if(!is.null(x$prob$global))".global")
+  c(unique(unlist(lapply(x$runs, names))), if (!is.null(x$prob$global)) ".global")
 }
 
 #' Get variables
@@ -51,8 +51,8 @@ var_names <- function(x) {
 #' evaluation
 
 get_vars <- function(x, runs = NULL, vars = NULL) {
-  if(is.null(runs)) runs <- seq_len(nruns(x))
-  if(is.null(vars)) vars <- var_names(x)
+  if (is.null(runs)) runs <- seq_len(nruns(x))
+  if (is.null(vars)) vars <- var_names(x)
   lapply(x$runs[runs], append, list(".global" = x$prob$global)) %>%
     lapply(`[`, vars)
 }
@@ -93,10 +93,10 @@ summary.ino <- function(object, ...) {
       debug = "Run some initialization strategies first."
     )
   }
-  vars <- c(".strategy",".time",".optimum",".optimizer")
+  vars <- c(".strategy", ".time", ".optimum", ".optimizer")
   out <- lapply(object$runs, `[`, vars) %>% dplyr::bind_rows()
   add_vars <- list(...)
-  for(i in seq_along(add_vars)) {
+  for (i in seq_along(add_vars)) {
     out[[names(add_vars)[i]]] <- sapply(object$runs, function(r) {
       env <- new.env()
       env$.global <- object$prob$global
@@ -142,12 +142,15 @@ summary.ino <- function(object, ...) {
 plot.ino <- function(x, by = NULL, ...) {
   summary(x) %>% ggplot(aes(x = "", y = .data$.time)) +
     scale_y_continuous() +
-    geom_boxplot() + {
-      if(!is.null(by)) facet_wrap(by, labeller = "label_both")
+    geom_boxplot() +
+    {
+      if (!is.null(by)) facet_wrap(by, labeller = "label_both")
     } +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_blank(),
-          axis.ticks.x = element_blank()) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank()
+    ) +
     ylab("optimization time")
 }
 

@@ -41,11 +41,9 @@
 #' @seealso
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
-random_initialization <- function(
-    x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = "random"
-) {
+random_initialization <- function(x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
+                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+                                  label = "random") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -78,10 +76,10 @@ random_initialization <- function(
   results <- foreach::foreach(
     run = 1:runs, .packages = c("ino"), .options.snow = opts
   ) %par_seq% {
-    if(!parallel) pb$tick()
+    if (!parallel) pb$tick()
     optimize(x = x, init = inits[[run]], ncores = ncores, verbose = verbose)
   }
-  for(run in 1:runs) {
+  for (run in 1:runs) {
     x <- save_result(
       x = x, result = results[[run]], strategy = label, init = inits[[run]]
     )
@@ -109,10 +107,8 @@ random_initialization <- function(
 #' @seealso
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
-fixed_initialization <- function(
-    x, at, ncores = getOption("ino_ncores"),
-    verbose = getOption("ino_progress"), label = "fixed"
-) {
+fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
+                                 verbose = getOption("ino_progress"), label = "fixed") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -161,12 +157,10 @@ fixed_initialization <- function(
 #' @keywords
 #' strategy
 
-standardize_initialization <- function(
-    x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
-    ind_ign = integer(), initialization = random_initialization(),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = "standardize"
-) {
+standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
+                                       ind_ign = integer(), initialization = random_initialization(),
+                                       ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+                                       label = "standardize") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -242,13 +236,11 @@ standardize_initialization <- function(
 #'
 #' @importFrom stats kmeans
 
-subset_initialization <- function(
-    x, arg = "data", by_row = TRUE, how = "random", prop = 0.5,
-    ind_ign = integer(), kmeans_arg = list("centers" = 2),
-    initialization = random_initialization(),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = paste0("subset(",how,",",prop,")")
-) {
+subset_initialization <- function(x, arg = "data", by_row = TRUE, how = "random", prop = 0.5,
+                                  ind_ign = integer(), kmeans_arg = list("centers" = 2),
+                                  initialization = random_initialization(),
+                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+                                  label = paste0("subset(", how, ",", prop, ")")) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -332,10 +324,10 @@ subset_initialization <- function(
   results <- foreach::foreach(
     run = 1:runs, .packages = c("ino"), .options.snow = opts
   ) %par_seq% {
-    if(!parallel) pb$tick()
+    if (!parallel) pb$tick()
     optimize(x = x, init = inits[[run]], ncores = ncores, verbose = verbose)
   }
-  for(run in 1:runs) {
+  for (run in 1:runs) {
     x <- save_result(
       x = x, result = results[[run]], strategy = label, init = inits[[run]],
       add_time = times[[run]]
@@ -382,7 +374,7 @@ strategy_call <- function(call) {
 
 optimize <- function(x, init, ncores, verbose) {
   ngrid <- ngrid(x)
-  if(!is.list(init)) {
+  if (!is.list(init)) {
     init <- rep(list(init), ngrid)
   }
   stopifnot(is.list(init), length(init) == ngrid)
@@ -452,11 +444,11 @@ optimize <- function(x, init, ncores, verbose) {
 
 save_result <- function(x, result, strategy, init, add_time = NULL) {
   ngrid <- ngrid(x)
-  if(!is.list(init)) {
+  if (!is.list(init)) {
     init <- rep(list(init), ngrid)
   }
   stopifnot(is.list(init), length(init) == ngrid)
-  if(is.null(add_time)) {
+  if (is.null(add_time)) {
     add_time <- as.list(rep(0, ngrid))
   }
   stopifnot(is.list(add_time), length(add_time) == ngrid)
@@ -480,16 +472,16 @@ save_result <- function(x, result, strategy, init, add_time = NULL) {
       x$runs[[nruns + s]] <- c(
         list(
           ".strategy" = strategy,
-          ".time" =  result[[s]][["time"]] + add_time[[s]],
+          ".time" = result[[s]][["time"]] + add_time[[s]],
           ".optimum" = result[[s]][["v"]],
           ".init" = init[[s]],
           ".estimate" = result[[s]][["z"]]
-          ),
+        ),
         structure(
-          as.list(as.character(grid_overview[s,])),
+          as.list(as.character(grid_overview[s, ])),
           names = names_grid_overview
         ),
-        result[[s]][!names(result[[s]]) %in% c("v","z","time")]
+        result[[s]][!names(result[[s]]) %in% c("v", "z", "time")]
       )
     }
   }
@@ -523,7 +515,7 @@ set_optimizer_ao <- function(..., out_ign = character(), test_par = list()) {
     opt = ao::ao,
     f = "f",
     p = "p",
-    v = "optimum" ,
+    v = "optimum",
     z = "estimate",
     ...,
     out_ign = out_ign,
