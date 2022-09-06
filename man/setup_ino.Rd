@@ -122,7 +122,7 @@ setup_ino(
 \examples{
 setup_ino(
   f = f_ll_hmm,
-  npar = 0,
+  npar = 4,
   data = earthquakes,
   N = 2,
   neg = TRUE

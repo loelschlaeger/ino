@@ -133,13 +133,14 @@ summary.ino <- function(object, ...) {
 #'
 #' @importFrom dplyr %>%
 #' @importFrom ggplot2 ggplot aes scale_y_continuous geom_boxplot facet_wrap
-#' theme element_blank
+#' theme element_blank ylab
+#' @importFrom rlang .data
 #'
 #' @keywords
 #' evaluation
 
 plot.ino <- function(x, by = NULL, ...) {
-  summary(x) %>% ggplot(aes(x = "", y = .time)) +
+  summary(x) %>% ggplot(aes(x = "", y = data$.time)) +
     scale_y_continuous() +
     geom_boxplot() + {
       if(!is.null(by)) facet_wrap(by, labeller = "label_both")
@@ -170,6 +171,7 @@ plot.ino <- function(x, by = NULL, ...) {
 #' @export
 #'
 #' @importFrom dplyr %>% arrange desc
+#' @importFrom rlang .data
 #'
 #' @keywords evaluation
 
@@ -183,5 +185,5 @@ overview_optima <- function(x, digits = 2) {
   structure(
     data.frame(table(round(sapply(x$runs, `[[`, ".optimum"), digits = digits))),
     names = c("optimum", "frequency")
-  ) %>% arrange(desc(frequency))
+  ) %>% arrange(desc(.data$frequency))
 }

@@ -68,7 +68,7 @@
 #' @examples
 #' setup_ino(
 #'   f = f_ll_hmm,
-#'   npar = 0,
+#'   npar = 4,
 #'   data = earthquakes,
 #'   N = 2,
 #'   neg = TRUE
@@ -337,6 +337,8 @@ new_prob <- function(
 #'
 #' @keywords
 #' internal
+#'
+#' @importFrom stats runif
 
 validate_prob <- function(x = new_prob(), test_par = list()) {
   stopifnot(inherits(x, "prob"))
@@ -380,7 +382,7 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
       seq_len(x[["npar"]]),
       function(s) {
         round(
-          x = runif(
+          x = stats::runif(
             n = 1, min = test_par[["init_rest"]][["lower"]],
             max = test_par[["init_rest"]][["upper"]]
           ),
@@ -743,6 +745,10 @@ clear_ino <- function(x, which) {
 #' internal
 
 check_inputs <- function(...) {
+  x <- runs <- sampler <- ncores <- verbose <- at <- arg <- by_col <- NULL
+  center <- ind_ign <- initialization <- how <- prop <- by_row <- NULL
+  sampler() <- function() {}
+
   inputs <- list(...)
   within(inputs, {
     n <- names(inputs)
@@ -782,7 +788,7 @@ check_inputs <- function(...) {
     }
     if ("verbose" %in% n) {
       if(length(verbose) != 1 || (!isTRUE(verbose) && !isFALSE(verbose))) {
-        no_stop(
+        ino_stop(
           event = "'verbose' must be either TRUE or FALSE."
         )
       }
