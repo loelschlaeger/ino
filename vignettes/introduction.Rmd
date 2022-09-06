@@ -147,7 +147,7 @@ For standardized initialization, we standardize all columns in our data before r
 ```{r}
 geyser_ino <- standardize_initialization(
   geyser_ino, initialization = random_initialization(runs = 5))
-summary(geyser_ino, group = ".strategy", "average_time" = mean(.time))
+summary(geyser_ino)
 ```
 
 ### Subset initialization
