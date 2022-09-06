@@ -2,32 +2,29 @@
 % Please edit documentation in R/evaluations.R
 \name{summary.ino}
 \alias{summary.ino}
-\title{Summary of initialization}
+\title{Summary of initialization runs}
 \usage{
-\method{summary}{ino}(object, group = NULL, ...)
+\method{summary}{ino}(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{ino}.}
 
-\item{group}{A character vector for grouping the optimization results, or \code{NULL}
-(default) for no grouping.}
-
-\item{...}{Named functions for computing statistics.}
+\item{...}{Expressions of variables from \code{\link{var_names}} as characters.}
 }
 \value{
-A \code{data.frame}.
+A \code{tibble}, optimization runs as rows and variables as columns.
 }
 \description{
 This function gives an overview of the initialization runs in an \code{ino}
 object.
 }
 \details{
-The following values are available for each \code{ino} object:
-\itemize{
-\item \code{.strategy}, the name of the initialization strategy,
-\item \code{.optimizer}, the name of the optimizer (if more than one),
-\item \code{.time}, the optimization time,
-\item \code{.optimum}, the function value at the optimum.
+The following variables are available for each \code{ino} object:
+\describe{
+\item{.strategy}{the name of the initialization strategy}
+\item{.time}{the optimization time}
+\item{.optimum}{the function value at the optimum}
+\item{.optimizer}{the identifier of the optimizer}
 }
 }
 \keyword{evaluation}

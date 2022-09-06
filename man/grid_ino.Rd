@@ -2,24 +2,29 @@
 % Please edit documentation in R/ino.R
 \name{grid_ino}
 \alias{grid_ino}
-\title{Create grid of parameter combinations}
+\title{Create grid}
 \usage{
 grid_ino(x)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
+
+\item{initial_values}{A numeric vector of length \code{npar(x)} with initial values.}
 }
 \value{
-A \code{list}, where each element is a parameter set. Each parameter set
-contains at least a placeholder for the target parameter, which is set to
-\code{NA} and has to be filled by the initialization strategies.
-Additionally, each parameter set contains further arguments for the target
-function if available. In this case, the parameter names and identifier for
-the parameter values are added as attributes \code{"par_name"} and
-\code{"par_id"} to the parameter set.
+An object of class \code{grid}, which is a \code{list}, where each element
+contains
+\itemize{
+\item the \code{initial_values} vector,
+\item an \code{optimizer} object,
+\item and (optionally) additional parameters to the target function.
+The \code{grid} object has an attribute \code{overview}, which is a data
+frame where the identifiers for the optimizers and additional parameters are
+saved.
+}
 }
 \description{
-This helper function creates a grid of all parameter combinations for an
-\code{ino} object.
+This helper function creates a grid of all parameter combinations and
+optimizers for an \code{ino} object.
 }
 \keyword{internal}

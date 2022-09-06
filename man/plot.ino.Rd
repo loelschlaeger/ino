@@ -2,27 +2,21 @@
 % Please edit documentation in R/evaluations.R
 \name{plot.ino}
 \alias{plot.ino}
-\title{Visualization of initialization}
+\title{Visualization of optimization time}
 \usage{
-\method{plot}{ino}(x, var = ".time", by = ".strategy", type = "boxplot", ...)
+\method{plot}{ino}(x, by = NULL, ...)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{var}{The name of the statistic to be plotted.}
+\item{by}{A character vector of variables to group by. Can be \code{NULL} (default).}
 
-\item{by}{Plots the summary statistic \code{var} for all groups listed in \code{by}.}
-
-\item{type}{Governs the type of plot. Either \code{"boxplot"}, \code{"histogram"}, or
-\code{"barplot"}.}
-
-\item{...}{Additional arguments to be passed to the plotting function.}
+\item{...}{Ignored.}
 }
 \value{
-An \code{ggplot} object.
+A \code{ggplot} object.
 }
 \description{
-This function plots one or multiple summary statistics on the initialization
-runs in an \code{ino} object.
+This function plots boxplots of optimization times in an \code{ino} object.
 }
 \keyword{evaluation}

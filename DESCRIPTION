@@ -27,10 +27,12 @@ Imports:
     mvtnorm,
     evd,
     crayon,
+    cli,
     progress,
     dplyr,
     foreach,
-    doSNOW
+    doSNOW,
+    ao (>= 0.2.3)
 Suggests: 
     knitr,
     rmarkdown,
@@ -42,4 +44,5 @@ URL: https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Depends:
-    R (>= 4.0.0)
+    R (>= 4.0.0),
+    optimizeR

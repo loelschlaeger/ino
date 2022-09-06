@@ -114,8 +114,8 @@ f_easom <- function(x) {
 #' https://en.wikipedia.org/wiki/Hidden_Markov_model
 #'
 #' @details
-#' The example uses a data set that covers the number of major earthquakes
-#' (magnitude 7 or greater) in the world from 1900 until 2006.
+#' The example uses a data set from {ino} that covers the number of major
+#' earthquakes (magnitude 7 or greater) in the world from 1900 until 2006.
 #'
 #' @param theta
 #' A numeric vector of model parameters.
@@ -127,7 +127,6 @@ f_easom <- function(x) {
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @examples
-#' data(earthquakes, package = "ino")
 #' f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
 #'
 #' @importFrom stats dpois
@@ -246,7 +245,8 @@ f_ll_mnp <- function(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE) {
     theta <- theta[-(1:(P-1))]
   }
   if(mix) {
-    o <- theta[1:(P*(P+1)/2)]; theta <- theta[-(1:(P*(P+1)/2))]
+    o <- theta[1:(P*(P+1)/2)]
+    theta <- theta[-(1:(P*(P+1)/2))]
   }
   l <- theta
   if(mix) {

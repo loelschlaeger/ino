@@ -8,17 +8,25 @@ fixed_initialization(
   x,
   at,
   ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_progress")
+  verbose = getOption("ino_progress"),
+  label = "fixed"
 )
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{at}{A vector containing the (fixed) initial values.}
+\item{at}{A numeric vector of length \code{npar(x)} with the (fixed) initial values.}
 
-\item{ncores}{This function is parallelized, set the number of cores here.}
+\item{ncores}{The number of cores for parallel computation over parameters and optimizers.
+The default is \code{getOption("ino_ncores")}, which is set to \code{1}
+when the package is loaded.}
 
-\item{verbose}{Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.}
+\item{verbose}{A boolean, which indicates whether progress should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
+The default is \code{getOption("ino_progress")}, which is set to \code{TRUE}
+when the package is loaded.}
+
+\item{label}{A character, the label for the initialization strategy.}
 }
 \value{
 The updated \code{ino} object.
@@ -26,8 +34,7 @@ The updated \code{ino} object.
 \description{
 This function is an implementation of the fixed initialization strategy.
 }
-\details{
-For more details see the help vignette:
-\code{vignette("workflow", package = "ino")}
+\seealso{
+\code{\link[=npar]{npar()}} to extract the number \code{npar} from an \code{ino} object.
 }
 \keyword{strategy}
