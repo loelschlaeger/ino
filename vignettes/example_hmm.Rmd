@@ -79,7 +79,7 @@ for(val in starting_values)
 To illustrate the subset initialization strategy, we fit our HMM to the first 50\% of the observation. The starting values for these subsets are chosen randomly. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
 
 ```{r}
-for(i in 1:100)
+for(i in 1:10)
   hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.5)
 ```
 
@@ -115,13 +115,13 @@ get_vars(hmm_ino, runs = 4)
 We use the `plot()` function to investigate the computation time. Intuitively, the optimization runs with fixed starting values should be faster than with random starting values, since we have carefully chosen the fixed starting values by investigating the data. The boxplots confirm this intuition: 
 
 ```{r}
-plot(hmm_ino, var = ".time", by = ".strategy")
+plot(hmm_ino, by = ".strategy")
 ```
 
 Using `summary()`, we can also compute the average time per strategy:
 
 ```{r}
-summary(hmm_ino, group = ".strategy", "mean_time" = mean(.time))
+summary(hmm_ino)
 ```
 
 This comparison can be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations. We can first check which runs lead to the global optimum of 342.32. For that, we will use the data manipulation functions provided by the package `dplyr`.
