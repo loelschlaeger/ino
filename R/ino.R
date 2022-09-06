@@ -747,7 +747,7 @@ clear_ino <- function(x, which) {
 check_inputs <- function(...) {
   x <- runs <- sampler <- ncores <- verbose <- at <- arg <- by_col <- NULL
   center <- ind_ign <- initialization <- how <- prop <- by_row <- NULL
-  sampler() <- function() {}
+  sampler <- function() {}
 
   inputs <- list(...)
   within(inputs, {

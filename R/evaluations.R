@@ -140,7 +140,7 @@ summary.ino <- function(object, ...) {
 #' evaluation
 
 plot.ino <- function(x, by = NULL, ...) {
-  summary(x) %>% ggplot(aes(x = "", y = data$.time)) +
+  summary(x) %>% ggplot(aes(x = "", y = .data$.time)) +
     scale_y_continuous() +
     geom_boxplot() + {
       if(!is.null(by)) facet_wrap(by, labeller = "label_both")
