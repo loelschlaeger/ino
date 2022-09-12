@@ -17,7 +17,8 @@ knitr::opts_chunk$set(
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
-library("ino")
+#library("ino")
+devtools::load_all()
 options(ino_progress = FALSE)
 library("ggplot2")
 library("dplyr")
@@ -55,10 +56,10 @@ hmm_ino <- setup_ino(
 
 ### Random initialization
 
-We first use randomly chosen starting values. Note that running the following code snippet may take a few minutes, as the optimization is performed with 100 different sets of starting values. The results of the 100 runs are contained in the example ino object `example_hmm.RData`. 
+We first use randomly chosen starting values. Note that running the following code snippet may take a few minutes, as the optimization is performed with 50 different sets of starting values. The results of the 50 runs are contained in the example ino object `example_hmm.RData` and can be loaded into the workspace via `load(example_HMM.RData)`. 
 
 ```{r}
-hmm_ino <- random_initialization(hmm_ino, runs = 3)
+hmm_ino <- random_initialization(hmm_ino, runs = 50)
 ```
 
 
@@ -79,8 +80,8 @@ for(val in starting_values)
 To illustrate the subset initialization strategy, we fit our HMM to the first 50\% of the observation. The starting values for these subsets are chosen randomly. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
 
 ```{r}
-for(i in 1:10)
-  hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.5)
+hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.5,
+                                 initialization = random_initialization(runs = 10))
 ```
 
 
@@ -94,7 +95,7 @@ Selecting the starting values for HMMs is a well-known issue, as poor starting v
 overview_optima(hmm_ino)
 ```
 
-The frequency table indicates that `r overview_optima(hmm_ino)[1,2]` runs converged to the same likelihood value (`r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`), which is the global maximum (note these are the negative log-likelihood values).  
+The frequency table indicates that `r overview_optima(hmm_ino)[1,2]` runs converged to the same likelihood value (`r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`) --- the global maximum is 342.32 (note these are the negative log-likelihood values).  
 
 Using `summary`, we can investigate all optimization runs:
 
@@ -102,11 +103,17 @@ Using `summary`, we can investigate all optimization runs:
 summary(hmm_ino)
 ```
 
-To see which starting values lead to the global optimum, we can access the initial values stored under `hmm_ino$runs$pars`.
+To obtain the starting values that lead to the global optimum, we first check which of the optimization runs actually reached the global optimum:
+
+```{r}
+which(summary(hmm_ino)$.optimum < 343)
+```
+
+We can access the corresponding initial values of, for example, the first of these runs via:
 
 
 ```{r}
-get_vars(hmm_ino, runs = 4)
+get_vars(hmm_ino, runs = which(summary(hmm_ino)$.optimum < 343)[1])[[1]]$.init
 ```
 
 
@@ -133,7 +140,7 @@ summary(hmm_ino) %>%
   summarise(proportion_global_optimum = mean(global_optimum))
 ```
 
-For the subset approach, only 7\% of the runs lead in the global optimum!
+For the subset approach, only `r summary(hmm_ino) %>% mutate(global_optimum = ifelse(.optimum < 343, 1, 0)) %>% group_by(.strategy) %>% summarise(proportion_global_optimum = mean(global_optimum)) %>% filter(.strategy == "subset(first,0.5)") %>% pull(proportion_global_optimum) * 100`\% of the runs lead in the global optimum!
 Let's again compare the average computation time, but only for those runs that lead to the global optimum:
 
 ```{r}
