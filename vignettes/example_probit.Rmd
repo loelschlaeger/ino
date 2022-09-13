@@ -1,0 +1,28 @@
+---
+title: "Example: Probit Model"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Example: Probit Model}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.dim = c(8, 6), 
+  out.width = "75%"
+)
+library("ino")
+options(ino_progress = FALSE)
+library("ggplot2")
+library("dplyr")
+set.seed(1)
+```
+
+This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of a probit model.
+
