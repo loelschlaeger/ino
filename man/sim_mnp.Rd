@@ -7,11 +7,12 @@
 sim_mnp(
   N,
   T = 1,
-  b,
+  J,
+  P,
+  b = stats::rnorm(P),
   Omega = NULL,
-  Sigma,
-  seed = NULL,
-  covariate = function() rnorm(n = 1, mean = 0, sd = 9)
+  Sigma = diag(J),
+  X = function() matrix(stats::rnorm(J * P), nrow = J, ncol = P)
 )
 }
 \arguments{
@@ -19,25 +20,25 @@ sim_mnp(
 
 \item{T}{The number of choice occasions with \code{T = 1} per default.}
 
-\item{b}{The vector of mean effects. The first element will be set to one.}
+\item{J}{The number of alternatives.}
 
-\item{Omega}{The covariance matrix of the normal mixing distribution. Set to \code{NULL}
-(the default) for no mixing distribution.}
+\item{P}{The number of choice covariates.}
 
-\item{Sigma}{The error term covariance matrix.}
+\item{b}{The mean effects vector of length \code{P}, first element must be \code{1}.}
 
-\item{seed}{Set a seed for the simulation.}
+\item{Omega}{The covariance matrix of the normal mixing distribution of dimension \code{P}
+times \code{P}. Set to \code{NULL} (the default) for no mixing distribution.}
 
-\item{covariate}{A function that samples the covariates. It must return a single numeric
-(random) value and must not require arguments. Per default,
-\code{covariate = function() rnorm(n = 1, mean = 0, sd = 9)}, i.e. covariates
-are sampled from a normal distribution with mean 0 and standard deviation 9.}
+\item{Sigma}{The error term covariance matrix of dimension \code{J} times \code{J}.}
+
+\item{X}{A function that samples the covariates. It must return a numeric matrix
+of dimension \code{J} times \code{P}.}
 }
 \value{
-A \code{data.frame}. The first column (\code{n}) is the identifier for the
-decider, the next column (\code{t}) the identifier for the choice occasion.
+A \code{data.frame}. The first column (\code{N}) is the identifier for the
+decider, the next column (\code{T}) the identifier for the choice occasion.
 Next comes the column \code{y} with the indices of the chosen alternatives.
-The last columns contain the column-wise entries of \eqn{X_{nt}}.
+The last columns contain the column-wise entries of the covariate matrices.
 
 The true model coefficients are added to the output via the attribute
 \code{"true"}. They are already normalized and can be directly compared with
@@ -52,7 +53,7 @@ which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 Simulate data from a (normally mixed) multinomial probit model
 }
 \examples{
-sim_mnp(N = 3, T = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
+sim_mnp(N = 3, J = 2, P = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 
 }
 \seealso{

@@ -23,9 +23,7 @@ RoxygenNote: 7.2.1
 Imports: 
     ggplot2,
     rlang,
-    RprobitB,
     mvtnorm,
-    evd,
     crayon,
     cli,
     progress,

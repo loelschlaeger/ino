@@ -4,12 +4,14 @@
 \alias{f_ll_mnp}
 \title{Log-likelihood function of the (normally mixed) multinomial probit model}
 \usage{
-f_ll_mnp(theta, data, normal_cdf = mvtnorm::pmvnorm, neg = FALSE)
+f_ll_mnp(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm)
 }
 \arguments{
-\item{theta}{The vector of model coefficients in order \code{c(b,o,l)}, see the details.}
+\item{theta}{The vector of model coefficients, see the details.}
 
-\item{data}{A \code{data.frame} with the shape of the output of \code{\link{sim_mnp}}.}
+\item{data}{A \code{data.frame}, the output of \code{\link{sim_mnp}}.}
+
+\item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 
 \item{normal_cdf}{A function that evaluates the CDF of an \code{n}-variate normal distribution.
 It must take the arguments
@@ -17,11 +19,9 @@ It must take the arguments
 \item \code{lower}, the vector of lower limits of length \code{n},
 \item \code{upper}, the vector of upper limits of length \code{n},
 \item \code{mean}, the mean vector of length \code{n},
-\item \code{sigma}, the covariance matrix of dimension \code{n},
+\item \code{sigma}, the \code{n} times \code{n} covariance matrix,
 }
 and return a single numeric value.}
-
-\item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
 The log-likelihood value at \code{theta}.
@@ -32,17 +32,17 @@ Log-likelihood function of the (normally mixed) multinomial probit model
 \details{
 The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
 \itemize{
-\item \code{b} denotes the vector of mean effects without the first one,
+\item \code{b} denotes the vector of mean effects without the first entry,
 \item \code{o} the lower-triangular elements of the lower-triangular
 Cholesky root of the effect covariance matrix \code{Omega} (if any),
 \item and \code{l} the lower-triangular elements of the lower-triangular
 Cholesky root \code{L} of the differenced (with respect to
-alternative 1) error term covariance matrix \code{Sigma}.
+the last alternative) error term covariance matrix \code{Sigma}.
 }
 }
 \examples{
-data <- sim_mnp(N = 300, b = c(1,3), Sigma = diag(2), seed = 1)
-theta <- attr(data, "true")
+data <- sim_mnp(N = 200, J = 3, P = 2, b = c(1,3))
+theta <- attr(data, "true")[-1]
 f_ll_mnp(theta = theta, data = data)
 \donttest{
 nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate

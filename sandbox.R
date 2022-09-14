@@ -6,6 +6,7 @@ devtools::load_all()
 library(tidyverse)
 options(ino_ncores = parallel::detectCores() - 1)
 
+
 # Example: Ackley ---------------------------------------------------------
 
 x <- setup_ino(
@@ -66,63 +67,33 @@ summary(hmm_ino) %>%
 plot(hmm_ino, by = ".strategy")
 
 
-# Example: Logit LL -------------------------------------------------------
-
-logit_data <- sim_mnl(N = 100, J = 3, b = rnorm(2), Omega = NULL)
-
-logit_ino <- setup_ino(
-  f = f_ll_mnl,
-  npar = 5,
-  global = attr(logit_data[[1]], "true"),
-  data = logit_data,
-  neg = TRUE,
-  opt = set_optimizer_nlm()
-)
-
-logit_ino <- random_initialization(logit_ino, runs = 10)
-
-logit_ino <- subset_initialization(
-  logit_ino, how = "random", prop = 0.5,
-  initialization = random_initialization(runs = 10)
-)
-
-logit_ino <- standardize_initialization(
-  logit_ino, initialization = random_initialization(runs = 10)
-)
-
-summary(logit_ino)
-
-overview_optima(logit_ino, digits = 2)
-
-plot(logit_ino, by = ".strategy")
-
-
 # Example: Probit LL ------------------------------------------------------
 
-b <- c(1, 2)
-Sigma <- RprobitB::rwishart(2, diag(2))$W
-probit_data <- sim_mnp(N = 100, b = b, Sigma = Sigma)
+probit_data <- sim_mnp(N = 100, T = 10, J = 3, P = 3, b = c(1,2,3))
 
 probit_ino <- setup_ino(
   f = f_ll_mnp,
   npar = 5,
-  global = attr(probit_data[[1]], "true"),
+  global = attr(probit_data, "true")[-1],
   data = probit_data,
   neg = TRUE,
-  opt = set_optimizer_nlm(),
-  mpvs = "data"
+  opt = list(
+    "nlm" = set_optimizer_nlm(),
+    "ao" = set_optimizer_ao(partition = list(1:2, 3:5))
+  )
 )
 
 probit_ino <- random_initialization(probit_ino, runs = 10)
 
 probit_ino <- standardize_initialization(
-  probit_ino, ind_ign = 1:2, initialization = random_initialization(runs = 10)
+  probit_ino, ind_ign = 1:3, initialization = random_initialization(runs = 10)
 )
 
 probit_ino <- subset_initialization(
-  probit_ino, arg = "data", how = "kmeans", prop = 0.5, by_row = TRUE,
-  col_ign = c(1,2), initialization = random_initialization(runs = 10)
+  probit_ino, arg = "data", how = "kmeans", prop = 0.5,
+  ind_ign = 1:3, initialization = random_initialization(runs = 10)
 )
+# have different T after sub-setting, than ll comp with fixed T fails
 
 summary(probit_ino)
 
