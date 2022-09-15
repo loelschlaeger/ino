@@ -18,10 +18,10 @@ new_opts(x = list(), opt = set_optimizer_nlm())
 \code{optimizer}.
 Per default, \code{opt = set_optimizer_nlm()}, which specifies the
 \code{\link[stats]{nlm}} optimizer.
-Can also be a list of multiple \code{optimizer} objects.}
+Can also be a (named) list of multiple \code{optimizer} objects.}
 }
 \value{
-An object of class \code{prob}.
+An object of class \code{opts}.
 }
 \description{
 This function constructs an \code{opts} object.

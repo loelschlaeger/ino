@@ -5,6 +5,7 @@
 devtools::load_all()
 library(tidyverse)
 options(ino_ncores = parallel::detectCores() - 1)
+Sys.setenv(LANG = "en")
 
 
 # Example: Ackley function ------------------------------------------------
@@ -69,7 +70,7 @@ plot(hmm_ino, by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
-probit_data <- sim_mnp(N = 100, T = 10, J = 3, P = 3, b = c(1,2,3))
+probit_data <- sim_mnp(N = 100, T = 10, J = 3, P = 3, b = c(1,-2,3))
 
 probit_ino <- setup_ino(
   f = f_ll_mnp,
@@ -84,6 +85,10 @@ probit_ino <- setup_ino(
 )
 
 probit_ino <- random_initialization(probit_ino, runs = 10)
+
+probit_ino <- update_opt(probit_ino,
+  opt = list("nlm" = set_optimizer_nlm())
+)
 
 probit_ino <- standardize_initialization(
   probit_ino, ind_ign = 1:3, initialization = random_initialization(runs = 10)

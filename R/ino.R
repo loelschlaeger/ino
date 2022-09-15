@@ -471,10 +471,10 @@ print.prob <- function(x, ...) {
 #' \code{optimizer}.
 #' Per default, \code{opt = set_optimizer_nlm()}, which specifies the
 #' \code{\link[stats]{nlm}} optimizer.
-#' Can also be a list of multiple \code{optimizer} objects.
+#' Can also be a (named) list of multiple \code{optimizer} objects.
 #'
 #' @return
-#' An object of class \code{prob}.
+#' An object of class \code{opts}.
 #'
 #' @keywords
 #' internal
@@ -522,6 +522,32 @@ print.opts <- function(x, ...) {
     print(x[[i]])
     cat("\n")
   }
+}
+
+#' Update optimizer
+#'
+#' @description
+#' Use this function to update the optimizer functions for an \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#' @inheritParams new_opts
+#'
+#' @return
+#' An object of class \code{ino}.
+#'
+#' @seealso
+#' [set_optimizer()] to specify an optimizer.
+#'
+#' @export
+#'
+#' @keywords
+#' specification
+
+update_opt <- function(x, opt) {
+  check_inputs(x = x)
+  x$opts <- new_opts(opt = opt)
+  return(x)
 }
 
 #' Constructor
