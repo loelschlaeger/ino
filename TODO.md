@@ -2,15 +2,13 @@
 
 The following tasks are on our agenda and will be tackled as time permits.
 
-## Specification functions
-
-- [x] specify true parameter values (next package version)
-
-## Evaluation functions
-
-- [x] comparison with true parameter values (next package version)
-
 ## Documentation
 
-- [ ] extend HMM vignette
-- [ ] start JSS paper
+- [ ] write documentation for `hmm_ino` (M)
+- [ ] write documentation for `probit_ino` (L)
+- [ ] write probit vignette (L)
+- [ ] extend HMM vignette, maybe longer time series (M)
+
+## Paper
+
+- [ ] add template from RJournal (L)
