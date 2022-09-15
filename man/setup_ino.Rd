@@ -15,7 +15,8 @@ setup_ino(
   mpvs = character(),
   opt = set_optimizer_nlm(),
   test_par = list(validate = TRUE, init_rest = list(lower = -1, upper = 1), init_digits =
-    2, f_checks = 10, f_checks_time = 1)
+    2, f_checks = 10, f_checks_time = 1),
+  verbose = getOption("ino_progress")
 )
 }
 \arguments{
@@ -58,6 +59,11 @@ A check is considered to be successful, if no error occurred
 within \code{f_check_time} seconds.
 Per default, \code{f_check_time = 1}.
 }}
+
+\item{verbose}{A boolean, which indicates whether progress should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
+The default is \code{getOption("ino_progress")}, which is set to \code{TRUE}
+when the package is loaded.}
 }
 \value{
 An object of class \code{ino}.

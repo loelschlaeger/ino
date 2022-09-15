@@ -56,6 +56,7 @@
 #' Additional and named arguments to be passed to \code{f} (optional).
 #' @inheritParams new_ino
 #' @inheritParams validate_ino
+#' @inheritParams random_initialization
 #'
 #' @return
 #' An object of class \code{ino}.
@@ -85,7 +86,7 @@ setup_ino <- function(
       init_digits = 2,
       f_checks = 10,
       f_checks_time = 1
-    )
+    ), verbose = getOption("ino_progress")
 ) {
   if (missing(f)) {
     ino_stop(
@@ -97,7 +98,7 @@ setup_ino <- function(
       "Argument 'npar' is not specified."
     )
   }
-  validate_ino(
+  x <- validate_ino(
     x = new_ino(
       f = f, npar = npar, global = global, add = list(...), mpvs = mpvs,
       f_name = deparse(substitute(f)), f_target = names(formals(f))[1],
@@ -105,6 +106,9 @@ setup_ino <- function(
     ),
     test_par = test_par
   )
+  ino_status("Setup ino", verbose = verbose)
+  if(verbose) print(x)
+  return(x)
 }
 
 #' Constructor
@@ -532,6 +536,7 @@ print.opts <- function(x, ...) {
 #' @param x
 #' An object of class \code{ino}.
 #' @inheritParams new_opts
+#' @inheritParams setup_ino
 #'
 #' @return
 #' An object of class \code{ino}.
@@ -544,9 +549,11 @@ print.opts <- function(x, ...) {
 #' @keywords
 #' specification
 
-update_opt <- function(x, opt) {
-  check_inputs(x = x)
+update_opt <- function(x, opt, verbose = getOption("ino_progress")) {
+  check_inputs(x = x, verbose = verbose)
   x$opts <- new_opts(opt = opt)
+  ino_status("Updated optimizer", verbose = verbose)
+  if(verbose) print(x$opt)
   return(x)
 }
 
