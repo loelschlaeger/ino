@@ -44,8 +44,7 @@ The true model coefficients are added to the output via the attribute
 \code{"true"}. They are already normalized and can be directly compared with
 the maximum likelihood estimate.
 
-Additional attributes are \code{"N"} (the number of deciders), \code{"T"}
-(the number of choice occasions), \code{"J"} (the number of alternatives),
+Additional attributes are \code{"J"} (the number of alternatives),
 \code{"P"} (the number of choice covariates), and \code{"mix"} (a boolean
 which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 }

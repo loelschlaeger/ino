@@ -208,8 +208,7 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
 #' \code{"true"}. They are already normalized and can be directly compared with
 #' the maximum likelihood estimate.
 #'
-#' Additional attributes are \code{"N"} (the number of deciders), \code{"T"}
-#' (the number of choice occasions), \code{"J"} (the number of alternatives),
+#' Additional attributes are \code{"J"} (the number of alternatives),
 #' \code{"P"} (the number of choice covariates), and \code{"mix"} (a boolean
 #' which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 #'
@@ -263,8 +262,7 @@ sim_mnp <- function(
       ),
       matrix(unlist(lapply(data, `[[`, "X")), ncol = P*J, byrow = TRUE)
     ),
-    "true" = c(b, if(mix) o, l_d),
-    "N" = N, "T" = T, "J" = J, "P" = P, "mix" = mix
+    "true" = c(b, if(mix) o, l_d), "J" = J, "P" = P, "mix" = mix
   )
 }
 
@@ -340,27 +338,28 @@ f_ll_mnp <- function(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm) {
   Sigma <- matrix(0, J, J)
   Sigma[row(Sigma) != J & col(Sigma) != J] <- Sigma_d
   Sigma <- Sigma + 1
-  N <- attr(data, "N")
-  T <- attr(data, "T")
   delta <- function(diff_alt, J){
     D <- diag(J)
     D[,diff_alt] <- -1
     D[-diff_alt, , drop = FALSE]
   }
-  ll <- sum(sapply(1:N, function(n) sapply(1:T, function(t) {
-    ind <- T*(n-1) + t
-    y <- data[ind, "y"]
-    X <- matrix(as.numeric(data[ind, -(1:3)]), nrow = J, ncol = P)
-    D <- delta(y, J)
-    sys <- as.numeric(D %*% X %*% b)
-    cov <- if(mix) X %*% Omega %*% t(X) + Sigma else Sigma
-    cov <- D %*% cov %*% t(D)
-    prob <- do.call(
-      what = normal_cdf,
-      args = list(lower = -Inf, upper = -sys, mean = 0, sigma = cov)
-    )
-    log(prob)
-  })))
+  ll <- sum(sapply(unique(data$N), function(n) {
+      sapply(unique(data[data$N == n, "T"]), function(t) {
+        ind <- which(data$N == n & data$T == t)
+        y <- data[ind, "y"]
+        X <- matrix(as.numeric(data[ind, -(1:3)]), nrow = J, ncol = P)
+        D <- delta(y, J)
+        sys <- as.numeric(D %*% X %*% b)
+        cov <- if(mix) X %*% Omega %*% t(X) + Sigma else Sigma
+        cov <- D %*% cov %*% t(D)
+        prob <- do.call(
+          what = normal_cdf,
+          args = list(lower = -Inf, upper = -sys, mean = 0, sigma = cov)
+        )
+        lprob <- suppressWarnings(log(prob))
+        ifelse(is.finite(lprob), lprob, 0)
+      })
+  }))
   ifelse(neg, -ll, ll)
 }
 

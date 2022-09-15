@@ -70,7 +70,7 @@ plot(hmm_ino, by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
-probit_data <- sim_mnp(N = 100, T = 10, J = 3, P = 3, b = c(1,-2,3))
+probit_data <- sim_mnp(N = 10, T = 10, J = 3, P = 3, b = c(1,-1,0.5))
 
 probit_ino <- setup_ino(
   f = f_ll_mnp,
@@ -95,14 +95,11 @@ probit_ino <- standardize_initialization(
 )
 
 probit_ino <- subset_initialization(
-  probit_ino, arg = "data", how = "kmeans", prop = 0.5,
+  probit_ino, arg = "data", how = "kmeans", prop = 0.2,
   ind_ign = 1:3, initialization = random_initialization(runs = 10)
 )
-# have different T after sub-setting, than ll comp with fixed T fails
-
-summary(probit_ino)
 
 overview_optima(probit_ino, digits = 2)
 
-plot(probit_ino, var = ".time")
+plot(probit_ino, by = c(".strategy",".optimizer"))
 
