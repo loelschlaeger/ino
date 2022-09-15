@@ -194,7 +194,7 @@ standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = 
       label = label
     )
   )
-  x$runs <- c(x$runs, x_st$runs)
+  x$runs <- structure(c(x$runs, x_st$runs), class = "runs")
   return(x)
 }
 
@@ -388,6 +388,7 @@ optimize <- function(x, init, ncores, verbose) {
   pb <- progress::progress_bar$new(
     format = "Grid set :current/:total", total = length(grid), clear = TRUE
   )
+  # TODO: update progress bar after loop
   opts <- structure(
     list(function(n) {
       if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
@@ -457,6 +458,8 @@ save_result <- function(x, result, strategy, init, add_time = NULL) {
   names_grid_overview <- colnames(grid_overview)
   nruns <- nruns(x)
   res_fail <- sum(sapply(result, inherits, "fail"))
+  # TODO: collapse warnings
+  # TODO: make it easier to access warnings
   if (res_fail > 0) {
     ino_warn(
       event = paste(res_fail, "of", length(result), "runs failed."),
