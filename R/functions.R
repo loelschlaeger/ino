@@ -343,7 +343,7 @@ f_ll_mnp <- function(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm) {
     D[,diff_alt] <- -1
     D[-diff_alt, , drop = FALSE]
   }
-  ll <- sum(sapply(unique(data$N), function(n) {
+  ll <- sum(unlist(lapply(unique(data$N), function(n) {
       sapply(unique(data[data$N == n, "T"]), function(t) {
         ind <- which(data$N == n & data$T == t)
         y <- data[ind, "y"]
@@ -359,7 +359,7 @@ f_ll_mnp <- function(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm) {
         lprob <- suppressWarnings(log(prob))
         ifelse(is.finite(lprob), lprob, 0)
       })
-  }))
+  })))
   ifelse(neg, -ll, ll)
 }
 
