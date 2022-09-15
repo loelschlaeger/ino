@@ -17,21 +17,18 @@ knitr::opts_chunk$set(
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
-#library("ino")
-devtools::load_all()
-options(ino_progress = FALSE)
-library("ggplot2")
-library("dplyr")
-set.seed(1)
+library("ino")
+hmm_ino <- ino::hmm_ino
 ```
 
-This vignette^[The vignette was build using R `r paste(R.Version()[6:7], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of an hidden Markov model (HMM). For more technical details about HMMs see, e.g.,  Zucchini et al. (2016).
+This vignette^[The vignette was build using R `r paste(R.Version()[c("major","minor")], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of an hidden Markov model (HMM). For more technical details about HMMs see, e.g.,  Zucchini et al. (2016).
 
 ## Data
 
 The example data set considered throughout this vignette covers a series of earthquake counts. The data set is also included in the {ino} package.
 
 ```{r}
+library("ggplot2")
 data("earthquakes")
 ggplot(earthquakes, aes(x = year, y = obs)) +
   geom_point() + geom_line() + ylab("count")
@@ -43,7 +40,7 @@ As the observations are unbounded counts, we consider a Poisson-HMM. The (log-)l
 
 We consider an 2-state HMM (`N = 2`) with four parameters (`npar = 4`) to be estimated. Two parameters are required for the transition probability matrix (tpm), and another two correspond to the state-dependent Poisson means. `neg =  TRUE` indicates that we minimize the negative log-likelihood.  
 
-```{r}
+```{r, eval = FALSE}
 hmm_ino <- setup_ino(
   f = f_ll_hmm,
   npar = 4,
@@ -56,9 +53,9 @@ hmm_ino <- setup_ino(
 
 ### Random initialization
 
-We first use randomly chosen starting values. Note that running the following code snippet may take a few minutes, as the optimization is performed with 50 different sets of starting values. The results of the 50 runs are contained in the example ino object `example_hmm.RData` and can be loaded into the workspace via `load(example_HMM.RData)`. 
+We first use randomly chosen starting values. 
 
-```{r}
+```{r, eval = FALSE}
 hmm_ino <- random_initialization(hmm_ino, runs = 50)
 ```
 
@@ -67,7 +64,7 @@ hmm_ino <- random_initialization(hmm_ino, runs = 50)
 
 For choosing fixed starting values, we set the two values for the tpm to -2, corresponding to probabilities to stay in state 1 and 2 of about 0.88 (note that we employ a multinomial logit link here to ensure that the probabilities are between 0 and 1). For the Poisson means, we consider values close to 15 and 25, as most counts fall in this region (note here that we exponentiate the means in the likelihood as they are constrained to be positive). We consider the following three sets of starting values:
 
-```{r}
+```{r, eval = FALSE}
 starting_values <- list(c(-2, -2, log(20), log(40)), 
                         c(-2, -2, log(15), log(25)),
                         c(-2, -2, log(10), log(20)))
@@ -79,7 +76,7 @@ for(val in starting_values)
 
 To illustrate the subset initialization strategy, we fit our HMM to the first 50\% of the observation. The starting values for these subsets are chosen randomly. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
 
-```{r}
+```{r, eval = FALSE}
 hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.5,
                                  initialization = random_initialization(runs = 10))
 ```
@@ -134,6 +131,7 @@ summary(hmm_ino)
 This comparison can be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations. We can first check which runs lead to the global optimum of 342.32. For that, we will use the data manipulation functions provided by the package `dplyr`.
 
 ```{r}
+library("dplyr")
 summary(hmm_ino) %>% 
   mutate(global_optimum = ifelse(.optimum < 343, 1, 0)) %>% 
   group_by(.strategy) %>% 
@@ -148,12 +146,5 @@ summary(hmm_ino) %>%
   filter(.optimum < 343) %>% 
   group_by(.strategy) %>% 
   summarise(mean_time = mean(.time))
-```
-
-
-
-
-```{r}
-# save(hmm_ino, file = "example_hmm.RData")
 ```
 

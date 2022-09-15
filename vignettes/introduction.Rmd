@@ -19,7 +19,6 @@ knitr::opts_chunk$set(
 )
 library("ino")
 options(ino_progress = FALSE)
-library("ggplot2")
 set.seed(1)
 ```
 
@@ -34,6 +33,7 @@ In the following, we demonstrate the main functionality of {ino}. In particular,
 We consider the popular `faithful` data set that is provided via base R.^[The data set contains information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA: the eruption time and the waiting time to the next eruption (both given in minutes).] The following histogram of eruption times indicate two clusters with short and long eruption times, respectively:
 
 ```{r}
+library("ggplot2")
 data("faithful")
 ggplot(faithful, aes(x = eruptions, y = ..density..)) + 
   geom_histogram(bins = 30) + xlab("Eruption time (min)") + ylab("density")

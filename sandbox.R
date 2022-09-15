@@ -7,7 +7,7 @@ library(tidyverse)
 options(ino_ncores = parallel::detectCores() - 1)
 
 
-# Example: Ackley ---------------------------------------------------------
+# Example: Ackley function ------------------------------------------------
 
 x <- setup_ino(
   f = f_ackley,

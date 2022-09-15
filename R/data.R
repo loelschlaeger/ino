@@ -20,3 +20,35 @@
 #' @keywords
 #' dataset
 "earthquakes"
+
+#' Example application of {ino} to HMM likelihood
+#'
+#' @description
+#' TBA
+#'
+#' @docType data
+#'
+#' @usage data(hmm_ino)
+#'
+#' @format
+#' TBA
+#'
+#' @keywords
+#' dataset
+"hmm_ino"
+
+#' Example application of {ino} to probit likelihood
+#'
+#' @description
+#' TBA
+#'
+#' @docType data
+#'
+#' @usage data(probit_ino)
+#'
+#' @format
+#' TBA
+#'
+#' @keywords
+#' dataset
+"probit_ino"
