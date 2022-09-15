@@ -186,7 +186,12 @@ overview_optima <- function(x, digits = 2) {
     )
   }
   structure(
-    data.frame(table(round(sapply(x$runs, `[[`, ".optimum"), digits = digits))),
+    lapply(x$runs, `[[`, ".optimum") %>%
+      unlist() %>%
+      round(digits = digits) %>%
+      table() %>%
+      as.data.frame(),
     names = c("optimum", "frequency")
-  ) %>% arrange(desc(.data$frequency))
+  ) %>%
+    arrange(desc(.data$frequency))
 }
