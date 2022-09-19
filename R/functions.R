@@ -324,7 +324,8 @@ f_ll_mnp <- function(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm) {
   P <- attr(data, "P")
   mix <- attr(data, "mix")
   J <- attr(data, "J")
-  b <- c(1,theta[1:(P-1)]); theta <- theta[-(1:(P-1))]
+  stopifnot(is.numeric(theta), length(theta) == (P-1) + mix*(P*(P+1)/2) + (J-1)*J/2)
+  b <- c(1, theta[1:(P-1)]); theta <- theta[-(1:(P-1))]
   chol_2_cov <- function(chol) {
     dim <- -0.5 + sqrt(0.25 + 2*length(chol))
     cov <- matrix(0, dim, dim)
