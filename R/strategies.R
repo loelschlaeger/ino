@@ -459,7 +459,7 @@ save_result <- function(x, result, strategy, init, add_time = NULL) {
   nruns <- nruns(x)
   res_fail <- sum(sapply(result, inherits, "fail"))
   # TODO: collapse warnings
-  # TODO: make it easier to access warnings
+  # TODO: make it easier to access warnings (maybe extra function?)
   if (res_fail > 0) {
     ino_warn(
       event = paste(res_fail, "of", length(result), "runs failed."),
