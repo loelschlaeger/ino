@@ -490,7 +490,7 @@ new_opts <- function(x = list(), opt = set_optimizer_nlm()) {
   stopifnot(is.list(opt))
   x <- opt
   if (is.null(names(x))) {
-    names(x) <- paste0("opt", 1:length(x))
+    names(x) <- sapply(x, `[[`, "opt_name") #paste0("opt", 1:length(x))
   }
   structure(x, class = "opts")
 }
@@ -513,6 +513,13 @@ validate_opts <- function(x = new_opts()) {
   stopifnot(inherits(x, "opts"))
   stopifnot(typeof(x) == "list")
   stopifnot(sapply(x, function(x) inherits(x, "optimizer")))
+  if(length(x) != length(unique(names(x)))){
+    ino_stop(
+      event = "Optimizer must have unique names.",
+      debug = paste("When specifying multiple optimizer via the 'opt' argument",
+                    "for 'setup_ino()', give each list element a unique name.")
+    )
+  }
   return(x)
 }
 
@@ -522,7 +529,7 @@ validate_opts <- function(x = new_opts()) {
 
 print.opts <- function(x, ...) {
   for(i in 1:length(x)) {
-    if(length(x) > 1) cat("'", names(x)[i], "': ", sep = "")
+    cat("'", names(x)[i], "': ", sep = "")
     print(x[[i]])
     cat("\n")
   }
