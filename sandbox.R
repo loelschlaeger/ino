@@ -3,7 +3,7 @@
 # path <- "../ino_0.1.0.9000.tar.gz"
 # install.packages(path, repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
 devtools::load_all()
-library(tidyverse)
+library("tidyverse")
 options(ino_ncores = parallel::detectCores() - 1)
 Sys.setenv(LANG = "en")
 
@@ -70,34 +70,59 @@ plot(hmm_ino, by = ".strategy")
 
 # Example: Probit LL ------------------------------------------------------
 
-probit_data <- sim_mnp(N = 10, T = 10, J = 3, P = 3, b = c(1,-1,0.5))
+N <- 100
+T <- 10
+J <- 3
+P <- 3
+b <- c(1,-1,0.5)
+Sigma <- diag(J)
+X <- function() {
+  class <- sample(0:1, 1)
+  mean <- ifelse(class, 2, -2)
+  matrix(stats::rnorm(J*P, mean = mean), nrow = J, ncol = P)
+}
+probit_data <- replicate(20, sim_mnp(
+  N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X
+), simplify = FALSE)
+true <- attr(probit_data[[1]], "true")[-1]
 
 probit_ino <- setup_ino(
   f = f_ll_mnp,
   npar = 5,
-  global = attr(probit_data, "true")[-1],
+  global = true,
   data = probit_data,
   neg = TRUE,
-  opt = list(
-    "nlm" = set_optimizer_nlm(),
-    "ao" = set_optimizer_ao(partition = list(1:2, 3:5))
+  mpvs = "data",
+  opt = set_optimizer_nlm(iterlim = 1000)
+)
+
+probit_ino <- random_initialization(probit_ino, runs = 100)
+
+saveRDS(probit_ino, "probit_ino.rds")
+
+for(how in c("random", "kmeans")) for(prop in c(0.2,0.5)) {
+  probit_ino <- subset_initialization(
+    probit_ino, arg = "data", how = how, prop = prop,
+    ind_ign = 1:3, initialization = random_initialization(runs = 100)
   )
-)
+}
 
-probit_ino <- random_initialization(probit_ino, runs = 10)
-
-probit_ino <- update_opt(probit_ino,
-  opt = list("nlm" = set_optimizer_nlm())
-)
+saveRDS(probit_ino, "probit_ino.rds")
 
 probit_ino <- standardize_initialization(
-  probit_ino, ind_ign = 1:3, initialization = random_initialization(runs = 10)
+  probit_ino, ind_ign = 1:3, initialization = random_initialization(runs = 100)
 )
 
-probit_ino <- subset_initialization(
-  probit_ino, arg = "data", how = "kmeans", prop = 0.2,
-  ind_ign = 1:3, initialization = random_initialization(runs = 10)
+saveRDS(probit_ino, "probit_ino.rds")
+
+probit_ino <- update_opt(
+  probit_ino,
+  opt = set_optimizer_ao(partition = list(1:2, 1:5))
 )
+
+probit_ino <- random_initialization(probit_ino, runs = 100)
+
+saveRDS(probit_ino, "probit_ino.rds")
 
 overview_optima(probit_ino, digits = 2)
 
