@@ -1,3 +1,5 @@
+options("ino_progress" = FALSE)
+
 test_that("runs object can be constructed and validated", {
   x <- new_runs()
   expect_s3_class(x, "runs")
