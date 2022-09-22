@@ -81,7 +81,7 @@ X <- function() {
   mean <- ifelse(class, 2, -2)
   matrix(stats::rnorm(J*P, mean = mean), nrow = J, ncol = P)
 }
-probit_data <- replicate(20, sim_mnp(
+probit_data <- replicate(10, sim_mnp(
   N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X
 ), simplify = FALSE)
 true <- attr(probit_data[[1]], "true")[-1]
