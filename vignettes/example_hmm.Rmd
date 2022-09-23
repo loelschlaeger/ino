@@ -25,26 +25,39 @@ This vignette^[The vignette was build using R `r paste(R.Version()[c("major","mi
 
 ## Data
 
-The example data set considered throughout this vignette covers a series of earthquake counts. The data set is also included in the {ino} package.
+The example data set considered throughout this vignette covers a time series of share returns from the stock 'Deutsche Bank'. The data set is freely accessible via Yahoo Finance. 
 
 ```{r}
 library("ggplot2")
-data("earthquakes")
-ggplot(earthquakes, aes(x = year, y = obs)) +
-  geom_point() + geom_line() + ylab("count")
+## download the data
+db_data <- read.csv("https://query1.finance.yahoo.com/v7/finance/download/DB?period1=948499200&period2=1663804800&interval=1d&events=history&includeAdjustedClose=true")
+db_data$date <- as.Date(db_data$Date, format = "%Y-%m-%d")
+## calculate log-returns (multiplied by 100)
+db_data$obs <- c(NA, log(db_data$Adj.Close[2:nrow(db_data)] / 
+                                   db_data$Adj.Close[1:(nrow(db_data) - 1)])) * 100
+db_data <- db_data[-1, ]
+## plot the time series of share returns
+ggplot(db_data, aes(x = date, y = obs)) +
+  geom_point() + geom_line() + ylab("log-returns [%]")
 ```
 
-As the observations are unbounded counts, we consider a Poisson-HMM. The (log-)likelihood of a Poisson-HMM is given by the function `f_ll_hmm()`.
+As the share returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions. The (log-)likelihood of a Gaussian-HMM is implemented in the function `f_ll_hmm()`.
 
 ## Model fitting
 
-We consider an 2-state HMM (`N = 2`) with four parameters (`npar = 4`) to be estimated. Two parameters are required for the transition probability matrix (tpm), and another two correspond to the state-dependent Poisson means. `neg =  TRUE` indicates that we minimize the negative log-likelihood.  
+We consider an 2-state (`N = 2`) Gaussian-HMM with six parameters (`npar = 6`) to be estimated:
+
+- two for the transition probability matrix (tpm)
+- two for the means of the state-dependent distribution
+- two for the standard deviations of the state-dependent distribution
+
+The argument `neg =  TRUE` indicates that we minimize the negative log-likelihood, and `opt` selects the optimizer `nlm()`.  
 
 ```{r, eval = FALSE}
 hmm_ino <- setup_ino(
   f = f_ll_hmm,
-  npar = 4,
-  data = ino::earthquakes,
+  npar = 6,
+  data = db_data,
   N = 2,
   neg = TRUE,
   opt = set_optimizer_nlm()
@@ -53,34 +66,71 @@ hmm_ino <- setup_ino(
 
 ### Random initialization
 
-We first use randomly chosen starting values. 
+We first use randomly chosen starting values. As the first two starting values belong to the tpm, we sample from a normal distribution with mean -1.5 and standard deviation of 0.5 --- as we use the multinomial logit link to ensure that the probabilities are between 0 and 1, a mean of -1.5 correspond to probabilities of staying in state 1 and 2 of about 0.81. For the two means, we draw two random numbers from the standard normal distribution, as the time series above indicates that the most of the returns are fairly close to zero. The starting values for the standard deviations are drawn from a uniform distribution between 0.5 and 2 (note that we exponentiate the standard deviations in the likelihood as they are constrained to be positive, and hence we log transform the starting values).
 
 ```{r, eval = FALSE}
-hmm_ino <- random_initialization(hmm_ino, runs = 50)
+hmm_ino <- random_initialization(hmm_ino, runs = 50,
+                                 sampler = function() c(stats::rnorm(2, -1.5, 0.5),
+                                                        stats::rnorm(2),
+                                                        log(stats::runif(2, 0.5, 2))))
 ```
 
 
 ### Fixed initialization
 
-For choosing fixed starting values, we set the two values for the tpm to -2, corresponding to probabilities to stay in state 1 and 2 of about 0.88 (note that we employ a multinomial logit link here to ensure that the probabilities are between 0 and 1). For the Poisson means, we consider values close to 15 and 25, as most counts fall in this region (note here that we exponentiate the means in the likelihood as they are constrained to be positive). We consider the following three sets of starting values:
+For selecting fixed starting values, we consider values that lie in the ranges considered above:
 
 ```{r, eval = FALSE}
-starting_values <- list(c(-2, -2, log(20), log(40)), 
-                        c(-2, -2, log(15), log(25)),
-                        c(-2, -2, log(10), log(20)))
+starting_values <- list(c(-2, -2, 0, 0, log(2), log(3)), 
+                        c(-1.5, -1.5, -2, 2, log(1), log(2)),
+                        c(-1, -1, -3, 3, log(2), log(2)))
 for(val in starting_values)
   hmm_ino <- fixed_initialization(hmm_ino, at = val)
 ```
 
 ### Subset initialization
 
-To illustrate the subset initialization strategy, we fit our HMM to the first 50\% of the observation. The starting values for these subsets are chosen randomly. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
+To illustrate the subset initialization strategy, we fit our HMM to the first 50\% of the observation. The starting values for these subsets are chosen randomly from the same distributions as considered above. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
 
 ```{r, eval = FALSE}
 hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.5,
-                                 initialization = random_initialization(runs = 10))
+                                 initialization = 
+                                   random_initialization(
+                                     runs = 50,
+                                     sampler = function() c(stats::rnorm(2, -1.5, 0.5),
+                                                            stats::rnorm(2),
+                                                            log(stats::runif(2, 0.5, 2)))
+                                   )
+)
 ```
 
+As the time series of share returns consists of `r nrow(db_data)` observations, we can even try to use fewer observations to fit our model. In the next step, we consider only the first 25% of the observations.
+
+```{r, eval = FALSE}
+hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.25,
+                                 initialization = 
+                                   random_initialization(
+                                     runs = 50,
+                                     sampler = function() c(stats::rnorm(2, -1.5, 0.5),
+                                                            stats::rnorm(2),
+                                                            log(stats::runif(2, 0.5, 2)))
+                                   )
+)
+```
+
+To further (potentially) decrease the computational cost associated with model fitting, we now consider only the first 5% of the data:
+
+```{r, eval = FALSE}
+hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.05,
+                                 initialization = 
+                                   random_initialization(
+                                     runs = 50,
+                                     sampler = function() c(stats::rnorm(2, -1.5, 0.5),
+                                                            stats::rnorm(2),
+                                                            log(stats::runif(2, 0.5, 2)))
+                                   )
+)
+```
 
 ## Evaluating the optimization runs
 
@@ -92,9 +142,9 @@ Selecting the starting values for HMMs is a well-known issue, as poor starting v
 overview_optima(hmm_ino)
 ```
 
-The frequency table indicates that `r overview_optima(hmm_ino)[1,2]` runs converged to the same likelihood value (`r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`) --- the global maximum is 342.32 (note these are the negative log-likelihood values).  
+The frequency table indicates that `r overview_optima(hmm_ino)[1,2]` out of `r sum(overview_optima(hmm_ino)$frequency)` runs converged to the same likelihood value (`r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`), which appears to be the global optimum (note these are the negative log-likelihood values).  
 
-Using `summary`, we can investigate all optimization runs:
+Using `summary`, we can investigate the computation time and the resulting optimum for all runs:
 
 ```{r}
 summary(hmm_ino)
@@ -103,48 +153,72 @@ summary(hmm_ino)
 To obtain the starting values that lead to the global optimum, we first check which of the optimization runs actually reached the global optimum:
 
 ```{r}
-which(summary(hmm_ino)$.optimum < 343)
+which(summary(hmm_ino)$.optimum < 12931)
 ```
 
 We can access the corresponding initial values of, for example, the first of these runs via:
 
-
 ```{r}
-get_vars(hmm_ino, runs = which(summary(hmm_ino)$.optimum < 343)[1])[[1]]$.init
+get_vars(hmm_ino, runs = which(summary(hmm_ino)$.optimum < 12931)[1])[[1]]$.init
 ```
 
 
 ### Optimization time
 
-We use the `plot()` function to investigate the computation time. Intuitively, the optimization runs with fixed starting values should be faster than with random starting values, since we have carefully chosen the fixed starting values by investigating the data. The boxplots confirm this intuition: 
+We use the `plot()` function to investigate the computation time. Intuitively, optimization runs with fixed starting values should be faster than with random starting values, since we have carefully chosen the fixed starting values by investigating the data. The boxplots confirm this intuition: 
 
 ```{r}
 plot(hmm_ino, by = ".strategy")
 ```
 
-Using `summary()`, we can also compute the average time per strategy:
+Using the output provided by `summary()` and some data manipulation functions provided by the package `dplyr`, we can also compute the average time per strategy:
 
-```{r}
-summary(hmm_ino)
-```
-
-This comparison can be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations. We can first check which runs lead to the global optimum of 342.32. For that, we will use the data manipulation functions provided by the package `dplyr`.
-
-```{r}
+```{r warning=FALSE,message=FALSE}
 library("dplyr")
 summary(hmm_ino) %>% 
-  mutate(global_optimum = ifelse(.optimum < 343, 1, 0)) %>% 
+  group_by(.strategy) %>% 
+  summarise(avg_time = mean(.time))
+```
+
+This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of 12930.73. For that, we will again use functions from `dplyr`.
+
+```{r}
+summary(hmm_ino) %>% 
+  mutate(global_optimum = ifelse(.optimum < 12931, 1, 0)) %>% 
   group_by(.strategy) %>% 
   summarise(proportion_global_optimum = mean(global_optimum))
 ```
 
-For the subset approach, only `r summary(hmm_ino) %>% mutate(global_optimum = ifelse(.optimum < 343, 1, 0)) %>% group_by(.strategy) %>% summarise(proportion_global_optimum = mean(global_optimum)) %>% filter(.strategy == "subset(first,0.5)") %>% pull(proportion_global_optimum) * 100`\% of the runs lead in the global optimum!
+While for the fixed starting values all runs converge to the global optimum, the random initialization and subset initialization strategies do sometimes get stuck in local maxima.
+
 Let's again compare the average computation time, but only for those runs that lead to the global optimum:
 
 ```{r}
 summary(hmm_ino) %>% 
-  filter(.optimum < 343) %>% 
+  filter(.optimum < 12931) %>% 
   group_by(.strategy) %>% 
   summarise(mean_time = mean(.time))
 ```
+
+For those runs that converged to the global optimum, we can again compare the computation time via boxplots:
+
+```{r}
+summary(hmm_ino) %>% 
+  filter(.optimum < 12931) %>% 
+  ggplot(aes(x = "", y = .time)) +
+    scale_y_continuous() +
+    geom_boxplot() +
+    facet_wrap(".strategy", labeller = "label_both", nrow = 1) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank()
+    ) +
+    ylab("optimization time")
+```
+
+While computation time is lowest for the fixed initialization strategy, subset initialization appears to be a promising approach. In particular, when considering the first 5% or 25% of the data in a first step, the computation time is most likely to be lower compared to the random initialization approach.
+
+
+
 
