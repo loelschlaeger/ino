@@ -108,28 +108,28 @@ f_easom <- function(x) {
   -cos(x[1]) * cos(x[2]) * exp(-((x[1] - pi)^2 + (x[2] - pi)^2))
 }
 
-#' Log-likelihood function of the Poisson-hidden Markov model
+#' Log-likelihood function of a Gaussian-hidden Markov model
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Hidden_Markov_model
 #'
 #' @details
-#' The example uses a data set from {ino} that covers the number of major
-#' earthquakes (magnitude 7 or greater) in the world from 1900 until 2006.
+#' The example uses a data set from Yahoo Finance that covers daily share returns
+#' of the Deutsche Bank stock from 2000 until 2022.
 #'
 #' @param theta
 #' A numeric vector of model parameters.
 #' @param data
-#' A \code{data.frame} that includes a time series of counts.
+#' A \code{data.frame} that includes a time series.
 #' @param N
 #' The number of states in the hidden Markov model.
 #' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @examples
-#' f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
+#' f_ll_hmm(theta = c(-1, -1, 0.1, -0.1, 1, 1.5), data = earthquakes, N = 2)
 #'
-#' @importFrom stats dpois
+#' @importFrom stats dnorm
 #'
 #' @return
 #' The log-likelihood value at \code{theta}.
@@ -149,15 +149,16 @@ f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
   tpm[!tpm] <- exp(theta[1:(N * (N - 1))])
   tpm <- tpm/rowSums(tpm)
 
-  ### lambda for each state
-  lambda <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
+  ### mean and sd for each state
+  mu <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
+  sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
   delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
   if ("try-error" %in% class(delta)) delta <- rep(1, N) / N
 
   ### allprobs matrix
   allprobs <- matrix(1, nrow(data), N)
   for(j in 1:N){
-    allprobs[, j] <- dpois(data$obs, exp(lambda[j]))
+    allprobs[, j] <- dnorm(data$obs, mu[j], sigma[j])
   }
 
   ### forward algorithm
