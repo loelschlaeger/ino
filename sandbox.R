@@ -36,7 +36,7 @@ summary(x, dist = "sqrt(sum((.global-.estimate)^2))") %>%
 plot(x, by = ".optimizer")
 
 
-# Example: HMM LL ---------------------------------------------------------
+# Example: HMM LL for earthquake data -------------------------------------
 
 hmm_ino <- setup_ino(
   f = f_ll_hmm,
@@ -66,6 +66,53 @@ summary(hmm_ino) %>%
   summarize("mean_time" = mean(.time))
 
 plot(hmm_ino, by = ".strategy")
+
+
+# Example: HMM LL for financial data --------------------------------------
+
+library("fHMM")
+file <- tempfile()
+fHMM::download_data(symbol = "DBK.DE", from = "2020-01-01", file = file)
+
+library("dplyr")
+db_data <- read.csv(file) %>%
+  as_tibble() %>%
+  summarize(date = as.Date(Date, format = "%Y-%m-%d"),
+            obs = c(NA, diff(log(Close), lag=1) * 100)) %>%
+  filter(!is.na(obs)) %>%
+  print()
+
+library("ggplot2")
+ggplot(db_data, aes(x = date, y = obs)) +
+  geom_point() +
+  geom_line() +
+  ylab("log-returns [%]")
+
+library("ino")
+hmm_ino <- setup_ino(
+  f = f_ll_hmm,
+  npar = 6,
+  data = db_data,
+  N = 2,
+  neg = TRUE,
+  opt = set_optimizer_nlm(),
+  test_par = list("validate" = FALSE)
+)
+
+sampler <- function() c(log(stats::runif(2, 0.1, 0.9)),
+                        stats::rnorm(2),
+                        log(stats::runif(2, 0.5, 2)))
+
+hmm_ino <- random_initialization(hmm_ino, runs = 10, sampler = sampler)
+
+overview_optima(hmm_ino)
+
+for(prop in c(0.1,0.5)) {
+  hmm_ino <- subset_initialization(
+    hmm_ino, arg = "data", how = "first", prop = prop,
+    initialization = random_initialization(runs = 100)
+  )
+}
 
 
 # Example: Probit LL ------------------------------------------------------
