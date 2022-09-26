@@ -41,10 +41,9 @@
 #' @seealso
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
-random_initialization <- function(
-    x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = "random") {
+random_initialization <- function(x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
+                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+                                  label = "random") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -109,9 +108,8 @@ random_initialization <- function(
 #' @seealso
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
-fixed_initialization <- function(
-    x, at, ncores = getOption("ino_ncores"),
-    verbose = getOption("ino_progress"), label = "fixed") {
+fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
+                                 verbose = getOption("ino_progress"), label = "fixed") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -162,11 +160,10 @@ fixed_initialization <- function(
 #' @keywords
 #' strategy
 
-standardize_initialization <- function(
-    x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
-    ind_ign = integer(), initialization = random_initialization(),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = "standardize") {
+standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
+                                       ind_ign = integer(), initialization = random_initialization(),
+                                       ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+                                       label = "standardize") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -243,12 +240,11 @@ standardize_initialization <- function(
 #'
 #' @importFrom stats kmeans
 
-subset_initialization <- function(
-    x, arg = "data", by_row = TRUE, how = "random", prop = 0.5,
-    ind_ign = integer(), kmeans_arg = list("centers" = 2),
-    initialization = random_initialization(),
-    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-    label = paste0("subset(", how, ",", prop, ")")) {
+subset_initialization <- function(x, arg = "data", by_row = TRUE, how = "random", prop = 0.5,
+                                  ind_ign = integer(), kmeans_arg = list("centers" = 2),
+                                  initialization = random_initialization(),
+                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+                                  label = paste0("subset(", how, ",", prop, ")")) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -258,7 +254,7 @@ subset_initialization <- function(
     initialization = initialization, ncores = ncores, verbose = verbose,
     label = label
   )
-  ino_status(paste0("Subsetting (",how,", ", prop*100, "%)"), verbose = verbose)
+  ino_status(paste0("Subsetting (", how, ", ", prop * 100, "%)"), verbose = verbose)
   x_subset <- clear_ino(x, which = "all")
   x_subset$prob$add[[arg]] <- lapply(
     x_subset$prob$add[[arg]],
@@ -431,13 +427,15 @@ optimize <- function(x, init, ncores, verbose) {
 #' @return
 #' No return value, called for side effects.
 
-check_failed_runs <- function(x,verbose = getOption("ino_progress")) {
-  if (verbose) if (nfails(x) > 0) {
-    ino_warn(
-      paste(nfails(x), "of", nruns(x), "failed runs."),
-      paste0("Use 'get_fails(x) to inspect the error message(s)."),
-      paste0("Use 'clear_ino(x, which = 'fails') to clear the failed run(s).")
-    )
+check_failed_runs <- function(x, verbose = getOption("ino_progress")) {
+  if (verbose) {
+    if (nfails(x) > 0) {
+      ino_warn(
+        paste(nfails(x), "of", nruns(x), "failed runs."),
+        paste0("Use 'get_fails(x) to inspect the error message(s)."),
+        paste0("Use 'clear_ino(x, which = 'fails') to clear the failed run(s).")
+      )
+    }
   }
 }
 

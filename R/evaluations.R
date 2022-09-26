@@ -176,7 +176,7 @@ plot.ino <- function(x, by = NULL, time_unit = "secs", nrow = NULL, ...) {
     ggplot2::geom_boxplot() +
     {
       if (!is.null(by)) {
-        ggplot2:: facet_wrap(by, labeller = "label_both", nrow = nrow)
+        ggplot2::facet_wrap(by, labeller = "label_both", nrow = nrow)
       }
     } +
     ggplot2::theme(
