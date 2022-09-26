@@ -250,7 +250,7 @@ subset_initialization <- function(x, arg = "data", by_row = TRUE, how = "random"
     initialization = initialization, ncores = ncores, verbose = verbose,
     label = label
   )
-  ino_status("Subsetting", verbose = verbose)
+  ino_status(paste0("Subsetting (",how,", ", prop * 100,"%)"), verbose = verbose)
   x_subset <- clear_ino(x, which = "all")
   x_subset$prob$add[[arg]] <- lapply(
     x_subset$prob$add[[arg]],
