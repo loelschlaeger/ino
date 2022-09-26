@@ -121,7 +121,7 @@ f_easom <- function(x) {
 #' @param theta
 #' A numeric vector of model parameters.
 #' - The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
-#'   elements of the transistion probability matrix.
+#'   elements of the transition probability matrix.
 #' - The next \code{N} elements are the mean values of the state-dependent
 #'   normal distributions.
 #' - The last \code{N} elements are the logarithms of the standard deviations of
@@ -148,9 +148,9 @@ f_easom <- function(x) {
 
 sim_hmm <- function(T, N, theta) {
   stopifnot(is.numeric(theta), length(theta) == N*(N-1)+2*N)
-  tpm <- matrix(0, N, N)
+  tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
-  diag(tpm) <- 1 - rowSums(tpm)
+  tpm <- tpm / rowSums(tpm)
   mu <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
   sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
   delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
@@ -198,9 +198,9 @@ sim_hmm <- function(T, N, theta) {
 f_ll_hmm <- function(theta, data, N, neg = FALSE) {
   stopifnot(is.numeric(theta), is.data.frame(data), N%%1==0)
   T <- nrow(data)
-  tpm <- matrix(0, N, N)
+  tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
-  diag(tpm) <- 1 - rowSums(tpm)
+  tpm <- tpm / rowSums(tpm)
   mu <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
   sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
   delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)

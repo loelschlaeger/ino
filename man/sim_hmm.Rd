@@ -14,7 +14,7 @@ sim_hmm(T, N, theta)
 \item{theta}{A numeric vector of model parameters.
 \itemize{
 \item The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
-elements of the transistion probability matrix.
+elements of the transition probability matrix.
 \item The next \code{N} elements are the mean values of the state-dependent
 normal distributions.
 \item The last \code{N} elements are the logarithms of the standard deviations of
