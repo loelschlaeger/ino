@@ -46,14 +46,18 @@ ino_status <- function(msg, verbose = getOption("ino_progress")) {
 #' @importFrom cli cli_abort
 #' @keywords internal
 
-ino_stop <- function(event, debug = character()) {
-  cli::cli_abort(c("x" = event, "i" = debug), call = NULL)
+ino_stop <- function(...) {
+  msg <- list(...)
+  names(msg) <- c("x", rep(">", length(msg)))[1:length(msg)]
+  cli::cli_abort(unlist(msg), call = NULL)
 }
 
 #' @noRd
 #' @importFrom cli cli_warn
 #' @keywords internal
 
-ino_warn <- function(event, debug = character()) {
-  cli::cli_warn(c(event, "i" = debug), call = NULL)
+ino_warn <- function(...) {
+  msg <- list(...)
+  names(msg) <- c("!", rep(">", length(msg)))[1:length(msg)]
+  cli::cli_warn(unlist(msg), call = NULL)
 }

@@ -41,9 +41,10 @@
 #' @seealso
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
-random_initialization <- function(x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
-                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-                                  label = "random") {
+random_initialization <- function(
+    x, runs = 1L, sampler = function() stats::rnorm(npar(x)),
+    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+    label = "random") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -84,6 +85,7 @@ random_initialization <- function(x, runs = 1L, sampler = function() stats::rnor
       x = x, result = results[[run]], strategy = label, init = inits[[run]]
     )
   }
+  check_failed_runs(x, verbose = verbose)
   return(x)
 }
 
@@ -107,8 +109,9 @@ random_initialization <- function(x, runs = 1L, sampler = function() stats::rnor
 #' @seealso
 #' [npar()] to extract the number \code{npar} from an \code{ino} object.
 
-fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
-                                 verbose = getOption("ino_progress"), label = "fixed") {
+fixed_initialization <- function(
+    x, at, ncores = getOption("ino_ncores"),
+    verbose = getOption("ino_progress"), label = "fixed") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -117,7 +120,9 @@ fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
   )
   ino_status("Fixed initial values", verbose = verbose)
   result <- optimize(x = x, init = at, ncores = ncores, verbose = verbose)
-  save_result(x = x, result = result, strategy = label, init = at)
+  x <- save_result(x = x, result = result, strategy = label, init = at)
+  check_failed_runs(x, verbose = verbose)
+  return(x)
 }
 
 #' Standardize initialization
@@ -157,10 +162,11 @@ fixed_initialization <- function(x, at, ncores = getOption("ino_ncores"),
 #' @keywords
 #' strategy
 
-standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
-                                       ind_ign = integer(), initialization = random_initialization(),
-                                       ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-                                       label = "standardize") {
+standardize_initialization <- function(
+    x, arg = "data", by_col = TRUE, center = TRUE, scale = TRUE,
+    ind_ign = integer(), initialization = random_initialization(),
+    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+    label = "standardize") {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -195,6 +201,7 @@ standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = 
     )
   )
   x$runs <- structure(c(x$runs, x_st$runs), class = "runs")
+  check_failed_runs(x, verbose = verbose)
   return(x)
 }
 
@@ -236,11 +243,12 @@ standardize_initialization <- function(x, arg = "data", by_col = TRUE, center = 
 #'
 #' @importFrom stats kmeans
 
-subset_initialization <- function(x, arg = "data", by_row = TRUE, how = "random", prop = 0.5,
-                                  ind_ign = integer(), kmeans_arg = list("centers" = 2),
-                                  initialization = random_initialization(),
-                                  ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
-                                  label = paste0("subset(", how, ",", prop, ")")) {
+subset_initialization <- function(
+    x, arg = "data", by_row = TRUE, how = "random", prop = 0.5,
+    ind_ign = integer(), kmeans_arg = list("centers" = 2),
+    initialization = random_initialization(),
+    ncores = getOption("ino_ncores"), verbose = getOption("ino_progress"),
+    label = paste0("subset(", how, ",", prop, ")")) {
   if (missing(x)) {
     return(strategy_call(match.call(expand.dots = TRUE)))
   }
@@ -250,7 +258,7 @@ subset_initialization <- function(x, arg = "data", by_row = TRUE, how = "random"
     initialization = initialization, ncores = ncores, verbose = verbose,
     label = label
   )
-  ino_status(paste0("Subsetting (",how,", ", prop * 100,"%)"), verbose = verbose)
+  ino_status(paste0("Subsetting (",how,", ", prop*100, "%)"), verbose = verbose)
   x_subset <- clear_ino(x, which = "all")
   x_subset$prob$add[[arg]] <- lapply(
     x_subset$prob$add[[arg]],
@@ -333,6 +341,7 @@ subset_initialization <- function(x, arg = "data", by_row = TRUE, how = "random"
       add_time = times[[run]]
     )
   }
+  check_failed_runs(x, verbose = verbose)
   return(x)
 }
 
@@ -388,7 +397,6 @@ optimize <- function(x, init, ncores, verbose) {
   pb <- progress::progress_bar$new(
     format = "Grid set :current/:total", total = length(grid), clear = TRUE
   )
-  # TODO: update progress bar after loop
   opts <- structure(
     list(function(n) {
       if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
@@ -409,6 +417,26 @@ optimize <- function(x, init, ncores, verbose) {
           grid[[i]]
         )
       )
+    )
+  }
+}
+
+#' Check for failed runs
+#'
+#' @description
+#' This helper function checks for failed runs in an \code{ino} object.
+#'
+#' @inheritParams random_initialization
+#'
+#' @return
+#' No return value, called for side effects.
+
+check_failed_runs <- function(x,verbose = getOption("ino_progress")) {
+  if (verbose) if (nfails(x) > 0) {
+    ino_warn(
+      paste(nfails(x), "of", nruns(x), "failed runs."),
+      paste0("Use 'get_fails(x) to inspect the error message(s)."),
+      paste0("Use 'clear_ino(x, which = 'fails') to clear the failed run(s).")
     )
   }
 }
@@ -457,23 +485,20 @@ save_result <- function(x, result, strategy, init, add_time = NULL) {
   grid_overview <- attr(grid, "overview")
   names_grid_overview <- colnames(grid_overview)
   nruns <- nruns(x)
-  res_fail <- sum(sapply(result, inherits, "fail"))
-  # TODO: collapse warnings
-  # TODO: make it easier to access warnings (maybe extra function?)
-  if (res_fail > 0) {
-    ino_warn(
-      event = paste(res_fail, "of", length(result), "runs failed."),
-      debug = "Use 'get_vars(vars = '.fail') to get the error message."
-    )
-  }
   for (s in seq_along(result)) {
     if (inherits(result[[s]], "fail")) {
       x$runs[[nruns + s]] <- list(
-        ".fail" = result[[s]]
+        ".fail" = result[[s]],
+        ".strategy" = strategy,
+        ".time" = NA,
+        ".optimum" = NA,
+        ".init" = init[[s]],
+        ".estimate" = NA
       )
     } else {
       x$runs[[nruns + s]] <- c(
         list(
+          ".fail" = NA,
           ".strategy" = strategy,
           ".time" = result[[s]][["time"]] + add_time[[s]],
           ".optimum" = result[[s]][["v"]],

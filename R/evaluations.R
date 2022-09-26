@@ -57,6 +57,31 @@ get_vars <- function(x, runs = NULL, vars = NULL) {
     lapply(`[`, vars)
 }
 
+#' Get failure messages
+#'
+#' @description
+#' This function extracts failure messages from an \code{ino} object.
+#'
+#' @inheritParams get_vars
+#'
+#' @return
+#' A list of failure messages for the optimization run.
+#'
+#' @export
+#'
+#' @importFrom dplyr %>%
+#'
+#' @keywords
+#' evaluation
+#'
+#' @seealso
+#' [get_vars()] for extracting any available variable.
+
+get_fails <- function(x, runs = NULL) {
+  if (is.null(runs)) runs <- seq_len(nruns(x))
+  get_vars(x = x, runs = runs, vars = ".fail")
+}
+
 #' Summary of initialization runs
 #'
 #' @description
@@ -123,6 +148,8 @@ summary.ino <- function(object, ...) {
 #' An object of class \code{ino}.
 #' @param by
 #' A character vector of variables to group by. Can be \code{NULL} (default).
+#' @param time_unit
+#' The time unit, see \code{\link{difftime}}.
 #' @param ...
 #' Ignored.
 #'
@@ -139,8 +166,10 @@ summary.ino <- function(object, ...) {
 #' @keywords
 #' evaluation
 
-plot.ino <- function(x, by = NULL, ...) {
-  summary(x) %>% ggplot(aes(x = "", y = .data$.time)) +
+plot.ino <- function(x, by = NULL, time_unit = "secs", ...) {
+  summary(x) %>%
+    mutate(.time = as.numeric(.data$.time, units = time_unit)) %>%
+    ggplot(aes(x = "", y = .data$.time)) +
     scale_y_continuous() +
     geom_boxplot() +
     {
@@ -151,7 +180,7 @@ plot.ino <- function(x, by = NULL, ...) {
       axis.text.x = element_blank(),
       axis.ticks.x = element_blank()
     ) +
-    ylab("optimization time")
+    ylab(paste("optimization time in", time_unit))
 }
 
 #' Optima overview
