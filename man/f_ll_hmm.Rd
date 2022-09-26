@@ -2,16 +2,24 @@
 % Please edit documentation in R/functions.R
 \name{f_ll_hmm}
 \alias{f_ll_hmm}
-\title{Log-likelihood function of the Poisson-hidden Markov model}
+\title{Log-likelihood function of a Gaussian-hidden Markov model}
 \usage{
-f_ll_hmm(theta, data, N = 2, neg = FALSE)
+f_ll_hmm(theta, data, N, neg = FALSE)
 }
 \arguments{
-\item{theta}{A numeric vector of model parameters.}
+\item{theta}{A numeric vector of model parameters.
+\itemize{
+\item The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
+elements of the transistion probability matrix.
+\item The next \code{N} elements are the mean values of the state-dependent
+normal distributions.
+\item The last \code{N} elements are the logarithms of the standard deviations of
+the state-dependent normal distributions.
+}}
 
-\item{data}{A \code{data.frame} that includes a time series of counts.}
+\item{data}{A \code{data.frame} with a column \code{obs} that includes a time series.}
 
-\item{N}{The number of states in the hidden Markov model.}
+\item{N}{The number of states.}
 
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
@@ -19,14 +27,15 @@ f_ll_hmm(theta, data, N = 2, neg = FALSE)
 The log-likelihood value at \code{theta}.
 }
 \description{
-Log-likelihood function of the Poisson-hidden Markov model
-}
-\details{
-The example uses a data set from {ino} that covers the number of major
-earthquakes (magnitude 7 or greater) in the world from 1900 until 2006.
+Log-likelihood function of a Gaussian-hidden Markov model
 }
 \examples{
-f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
+theta <- c(-1, -1, -2, 2, 0.5, 0.5)
+data <- sim_hmm(T = 1000, N = 2, theta = theta)
+f_ll_hmm(theta = theta, data = data, N = 2)
+\donttest{
+nlm(f_ll_hmm, p = theta, data = data, N = 2, neg = TRUE)$estimate
+}
 
 }
 \references{
