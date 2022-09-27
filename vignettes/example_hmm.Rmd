@@ -28,17 +28,27 @@ This vignette^[The vignette was build using R `r paste(R.Version()[c("major","mi
 The example data set considered throughout this vignette covers a time series of share returns from the stock 'Deutsche Bank'. The data set is freely accessible via Yahoo Finance. 
 
 ```{r}
+library("fHMM")
+file <- tempfile()
+fHMM::download_data(symbol = "DBK.DE", from = "2020-01-01", file = file)
+```
+
+```{r}
+library("dplyr")
+db_data <- read.csv(file) %>%
+  as_tibble() %>%
+  summarize(date = as.Date(Date, format = "%Y-%m-%d"),
+            obs = c(NA, diff(log(Close), lag=1) * 100)) %>%
+  filter(!is.na(obs)) %>%
+  print()
+```
+
+```{r}
 library("ggplot2")
-## download the data
-db_data <- read.csv("https://query1.finance.yahoo.com/v7/finance/download/DB?period1=948499200&period2=1663804800&interval=1d&events=history&includeAdjustedClose=true")
-db_data$date <- as.Date(db_data$Date, format = "%Y-%m-%d")
-## calculate log-returns (multiplied by 100)
-db_data$obs <- c(NA, log(db_data$Adj.Close[2:nrow(db_data)] / 
-                                   db_data$Adj.Close[1:(nrow(db_data) - 1)])) * 100
-db_data <- db_data[-1, ]
-## plot the time series of share returns
 ggplot(db_data, aes(x = date, y = obs)) +
-  geom_point() + geom_line() + ylab("log-returns [%]")
+  geom_point() +
+  geom_line() +
+  ylab("log-returns [%]")
 ```
 
 As the share returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions. The (log-)likelihood of a Gaussian-HMM is implemented in the function `f_ll_hmm()`.
@@ -69,10 +79,10 @@ hmm_ino <- setup_ino(
 We first use randomly chosen starting values. As the first two starting values belong to the tpm, we sample from a normal distribution with mean -1.5 and standard deviation of 0.5 --- as we use the multinomial logit link to ensure that the probabilities are between 0 and 1, a mean of -1.5 correspond to probabilities of staying in state 1 and 2 of about 0.81. For the two means, we draw two random numbers from the standard normal distribution, as the time series above indicates that the most of the returns are fairly close to zero. The starting values for the standard deviations are drawn from a uniform distribution between 0.5 and 2 (note that we exponentiate the standard deviations in the likelihood as they are constrained to be positive, and hence we log transform the starting values).
 
 ```{r, eval = FALSE}
-hmm_ino <- random_initialization(hmm_ino, runs = 50,
-                                 sampler = function() c(stats::rnorm(2, -1.5, 0.5),
-                                                        stats::rnorm(2),
-                                                        log(stats::runif(2, 0.5, 2))))
+sampler <- function() c(log(stats::runif(2, 0.1, 0.9)),
+                        stats::rnorm(2),
+                        log(stats::runif(2, 0.5, 2)))
+hmm_ino <- random_initialization(hmm_ino, runs = 50, sampler = sampler)
 ```
 
 
@@ -93,44 +103,15 @@ for(val in starting_values)
 To illustrate the subset initialization strategy, we fit our HMM to the first 50\% of the observation. The starting values for these subsets are chosen randomly from the same distributions as considered above. The function `subset_initialization()` then fits the HMM again to the entire sample using the estimates obtained from the subsets as initial values.
 
 ```{r, eval = FALSE}
-hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.5,
-                                 initialization = 
-                                   random_initialization(
-                                     runs = 50,
-                                     sampler = function() c(stats::rnorm(2, -1.5, 0.5),
-                                                            stats::rnorm(2),
-                                                            log(stats::runif(2, 0.5, 2)))
-                                   )
+hmm_ino <- subset_initialization(
+  hmm_ino, arg = "data", how = "first", prop = 0.5,
+  initialization =  random_initialization(runs = 50, sampler = sampler)
 )
 ```
 
 As the time series of share returns consists of `r nrow(db_data)` observations, we can even try to use fewer observations to fit our model. In the next step, we consider only the first 25% of the observations.
 
-```{r, eval = FALSE}
-hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.25,
-                                 initialization = 
-                                   random_initialization(
-                                     runs = 50,
-                                     sampler = function() c(stats::rnorm(2, -1.5, 0.5),
-                                                            stats::rnorm(2),
-                                                            log(stats::runif(2, 0.5, 2)))
-                                   )
-)
-```
-
 To further (potentially) decrease the computational cost associated with model fitting, we now consider only the first 5% of the data:
-
-```{r, eval = FALSE}
-hmm_ino <- subset_initialization(hmm_ino, arg = "data", how = "first", prop = 0.05,
-                                 initialization = 
-                                   random_initialization(
-                                     runs = 50,
-                                     sampler = function() c(stats::rnorm(2, -1.5, 0.5),
-                                                            stats::rnorm(2),
-                                                            log(stats::runif(2, 0.5, 2)))
-                                   )
-)
-```
 
 ## Evaluating the optimization runs
 
@@ -218,7 +199,5 @@ summary(hmm_ino) %>%
 ```
 
 While computation time is lowest for the fixed initialization strategy, subset initialization appears to be a promising approach. In particular, when considering the first 5% or 25% of the data in a first step, the computation time is most likely to be lower compared to the random initialization approach.
-
-
 
 
