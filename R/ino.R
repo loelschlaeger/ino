@@ -552,6 +552,9 @@ print.opts <- function(x, ...) {
 #' specification
 
 update_opt <- function(x, opt, verbose = getOption("ino_progress")) {
+  if (missing(x)) {
+    ino_stop("Please specify the ino object.")
+  }
   check_inputs(x = x, verbose = verbose)
   x$opts <- new_opts(opt = opt)
   ino_status("Updated optimizer", verbose = verbose)
