@@ -81,9 +81,9 @@ normal_mixture_llk <- function(theta, data, column){
   mu <- theta[1:2]
   sigma <- exp(theta[3:4])
   pi <- plogis(theta[5])
-  logl <- sum(log(pi * dnorm(data[[column]], mu[1], sigma[1]) + 
-                  (1 - pi) * dnorm(data[[column]], mu[2], sigma[2])))
-  return(-logl)
+  llk <- sum(log(pi * dnorm(data[[column]], mu[1], sigma[1]) + 
+                (1 - pi) * dnorm(data[[column]], mu[2], sigma[2])))
+  return(-llk)
 }
 ```
 
