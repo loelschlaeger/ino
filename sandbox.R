@@ -95,24 +95,30 @@ hmm_ino <- setup_ino(
   data = db_data,
   N = 2,
   neg = TRUE,
-  opt = set_optimizer_nlm(),
-  test_par = list("validate" = FALSE)
+  opt = set_optimizer_nlm()
 )
 
 sampler <- function() c(log(stats::runif(2, 0.1, 0.9)),
                         stats::rnorm(2),
                         log(stats::runif(2, 0.5, 2)))
 
-hmm_ino <- random_initialization(hmm_ino, runs = 10, sampler = sampler)
+hmm_ino <- random_initialization(hmm_ino, runs = 100, sampler = sampler)
+
+starting_values <- list(c(-2, -2, 0, 0, log(2), log(3)),
+                        c(-1.5, -1.5, -2, 2, log(1), log(2)),
+                        c(-1, -1, -3, 3, log(2), log(2)))
+for(val in starting_values)
+  hmm_ino <- fixed_initialization(hmm_ino, at = val)
+
+for(prop in c(0.05, 0.25, 0.5))
+  hmm_ino <- subset_initialization(
+    hmm_ino, arg = "data", how = "first", prop = prop,
+    initialization =  random_initialization(runs = 100, sampler = sampler)
+  )
 
 overview_optima(hmm_ino)
 
-for(prop in c(0.1,0.5)) {
-  hmm_ino <- subset_initialization(
-    hmm_ino, arg = "data", how = "first", prop = prop,
-    initialization = random_initialization(runs = 100)
-  )
-}
+plot(hmm_ino, by = ".strategy")
 
 
 # Example: Probit LL ------------------------------------------------------
