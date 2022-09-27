@@ -7,6 +7,8 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
+bibliography: ref.bib
+link-citations: true
 ---
 
 ```{r, include = FALSE}
@@ -22,21 +24,46 @@ options(ino_progress = FALSE)
 set.seed(1)
 ```
 
-## The motivation behind {ino}
+## The motivation behind the {ino} R package
 
-Whenever we numerically optimize a function, the optimization algorithm and chosen starting values can have a substantial effect on the computational cost or even on the results. The purpose of the {ino} R package is to provide a comprehensive toolbox for comparing different initialization strategies when performing numerical optimization. 
+Optimization of some target function is of great relevance in many fields, including finance (portfolio optimization), engineering (minimizing air resistance), and statistics (likelihood maximization). Often, the optimization problem cannot be solved analytically, for example when explicit formulas for gradient or Hessian are unknown. In these cases, numerical optimization algorithms are helpful. They iteratively explore the parameter space, guaranteeing to improve the function value over each iteration, and eventually converge to a point where no more improvements can be made [@Bonnans:2006].
 
-In the following, we demonstrate the main functionality of {ino}. In particular, we show how to numerically optimize a likelihood function, thereby applying different strategies for the choice of the starting values and the optimization strategy, and eventually comparing the optimization outcomes.
+In R, several functions are available that can be applied to numerically solve optimization problems, including (quasi) Newton (`stats::nlm()`, `stats::nlminb()`, `stats::optim()`), direct search (`pracma::nelder_mead()`), and conjugate gradient methods (`Rcgmin::Rcgmin()`). All these functions share the requirement that initial parameters values must be supplied from where the optimization is started. 
 
-## Example: Fitting a Gaussian mixture
+Optimization theory [@Nocedal:2006] shows that the choice of an initial point has a large influence on the convergence time and rate. In general, starting in areas of function saturation increases computation time, starting in areas of non-concavity may lead to convergence problems. Therefore, numerical optimization can be facilitated by putting effort on identifying good starting values. However, it is generally unclear what plausible initial values are and how they might affect the optimization problem at hand.
 
-We consider the popular `faithful` data set that is provided via base R.^[The data set contains information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA: the eruption time and the waiting time to the next eruption (both given in minutes).] The following histogram of eruption times indicate two clusters with short and long eruption times, respectively:
+The purpose of the {ino} R package is therefore threefold: to provide a comprehensive toolbox for 
+
+1. evaluating the effect of the initial values on the optimization,
+
+2. comparing different initialization strategies,
+
+3. and comparing different optimizer.
+
+## The main {ino} functionality
+
+- The starting point for working with {ino} is the `setup_ino()` function to specify the optimization problem, including the numerical optimizer.
+- Subsequently, the following functions can be applied to execute different initialization strategies:
+  - `fixed_initialization()` to optimize with fixed initial starting values
+  - `random_initialization()` to optimize with randomly chosen starting values
+  - `standardize_initialization()` to optimize after standardizing the optimization problem
+  - `subset_initialization()` to start optimization on a sub-problem
+- For evaluating the results, `overview_optima()` prints an overview of all local and global optima, and the `plot()` and `summary()` methods summarize the optimization runs.
+
+## The {ino} workflow
+
+We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to to the eruption times in the popular `faithful` data set that is provided via base R.
+
+### The optimization problem
+
+The `faithful` data set contains information about the eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA. The following histogram indicates two clusters with short and long eruption times, respectively:
 
 ```{r}
 library("ggplot2")
 data("faithful")
 ggplot(faithful, aes(x = eruptions, y = ..density..)) + 
-  geom_histogram(bins = 30) + xlab("Eruption time (min)") + ylab("density")
+  geom_histogram(bins = 30) + 
+  xlab("Eruption time (min)") 
 ```
 
 For both clusters, we assume a normal distribution here, such that we consider a mixture of two Gaussian densities for modeling the overall eruption times. The log-likelihood is given by
@@ -53,13 +80,21 @@ normal_mixture_llk <- function(theta, data, column){
   mu <- theta[1:2]
   sigma <- exp(theta[3:4])
   pi <- plogis(theta[5])
-  logl <- sum(log(pi * dnorm(data[[column]], mu[1], sigma[1]) + 
-                    (1 - pi) * dnorm(data[[column]], mu[2], sigma[2])))
-  return(-logl)
+  llk <- sum(log(pi * dnorm(data[[column]], mu[1], sigma[1]) + 
+                (1 - pi) * dnorm(data[[column]], mu[2], sigma[2])))
+  return(-llk)
 }
 ```
 
-We setup an `ino` object using the function `setup_ino`. Here, `f` constitutes the function to be optimized (i.e. `normal_mixture_llk`), `npar` gives the number of parameters, `data` gives the vector of observations as required by our likelihood function, and `opt` sets the optimizer. Behind the scenes, `setup_ino` runs several checks of the inputs, such as checking whether a function and a optimizer have been provided, whether the function `f` can be called, etc. 
+### Specification
+
+The optimization problem is specified using the function `setup_ino`. Here, 
+
+- `f` constitutes the function to be optimized (i.e., `normal_mixture_llk`), 
+- `npar` gives the number of parameters, 
+- `data` gives the data frame of observations as required by our likelihood function,
+- `column = "eruptions"` is an additional function argument, 
+- and `opt` sets the numerical optimizer. Numerical optimizer must be specified through the framework provided by the {optimizeR} package. It is possible to define a list of multiple optimizer for comparison.
 
 ```{r}
 geyser_ino <- setup_ino(
@@ -71,10 +106,13 @@ geyser_ino <- setup_ino(
 )
 ```
 
+Behind the scenes, `setup_ino` runs several input checks that can be specified via the `test_par` argument. Subsequently, it returns an `ino` object that can be passed to the other {ino} functionalities.
 
 ### Fixed starting values
 
-With the `ino` object `geyser_ino`, we can now optimize the likelihood function. We will first consider fixed starting values, i.e. we make "educated guesses" about starting values that are probably close to the optimum. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. For the variances, we set the starting values to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). We will use two sets of starting values where the means are lower and larger than 2 and 4, respectively. For both sets, the starting value for the mixing proportion is 0.5. To compare the results of different optimization runs, we also select a set of starting values which are somewhat unplausible.
+With the `ino` object `geyser_ino`, we can now optimize the likelihood function. We will first consider fixed starting values, i.e., we make "educated guesses" about starting values that are probably close to the optimum. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. For the variances, we set the starting values to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). 
+
+We will use two sets of starting values where the means are lower and larger than 2 and 4, respectively. For both sets, the starting value for the mixing proportion is 0.5. To compare the results of different optimization runs, we also select a third set of starting values which are somewhat unplausible.
 
 ```{r}
 starting_values <- list(c(1.7, 4.3, log(1), log(1), qlogis(0.5)),
@@ -95,7 +133,7 @@ Let's look at the results:
 summary(geyser_ino)
 ```
 
-The last run (with the unplausible starting values) converged to a local optimum. We discard this run from further comparisons:
+The last run (with the unplausible starting values) converged to a local optimum, as we can deduce from the column ".optimum". We discard this run from further comparisons:
 
 ```{r}
 geyser_ino <- clear_ino(geyser_ino, which = 3)
@@ -104,72 +142,68 @@ geyser_ino <- clear_ino(geyser_ino, which = 3)
 
 ### Randomly chosen starting values
 
-When using randomly chosen starting values, we apply the function `random_initialization()`. The most simple (yet __not__ necessarily effective) function call would be as follows:
+When using randomly chosen starting values, we apply the function `random_initialization()`. The most simple function call would be as follows:
 
 ```{r}
-geyser_ino <- random_initialization(geyser_ino)
+geyser_ino <- random_initialization(geyser_ino, runs = 10)
 ```
 
-Here, `npar` starting values are randomly drawn from a standard normal distribution. Depending on the application and the magnitude of the parameters to be estimated, this may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(2, 0.5)$ distribution:
+Here, starting values are randomly drawn from a standard normal distribution. Depending on the application and the magnitude of the parameters to be estimated, this may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(2, 0.5)$ distribution:
 
 ```{r}
-geyser_ino <- random_initialization(geyser_ino, sampler = function() stats::rnorm(npar(geyser_ino), mean = 2, sd = 0.5))
+sampler <- function() stats::rnorm(npar(geyser_ino), mean = 2, sd = 0.5)
 ```
-
-The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. As it was done above for fixed starting values, we could of course also use a loop here to run multiple optimization.
-
-## Evaluating the optimization runs
-
-The `geyser_ino` object now contains the results and further information on four optimization runs (two runs with fixed and two with randomly selected starting values). We can use `summary()` to obtain summary statistics for the optimization runs conducted. Moreover, we also can add grouping variables, for example to compare the average computation time for the two approaches:
 
 ```{r}
-summary(geyser_ino)
+geyser_ino <- random_initialization(
+  geyser_ino, runs = 10, sampler = sampler, label = "random_cs"
+)
 ```
 
-In addition, `summary()` by default prints the number of optimization runs for each group.
+The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. 
 
-Due to the relatively simple statistical model considered in this example, the average computation time in our examples is fairly low. However, when considering more complex models, the computation time can substantially differ across different optimization strategies.
-
-If we do not set any group, `summary()` prints the entire table displaying all optimization runs.
+The `overview_optime()` function provides an overview of the identified local and global optima:
 
 ```{r}
-summary(geyser_ino)
+overview_optima(geyser_ino)
 ```
-
-Here, the runs with fixed chosen starting values require much less iterations until convergence than the optimization with randomly chosen starting values. The final (negative) log-likelihood value (column `.optimum`) further indicates that the convergence to local optimum for the random initialized runs.
-
-## More involved initialization strategies 
 
 ### Standardized initialization
 
-For standardized initialization, we standardize all columns in our data before running the optimization. Specifically, after standardizing the data, we can again select to use either fixed or randomly chosen starting values. In the example code snippet shown below, we consider five sets of randomly selected starting values:
+For standardized initialization, we standardize all columns in our data before running the optimization. Specifically, after standardizing the data, we can again select to use either fixed or randomly chosen starting values. In the example code snippet shown below, we consider ten sets of randomly selected starting values:
 
 ```{r}
 geyser_ino <- standardize_initialization(
-  geyser_ino, initialization = random_initialization(runs = 5))
-summary(geyser_ino)
+  geyser_ino, initialization = random_initialization(runs = 10),
+  label = "standardize"
+)
 ```
 
 ### Subset initialization
 
-If the data set considered shows some complex structures or is very large, numerical optimization may become computationally costly. In such cases, *subset initialization* can be a helpful tool. 
+If the data set considered shows some complex structures or is very large, numerical optimization may become computationally costly. In such cases, subset initialization can be a helpful tool. 
 
-The function `subset_initialization` uses a subsample from the data via the argument `prop` to optimize the likelihood. We can then fit our model to the subset using either fixed or random starting values. For example, the following code snippet randomly samples 50\% of the observations and uses random initialization:
+The function `subset_initialization` first optimizes the function on a data subset of proportion `prop`, and subsequently optimizes on the full data set using the estimates from the first step as initial values. For example, the following code snippet randomly samples 25\% of the observations and uses random initialization:
 
 ```{r}
 geyser_ino <- subset_initialization(
-    geyser_ino, prop = 0.5, initialization = random_initialization(run = 5))
-```
-
-After having optimized the likelihood on the subsample, `subset_initialization()` automatically fits the model to the entire data set using the resulting parameter estimates of the subset as starting values. The resulting optimization run is labelled as `subset(random,0.5)` in the `summary()` table:
-
-```{r}
-summary(geyser_ino)
+  geyser_ino, how = "random", prop = 0.25, 
+  initialization = random_initialization(runs = 10),
+  label = "subset"
+)
 ```
 
 In addition to selecting subsamples at random, we can specify two further options using the argument `how`. When dealing with time series data, we usually do not want to delete single observations at random. Instead, we can select a proportion of the first rows by specifying `how = "first"`. We could also cluster our data first using `how = "kmeans"`. 
-For all subset optimization strategies, `subset_initialization()` first fits the model to the chosen subset and stores the resulting estimates. These estimates are then used as initial values in the second step where the model is fitted to the entire data. 
 
-In some of the examples above, we combined two optimization strategies. For example, we have chosen random starting values for a subset. The flexibility of {ino} also allows more than two combinations. We could, for example, select a subset, standardize the data, and then use random starting values.
+### Evaluating the optimization runs
 
+We can use `summary()` to obtain summary statistics for the optimization runs conducted, and `plot()` for a boxplot comparison of the optimization times:
 
+```{r, out.width = "100%"}
+summary(geyser_ino)
+plot(geyser_ino, by = ".strategy", nrow = 1)
+```
+
+Due to the relatively simple statistical model considered in this example, the average computation time in our examples is fairly low. However, when considering more complex models, the computation time can substantially differ across different optimization strategies.
+
+## References

@@ -408,28 +408,23 @@ validate_prob <- function(x = new_prob(), test_par = list()) {
     )
     if (is.null(f_out)) {
       ino_warn(
-        event = paste(
-          "Function test run", run, "cannot be validated."
-        ),
-        debug = paste(
-          "Initial values:", paste(init, collapse = " "), "\n",
-          "The test run returned 'NULL'. The evaluation most likely reached",
-          "the time limit. Try to increase 'f_checks_time'."
-        )
+        paste("Function test run", run, "cannot be validated."),
+        paste("The test run returned 'NULL'. The evaluation most likely",
+          "reached the time limit of", test_par$f_checks_time, "second(s)."),
+        "Try to increase 'f_checks_time' in 'test_par' input.",
+        paste("Initial values:", paste(init, collapse = " "))
       )
     } else if (inherits(f_out, "fail")) {
       ino_stop(
-        event = paste(
-          "Function test run", run, "failed."
-        ),
-        debug = paste(
-          f_out, "\nInitial values:", paste(init, collapse = " ")
-        )
+        paste("Function test run", run, "failed."),
+        f_out,
+        paste("Initial values:", paste(init, collapse = " "))
       )
     } else {
       if (!(is.numeric(f_out) && length(f_out) == 1)) {
         ino_stop(
-          event = "Function output is not a single numeric."
+          paste("Function output in test run", run, "is not a single numeric."),
+          paste("Initial values:", paste(init, collapse = " "))
         )
       }
     }
@@ -557,6 +552,9 @@ print.opts <- function(x, ...) {
 #' specification
 
 update_opt <- function(x, opt, verbose = getOption("ino_progress")) {
+  if (missing(x)) {
+    ino_stop("Please specify the ino object.")
+  }
   check_inputs(x = x, verbose = verbose)
   x$opts <- new_opts(opt = opt)
   ino_status("Updated optimizer", verbose = verbose)
@@ -647,6 +645,32 @@ nruns <- function(x) {
   length(x$runs)
 }
 
+#' Number of failed optimization runs
+#'
+#' @description
+#' This function returns the number of failed optimization runs saved in an
+#' \code{ino} object.
+#'
+#' @param x
+#' An object of class \code{ino}.
+#'
+#' @return
+#' An integer, the number of failed recorded optimization runs.
+#'
+#' @export
+#'
+#' @keywords
+#' specification
+
+nfails <- function(x) {
+  check_inputs(x = x)
+  fails <- sapply(x$runs, function(x) inherits(x[[".fail"]], "fail"))
+  structure(
+    sum(fails),
+    "fails" = which(fails)
+  )
+}
+
 #' Create grid
 #'
 #' @description
@@ -732,8 +756,10 @@ print.grid <- function(x, ...) {
 #' @param x
 #' An object of class \code{ino}.
 #' @param which
-#' Either \code{"all"} to clear all records, or alternatively a
-#' numeric vector of row numbers from \code{summary(x)}.
+#' Either
+#' - \code{"all"} to clear all records,
+#' - or \code{"fails"} to clear all failed records,
+#' - or a numeric vector of row numbers from \code{summary(x)}.
 #'
 #' @return
 #' The updated input \code{x}.
@@ -755,13 +781,16 @@ clear_ino <- function(x, which) {
       debug = "Either 'all' or a numeric vector of row indices of 'summary(x)'."
     )
   }
-  if(identical(which, "all")) {
+  if (identical(which, "all")) {
     x[["runs"]] <- new_runs()
   } else {
+    if (identical(which, "fails")) {
+      which <- attr(nfails(x), "fails")
+    }
     if (!is.numeric(which) || any(which < 0)) {
       ino_stop(
-        event = "Argument 'which' is misspecified.",
-        debug = "Either 'all' or a numeric vector of row indices of 'summary(x)'."
+        "Argument 'which' is misspecified.",
+        "'all', 'fails', or a numeric vector of row indices of 'summary(x)'."
       )
     } else {
       x[["runs"]] <- x[["runs"]][-which, drop = FALSE]

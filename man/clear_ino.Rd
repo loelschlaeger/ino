@@ -9,8 +9,12 @@ clear_ino(x, which)
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{which}{Either \code{"all"} to clear all records, or alternatively a
-numeric vector of row numbers from \code{summary(x)}.}
+\item{which}{Either
+\itemize{
+\item \code{"all"} to clear all records,
+\item or \code{"fails"} to clear all failed records,
+\item or a numeric vector of row numbers from \code{summary(x)}.
+}}
 }
 \value{
 The updated input \code{x}.

@@ -57,6 +57,31 @@ get_vars <- function(x, runs = NULL, vars = NULL) {
     lapply(`[`, vars)
 }
 
+#' Get failure messages
+#'
+#' @description
+#' This function extracts failure messages from an \code{ino} object.
+#'
+#' @inheritParams get_vars
+#'
+#' @return
+#' A list of failure messages for the optimization run.
+#'
+#' @export
+#'
+#' @importFrom dplyr %>%
+#'
+#' @keywords
+#' evaluation
+#'
+#' @seealso
+#' [get_vars()] for extracting any available variable.
+
+get_fails <- function(x, runs = NULL) {
+  if (is.null(runs)) runs <- seq_len(nruns(x))
+  get_vars(x = x, runs = runs, vars = ".fail")
+}
+
 #' Summary of initialization runs
 #'
 #' @description
@@ -123,6 +148,10 @@ summary.ino <- function(object, ...) {
 #' An object of class \code{ino}.
 #' @param by
 #' A character vector of variables to group by. Can be \code{NULL} (default).
+#' @param time_unit
+#' The time unit, see \code{\link{difftime}}.
+#' @param nrow
+#' Passed to \code{\link[ggplot2]{facet_wrap}}.
 #' @param ...
 #' Ignored.
 #'
@@ -131,7 +160,7 @@ summary.ino <- function(object, ...) {
 #'
 #' @export
 #'
-#' @importFrom dplyr %>%
+#' @importFrom dplyr %>% mutate
 #' @importFrom ggplot2 ggplot aes scale_y_continuous geom_boxplot facet_wrap
 #' theme element_blank ylab
 #' @importFrom rlang .data
@@ -139,19 +168,23 @@ summary.ino <- function(object, ...) {
 #' @keywords
 #' evaluation
 
-plot.ino <- function(x, by = NULL, ...) {
-  summary(x) %>% ggplot(aes(x = "", y = .data$.time)) +
-    scale_y_continuous() +
-    geom_boxplot() +
+plot.ino <- function(x, by = NULL, time_unit = "secs", nrow = NULL, ...) {
+  summary(x) %>%
+    dplyr::mutate(.time = as.numeric(.data$.time, units = time_unit)) %>%
+    ggplot2::ggplot(aes(x = "", y = .data$.time)) +
+    ggplot2::scale_y_continuous() +
+    ggplot2::geom_boxplot() +
     {
-      if (!is.null(by)) facet_wrap(by, labeller = "label_both")
+      if (!is.null(by)) {
+        ggplot2::facet_wrap(by, labeller = "label_both", nrow = nrow)
+      }
     } +
-    theme(
-      axis.title.x = element_blank(),
-      axis.text.x = element_blank(),
-      axis.ticks.x = element_blank()
+    ggplot2::theme(
+      axis.title.x = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank()
     ) +
-    ylab("optimization time")
+    ggplot2::ylab(paste("optimization time in", time_unit))
 }
 
 #' Optima overview

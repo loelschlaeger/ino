@@ -4,12 +4,16 @@
 \alias{plot.ino}
 \title{Visualization of optimization time}
 \usage{
-\method{plot}{ino}(x, by = NULL, ...)
+\method{plot}{ino}(x, by = NULL, time_unit = "secs", nrow = NULL, ...)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
 \item{by}{A character vector of variables to group by. Can be \code{NULL} (default).}
+
+\item{time_unit}{The time unit, see \code{\link{difftime}}.}
+
+\item{nrow}{Passed to \code{\link[ggplot2]{facet_wrap}}.}
 
 \item{...}{Ignored.}
 }

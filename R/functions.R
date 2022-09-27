@@ -108,28 +108,84 @@ f_easom <- function(x) {
   -cos(x[1]) * cos(x[2]) * exp(-((x[1] - pi)^2 + (x[2] - pi)^2))
 }
 
-#' Log-likelihood function of the Poisson-hidden Markov model
+#' Simulate data from a Gaussian-hidden Markov model
+#'
+#' @seealso
+#' [f_ll_hmm()] for computing the log-likelihood of a Gaussian-hidden Markov
+#' model
+#'
+#' @param T
+#' The number of observations.
+#' @param N
+#' The number of states.
+#' @param theta
+#' A numeric vector of model parameters.
+#' - The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
+#'   elements of the transition probability matrix.
+#' - The next \code{N} elements are the mean values of the state-dependent
+#'   normal distributions.
+#' - The last \code{N} elements are the logarithms of the standard deviations of
+#'   the state-dependent normal distributions.
+#'
+#' @return
+#' A \code{data.frame}. The first column (\code{T}) is the identifier for the
+#' time point. The second column (\code{obs}) contains the observations for each
+#' time point.
+#'
+#' @examples
+#' tpm <- matrix(c(0.8,0.1,0.2,0.9), nrow = 2)
+#' mu <- c(-2,2)
+#' sigma <- c(0.5,1)
+#' theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+#' sim_hmm(T = 100, N = 2, theta = theta)
+#'
+#' @importFrom stats rnorm
+#'
+#' @keywords
+#' internal function
+#'
+#' @export
+
+sim_hmm <- function(T, N, theta) {
+  stopifnot(is.numeric(theta), length(theta) == N*(N-1)+2*N)
+  tpm <- matrix(1, N, N)
+  tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
+  tpm <- tpm / rowSums(tpm)
+  mu <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
+  sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
+  delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
+  if (inherits(delta, "try-error")) delta <- rep(1, N) / N
+  s <- numeric(T)
+  s[1] <- sample(1:N, size = 1, prob = delta)
+  x <- numeric(T)
+  x[1] <- stats::rnorm(1, mean = mu[s[1]], sd = sigma[s[1]])
+  for(t in 2:T){
+    s[t] <- sample(1:N, size = 1, prob = tpm[s[t-1],])
+    x[t] <- stats::rnorm(1, mean = mu[s[t-1]], sd = sigma[s[t-1]])
+  }
+  data.frame(T = 1:T, obs = x)
+}
+
+#' Log-likelihood function of a Gaussian-hidden Markov model
 #'
 #' @references
 #' https://en.wikipedia.org/wiki/Hidden_Markov_model
 #'
-#' @details
-#' The example uses a data set from {ino} that covers the number of major
-#' earthquakes (magnitude 7 or greater) in the world from 1900 until 2006.
-#'
-#' @param theta
-#' A numeric vector of model parameters.
+#' @inheritParams sim_hmm
 #' @param data
-#' A \code{data.frame} that includes a time series of counts.
-#' @param N
-#' The number of states in the hidden Markov model.
+#' A \code{data.frame} with a column \code{obs} that includes a time series.
 #' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
 #' @examples
-#' f_ll_hmm(theta = c(-1, -1, 1, 2), data = earthquakes, N = 2)
+#' theta <- c(-1, -1, -2, 2, 0.5, 0.5)
+#' data <- sim_hmm(T = 1000, N = 2, theta = theta)
+#' f_ll_hmm(theta = theta, data = data, N = 2)
+#' \donttest{
+#' nlm(f_ll_hmm, p = theta, data = data, N = 2, neg = TRUE)$estimate
+#' }
 #'
-#' @importFrom stats dpois
+#' @importFrom stats dnorm
 #'
 #' @return
 #' The log-likelihood value at \code{theta}.
@@ -139,37 +195,28 @@ f_easom <- function(x) {
 #'
 #' @export
 
-f_ll_hmm <- function(theta, data, N = 2, neg = FALSE) {
-
-  ### input checks
+f_ll_hmm <- function(theta, data, N, neg = FALSE) {
   stopifnot(is.numeric(theta), is.data.frame(data), N%%1==0)
-
-  ### transition probability matrix (t.p.m.)
-  tpm <- diag(N)
-  tpm[!tpm] <- exp(theta[1:(N * (N - 1))])
-  tpm <- tpm/rowSums(tpm)
-
-  ### lambda for each state
-  lambda <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
+  T <- nrow(data)
+  tpm <- matrix(1, N, N)
+  tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
+  tpm <- tpm / rowSums(tpm)
+  mu <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
+  sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
   delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
-  if ("try-error" %in% class(delta)) delta <- rep(1, N) / N
-
-  ### allprobs matrix
-  allprobs <- matrix(1, nrow(data), N)
-  for(j in 1:N){
-    allprobs[, j] <- dpois(data$obs, exp(lambda[j]))
+  if (inherits(delta, "try-error")) delta <- rep(1, N) / N
+  allprobs <- matrix(1, T, N)
+  for(n in 1:N){
+    allprobs[, n] <- stats::dnorm(data$obs, mean = mu[n], sd = sigma[n])
   }
-
-  ### forward algorithm
   foo <- delta %*% diag(allprobs[1,])
   llk <- log(sum(foo))
   phi <- foo/sum(foo)
-  for(t in 2:nrow(data)){
+  for(t in 2:T){
     foo <- phi %*% tpm %*% diag(allprobs[t, ])
     llk <- llk + log(sum(foo))
     phi <- foo/sum(foo)
   }
-
   return(ifelse(neg, -llk, llk))
 }
 
