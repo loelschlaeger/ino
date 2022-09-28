@@ -21,13 +21,14 @@ knitr::opts_chunk$set(
 )
 library("ino")
 options(ino_progress = FALSE)
+probit_ino <- ino::probit_ino
 ```
 
 The probit model is a flexible and widely-used tool for the analysis of such discrete choice behavior. Choosing between alternatives is omnipresent in everyday life, from the choice of a vehicle for traveling to work over different brands in a supermarket to companies deciding among production plans. Many scientific areas apply the probit model for studying the driving factors behind decision makers' choices, for example transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. Estimating the probit model's parameters traditionally is performed via maximizing the likelihood function numerically. With rising model complexity however, this approach becomes both computationally expensive and does not guarantee convergence to the global optimum.  
 
 ## The model formulation
 	
-We briefly formulate the probit model and its estimation and refer to @Train:2009 and @Bhat:2011 for further details. Say that $N$ deciders choose among $J \geq 2$ alternatives at each of $T$ choice occasions. The values for $J$ and $T$ can be decider-specific, though we do not show this dependence in our notation. Let $y_{nt} \in \{1,\dots,J\}$ label the choice of decider $n$ at occasion $t$. Assume that the choice was rational in the sense that $y_{nt}$ yields the highest utility $U_{nt}$ for $n$ at $t$. The probit model defines $U_{nt} = X_{nt} \beta + \epsilon_{nt}$, where $X_{nt}$ is a $J\times P$-matrix of $P$ characteristics for each alternative, $\beta$ is a coefficient vector of length $P$ and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normal distributed unobserved influences. We ensure identifiability by taking utility differences and fixing one error-term variance. This implies that instead of $\Sigma$, we estimate $J(J-1)/2-1$ parameters of a transformed covariance matrix. 
+We briefly formulate the probit model and its estimation and refer to @Train:2009 and @Bhat:2011 for further details. Say that $N$ deciders choose among $J \geq 2$ alternatives at each of $T$ choice occasions. The values for $J$ and $T$ can be decider-specific, though we do not show this dependence in our notation. Let $y_{nt} \in \{1,\dots,J\}$ label the choice of decider $n$ at occasion $t$. Assume that the choice was rational in the sense that $y_{nt}$ yields the highest utility $U_{nt}$ for $n$ at $t$. The probit model defines $$U_{nt} = X_{nt} \beta + \epsilon_{nt}$$, where $X_{nt}$ is a $J\times P$-matrix of $P$ characteristics for each alternative, $\beta$ is a coefficient vector of length $P$ and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normal distributed unobserved influences. We ensure identifiability by taking utility differences and fixing one error-term variance. This implies that instead of $\Sigma$, we estimate $J(J-1)/2-1$ parameters of a transformed covariance matrix. 
 	
 The researcher aims to estimate the values for $b$ and $\Sigma$, most commonly by the maximum likelihood method. Let $\theta$ denote the vector of the $P$ coefficients of $b$ and $J(J-1)/2-1$ identified parameters of $\Sigma$. Note that the length of $\theta$ rises quadratically with $J$. The maximum likelihood estimate $\hat{\theta}$ is obtained by solving
 \begin{equation}
@@ -35,12 +36,89 @@ The researcher aims to estimate the values for $b$ and $\Sigma$, most commonly b
 	\arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},
 \end{equation}
 where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the normal density. The integral part of does not have a closed-form expression and hence must be approximated numerically.
-	
-## Initializing with standardizing
-	
+
+## Simulate data from a probit model
+
+The {ino} package provides the function `sim_mnp()` to simulate data from a probit model. We simulate 10 data sets.
+
+```{r}
+N <- 100
+T <- 10
+J <- 3
+P <- 3
+b <- c(1,-1,0.5)
+Sigma <- diag(J)
+X <- function() {
+  class <- sample(0:1, 1)
+  mean <- ifelse(class, 2, -2)
+  matrix(stats::rnorm(J*P, mean = mean), nrow = J, ncol = P)
+}
+probit_data <- replicate(10, sim_mnp(
+  N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X
+), simplify = FALSE)
+```
+
+## Setup
+
+The following lines specify the `ino` object. The likelihood is computed via `f_ll_mnp()` which is provided via {ino}. Via the `global` argument, we can specify the true parameter vector thats leads to the global optimum. The `mpvs = "data"` input specifies that we want to loop over the ten provided data sets.
+
+```{r, eval = FALSE}
+true <- attr(probit_data[[1]], "true")[-1]
+probit_ino <- setup_ino(
+  f = f_ll_mnp,
+  npar = 5,
+  global = true,
+  data = probit_data,
+  neg = TRUE,
+  mpvs = "data",
+  opt = set_optimizer_nlm(iterlim = 1000)
+)
+```
+
+## Random initialization
+
+We initialize `runs = 100` times randomly.
+
+```{r, eval = FALSE}
+probit_ino <- random_initialization(probit_ino, runs = 100)
+```
+
 ## Initializing using a subsample
-	
-## Alternating optimization
+
+We initialize on a subset of proportion 20\% and 50\%, which was selected randomly and using kmeans, respectively.
+
+```{r, eval = FALSE}
+for(how in c("random", "kmeans")) for(prop in c(0.2,0.5)) {
+  probit_ino <- subset_initialization(
+    probit_ino, arg = "data", how = how, prop = prop,
+    ind_ign = 1:3, initialization = random_initialization(runs = 100)
+  )
+}
+```
+
+## Remove runs that did not converge
+
+3 optimization runs reached the iteration limit of 1000 iterations:
+
+```{r}
+library("dplyr", warn.conflicts = FALSE)
+summary(probit_ino, "iterations" = "iterations") %>% filter(iterations >= 1000)
+```
+
+We exclude them from further analysis:
+
+```{r}
+ind <- which(summary(probit_ino, "iterations" = "iterations")$iterations >= 1000)
+probit_ino <- clear_ino(probit_ino, which = ind) 
+```
+
+## Comparison
+
+```{r, out.width = "100%", fig.dim = c(10, 6)}
+plot(probit_ino, by = ".strategy", time_unit = "mins", nrow = 1)
+```
+
+We see that the subset initialization strategies reduce the computation time significantly, in comparison to the random initialization on the full data set.
 	
 ## References
 

@@ -189,7 +189,7 @@ geyser_ino <- random_initialization(geyser_ino, runs = 10)
 Here, starting values are randomly drawn from a standard normal distribution. Depending on the application and the magnitude of the parameters to be estimated, this may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(2, 0.5)$:
 
 ```{r}
-sampler <- function() stats::rnorm(npar(geyser_ino), mean = 2, sd = 0.5)
+sampler <- function() stats::rnorm(5, mean = 2, sd = 0.5)
 geyser_ino <- random_initialization(
   geyser_ino, runs = 10, sampler = sampler, label = "random_cs"
 )

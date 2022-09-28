@@ -5,12 +5,13 @@
 \alias{probit_ino}
 \title{Example application of {ino} to probit likelihood}
 \format{
-TBA
+An object of class \code{ino}.
 }
 \usage{
 data(probit_ino)
 }
 \description{
-TBA
+See the vignette about the probit likelihood for details:
+\code{vignette("example_probit", package = "ino")}
 }
 \keyword{dataset}

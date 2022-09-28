@@ -1,6 +1,7 @@
 Package: ino
 Title: Initialization of Numerical Optimization
-Version: 0.1.0.9000
+Version: 0.2.0
+Date: 2022-09-28
 Authors@R: c(
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
@@ -11,7 +12,7 @@ Authors@R: c(
            role = c("aut"),
            comment = c(ORCID = "0000-0002-9373-0365"))
            )
-Description: Implementation of several initialization strategies for the 
+Description: Implementation of initialization strategies for the 
     numerical optimization of real-valued functions, in particular likelihood
     functions of statistical models.
 License: GPL (>= 3)

@@ -793,7 +793,7 @@ clear_ino <- function(x, which) {
         "'all', 'fails', or a numeric vector of row indices of 'summary(x)'."
       )
     } else {
-      x[["runs"]] <- x[["runs"]][-which, drop = FALSE]
+      x[["runs"]] <- new_runs(x[["runs"]][-which, drop = FALSE])
     }
   }
   return(x)

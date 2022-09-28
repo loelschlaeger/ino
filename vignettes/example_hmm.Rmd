@@ -156,10 +156,10 @@ get_vars(hmm_ino, runs = which(summary(hmm_ino)$.optimum < 12878)[1])[[1]]$.init
 We use the `plot()` function to investigate the computation time. Intuitively, optimization runs with fixed starting values should be faster than with random starting values, since we have carefully chosen the fixed starting values by investigating the data. The boxplots confirm this intuition: 
 
 ```{r}
-plot(hmm_ino, by = ".strategy")
+plot(hmm_ino, by = ".strategy", nrow = 1)
 ```
 
-Using the output provided by `summary()` and some data manipulation functions provided by the package `dplyr`, we can also compute the average time per strategy:
+Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute the average time per strategy:
 
 ```{r warning=FALSE,message=FALSE}
 summary(hmm_ino) %>% 
@@ -167,7 +167,7 @@ summary(hmm_ino) %>%
   summarise(avg_time = mean(.time))
 ```
 
-This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`. For that, we will again use functions from `dplyr`.
+This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`. For that, we will again use functions from {dplyr}.
 
 ```{r}
 summary(hmm_ino) %>% 
