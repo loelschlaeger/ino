@@ -21,17 +21,17 @@
 #' dataset
 "earthquakes"
 
-#' Example application of {ino} to HMM likelihood
+#' Example application of {ino} to fit an HMM
 #'
 #' @description
-#' TBA
+#' The ino object that is obtained when running the code provided in the hidden Markov model vignette.
 #'
 #' @docType data
 #'
-#' @usage data(hmm_ino)
+#' @usage data("hmm_ino")
 #'
 #' @format
-#' TBA
+#' An object of class `ino`.
 #'
 #' @keywords
 #' dataset
