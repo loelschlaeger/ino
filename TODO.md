@@ -4,11 +4,14 @@ The following tasks are on our agenda and will be tackled as time permits.
 
 ## Documentation
 
-- [x] write documentation for `hmm_ino` (M)
-- [x] write documentation for `probit_ino` (L)
-- [x] write probit vignette (L)
-- [ ] extend HMM vignette, maybe longer time series (M)
+## Examples
+
+- [ ] additional mixture model (longer optimization time?)
+- [ ] extend probit model example
 
 ## Paper
 
-- [x] add template from RJournal (L)
+- [ ] update meta-data for rjournal template
+- [ ] remove old contents from rjournal template
+- [ ] start writing introduction, background, motivation
+- [ ] add sections for three examples (mixture model, HMM, probit model)
