@@ -36,7 +36,8 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     purrr,
-    pracma
+    pracma,
+    fHMM
 Config/testthat/edition: 3
 URL: https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues
