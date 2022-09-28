@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
   out.width = "75%"
 )
 library("ino")
+set.seed(1)
 hmm_ino <- ino::hmm_ino
 ```
 
@@ -27,13 +28,13 @@ This vignette^[The vignette was build using R `r paste(R.Version()[c("major","mi
 
 The example data set considered throughout this vignette covers a time series of share returns from the stock 'Deutsche Bank'. The data set is freely accessible via Yahoo Finance. 
 
-```{r}
+```{r message=FALSE,warning=FALSE}
 library("fHMM")
 file <- tempfile()
-fHMM::download_data(symbol = "DBK.DE", from = "2020-01-01", file = file)
+fHMM::download_data(symbol = "DBK.DE", from = "2000-01-01", file = file)
 ```
 
-```{r}
+```{r message=FALSE,warning=FALSE}
 library("dplyr")
 db_data <- read.csv(file) %>%
   as_tibble() %>%
@@ -109,9 +110,15 @@ hmm_ino <- subset_initialization(
 )
 ```
 
-As the time series of share returns consists of `r nrow(db_data)` observations, we can even try to use fewer observations to fit our model. In the next step, we consider only the first 25% of the observations.
+As the time series of share returns consists of `r nrow(db_data)` observations, we can even try to use fewer observations to fit our model. In the next step, we consider only the first 5% of the observations.
 
-To further (potentially) decrease the computational cost associated with model fitting, we now consider only the first 5% of the data:
+
+```{r, eval = FALSE}
+hmm_ino <- subset_initialization(
+  hmm_ino, arg = "data", how = "first", prop = 0.05,
+  initialization =  random_initialization(runs = 50, sampler = sampler)
+)
+```
 
 ## Evaluating the optimization runs
 
@@ -134,13 +141,13 @@ summary(hmm_ino)
 To obtain the starting values that lead to the global optimum, we first check which of the optimization runs actually reached the global optimum:
 
 ```{r}
-which(summary(hmm_ino)$.optimum < 12931)
+which(summary(hmm_ino)$.optimum < 12878)
 ```
 
 We can access the corresponding initial values of, for example, the first of these runs via:
 
 ```{r}
-get_vars(hmm_ino, runs = which(summary(hmm_ino)$.optimum < 12931)[1])[[1]]$.init
+get_vars(hmm_ino, runs = which(summary(hmm_ino)$.optimum < 12878)[1])[[1]]$.init
 ```
 
 
@@ -155,17 +162,16 @@ plot(hmm_ino, by = ".strategy")
 Using the output provided by `summary()` and some data manipulation functions provided by the package `dplyr`, we can also compute the average time per strategy:
 
 ```{r warning=FALSE,message=FALSE}
-library("dplyr")
 summary(hmm_ino) %>% 
   group_by(.strategy) %>% 
   summarise(avg_time = mean(.time))
 ```
 
-This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of 12930.73. For that, we will again use functions from `dplyr`.
+This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r as.numeric(as.character(overview_optima(hmm_ino)[1,1]))`. For that, we will again use functions from `dplyr`.
 
 ```{r}
 summary(hmm_ino) %>% 
-  mutate(global_optimum = ifelse(.optimum < 12931, 1, 0)) %>% 
+  mutate(global_optimum = ifelse(.optimum < 12878, 1, 0)) %>% 
   group_by(.strategy) %>% 
   summarise(proportion_global_optimum = mean(global_optimum))
 ```
@@ -176,7 +182,7 @@ Let's again compare the average computation time, but only for those runs that l
 
 ```{r}
 summary(hmm_ino) %>% 
-  filter(.optimum < 12931) %>% 
+  filter(.optimum < 12878) %>% 
   group_by(.strategy) %>% 
   summarise(mean_time = mean(.time))
 ```
@@ -185,7 +191,7 @@ For those runs that converged to the global optimum, we can again compare the co
 
 ```{r}
 summary(hmm_ino) %>% 
-  filter(.optimum < 12931) %>% 
+  filter(.optimum < 12878) %>% 
   ggplot(aes(x = "", y = .time)) +
     scale_y_continuous() +
     geom_boxplot() +
@@ -198,6 +204,6 @@ summary(hmm_ino) %>%
     ylab("optimization time")
 ```
 
-While computation time is lowest for the fixed initialization strategy, subset initialization appears to be a promising approach. In particular, when considering the first 5% or 25% of the data in a first step, the computation time is most likely to be lower compared to the random initialization approach.
+While computation time is lowest for the fixed initialization strategy, subset initialization appears to be a promising approach. In particular, when considering the first 5% of the data in a first step, the computation time is most likely to be lower compared to the random initialization approach.
 
 
