@@ -40,14 +40,15 @@
 #' Example application of {ino} to probit likelihood
 #'
 #' @description
-#' TBA
+#' See the vignette about the probit likelihood for details:
+#' \code{vignette("example_probit", package = "ino")}
 #'
 #' @docType data
 #'
 #' @usage data(probit_ino)
 #'
 #' @format
-#' TBA
+#' An object of class \code{ino}.
 #'
 #' @keywords
 #' dataset
