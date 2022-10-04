@@ -33,12 +33,16 @@ var_names <- function(x) {
 #'
 #' @param x
 #' An object of class \code{ino}.
-#' @param runs
+#' @param run_ids
 #' An integer vector, specifying the optimization runs of interest. Can be
 #' \code{NULL} (default), in which case all runs are considered.
 #' @param vars
 #' A character vector, specifying the variables of interest. Can be
 #' \code{NULL} (default), in which case all variables are considered.
+#' @param simplify
+#' A boolean, if \code{TRUE} (default) the nested list structure is simplified
+#' in case of a single value for \code{run_ids} or a single value for
+#' \code{vars}.
 #'
 #' @return
 #' A list, each element is a list of variables of an optimization run.
@@ -50,11 +54,38 @@ var_names <- function(x) {
 #' @keywords
 #' evaluation
 
-get_vars <- function(x, runs = NULL, vars = NULL) {
-  if (is.null(runs)) runs <- seq_len(nruns(x))
+get_vars <- function(x, run_ids = NULL, vars = NULL, simplify = TRUE) {
+  if (is.null(run_ids)) run_ids <- seq_len(nruns(x))
   if (is.null(vars)) vars <- var_names(x)
-  lapply(x$runs[runs], append, list(".global" = x$prob$global)) %>%
-    lapply(`[`, vars)
+  check_inputs(x = x, run_ids = run_ids, vars = vars, simplify = simplify)
+  out <- lapply(x$runs[run_ids], append, list(".global" = x$prob$global)) %>%
+    lapply(`[`, vars) %>%
+    ### drop variables with NA name
+    lapply(function(x) x[!is.na(names(x))])
+  if (all(sapply(out, length) == 0)) {
+    ino_warn(
+      "No variables found."
+    )
+    return(NULL)
+  } else {
+    if (simplify) {
+      if (length(out) == 1) {
+        if (length(out[[1]]) == 1) {
+          return(out[[1]][[1]])
+        } else {
+          return(out[[1]])
+        }
+      } else {
+        if (all(sapply(out, length) == 1)) {
+          return(unlist(out, recursive = FALSE, use.names = FALSE))
+        } else {
+          return(out)
+        }
+      }
+    } else {
+      return(out)
+    }
+  }
 }
 
 #' Get failure messages
@@ -77,9 +108,8 @@ get_vars <- function(x, runs = NULL, vars = NULL) {
 #' @seealso
 #' [get_vars()] for extracting any available variable.
 
-get_fails <- function(x, runs = NULL) {
-  if (is.null(runs)) runs <- seq_len(nruns(x))
-  get_vars(x = x, runs = runs, vars = ".fail")
+get_fails <- function(x, run_ids = NULL) {
+  get_vars(x = x, run_ids = run_ids, vars = ".fail", simplify = TRUE)
 }
 
 #' Summary of initialization runs

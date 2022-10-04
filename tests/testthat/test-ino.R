@@ -43,3 +43,8 @@ test_that("ino grid can be created", {
   grid <- grid_ino(x)
   expect_s3_class(grid, "grid")
 })
+
+test_that("input checks work", {
+  expect_error(check_inputs(x = 1))
+  expect_error(check_inputs(simplify = "this_is_not_a_boolean"))
+})

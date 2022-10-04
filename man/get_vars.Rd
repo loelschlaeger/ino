@@ -4,16 +4,20 @@
 \alias{get_vars}
 \title{Get variables}
 \usage{
-get_vars(x, runs = NULL, vars = NULL)
+get_vars(x, run_ids = NULL, vars = NULL, simplify = TRUE)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{runs}{An integer vector, specifying the optimization runs of interest. Can be
+\item{run_ids}{An integer vector, specifying the optimization runs of interest. Can be
 \code{NULL} (default), in which case all runs are considered.}
 
 \item{vars}{A character vector, specifying the variables of interest. Can be
 \code{NULL} (default), in which case all variables are considered.}
+
+\item{simplify}{A boolean, if \code{TRUE} (default) the nested list structure is simplified
+in case of a single value for \code{run_ids} or a single value for
+\code{vars}.}
 }
 \value{
 A list, each element is a list of variables of an optimization run.

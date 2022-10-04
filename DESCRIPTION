@@ -1,6 +1,6 @@
 Package: ino
 Title: Initialization of Numerical Optimization
-Version: 0.2.0
+Version: 0.2.0.9000
 Date: 2022-09-28
 Authors@R: c(
     person("Lennart", "Oelschl\u00e4ger", 

@@ -4,12 +4,12 @@
 \alias{get_fails}
 \title{Get failure messages}
 \usage{
-get_fails(x, runs = NULL)
+get_fails(x, run_ids = NULL)
 }
 \arguments{
 \item{x}{An object of class \code{ino}.}
 
-\item{runs}{An integer vector, specifying the optimization runs of interest. Can be
+\item{run_ids}{An integer vector, specifying the optimization runs of interest. Can be
 \code{NULL} (default), in which case all runs are considered.}
 }
 \value{

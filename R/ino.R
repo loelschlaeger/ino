@@ -816,6 +816,7 @@ clear_ino <- function(x, which) {
 check_inputs <- function(...) {
   x <- runs <- sampler <- ncores <- verbose <- at <- arg <- by_col <- NULL
   center <- ind_ign <- initialization <- how <- prop <- by_row <- NULL
+  run_ids <- vars <- NULL
   sampler <- function() {}
 
   inputs <- list(...)
@@ -945,6 +946,27 @@ check_inputs <- function(...) {
       if (!(is.logical(by_row) || length(by_row) == 1)) {
         ino_stop(
           event = "'by_row' must be either 'TRUE' or 'FALSE'."
+        )
+      }
+    }
+    if ("run_ids" %in% n) {
+      if (!(is.numeric(run_ids) && all(is_number(run_ids)))) {
+        ino_stop(
+          event = "'run_ids' must be an integer vector."
+        )
+      }
+    }
+    if ("vars" %in% n) {
+      if (!(is.character(vars))) {
+        ino_stop(
+          event = "'vars' must be a character vector."
+        )
+      }
+    }
+    if ("simplify" %in% n) {
+      if (!(is.logical(simplify))) {
+        ino_stop(
+          event = "'simplify' must be either 'TRUE' or 'FALSE'."
         )
       }
     }
