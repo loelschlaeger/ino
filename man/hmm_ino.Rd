@@ -3,14 +3,14 @@
 \docType{data}
 \name{hmm_ino}
 \alias{hmm_ino}
-\title{Example application of {ino} to HMM likelihood}
+\title{Example application of {ino} to fit an HMM}
 \format{
-TBA
+An object of class \code{ino}.
 }
 \usage{
-data(hmm_ino)
+data("hmm_ino")
 }
 \description{
-TBA
+The ino object that is obtained when running the code provided in the hidden Markov model vignette.
 }
 \keyword{dataset}
