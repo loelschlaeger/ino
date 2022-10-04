@@ -4,7 +4,7 @@ test_that("get_vars works", {
   x <- setup_ino(
     f = f_ackley,
     npar = 2,
-    global = c(0,0),
+    global = c(0, 0),
     opt = list(
       "nlm" = set_optimizer_nlm(),
       "optim" = set_optimizer_optim()
