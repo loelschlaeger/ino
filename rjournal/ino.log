@@ -1,21 +1,19 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.9.22)  27 SEP 2022 12:42
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 21.1) (preloaded format=pdflatex 2021.2.27)  11 NOV 2022 12:30
 entering extended mode
- restricted \write18 enabled.
- %&-line parsing enabled.
-**ino.tex
-(./ino.tex
-LaTeX2e <2022-06-01> patch level 5
-L3 programming layer <2022-08-30>
+**./ino.tex
+(ino.tex
+LaTeX2e <2020-10-01> patch level 4
+L3 programming layer <2021-02-06> xparse <2020-03-03>
 ! Undefined control sequence.
 l.5 \maketitle
                
 Here is how much of TeX's memory you used:
- 16 strings out of 476942
- 367 string characters out of 5822500
- 335737 words of memory out of 5000000
- 21272 multiletter control sequences out of 15000+600000
- 469259 words of font info for 28 fonts, out of 8000000 for 9000
- 59 hyphenation exceptions out of 8191
- 13i,0n,12p,92b,10s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 18 strings out of 479582
+ 373 string characters out of 2860980
+ 270362 words of memory out of 3000000
+ 17309 multiletter control sequences out of 15000+200000
+ 403430 words of font info for 27 fonts, out of 3000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 13i,0n,15p,71b,10s stack positions out of 5000i,500n,10000p,200000b,50000s
 
 !  ==> Fatal error occurred, no output PDF file produced!

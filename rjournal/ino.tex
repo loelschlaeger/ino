@@ -1,119 +1,61 @@
 % !TeX root = RJwrapper.tex
-\title{ToOoOlTiPs: An R Package for Customizable Tooltips in Interactive Graphics}
-\author{by Quietest Quokka and Bounciest Bilby}
+\title{ino: Initialization of Numerical Optimization in R}
+\author{by Lennart Oelschläger and Marius Ötting}
 
 \maketitle
 
 \abstract{%
-An abstract of less than 150 words.
+Numerical optimization of some target functions is of great relevance in many fields, as many optimization problems cannot be solved analytically. While R provides several functions for applying numerical optimization, such as \texttt{nlm()} or \texttt{optim()} from the stats package, users have to select initial values when applying such methods. Since the choice of inital values can hugely affect the convergence time and rate, several strategies exist for selecting initial values. The ino package provides a toolbox for evaluating the effect of the initial values on the optimization as well as comparing different initialization strategies and optimizers.
 }
 
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
-Interactive data graphics provides plots that allow users to interact them. One of the most basic types of interaction is through tooltips, where users are provided additional information about elements in the plot by moving the cursor over the plot.
+\hypertarget{a-brief-background-on-numerical-optimization}{%
+\section{A brief background on numerical optimization}\label{a-brief-background-on-numerical-optimization}}
 
-This paper will first review some R packages on interactive graphics and their tooltip implementations. A new package \CRANpkg{ToOoOlTiPs} that provides customized tooltips for plot, is introduced. Some example plots will then be given to showcase how these tooltips help users to better read the graphics.
+\hypertarget{numerical-optimization}{%
+\subsection{Numerical optimization}\label{numerical-optimization}}
 
-\hypertarget{background}{%
-\section{Background}\label{background}}
+\hypertarget{strategies-for-choosing-initial-values}{%
+\subsection{Strategies for choosing initial values}\label{strategies-for-choosing-initial-values}}
 
-Some packages on interactive graphics include \CRANpkg{plotly} (Sievert 2020) that interfaces with Javascript for web-based interactive graphics, \CRANpkg{crosstalk} (Cheng and Sievert 2021) that specializes cross-linking elements across individual graphics. The recent R Journal paper \CRANpkg{tsibbletalk} (Wang and Cook 2021) provides a good example of including interactive graphics into an article for the journal. It has both a set of linked plots, and also an animated gif example, illustrating linking between time series plots and feature summaries.
+\hypertarget{usage-of-ino}{%
+\section{Usage of \{ino\}}\label{usage-of-ino}}
 
-\hypertarget{customizing-tooltip-design-with}{%
-\section{\texorpdfstring{Customizing tooltip design with \pkg{ToOoOlTiPs}}{Customizing tooltip design with }}\label{customizing-tooltip-design-with}}
+\hypertarget{implementation-of-strategies-for-choosing-initial-values}{%
+\subsection{Implementation of strategies for choosing initial values}\label{implementation-of-strategies-for-choosing-initial-values}}
 
-\pkg{ToOoOlTiPs} is a packages for customizing tooltips in interactive graphics, it features these possibilities.
+\hypertarget{application-to-mixture-models}{%
+\subsection{Application to mixture models}\label{application-to-mixture-models}}
 
-\hypertarget{a-gallery-of-tooltips-examples}{%
-\section{A gallery of tooltips examples}\label{a-gallery-of-tooltips-examples}}
+\hypertarget{application-to-hidden-markov-models}{%
+\subsection{Application to hidden Markov models}\label{application-to-hidden-markov-models}}
 
-The \CRANpkg{palmerpenguins} data (Horst, Hill, and Gorman 2020) features three penguin species which has a lovely illustration by Alison Horst in Figure \ref{fig:penguins-alison}.
+\hypertarget{applicationt-to-multinomial-probit-models}{%
+\subsection{Applicationt to multinomial probit models}\label{applicationt-to-multinomial-probit-models}}
 
-\begin{figure}
-\includegraphics[width=1\linewidth,height=0.3\textheight]{penguins} \caption{Artwork by \@allison\_horst}\label{fig:penguins-alison}
-\end{figure}
-
-Table \ref{tab:penguins-tab-static} prints at the first few rows of the \texttt{penguins} data:
-
-\begin{table}
-
-\caption{\label{tab:penguins-tab-static}A basic table}
-\centering
-\fontsize{7}{9}\selectfont
-\begin{tabular}[t]{l|l|r|r|r|r|l|r}
-\hline
-species & island & bill\_length\_mm & bill\_depth\_mm & flipper\_length\_mm & body\_mass\_g & sex & year\\
-\hline
-Adelie & Torgersen & 39.1 & 18.7 & 181 & 3750 & male & 2007\\
-\hline
-Adelie & Torgersen & 39.5 & 17.4 & 186 & 3800 & female & 2007\\
-\hline
-Adelie & Torgersen & 40.3 & 18.0 & 195 & 3250 & female & 2007\\
-\hline
-Adelie & Torgersen & NA & NA & NA & NA & NA & 2007\\
-\hline
-Adelie & Torgersen & 36.7 & 19.3 & 193 & 3450 & female & 2007\\
-\hline
-Adelie & Torgersen & 39.3 & 20.6 & 190 & 3650 & male & 2007\\
-\hline
-\end{tabular}
-\end{table}
-
-Figure \ref{fig:penguins-ggplot} shows an plot of the penguins data, made using the \CRANpkg{ggplot2} package.
-
-\begin{verbatim}
-penguins %>% 
-  ggplot(aes(x = bill_depth_mm, y = bill_length_mm, 
-             color = species)) + 
-  geom_point()
-\end{verbatim}
-
-\begin{figure}
-\centering
-\includegraphics{ino_files/figure-latex/penguins-ggplot-1.pdf}
-\caption{\label{fig:penguins-ggplot}A basic non-interactive plot made with the ggplot2 package on palmer penguin data. Three species of penguins are plotted with bill depth on the x-axis and bill length on the y-axis. Visit the online article to access the interactive version made with the plotly package.}
-\end{figure}
-
-\hypertarget{summary}{%
-\section{Summary}\label{summary}}
-
-We have displayed various tooltips that are available in the package \pkg{ToOoOlTiPs}.
-
-\hypertarget{refs}{}
-\begin{CSLReferences}{1}{0}
-\leavevmode\vadjust pre{\hypertarget{ref-crosstalk}{}}%
-Cheng, Joe, and Carson Sievert. 2021. \emph{{crosstalk}: Inter-Widget Interactivity for HTML Widgets}. \url{https://CRAN.R-project.org/package=crosstalk}.
-
-\leavevmode\vadjust pre{\hypertarget{ref-palmerpenguins}{}}%
-Horst, Allison Marie, Alison Presmanes Hill, and Kristen B Gorman. 2020. \emph{{palmerpenguins}: Palmer Archipelago (Antarctica) Penguin Data}. \url{https://allisonhorst.github.io/palmerpenguins/}.
-
-\leavevmode\vadjust pre{\hypertarget{ref-plotly}{}}%
-Sievert, Carson. 2020. \emph{{Interactive Web-Based Data Visualizatio}n with r, Plotly, and Shiny}. Chapman; Hall/CRC. \url{https://plotly-r.com}.
-
-\leavevmode\vadjust pre{\hypertarget{ref-RJ-2021-050}{}}%
-Wang, Earo, and Dianne Cook. 2021. {``Conversations in Time: Interactive Visualisation to Explore Structured Temporal Data.''} \emph{The R Journal}. \url{https://doi.org/10.32614/RJ-2021-050}.
-
-\end{CSLReferences}
+\hypertarget{discussion}{%
+\section{Discussion}\label{discussion}}
 
 \bibliography{RJreferences.bib}
 
 \address{%
-Quietest Quokka\\
-University of Little Mates\\%
-Department of Letter Q\\ Somewhere, Australia\\
+Lennart Oelschläger\\
+Bielefeld University\\%
+Department of Business Administration and Economics\\ Bielefeld, Germany\\
 %
-\url{https://www.britannica.com/animal/quokka}\\%
-\textit{ORCiD: \href{https://orcid.org/0000-1721-1511-1101}{0000-1721-1511-1101}}\\%
-\href{mailto:qquo@ulm.edu}{\nolinkurl{qquo@ulm.edu}}%
+\url{https://loelschlaeger.de/}\\%
+%
+\href{mailto:lennart.oelschlaeger@uni-bielefeld.de}{\nolinkurl{lennart.oelschlaeger@uni-bielefeld.de}}%
 }
 
 \address{%
-Bounciest Bilby\\
-University of Little Mates\\%
-Department of Letter B\\ Somewhere, Australia\\
+Marius Ötting\\
+Bielefeld University\\%
+Department of Business Administration and Economics\\ Bielefeld, Germany\\
 %
-\url{https://www.britannica.com/animal/bilby}\\%
-\textit{ORCiD: \href{https://orcid.org/0000-0002-0912-0225}{0000-0002-0912-0225}}\\%
-\href{mailto:bbil@ulm.edu}{\nolinkurl{bbil@ulm.edu}}%
+\url{https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc}.)/\\%
+\textit{ORCiD: \href{https://orcid.org/0000-0002-9373-0365}{0000-0002-9373-0365}}\\%
+\href{mailto:marius.oetting@uni-bielefeld.de}{\nolinkurl{marius.oetting@uni-bielefeld.de}}%
 }
