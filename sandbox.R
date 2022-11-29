@@ -5,10 +5,25 @@
 devtools::load_all()
 library("tidyverse")
 options(ino_ncores = parallel::detectCores() - 1)
-Sys.setenv(LANG = "en")
+# Sys.setenv(LANG = "en")
 
 
 # Example: Ackley function ------------------------------------------------
+
+ackley <- Nop$new(f = f_ackley, npar = 2)$
+  set_true_par(true_par = c(0, 0), set_true_val = TRUE)$
+  set_optimizer(optimizer = set_optimizer_nlm(), label = "nlm")$
+  set_optimizer(optimizer = set_optimizer_optim(), label = "optim")$
+  print()
+
+ackley$test()
+
+ackley$optimize(initial = c(-3,3), runs = 1)
+
+ackley$overview_optima(digits = 2)
+
+
+
 
 x <- setup_ino(
   f = f_ackley,

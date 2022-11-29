@@ -18,7 +18,7 @@
 #' @keywords internal
 
 .onLoad <- function(lib, pkg) {
-  options("ino_progress" = TRUE)
+  options("ino_verbose" = TRUE)
   options("ino_ncores" = 1)
 }
 
@@ -38,7 +38,7 @@
 #' @importFrom cli cli_alert_info
 #' @keywords internal
 
-ino_status <- function(msg, verbose = getOption("ino_progress")) {
+ino_status <- function(msg, verbose = getOption("ino_verbose")) {
   if (verbose) cli::cli_alert_info(msg)
 }
 
