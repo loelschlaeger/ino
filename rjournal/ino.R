@@ -4,4 +4,39 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(ggplot2)
+library(dplyr)
+library(purrr)
+library(ino)
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+## ----plot_ackley--------------------------------------------------------------
+### optimize Ackley function with different starting values
+opt_results <- data.frame(Var1 = c(4.8, 3, 2, 1),
+                          Var2 = c(4.8, 3, 4, 5)) %>% 
+  mutate(input_vec = map2(Var1, Var2, ~c(.x, .y))) %>% 
+  mutate(opt_x = map_dbl(input_vec, ~nlm(f_ackley, .x)$estimate[1])) %>% 
+  mutate(opt_y = map_dbl(input_vec, ~nlm(f_ackley, .x)$estimate[2])) %>% 
+  mutate(opt_value = map_dbl(input_vec, ~nlm(f_ackley, .x)$minimum)) %>% 
+  mutate(opt_run = 1:4) %>% 
+  mutate(z_value_start = map_dbl(input_vec, f_ackley))
+
+## plotting
+val1 <- val2 <- seq(-5, 5, 0.1)
+data_plot <- expand.grid(val1, val2) %>% 
+  mutate(x = map2(Var1, Var2, ~c(.x, .y))) %>% 
+  mutate(z = map_dbl(x, f_ackley))
+
+
+ggplot(data_plot, aes(x = Var1, y = Var2, z = z)) +
+  geom_contour_filled() +
+  theme_minimal() + xlab("x") + ylab("y") +
+  theme(legend.title = element_blank()) +
+  geom_point(data = opt_results, aes(x = opt_x, y = opt_y, 
+                                     z = opt_value, colour = factor(opt_run)),
+             size = 5, shape = 21, stroke = 2) +
+  geom_point(data = opt_results, aes(x = Var1, y = Var2, 
+                                     z = z_value_start, colour = factor(opt_run)),
+             size = 5, shape = 4, stroke = 2) +
+  scale_colour_manual(values = cbPalette[c(1,2,3,7)], guide = "none")
 
