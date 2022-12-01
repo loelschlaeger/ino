@@ -108,7 +108,7 @@ Evaluate the function.
 \subsection{Method \code{optimize()}}{
 Optimize the function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optimize(initial = rnorm(self$npar), runs = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optimize(initial = rnorm(self$npar), runs = 1, which_optimizer = "all")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -117,6 +117,11 @@ Optimize the function.
 \item{\code{initial}}{TODO}
 
 \item{\code{runs}}{TODO}
+
+\item{\code{which_optimizer}}{Can be:
+\itemize{
+\item \code{"all"}
+}}
 }
 \if{html}{\out{</div>}}
 }

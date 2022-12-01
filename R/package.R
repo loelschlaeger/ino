@@ -8,8 +8,7 @@
 #'
 #' @name ino
 #'
-#' @keywords
-#' internal
+#' @keywords internal
 #'
 #' @import optimizeR
 "_PACKAGE"
@@ -24,40 +23,54 @@
 
 #' @noRd
 #' @importFrom utils packageVersion
+#' @importFrom glue glue
 #' @keywords internal
 
 .onAttach <- function(lib, pkg) {
   msg <- paste0(
     "Thanks for using {ino} ", utils::packageVersion("ino"), "."
   )
-  packageStartupMessage(msg)
+  packageStartupMessage(
+    glue::glue("Thanks for using {{ino}} {utils::packageVersion('ino')}.")
+  )
   invisible()
 }
 
 #' @noRd
 #' @importFrom cli cli_alert_info
+#' @importFrom glue glue
 #' @keywords internal
 
 ino_status <- function(msg, verbose = getOption("ino_verbose")) {
-  if (verbose) cli::cli_alert_info(msg)
+  if (verbose) {
+    cli::cli_alert_info(glue::glue(msg))
+  }
 }
 
 #' @noRd
 #' @importFrom cli cli_abort
+#' @importFrom glue glue
 #' @keywords internal
 
-ino_stop <- function(...) {
-  msg <- list(...)
-  names(msg) <- c("x", rep(">", length(msg)))[1:length(msg)]
-  cli::cli_abort(unlist(msg), call = NULL)
+ino_stop <- function(msg, ...) {
+  msg <- c(msg, ...)
+  names(msg)[1] <- "x"
+  names(msg)[-1] <- "*"
+  cli::cli_abort(
+    msg,
+    call = NULL
+  )
 }
 
 #' @noRd
 #' @importFrom cli cli_warn
 #' @keywords internal
 
-ino_warn <- function(...) {
+ino_warn <- function(msg, ...) {
   msg <- list(...)
   names(msg) <- c("!", rep(">", length(msg)))[1:length(msg)]
-  cli::cli_warn(unlist(msg), call = NULL)
+  cli::cli_warn(
+    unlist(msg),
+    call = NULL
+  )
 }

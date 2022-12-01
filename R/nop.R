@@ -236,12 +236,26 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Test configuration of numerical optimization problem.
+    #' Test the configuration of numerical optimization problem.
     #' @param at
-    #' TODO
+    #' A \code{numeric} of length \code{self$npar}, the point at which
+    #' \code{self$f} and the specified optimizer are tested.
+    #' Per default, \code{at = rnorm(self$npar)}.
     #' @param time_limit
-    #' TODO
+    #' A \code{numeric}, the time limit in seconds for testing the function
+    #' call and the optimization. If no error occurred after \code{time_limit}
+    #' seconds, the test is considered to be successful.
+    #' By default, \code{time_limit = 3}.
     test = function (at = rnorm(self$npar), time_limit = 3) {
+
+      ### test f
+      ino_status("I test if function can be evaluated.")
+      ino_status(glue::glue("I use input {at}."))
+      out <- try(self$evaluate(at))
+      ino_status(glue::glue("Result is {out}."))
+
+      ### test optimizer
+      ino_status("I test if optimizer can be called.")
 
       invisible(self)
     }
