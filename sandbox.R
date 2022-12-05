@@ -12,11 +12,13 @@ options(ino_ncores = parallel::detectCores() - 1)
 
 ackley <- Nop$new(f = f_ackley, npar = 2)$
   set_true_par(true_par = c(0, 0), set_true_val = TRUE)$
-  set_optimizer(optimizer = set_optimizer_nlm(), label = "nlm")$
-  set_optimizer(optimizer = set_optimizer_optim(), label = "optim")$
+  set_optimizer(optimizer = optimizer_nlm(), label = "nlm")$
+  set_optimizer(optimizer = optimizer_optim(), label = "optim")$
   print()
 
 ackley$test()
+
+ackley$evaluate(c(0,0))
 
 ackley$optimize(initial = c(-3,3), runs = 1)
 

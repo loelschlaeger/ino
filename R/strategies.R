@@ -374,7 +374,7 @@ strategy_call <- function(call) {
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%
-#' @importFrom optimizeR optimizeR
+#' @importFrom optimizeR apply_optimizer
 #' @importFrom progress progress_bar
 
 optimize <- function(x, init, ncores, verbose) {
@@ -407,7 +407,7 @@ optimize <- function(x, init, ncores, verbose) {
     grid[[i]][[".optimizer"]] <- NULL
     try_silent(
       do.call(
-        what = optimizeR::optimizeR,
+        what = optimizeR::apply_optimizer,
         args = c(
           list("optimizer" = opt, "f" = x$prob$f, "p" = init[[i]]),
           grid[[i]]
@@ -531,7 +531,7 @@ save_result <- function(x, result, strategy, init, add_time = NULL) {
 #' internal
 #'
 #' @importFrom ao ao
-#' @importFrom optimizeR optimizeR
+#' @importFrom optimizeR set_optimizer
 
 set_optimizer_ao <- function(..., out_ign = character(), test_par = list()) {
   if ("partition" %in% names(list(...)) && identical(test_par, list())) {

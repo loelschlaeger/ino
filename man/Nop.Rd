@@ -31,6 +31,19 @@ TODO
 ackley <- Nop$new(f = f_ackley, npar = 2)
 
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{f}}{The \code{function} to be optimized.}
+
+\item{\code{npar}}{The length of the first argument of \code{$f}.}
+
+\item{\code{true_par}}{The true optimum parameter vector of length \code{$npar} (if available).}
+
+\item{\code{true_val}}{The true optimum value of \code{$f} (if available).}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -58,9 +71,12 @@ Create a new numerical optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{f}}{TODO}
+\item{\code{f}}{The \code{function} to be optimized.
+It is optimized over its first argument.
+Use \code{$add_pars()} to add additional parameters for \code{f}.}
 
-\item{\code{npar}}{TODO}
+\item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (the
+argument over which \code{f} is optimized).}
 }
 \if{html}{\out{</div>}}
 }
@@ -208,7 +224,7 @@ Remove a numerical optimizer.
 \if{html}{\out{<a id="method-Nop-test"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-test}{}}}
 \subsection{Method \code{test()}}{
-Test configuration of numerical optimization problem.
+Test the configuration of numerical optimization problem.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$test(at = rnorm(self$npar), time_limit = 3)}\if{html}{\out{</div>}}
 }
@@ -216,9 +232,14 @@ Test configuration of numerical optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{TODO}
+\item{\code{at}}{A \code{numeric} of length \code{self$npar}, the point at which
+function (\code{$f}) and the specified optimizer are tested.
+Per default, \code{at = rnorm(self$npar)}.}
 
-\item{\code{time_limit}}{TODO}
+\item{\code{time_limit}}{A \code{numeric}, the time limit in seconds for testing the function
+call and the optimization. If no error occurred after \code{time_limit}
+seconds, the test is considered to be successful.
+By default, \code{time_limit = 3}.}
 }
 \if{html}{\out{</div>}}
 }

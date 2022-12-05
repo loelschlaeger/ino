@@ -45,4 +45,4 @@ BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR
+    optimizeR (>= 0.2.0)

@@ -29,9 +29,12 @@ Nop <- R6::R6Class(
     #' @description
     #' Create a new numerical optimization problem.
     #' @param f
-    #' TODO
+    #' The \code{function} to be optimized.
+    #' It is optimized over its first argument.
+    #' Use \code{$add_pars()} to add additional parameters for \code{f}.
     #' @param npar
-    #' TODO
+    #' An \code{integer}, the length of the first argument of \code{f} (the
+    #' argument over which \code{f} is optimized).
     #' @return
     #' A new \code{Nop} object.
     initialize = function (f, npar) {
@@ -102,6 +105,7 @@ Nop <- R6::R6Class(
       }
       cat(
         crayon::underline("Optimization results:"), "\n", sep = ""
+        # TODO
       )
       invisible(self)
     },
@@ -128,8 +132,10 @@ Nop <- R6::R6Class(
     #' @param which_optimizer
     #' Can be:
     #' - \code{"all"}
+    #' @param seed
+    #' TODO
     optimize = function(
-      initial = rnorm(self$npar), runs = 1, which_optimizer = "all"
+      initial = rnorm(self$npar), runs = 1, which_optimizer = "all", seed = NULL
     ) {
       results <- list()
       for (i in seq_len(private$.optimizer_n)) {
@@ -239,7 +245,7 @@ Nop <- R6::R6Class(
     #' Test the configuration of numerical optimization problem.
     #' @param at
     #' A \code{numeric} of length \code{self$npar}, the point at which
-    #' \code{self$f} and the specified optimizer are tested.
+    #' function (\code{$f}) and the specified optimizer are tested.
     #' Per default, \code{at = rnorm(self$npar)}.
     #' @param time_limit
     #' A \code{numeric}, the time limit in seconds for testing the function
@@ -250,7 +256,7 @@ Nop <- R6::R6Class(
 
       ### test f
       ino_status("I test if function can be evaluated.")
-      ino_status(glue::glue("I use input {at}."))
+      ino_status(glue::glue("I use input {paste(at, collapse = ' ')}."))
       out <- try(self$evaluate(at))
       ino_status(glue::glue("Result is {out}."))
 
@@ -282,7 +288,7 @@ Nop <- R6::R6Class(
 
     .optimize = function(initial, optimizer_id) {
       do.call(
-        what = optimizeR::optimizeR,
+        what = optimizeR::apply_optimizer,
         args = list(
           "optimizer" = private$.optimizer[[optimizer_id]],
           "f" = private$.f,
@@ -295,6 +301,7 @@ Nop <- R6::R6Class(
   ),
   active = list(
 
+    #' @field f The \code{function} to be optimized.
     f = function(value) {
       if (missing(value)) {
         private$.f
@@ -305,6 +312,7 @@ Nop <- R6::R6Class(
       }
     },
 
+    #' @field npar The length of the first argument of \code{$f}.
     npar = function(value) {
       if (missing(value)) {
         private$.npar
@@ -315,6 +323,7 @@ Nop <- R6::R6Class(
       }
     },
 
+    #' @field true_par The true optimum parameter vector of length \code{$npar} (if available).
     true_par = function(value) {
       if (missing(value)) {
         private$.true_par
@@ -323,6 +332,7 @@ Nop <- R6::R6Class(
       }
     },
 
+    #' @field true_val The true optimum value of \code{$f} (if available).
     true_val = function(value) {
       if (missing(value)) {
         private$.true_val

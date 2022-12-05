@@ -1037,13 +1037,11 @@
     },
     "optimizeR": {
       "Package": "optimizeR",
-      "Version": "0.1.1",
+      "Version": "0.2.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c7f27139f4c2cbe6d7fc0995c58042af",
-      "Requirements": [
-        "lifecycle"
-      ]
+      "Hash": "7863f06b46975935ea1d94d33a09a3c2",
+      "Requirements": []
     },
     "pillar": {
       "Package": "pillar",
