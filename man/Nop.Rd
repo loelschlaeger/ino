@@ -48,14 +48,18 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Nop-new}{\code{Nop$new()}}
+\item \href{#method-Nop-add_par}{\code{Nop$add_par()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
+\item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
+\item \href{#method-Nop-subset}{\code{Nop$subset()}}
 \item \href{#method-Nop-set_true_par}{\code{Nop$set_true_par()}}
 \item \href{#method-Nop-set_true_val}{\code{Nop$set_true_val()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
 \item \href{#method-Nop-remove_optimizer}{\code{Nop$remove_optimizer()}}
 \item \href{#method-Nop-test}{\code{Nop$test()}}
+\item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-clone}{\code{Nop$clone()}}
 }
 }
@@ -73,7 +77,7 @@ Create a new numerical optimization problem.
 \describe{
 \item{\code{f}}{The \code{function} to be optimized.
 It is optimized over its first argument.
-Use \code{$add_pars()} to add additional parameters for \code{f}.}
+Use \code{$add_par()} to add additional parameter for \code{f}.}
 
 \item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (the
 argument over which \code{f} is optimized).}
@@ -82,6 +86,25 @@ argument over which \code{f} is optimized).}
 }
 \subsection{Returns}{
 A new \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-add_par"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-add_par}{}}}
+\subsection{Method \code{add_par()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$add_par(par, multiple = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{par}}{TODO}
+
+\item{\code{multiple}}{TODO}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -124,7 +147,12 @@ Evaluate the function.
 \subsection{Method \code{optimize()}}{
 Optimize the function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optimize(initial = rnorm(self$npar), runs = 1, which_optimizer = "all")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optimize(
+  initial = rnorm(self$npar),
+  runs = 1,
+  which_optimizer = "all",
+  seed = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -138,9 +166,31 @@ Optimize the function.
 \itemize{
 \item \code{"all"}
 }}
+
+\item{\code{seed}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-standardize"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-standardize}{}}}
+\subsection{Method \code{standardize()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-subset"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-subset}{}}}
+\subsection{Method \code{subset()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$subset()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-set_true_par"></a>}}
@@ -243,6 +293,16 @@ By default, \code{time_limit = 3}.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-optima"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
+\subsection{Method \code{optima()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optima()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-clone"></a>}}

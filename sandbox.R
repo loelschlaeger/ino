@@ -16,15 +16,13 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer = optimizer_optim(), label = "optim")$
   print()
 
-ackley$test()
-
 ackley$evaluate(c(0,0))
 
 ackley$optimize(initial = c(-3,3), runs = 1)
 
-ackley$overview_optima(digits = 2)
+ackley$test()
 
-
+ackley$optima(digits = 2)
 
 
 x <- setup_ino(

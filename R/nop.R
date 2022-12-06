@@ -31,7 +31,7 @@ Nop <- R6::R6Class(
     #' @param f
     #' The \code{function} to be optimized.
     #' It is optimized over its first argument.
-    #' Use \code{$add_pars()} to add additional parameters for \code{f}.
+    #' Use \code{$add_par()} to add additional parameter for \code{f}.
     #' @param npar
     #' An \code{integer}, the length of the first argument of \code{f} (the
     #' argument over which \code{f} is optimized).
@@ -62,6 +62,16 @@ Nop <- R6::R6Class(
       private$.f_name <- deparse(substitute(f))
       private$.f_target <- names(formals(f))[1]
       private$.npar <- as.integer(npar)
+    },
+
+    #' @description
+    #' TODO
+    #' @param par
+    #' TODO
+    #' @param multiple
+    #' TODO
+    add_par = function(par, multiple = FALSE) {
+      invisible(self)
     },
 
     #' @description
@@ -105,15 +115,26 @@ Nop <- R6::R6Class(
       }
       cat(
         crayon::underline("Optimization results:"), "\n", sep = ""
-        # TODO
       )
+      if (private$.nrecords == 0) {
+        cat(
+          " No optimization records.\n"
+        )
+      } else {
+        cat(
+          glue::glue(" Optimization records: {private$.nrecords}"), "\n",
+          glue::glue(" Found optimum at: {paste(private$.best_par, collapse = ' ')}"), "\n",
+          glue::glue(" Found optimum value: {paste(private$.best_val, collapse = ' ')}"), "\n",
+          sep = ""
+        )
+      }
       invisible(self)
     },
 
     #' @description
     #' Evaluate the function.
     #' @param at
-    #' TODO
+    #' A \code{numeric} vector of length \code{$npar}.
     evaluate = function(at) {
       if (!(is.numeric(at) && length(at) == private$.npar)) {
         ino_stop(
@@ -126,23 +147,63 @@ Nop <- R6::R6Class(
     #' @description
     #' Optimize the function.
     #' @param initial
-    #' TODO
+    #' Either:
+    #' - a \code{numeric} vector of length \code{$npar}, the starting point for
+    #'   optimization
+    #' - a \code{function} without any arguments that returns a \code{numeric}
+    #'   vector of length \code{$npar}
+    #' By default, \code{initial = rnorm(self$npar)}), i.e. random initial values.
     #' @param runs
-    #' TODO
+    #' An \code{integer}, the number of optimization.
+    #' By default, \code{runs = 1}.
     #' @param which_optimizer
-    #' Can be:
-    #' - \code{"all"}
+    #' Either:
+    #' - \code{"all"} for all specified optimizer (default)
+    #' - a \code{character} vector of specified optimizer labels
+    #' - a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
     #' @param seed
+    #' Set a seed. No seed by default.
+    #' @return
     #' TODO
     optimize = function(
       initial = rnorm(self$npar), runs = 1, which_optimizer = "all", seed = NULL
     ) {
+      if (is.numeric(initial) && length(initial) == private$npar) {
+        initial <- function() initial
+      } else if (is.function(initial)) {
+
+      } else {
+        ino_stop()
+      }
+      if (!(is.numeric(runs) && length(runs) == 1 && runs > 0 && runs %% 1 == 0)) {
+        ino_stop()
+      }
+      if (identical(which_optimizer, "all")) {
+        # TODO
+      }
+      if (!is.null(seed)) {
+        set.seed(seed)
+      }
       results <- list()
       for (i in seq_len(private$.optimizer_n)) {
         optimizer <- private$.optimizer[[i]]
         results[[i]] <- private$.optimize(initial, optimizer)
       }
       return(results)
+    },
+
+    #' @description
+    #' TODO
+    standardize = function() {
+
+      invisible(self)
+    },
+
+    #' @description
+    #' TODO
+    subset = function() {
+
+      invisible(self)
     },
 
     #' @description
@@ -255,16 +316,28 @@ Nop <- R6::R6Class(
     test = function (at = rnorm(self$npar), time_limit = 3) {
 
       ### test f
-      ino_status("I test if function can be evaluated.")
-      ino_status(glue::glue("I use input {paste(at, collapse = ' ')}."))
-      out <- try(self$evaluate(at))
-      ino_status(glue::glue("Result is {out}."))
+      out <- suppressWarnings(try(self$evaluate(at), silent = TRUE))
+      if (inherits(out, "try-error") || !is.numeric(out)) {
+        ino_stop(
+          "Test function call failed. I used the following inputs:",
+          glue::glue("{private$f_target} = {paste(at, collapse = ' ')}"), # TODO other inputs
+          "Result is not a numeric."
+        )
+
+      }
 
       ### test optimizer
-      ino_status("I test if optimizer can be called.")
+      # TODO
 
       invisible(self)
+    },
+
+    #' @description
+    #' TODO
+    optima = function () {
+
     }
+
   ),
   private = list(
 
@@ -278,6 +351,10 @@ Nop <- R6::R6Class(
     .optimizer = list(),
     .optimizer_n = 0,
     .optimizer_label = character(0),
+
+    .nrecords = 0,
+    .best_par = NA_real_,
+    .best_val = NA_real_,
 
     .evaluate = function(at) {
       do.call(
