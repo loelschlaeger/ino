@@ -136,7 +136,7 @@ Evaluate the function.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{TODO}
+\item{\code{at}}{A \code{numeric} vector of length \code{$npar}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -158,18 +158,31 @@ Optimize the function.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{initial}}{TODO}
-
-\item{\code{runs}}{TODO}
-
-\item{\code{which_optimizer}}{Can be:
+\item{\code{initial}}{Either:
 \itemize{
-\item \code{"all"}
+\item a \code{numeric} vector of length \code{$npar}, the starting point for
+optimization
+\item a \code{function} without any arguments that returns a \code{numeric}
+vector of length \code{$npar}
+By default, \code{initial = rnorm(self$npar)}), i.e. random initial values.
 }}
 
-\item{\code{seed}}{TODO}
+\item{\code{runs}}{An \code{integer}, the number of optimization.
+By default, \code{runs = 1}.}
+
+\item{\code{which_optimizer}}{Either:
+\itemize{
+\item \code{"all"} for all specified optimizer (default)
+\item a \code{character} vector of specified optimizer labels
+\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+}}
+
+\item{\code{seed}}{Set a seed. No seed by default.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+TODO
 }
 }
 \if{html}{\out{<hr>}}
