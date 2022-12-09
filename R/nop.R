@@ -1,15 +1,30 @@
 #' Nop Object (R6 Class)
 #'
 #' @description
-#' A `Nop` object defines a numerical optimization problem.
+#' A \code{Nop} object defines a numerical optimization problem.
+#'
+#' @param which_optimizer
+#' Either:
+#' - \code{"all"} for all specified optimizer (default)
+#' - a \code{character} vector of specified optimizer labels
+#' - a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+#' @param argument_name
+#' A \code{character}, the argument name.
+#' @param which_argument_combination
+#' Only relevant if any argument to \code{f} was specified with multiple values,
+#' i.e., if any \code{$set_argument(..., multiple_values = TRUE)}.
+#' In that case, either:
+#' - \code{"all"} for all argument combinations (default)
+#' - a \code{numeric} vector of combination ids (see \code{$argument_combinations})
 #'
 #' @details
 #' # Initialize
 #' TODO
-#' ## Step 1
-#' TODO
-#' ## Step 2
-#' TODO
+#' ## Step 1: Create a new \code{Nop} object.
+#'
+#' ## Step 2: Add additional arguments.
+#'
+#' ## Step 2: Specify numerical optimizer.
 #'
 #' # Optimize
 #' TODO
@@ -30,7 +45,8 @@ Nop <- R6::R6Class(
     #' Create a new numerical optimization problem.
     #' @param f
     #' The \code{function} to be optimized.
-    #' It is optimized over its first argument.
+    #' It is optimized over its first argument, which should be a \code{numeric}
+    #' vector of length \code{npar}.
     #' Use \code{$add_par()} to add additional parameter for \code{f}.
     #' @param npar
     #' An \code{integer}, the length of the first argument of \code{f} (the
@@ -46,6 +62,11 @@ Nop <- R6::R6Class(
       if (!is.function(f)) {
         ino_stop(
           "Argument 'f' is not a function."
+        )
+      }
+      if (is.null(formals(f))) {
+        ino_stop(
+          "The function 'f' should have at least one argument."
         )
       }
       if (missing(npar)) {
@@ -65,16 +86,6 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' TODO
-    #' @param par
-    #' TODO
-    #' @param multiple
-    #' TODO
-    add_par = function(par, multiple = FALSE) {
-      invisible(self)
-    },
-
-    #' @description
     #' Print method for numerical optimization problem.
     #' @importFrom crayon underline
     #' @importFrom glue glue
@@ -87,15 +98,22 @@ Nop <- R6::R6Class(
         glue::glue(" Optimize over: {private$.f_target} (dimension {private$.npar})"), "\n",
         sep = ""
       )
-      if (!is.null(private$.true_par)) {
+      if (private$.narguments > 0) {
+        cat(" Additional arguments:\n")
+        arg_names <- names(private$.arguments)
+        for (i in seq_len(private$.narguments)) {
+          cat(" -", arg_names[i], "\n")
+        }
+      }
+      if (!is.null(private$.true_parameter)) {
         cat(
-          glue::glue(" True optimum at: {paste(private$.true_par, collapse = ' ')}"),
+          glue::glue(" True optimum at: {paste(private$.true_parameter, collapse = ' ')}"),
           "\n", sep = ""
         )
       }
-      if (!is.null(private$.true_val)) {
+      if (!is.null(private$.true_value)) {
         cat(
-          glue::glue(" True optimum value: {paste(private$.true_val, collapse = ' ')}"),
+          glue::glue(" True optimum value: {paste(private$.true_value, collapse = ' ')}"),
           "\n", sep = ""
         )
       }
@@ -132,124 +150,96 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Evaluate the function.
-    #' @param at
-    #' A \code{numeric} vector of length \code{$npar}.
-    evaluate = function(at) {
-      if (!(is.numeric(at) && length(at) == private$.npar)) {
+    #' Optionally set an additional argument for \code{f}.
+    #' @param argument_value
+    #' Any \code{R} object, the value of argument \code{argument_name} for \code{f}.
+    #' @param multiple_values
+    #' TODO
+    set_argument = function(argument_name, argument_value, multiple_values = FALSE) {
+      if (missing(argument_name)) {
         ino_stop(
-          glue::glue("Argument 'at' must be a numeric vector of length {private$.npar}.")
+          "Please specify 'argument_name'."
         )
       }
-      private$.evaluate(at)
-    },
-
-    #' @description
-    #' Optimize the function.
-    #' @param initial
-    #' Either:
-    #' - a \code{numeric} vector of length \code{$npar}, the starting point for
-    #'   optimization
-    #' - a \code{function} without any arguments that returns a \code{numeric}
-    #'   vector of length \code{$npar}
-    #' By default, \code{initial = rnorm(self$npar)}), i.e. random initial values.
-    #' @param runs
-    #' An \code{integer}, the number of optimization.
-    #' By default, \code{runs = 1}.
-    #' @param which_optimizer
-    #' Either:
-    #' - \code{"all"} for all specified optimizer (default)
-    #' - a \code{character} vector of specified optimizer labels
-    #' - a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
-    #' @param seed
-    #' Set a seed. No seed by default.
-    #' @return
-    #' TODO
-    optimize = function(
-      initial = rnorm(self$npar), runs = 1, which_optimizer = "all", seed = NULL
-    ) {
-      if (is.numeric(initial) && length(initial) == private$npar) {
-        initial <- function() initial
-      } else if (is.function(initial)) {
-
-      } else {
-        ino_stop()
+      if (!(is.character(argument_name) && length(argument_name) == 1)) {
+        ino_stop(
+          "Input 'argument_name' must be a single character."
+        )
       }
-      if (!(is.numeric(runs) && length(runs) == 1 && runs > 0 && runs %% 1 == 0)) {
-        ino_stop()
+      if (argument_name %in% names(private$.arguments)) {
+        ino_stop(
+          glue::glue("Argument '{argument_name}' already exists.")
+        )
       }
-      if (identical(which_optimizer, "all")) {
-        # TODO
+      if (!(isTRUE(multiple_arguments) || isFALSE(multiple_arguments))) {
+        ino_stop(
+          "Argument 'multiple_arguments' must be TRUE or FALSE."
+        )
       }
-      if (!is.null(seed)) {
-        set.seed(seed)
+      private$.arguments[[argument_name]] <- argument_value
+      private$.narguments <- private$.narguments + 1
+      if (multiple_arguments) {
+        private$.multiple_arguments <- c(private$.multiple_arguments, multiple_arguments)
       }
-      results <- list()
-      for (i in seq_len(private$.optimizer_n)) {
-        optimizer <- private$.optimizer[[i]]
-        results[[i]] <- private$.optimize(initial, optimizer)
-      }
-      return(results)
-    },
-
-    #' @description
-    #' TODO
-    standardize = function() {
-
       invisible(self)
     },
 
     #' @description
-    #' TODO
-    subset = function() {
+    #' Optionally remove additional arguments for \code{f}.
+    remove_argument = function(argument_name) {
+      if (missing(argument_name)) {
+        ino_stop(
+          "Please specify 'argument_name'."
+        )
+      }
+      if (!(is.character(argument_name) && length(argument_name) == 1)) {
+        ino_stop(
+          "Input 'argument_name' must be a single character."
+        )
+      }
+      if (!argument_name %in% names(private$.arguments)) {
+        ino_stop(
+          glue::glue("Argument '{argument_name}' does not exist.")
+        )
+      }
+      arg_id <- which(names(private$.arguments) == argument_name)
+      private$.arguments[arg_id] <- NULL
+      private$.narguments <- private$.narguments - 1
+    },
 
+    #' @description
+    #' Optionally set the true optimum value.
+    #' @param true_value
+    #' A \code{numeric}, the value of \code{f} at its optimum.
+    set_true_value = function (true_value) {
+      if (!(is.numeric(true_value) && length(true_value) == 1)) {
+        ino_stop(
+          "Argument 'true_value' must be a single numeric."
+        )
+      }
+      private$.true_value <- true_value
       invisible(self)
     },
 
     #' @description
     #' Optionally set the true optimum parameter.
-    #' @param true_par
-    #' Either \code{NULL} (default) or the point where \code{f} obtains its
-    #' optimum (i.e., a numeric vector of length \code{npar}).
-    #' @param set_true_val
-    #' Set to \code{TRUE} to use \code{true_par} to compute the true
-    #' optimum value of \code{f} and to \code{FALSE} (default) if not.
-    set_true_par = function (true_par = NULL, set_true_val = FALSE) {
-      if (!(isTRUE(set_true_val) || isFALSE(set_true_val))) {
+    #' @param true_parameter
+    #' A \code{numeric} vector of length \code{npar}, the point where \code{f}
+    #' obtains its optimum.
+    #' @param set_true_value
+    #' Set to \code{TRUE} to use \code{true_parameter} to compute the true
+    #' optimum value of \code{f}.
+    #' Set to \code{FALSE} (default) if not.
+    set_true_parameter = function (true_parameter, set_true_value = FALSE) {
+      private$.check_target_arg(true_parameter, "true_parameter")
+      if (!(isTRUE(set_true_value) || isFALSE(set_true_value))) {
         ino_stop(
-          "Argument 'set_true_val' must be TRUE or FALSE."
+          "Argument 'set_true_value' must be TRUE or FALSE."
         )
       }
-      if (is.null(true_par)) {
-        private$.true_par <- NULL
-      } else {
-        if (!(is.numeric(true_par) && length(true_par) == private$.npar)) {
-          ino_stop(
-            glue::glue("Argument 'true_par' must be a numeric vector of length {private$.npar}.")
-          )
-        }
-        private$.true_par <- true_par
-        if (set_true_val) {
-          private$.true_val <- private$.evaluate(at = true_par)
-        }
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Optionally set the true optimum value.
-    #' @param true_val
-    #' Either \code{NULL} (default) or the value of \code{f} at its optimum.
-    set_true_val = function (true_val = NULL) {
-      if (is.null(true_val)) {
-        private$.true_val <- NULL
-      } else {
-        if (!(is.numeric(true_val) && length(true_val) == 1)) {
-          ino_stop(
-            glue::glue("Argument 'true_val' must be a single numeric.")
-          )
-        }
-        private$.true_val <- true_val
+      private$.true_parameter <- true_parameter
+      if (set_true_value) {
+        private$.true_value <- private$.evaluate(at = true_parameter)
       }
       invisible(self)
     },
@@ -257,7 +247,7 @@ Nop <- R6::R6Class(
     #' @description
     #' Set a numerical optimizer.
     #' @param optimizer
-    #' An object of class \code{optimizer} which can be created with the
+    #' An object of class \code{optimizer}, which can be created with the
     #' \code{\link[optimizeR]{set_optimizer}} function from the {optimizeR}
     #' package.
     #' @param label
@@ -285,21 +275,100 @@ Nop <- R6::R6Class(
       }
       if (label %in% private$.optimizer_label) {
         ino_stop(
-          glue::glue("Label {label} already exists.")
+          glue::glue("Label '{label}' already exists, please choose another one.")
         )
       }
-      private$.optimizer[[private$.optimizer_n + 1]] <- optimizer
       private$.optimizer_n <- private$.optimizer_n + 1
+      private$.optimizer[[private$.optimizer_n]] <- optimizer
       private$.optimizer_label <- c(private$.optimizer_label, label)
       invisible(self)
     },
 
     #' @description
-    #' Remove a numerical optimizer.
-    #' @param id
-    #' An \code{integer} (vector), the id(s) of optimizer to remove.
-    remove_optimizer = function (id) {
-      # TODO
+    #' Remove numerical optimizer.
+    remove_optimizer = function (which_optimizer = "all") {
+      ids <- private$.get_optimizer_ids(which_optimizer)
+      private$.optimizer <- private$.optimizer[-ids]
+      private$.optimizer_n <- private$.optimizer_n - length(ids)
+      private$.optimizer_label <- private$.optimizer_label[-ids]
+      invisible(self)
+    },
+
+    #' @description
+    #' Print details of numerical optimizer.
+    optimizer_details = function (which_optimizer = "all") {
+      ids <- private$.get_optimizer_ids(which_optimizer)
+      for (id in ids) {
+        cat(paste0(id, ":"), private$.optimizer_label[id], "\n")
+        str(private$.optimizer[id])
+        cat("\n")
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Evaluate the function.
+    #' @param at
+    #' A \code{numeric} vector of length \code{$npar}.
+    #' @return
+    #' TODO
+    evaluate = function(at, which_argument_combination = "all") {
+      private$.check_target_arg(at, arg_name = "at")
+      argument_combination <- private$.argument_combination(which_argument_combination)
+      private$.evaluate(at, argument_combination)
+    },
+
+    #' @description
+    #' Optimize the function.
+    #' @param initial
+    #' Either:
+    #' - the character \code{"random"} (the default) for random initial values
+    #'   drawn from a standard normal distribution
+    #' - a \code{numeric} vector of length \code{$npar}, the starting point for
+    #'   optimization
+    #' - a \code{function} without any arguments that returns a \code{numeric}
+    #' @param runs
+    #' An \code{integer}, the number of optimization.
+    #' By default, \code{runs = 1}.
+    #' @param which_optimizer
+    #' Either:
+    #' - \code{"all"} for all specified optimizer (default)
+    #' - a \code{character} vector of specified optimizer labels
+    #' - a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+    #' @param seed
+    #' Set a seed. No seed by default.
+    #' @return
+    #' TODO
+    optimize = function(
+      initial = rnorm(self$npar), runs = 1, which_optimizer = "all", seed = NULL
+    ) {
+      ### make `initial` to function call `get_initial`
+      get_initial <- if (identical(initial, "random")) {
+        function() rnorm(private$.npar)
+      } else if (is.numeric(initial) && length(initial) == private$.npar) {
+        function() initial
+      } else if (is.function(initial)) {
+        try_initial <- try(initial(), silent = TRUE)
+        if (!(is.numeric(initial) && length(initial) == private$.npar)) {
+          ino_stop()
+        }
+        initial
+      } else {
+        ino_stop()
+      }
+      if (!(is.numeric(runs) && length(runs) == 1 && runs > 0 && runs %% 1 == 0)) {
+        ino_stop()
+      }
+      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
+      if (!is.null(seed)) {
+        set.seed(seed)
+      }
+      results <- list()
+      for (i in seq_len(private$.optimizer_n)) {
+        optimizer <- private$.optimizer[[i]]
+        results[[i]] <- private$.optimize(initial, optimizer)
+      }
+      return(results)
     },
 
     #' @description
@@ -334,7 +403,29 @@ Nop <- R6::R6Class(
 
     #' @description
     #' TODO
-    optima = function () {
+    standardize = function(argument_name, by_column = TRUE, center = TRUE, scale = TRUE, ignore = integer()) {
+
+      invisible(self)
+    },
+
+    #' @description
+    #' TODO
+    subset = function(argument_name, by_row = TRUE, how = "first", proportion = 0.5, ignore = integer()) {
+
+      invisible(self)
+    },
+
+    #' @description
+    #' TODO
+    optima = function (digits = 2) {
+
+    },
+
+    summary = function () {
+
+    },
+
+    plot = function () {
 
     }
 
@@ -345,22 +436,34 @@ Nop <- R6::R6Class(
     .f_name = NULL,
     .f_target = NULL,
     .npar = NULL,
-    .true_par = NULL,
-    .true_val = NULL,
+    .arguments = list(),
+    .narguments = 0,
+    .multiple_arguments = character(),
+    .argument_combinations = data.frame(),
+
+    .true_parameter = NULL,
+    .true_value = NULL,
 
     .optimizer = list(),
     .optimizer_n = 0,
     .optimizer_label = character(0),
 
     .nrecords = 0,
-    .best_par = NA_real_,
-    .best_val = NA_real_,
+    .best_parameter = NA_real_,
+    .best_value = NA_real_,
 
-    .evaluate = function(at) {
-      do.call(
-        what = private$.f,
-        args = list(at)
-      )
+    .evaluate = function(at, which_argument_combination) {
+      if (private$.narguments == 0) {
+        do.call(
+          what = private$.f,
+          args = list(at)
+        )
+      } else {
+        do.call(
+          what = private$.f,
+          args = c(list(at), add_args)
+        )
+      }
     },
 
     .optimize = function(initial, optimizer_id) {
@@ -372,8 +475,40 @@ Nop <- R6::R6Class(
           "p" = initial
         )
       )
-    }
+    },
 
+    .check_target_arg = function (target_arg, arg_name) {
+      if (!(is.numeric(target_arg) && length(target_arg) == private$.npar)) {
+        ino_stop(
+          glue::glue("Argument '{arg_name}' must be a numeric vector of length {private$.npar}.")
+        )
+      }
+    },
+
+    .get_optimizer_ids = function (which_optimizer) {
+      if (private$.optimizer_n == 0) {
+        ino_stop(
+          "No optimizer specified."
+        )
+      }
+      if (identical(which_optimizer, "all")) {
+        return(1:private$.optimizer_n)
+      } else if (is.character(which_optimizer)) {
+        ids <- which(private$.optimizer_label %in% which_optimizer)
+      } else if (is.numeric(which_optimizer)) {
+        ids <- which(1:private$.optimizer_n %in% which_optimizer)
+      } else {
+        ino_stop(
+          "Argument 'which_optimizer' is misspecified."
+        )
+      }
+      if (length(ids) == 0) {
+        ino_stop(
+          "Please check argument 'which_optimizer', it fits to no optimizer."
+        )
+      }
+      return(ids)
+    }
 
   ),
   active = list(
@@ -395,28 +530,51 @@ Nop <- R6::R6Class(
         private$.npar
       } else {
         ino_stop(
-          "`$npar` is read only."
+          "'$npar' is read only."
         )
       }
     },
 
-    #' @field true_par The true optimum parameter vector of length \code{$npar} (if available).
-    true_par = function(value) {
+    #' @field true_parameter The true optimum parameter vector of length \code{$npar} (if available).
+    true_parameter = function(value) {
       if (missing(value)) {
-        private$.true_par
+        private$.true_parameter
       } else {
-        # TODO
+        self$set_true_parameter(true_parameter = value, set_true_value = FALSE)
       }
     },
 
-    #' @field true_val The true optimum value of \code{$f} (if available).
-    true_val = function(value) {
+    #' @field true_value The true optimum value of \code{$f} (if available).
+    true_value = function(value) {
       if (missing(value)) {
-        private$.true_val
+        private$.true_value
       } else {
-        # TODO
+        self$set_true_value(value)
+      }
+    },
+
+    #' @field arguments
+    arguments = function(value) {
+      if (missing(value)) {
+        private$.arguments
+      } else {
+        ino_stop(
+          "'$arguments' is read only.",
+          "To set an argument, please use '$set_argument()'.",
+          "To remove an argument, please use '$remove_argument()'."
+        )
       }
     }
 
+    #' @field argument_combinations
+    argument_combinations = function(value) {
+      if (missing(value)) {
+        private$.argument_combinations
+      } else {
+        ino_stop(
+          "'$argument_combinations' is read only."
+        )
+      }
+    }
   )
 )

@@ -53,6 +53,16 @@ plot(x, by = ".optimizer")
 
 # Example: HMM LL for earthquake data -------------------------------------
 
+hmm <- Nop$new(f = f_ll_hmm, npar = 4)$
+  set_argument("data", earthquakes)$
+  set_argument("N", 2)$
+  set_argument("neg", TRUE)$
+  set_optimizer(optimizer = optimizer_nlm(), label = "nlm")
+  print()
+
+
+
+
 hmm_ino <- setup_ino(
   f = f_ll_hmm,
   npar = 4,

@@ -38,9 +38,9 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 
 \item{\code{npar}}{The length of the first argument of \code{$f}.}
 
-\item{\code{true_par}}{The true optimum parameter vector of length \code{$npar} (if available).}
+\item{\code{true_parameter}}{The true optimum parameter vector of length \code{$npar} (if available).}
 
-\item{\code{true_val}}{The true optimum value of \code{$f} (if available).}
+\item{\code{true_value}}{The true optimum value of \code{$f} (if available).}
 }
 \if{html}{\out{</div>}}
 }
@@ -48,18 +48,21 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Nop-new}{\code{Nop$new()}}
-\item \href{#method-Nop-add_par}{\code{Nop$add_par()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
-\item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
-\item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
-\item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
-\item \href{#method-Nop-subset}{\code{Nop$subset()}}
-\item \href{#method-Nop-set_true_par}{\code{Nop$set_true_par()}}
-\item \href{#method-Nop-set_true_val}{\code{Nop$set_true_val()}}
+\item \href{#method-Nop-set_argument}{\code{Nop$set_argument()}}
+\item \href{#method-Nop-set_true_value}{\code{Nop$set_true_value()}}
+\item \href{#method-Nop-set_true_parameter}{\code{Nop$set_true_parameter()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
 \item \href{#method-Nop-remove_optimizer}{\code{Nop$remove_optimizer()}}
+\item \href{#method-Nop-optimizer_details}{\code{Nop$optimizer_details()}}
+\item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
+\item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-test}{\code{Nop$test()}}
+\item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
+\item \href{#method-Nop-subset}{\code{Nop$subset()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
+\item \href{#method-Nop-summary}{\code{Nop$summary()}}
+\item \href{#method-Nop-plot}{\code{Nop$plot()}}
 \item \href{#method-Nop-clone}{\code{Nop$clone()}}
 }
 }
@@ -76,7 +79,8 @@ Create a new numerical optimization problem.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{f}}{The \code{function} to be optimized.
-It is optimized over its first argument.
+It is optimized over its first argument, which should be a \code{numeric}
+vector of length \code{npar}.
 Use \code{$add_par()} to add additional parameter for \code{f}.}
 
 \item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (the
@@ -86,25 +90,6 @@ argument over which \code{f} is optimized).}
 }
 \subsection{Returns}{
 A new \code{Nop} object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-add_par"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-add_par}{}}}
-\subsection{Method \code{add_par()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$add_par(par, multiple = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{par}}{TODO}
-
-\item{\code{multiple}}{TODO}
-}
-\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -125,6 +110,131 @@ Print method for numerical optimization problem.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-set_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-set_argument}{}}}
+\subsection{Method \code{set_argument()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$set_argument(par, multiple = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{par}}{TODO}
+
+\item{\code{multiple}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-set_true_value"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-set_true_value}{}}}
+\subsection{Method \code{set_true_value()}}{
+Optionally set the true optimum value.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$set_true_value(true_value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{true_value}}{A \code{numeric}, the value of \code{f} at its optimum.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-set_true_parameter"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-set_true_parameter}{}}}
+\subsection{Method \code{set_true_parameter()}}{
+Optionally set the true optimum parameter.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$set_true_parameter(true_parameter, set_true_value = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{true_parameter}}{A \code{numeric} vector of length \code{npar}, the point where \code{f}
+obtains its optimum.}
+
+\item{\code{set_true_value}}{Set to \code{TRUE} to use \code{true_parameter} to compute the true
+optimum value of \code{f}.
+Set to \code{FALSE} (default) if not.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-set_optimizer"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-set_optimizer}{}}}
+\subsection{Method \code{set_optimizer()}}{
+Set a numerical optimizer.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$set_optimizer(optimizer, label = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{optimizer}}{An object of class \code{optimizer}, which can be created with the
+\code{\link[optimizeR]{set_optimizer}} function from the {optimizeR}
+package.}
+
+\item{\code{label}}{A \code{character}, a unique label for the optimizer.
+By default \code{NULL}, in which case the default label from
+\code{optimizer} is used.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-remove_optimizer"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-remove_optimizer}{}}}
+\subsection{Method \code{remove_optimizer()}}{
+Remove numerical optimizer.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_optimizer(which_optimizer = "all")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_optimizer}}{Either:
+\itemize{
+\item \code{"all"} for all specified optimizer (default)
+\item a \code{character} vector of specified optimizer labels
+\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-optimizer_details"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-optimizer_details}{}}}
+\subsection{Method \code{optimizer_details()}}{
+Print details of numerical optimizer.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optimizer_details(which_optimizer = "all")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_optimizer}}{Either:
+\itemize{
+\item \code{"all"} for all specified optimizer (default)
+\item a \code{character} vector of specified optimizer labels
+\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-evaluate"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
 \subsection{Method \code{evaluate()}}{
@@ -139,6 +249,9 @@ Evaluate the function.
 \item{\code{at}}{A \code{numeric} vector of length \code{$npar}.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+TODO
 }
 }
 \if{html}{\out{<hr>}}
@@ -160,11 +273,11 @@ Optimize the function.
 \describe{
 \item{\code{initial}}{Either:
 \itemize{
+\item the character \code{"random"} (the default) for random initial values
+drawn from a standard normal distribution
 \item a \code{numeric} vector of length \code{$npar}, the starting point for
 optimization
 \item a \code{function} without any arguments that returns a \code{numeric}
-vector of length \code{$npar}
-By default, \code{initial = rnorm(self$npar)}), i.e. random initial values.
 }}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization.
@@ -183,104 +296,6 @@ By default, \code{runs = 1}.}
 }
 \subsection{Returns}{
 TODO
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-standardize"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-standardize}{}}}
-\subsection{Method \code{standardize()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-subset"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-subset}{}}}
-\subsection{Method \code{subset()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$subset()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-set_true_par"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-set_true_par}{}}}
-\subsection{Method \code{set_true_par()}}{
-Optionally set the true optimum parameter.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$set_true_par(true_par = NULL, set_true_val = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{true_par}}{Either \code{NULL} (default) or the point where \code{f} obtains its
-optimum (i.e., a numeric vector of length \code{npar}).}
-
-\item{\code{set_true_val}}{Set to \code{TRUE} to use \code{true_par} to compute the true
-optimum value of \code{f} and to \code{FALSE} (default) if not.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-set_true_val"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-set_true_val}{}}}
-\subsection{Method \code{set_true_val()}}{
-Optionally set the true optimum value.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$set_true_val(true_val = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{true_val}}{Either \code{NULL} (default) or the value of \code{f} at its optimum.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-set_optimizer"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-set_optimizer}{}}}
-\subsection{Method \code{set_optimizer()}}{
-Set a numerical optimizer.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$set_optimizer(optimizer, label = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{optimizer}}{An object of class \code{optimizer} which can be created with the
-\code{\link[optimizeR]{set_optimizer}} function from the {optimizeR}
-package.}
-
-\item{\code{label}}{A \code{character}, a unique label for the optimizer.
-By default \code{NULL}, in which case the default label from
-\code{optimizer} is used.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-remove_optimizer"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-remove_optimizer}{}}}
-\subsection{Method \code{remove_optimizer()}}{
-Remove a numerical optimizer.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_optimizer(id)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{An \code{integer} (vector), the id(s) of optimizer to remove.}
-}
-\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -308,12 +323,50 @@ By default, \code{time_limit = 3}.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-standardize"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-standardize}{}}}
+\subsection{Method \code{standardize()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-subset"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-subset}{}}}
+\subsection{Method \code{subset()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$subset()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optima"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
 \subsection{Method \code{optima()}}{
 TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optima()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = 2)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-summary}{}}}
+\subsection{Method \code{summary()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$summary()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-plot}{}}}
+\subsection{Method \code{plot()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$plot()}\if{html}{\out{</div>}}
 }
 
 }
