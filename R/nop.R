@@ -10,12 +10,6 @@
 #' - a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
 #' @param argument_name
 #' A \code{character}, the argument name.
-#' @param which_argument_combination
-#' Only relevant if any argument to \code{f} was specified with multiple values,
-#' i.e., if any \code{$set_argument(..., multiple_values = TRUE)}.
-#' In that case, either:
-#' - \code{"all"} for all argument combinations (default)
-#' - a \code{numeric} vector of combination ids (see \code{$argument_combinations})
 #'
 #' @details
 #' # Initialize
@@ -171,16 +165,8 @@ Nop <- R6::R6Class(
           glue::glue("Argument '{argument_name}' already exists.")
         )
       }
-      if (!(isTRUE(multiple_arguments) || isFALSE(multiple_arguments))) {
-        ino_stop(
-          "Argument 'multiple_arguments' must be TRUE or FALSE."
-        )
-      }
       private$.arguments[[argument_name]] <- argument_value
       private$.narguments <- private$.narguments + 1
-      if (multiple_arguments) {
-        private$.multiple_arguments <- c(private$.multiple_arguments, multiple_arguments)
-      }
       invisible(self)
     },
 
@@ -312,10 +298,9 @@ Nop <- R6::R6Class(
     #' A \code{numeric} vector of length \code{$npar}.
     #' @return
     #' TODO
-    evaluate = function(at, which_argument_combination = "all") {
+    evaluate = function(at) {
       private$.check_target_arg(at, arg_name = "at")
-      argument_combination <- private$.argument_combination(which_argument_combination)
-      private$.evaluate(at, argument_combination)
+      private$.evaluate(at)
     },
 
     #' @description
@@ -403,12 +388,32 @@ Nop <- R6::R6Class(
 
     #' @description
     #' TODO
+    #' @param argument_name
+    #' TODO
+    #' @param by_column
+    #' TODO
+    #' @param center
+    #' TODO
+    #' @param scale
+    #' TODO
+    #' @param ignore
+    #' TODO
     standardize = function(argument_name, by_column = TRUE, center = TRUE, scale = TRUE, ignore = integer()) {
 
       invisible(self)
     },
 
     #' @description
+    #' TODO
+    #' @param argument_name
+    #' TODO
+    #' @param by_row
+    #' TODO
+    #' @param how
+    #' TODO
+    #' @param proportion
+    #' TODO
+    #' @param ignore
     #' TODO
     subset = function(argument_name, by_row = TRUE, how = "first", proportion = 0.5, ignore = integer()) {
 
@@ -417,14 +422,20 @@ Nop <- R6::R6Class(
 
     #' @description
     #' TODO
+    #' @param digits
+    #' TODO
     optima = function (digits = 2) {
 
     },
 
+    #' @description
+    #' TODO
     summary = function () {
 
     },
 
+    #' @description
+    #' TODO
     plot = function () {
 
     }
@@ -438,8 +449,6 @@ Nop <- R6::R6Class(
     .npar = NULL,
     .arguments = list(),
     .narguments = 0,
-    .multiple_arguments = character(),
-    .argument_combinations = data.frame(),
 
     .true_parameter = NULL,
     .true_value = NULL,
@@ -452,7 +461,7 @@ Nop <- R6::R6Class(
     .best_parameter = NA_real_,
     .best_value = NA_real_,
 
-    .evaluate = function(at, which_argument_combination) {
+    .evaluate = function(at) {
       if (private$.narguments == 0) {
         do.call(
           what = private$.f,
@@ -461,7 +470,7 @@ Nop <- R6::R6Class(
       } else {
         do.call(
           what = private$.f,
-          args = c(list(at), add_args)
+          args = c(list(at))
         )
       }
     },
@@ -553,7 +562,7 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field arguments
+    #' @field arguments TODO
     arguments = function(value) {
       if (missing(value)) {
         private$.arguments
@@ -562,17 +571,6 @@ Nop <- R6::R6Class(
           "'$arguments' is read only.",
           "To set an argument, please use '$set_argument()'.",
           "To remove an argument, please use '$remove_argument()'."
-        )
-      }
-    }
-
-    #' @field argument_combinations
-    argument_combinations = function(value) {
-      if (missing(value)) {
-        private$.argument_combinations
-      } else {
-        ino_stop(
-          "'$argument_combinations' is read only."
         )
       }
     }

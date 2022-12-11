@@ -8,14 +8,13 @@ A \code{Nop} object defines a numerical optimization problem.
 }
 \section{Initialize}{
 TODO
-\subsection{Step 1}{
-
-TODO
+\subsection{Step 1: Create a new \code{Nop} object.}{
 }
 
-\subsection{Step 2}{
+\subsection{Step 2: Add additional arguments.}{
+}
 
-TODO
+\subsection{Step 2: Specify numerical optimizer.}{
 }
 }
 
@@ -41,6 +40,8 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 \item{\code{true_parameter}}{The true optimum parameter vector of length \code{$npar} (if available).}
 
 \item{\code{true_value}}{The true optimum value of \code{$f} (if available).}
+
+\item{\code{arguments}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
@@ -50,6 +51,7 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 \item \href{#method-Nop-new}{\code{Nop$new()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-set_argument}{\code{Nop$set_argument()}}
+\item \href{#method-Nop-remove_argument}{\code{Nop$remove_argument()}}
 \item \href{#method-Nop-set_true_value}{\code{Nop$set_true_value()}}
 \item \href{#method-Nop-set_true_parameter}{\code{Nop$set_true_parameter()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
@@ -113,17 +115,36 @@ Print method for numerical optimization problem.
 \if{html}{\out{<a id="method-Nop-set_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-set_argument}{}}}
 \subsection{Method \code{set_argument()}}{
-TODO
+Optionally set an additional argument for \code{f}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$set_argument(par, multiple = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$set_argument(argument_name, argument_value, multiple_values = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{par}}{TODO}
+\item{\code{argument_name}}{A \code{character}, the argument name.}
 
-\item{\code{multiple}}{TODO}
+\item{\code{argument_value}}{Any \code{R} object, the value of argument \code{argument_name} for \code{f}.}
+
+\item{\code{multiple_values}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-remove_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-remove_argument}{}}}
+\subsection{Method \code{remove_argument()}}{
+Optionally remove additional arguments for \code{f}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_argument(argument_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{A \code{character}, the argument name.}
 }
 \if{html}{\out{</div>}}
 }
@@ -328,9 +349,30 @@ By default, \code{time_limit = 3}.}
 \subsection{Method \code{standardize()}}{
 TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize(
+  argument_name,
+  by_column = TRUE,
+  center = TRUE,
+  scale = TRUE,
+  ignore = integer()
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{TODO}
+
+\item{\code{by_column}}{TODO}
+
+\item{\code{center}}{TODO}
+
+\item{\code{scale}}{TODO}
+
+\item{\code{ignore}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-subset"></a>}}
@@ -338,9 +380,30 @@ TODO
 \subsection{Method \code{subset()}}{
 TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$subset()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$subset(
+  argument_name,
+  by_row = TRUE,
+  how = "first",
+  proportion = 0.5,
+  ignore = integer()
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{TODO}
+
+\item{\code{by_row}}{TODO}
+
+\item{\code{how}}{TODO}
+
+\item{\code{proportion}}{TODO}
+
+\item{\code{ignore}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optima"></a>}}
@@ -351,11 +414,19 @@ TODO
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = 2)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{digits}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-summary}{}}}
 \subsection{Method \code{summary()}}{
+TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$summary()}\if{html}{\out{</div>}}
 }
@@ -365,6 +436,7 @@ TODO
 \if{html}{\out{<a id="method-Nop-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-plot}{}}}
 \subsection{Method \code{plot()}}{
+TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$plot()}\if{html}{\out{</div>}}
 }
