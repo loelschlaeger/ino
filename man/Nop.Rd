@@ -27,7 +27,9 @@ TODO
 }
 
 \examples{
-ackley <- Nop$new(f = f_ackley, npar = 2)
+ackley <- Nop$new(f = f_ackley, npar = 2)$
+  set_optimizer(optimizer_nlm())$
+  optimize()
 
 }
 \section{Active bindings}{
@@ -37,11 +39,11 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 
 \item{\code{npar}}{The length of the first argument of \code{$f}.}
 
+\item{\code{arguments}}{A \code{list} of specified additional arguments for \code{f}.}
+
 \item{\code{true_parameter}}{The true optimum parameter vector of length \code{$npar} (if available).}
 
 \item{\code{true_value}}{The true optimum value of \code{$f} (if available).}
-
-\item{\code{arguments}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
@@ -52,12 +54,11 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-set_argument}{\code{Nop$set_argument()}}
 \item \href{#method-Nop-remove_argument}{\code{Nop$remove_argument()}}
+\item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-set_true_value}{\code{Nop$set_true_value()}}
 \item \href{#method-Nop-set_true_parameter}{\code{Nop$set_true_parameter()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
 \item \href{#method-Nop-remove_optimizer}{\code{Nop$remove_optimizer()}}
-\item \href{#method-Nop-optimizer_details}{\code{Nop$optimizer_details()}}
-\item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-test}{\code{Nop$test()}}
 \item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
@@ -74,7 +75,7 @@ ackley <- Nop$new(f = f_ackley, npar = 2)
 \subsection{Method \code{new()}}{
 Create a new numerical optimization problem.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$new(f, npar)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$new(f, npar, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -82,11 +83,12 @@ Create a new numerical optimization problem.
 \describe{
 \item{\code{f}}{The \code{function} to be optimized.
 It is optimized over its first argument, which should be a \code{numeric}
-vector of length \code{npar}.
-Use \code{$add_par()} to add additional parameter for \code{f}.}
+vector of length \code{npar}.}
 
 \item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (the
 argument over which \code{f} is optimized).}
+
+\item{\code{...}}{Optionally additional arguments for \code{f}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -115,19 +117,15 @@ Print method for numerical optimization problem.
 \if{html}{\out{<a id="method-Nop-set_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-set_argument}{}}}
 \subsection{Method \code{set_argument()}}{
-Optionally set an additional argument for \code{f}.
+Set additional arguments for \code{f}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$set_argument(argument_name, argument_value, multiple_values = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$set_argument(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{A \code{character}, the argument name.}
-
-\item{\code{argument_value}}{Any \code{R} object, the value of argument \code{argument_name} for \code{f}.}
-
-\item{\code{multiple_values}}{TODO}
+\item{\code{...}}{Optionally additional arguments for \code{f}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -136,17 +134,37 @@ Optionally set an additional argument for \code{f}.
 \if{html}{\out{<a id="method-Nop-remove_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-remove_argument}{}}}
 \subsection{Method \code{remove_argument()}}{
-Optionally remove additional arguments for \code{f}.
+Remove additional arguments for \code{f}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_argument(argument_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_argument(argument_names)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{A \code{character}, the argument name.}
+\item{\code{argument_names}}{A \code{character} (vector), the names of arguments to remove.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-evaluate"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
+\subsection{Method \code{evaluate()}}{
+Evaluate the function.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(at)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at}}{A \code{numeric} vector of length \code{npar}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{numeric} value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -161,7 +179,7 @@ Optionally set the true optimum value.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{true_value}}{A \code{numeric}, the value of \code{f} at its optimum.}
+\item{\code{true_value}}{A single \code{numeric}, the value of \code{f} at its optimum.}
 }
 \if{html}{\out{</div>}}
 }
@@ -170,7 +188,7 @@ Optionally set the true optimum value.
 \if{html}{\out{<a id="method-Nop-set_true_parameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-set_true_parameter}{}}}
 \subsection{Method \code{set_true_parameter()}}{
-Optionally set the true optimum parameter.
+Optionally set the true optimum parameter
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$set_true_parameter(true_parameter, set_true_value = FALSE)}\if{html}{\out{</div>}}
 }
@@ -205,7 +223,7 @@ Set a numerical optimizer.
 package.}
 
 \item{\code{label}}{A \code{character}, a unique label for the optimizer.
-By default \code{NULL}, in which case the default label from
+By default \code{label = NULL}, in which case the default label from
 \code{optimizer} is used.}
 }
 \if{html}{\out{</div>}}
@@ -223,7 +241,7 @@ Remove numerical optimizer.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{which_optimizer}}{Either:
+\item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
 \item a \code{character} vector of specified optimizer labels
@@ -231,48 +249,6 @@ Remove numerical optimizer.
 }}
 }
 \if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-optimizer_details"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-optimizer_details}{}}}
-\subsection{Method \code{optimizer_details()}}{
-Print details of numerical optimizer.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optimizer_details(which_optimizer = "all")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_optimizer}}{Either:
-\itemize{
-\item \code{"all"} for all specified optimizer (default)
-\item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
-}}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-evaluate"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
-\subsection{Method \code{evaluate()}}{
-Evaluate the function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(at)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{at}}{A \code{numeric} vector of length \code{$npar}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-TODO
 }
 }
 \if{html}{\out{<hr>}}
@@ -282,29 +258,32 @@ TODO
 Optimize the function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optimize(
-  initial = rnorm(self$npar),
+  initial = "random",
   runs = 1,
   which_optimizer = "all",
-  seed = NULL
+  seed = NULL,
+  save_results = TRUE,
+  return_results = FALSE
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{initial}}{Either:
+\item{\code{initial}}{Specify the point where the optimizer should start. Either:
 \itemize{
 \item the character \code{"random"} (the default) for random initial values
 drawn from a standard normal distribution
 \item a \code{numeric} vector of length \code{$npar}, the starting point for
 optimization
 \item a \code{function} without any arguments that returns a \code{numeric}
+vector of length \code{$npar}
 }}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization.
 By default, \code{runs = 1}.}
 
-\item{\code{which_optimizer}}{Either:
+\item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
 \item a \code{character} vector of specified optimizer labels
@@ -312,6 +291,10 @@ By default, \code{runs = 1}.}
 }}
 
 \item{\code{seed}}{Set a seed. No seed by default.}
+
+\item{\code{save_results}}{TODO}
+
+\item{\code{return_results}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
@@ -325,7 +308,7 @@ TODO
 \subsection{Method \code{test()}}{
 Test the configuration of numerical optimization problem.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$test(at = rnorm(self$npar), time_limit = 3)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$test(at = rnorm(self$npar), which_optimizer = "all", time_limit = 10)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -335,10 +318,17 @@ Test the configuration of numerical optimization problem.
 function (\code{$f}) and the specified optimizer are tested.
 Per default, \code{at = rnorm(self$npar)}.}
 
+\item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
+\itemize{
+\item \code{"all"} for all specified optimizer (default)
+\item a \code{character} vector of specified optimizer labels
+\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+}}
+
 \item{\code{time_limit}}{A \code{numeric}, the time limit in seconds for testing the function
 call and the optimization. If no error occurred after \code{time_limit}
 seconds, the test is considered to be successful.
-By default, \code{time_limit = 3}.}
+By default, \code{time_limit = 10}.}
 }
 \if{html}{\out{</div>}}
 }

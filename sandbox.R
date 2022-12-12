@@ -11,7 +11,7 @@ options(ino_ncores = parallel::detectCores() - 1)
 # Example: Ackley function ------------------------------------------------
 
 ackley <- Nop$new(f = f_ackley, npar = 2)$
-  set_true_par(true_par = c(0, 0), set_true_val = TRUE)$
+  set_true_parameter(true_par = c(0, 0), set_true_value = TRUE)$
   set_optimizer(optimizer = optimizer_nlm(), label = "nlm")$
   set_optimizer(optimizer = optimizer_optim(), label = "optim")$
   print()
@@ -23,7 +23,6 @@ ackley$optimize(initial = c(-3,3), runs = 1)
 ackley$test()
 
 ackley$optima(digits = 2)
-
 
 x <- setup_ino(
   f = f_ackley,
@@ -53,7 +52,7 @@ plot(x, by = ".optimizer")
 
 # Example: HMM LL for earthquake data -------------------------------------
 
-hmm <- Nop$new(f = f_ll_hmm, npar = 4)$
+hmm <- Nop$new(f = f_ll_hmm, npar = 6)$
   set_argument("data", earthquakes)$
   set_argument("N", 2)$
   set_argument("neg", TRUE)$
@@ -65,7 +64,7 @@ hmm <- Nop$new(f = f_ll_hmm, npar = 4)$
 
 hmm_ino <- setup_ino(
   f = f_ll_hmm,
-  npar = 4,
+  npar = 6,
   data = earthquakes,
   N = 2,
   neg = TRUE,

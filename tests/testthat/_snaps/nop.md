@@ -1,15 +1,65 @@
-# function arguments can be set
+# Nop object can be printed
 
     Code
-      hmm
+      ackley
+    Output
+      Optimization problem:
+       Function: f_ackley
+       Optimize over: x (dimension 2)
+      Numerical optimizer:
+       No optimizer specified.
+      Optimization results:
+       No optimization records.
+
+---
+
+    Code
+      print(ackley)
+    Output
+      Optimization problem:
+       Function: f_ackley
+       Optimize over: x (dimension 2)
+      Numerical optimizer:
+       No optimizer specified.
+      Optimization results:
+       No optimization records.
+
+---
+
+    Code
+      ackley$print()
+    Output
+      Optimization problem:
+       Function: f_ackley
+       Optimize over: x (dimension 2)
+      Numerical optimizer:
+       No optimizer specified.
+      Optimization results:
+       No optimization records.
+
+# Nop object with parameters can be initialized
+
+    Code
+      print(hmm)
     Output
       Optimization problem:
        Function: f_ll_hmm
-       Optimize over: theta (dimension 4)
-       Additional arguments:
-       - data 
-       - N 
-       - neg 
+       Optimize over: theta (dimension 6)
+       Additional arguments: data 
+      Numerical optimizer:
+       No optimizer specified.
+      Optimization results:
+       No optimization records.
+
+---
+
+    Code
+      print(hmm)
+    Output
+      Optimization problem:
+       Function: f_ll_hmm
+       Optimize over: theta (dimension 6)
+       Additional arguments: data, test_arg1, test_arg2 
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
@@ -127,175 +177,4 @@
        1: C
       Optimization results:
        No optimization records.
-
-# optimizer details can be printed
-
-    Code
-      ackley$optimizer_details("all")
-    Output
-      1: A 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-      2: B 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-      3: C 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-      4: stats::nlm 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-
----
-
-    Code
-      ackley$optimizer_details(c(3, 4, 1))
-    Output
-      1: A 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-      3: C 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-      4: stats::nlm 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-
----
-
-    Code
-      ackley$optimizer_details(c("stats::nlm", "B"))
-    Output
-      2: B 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
-      4: stats::nlm 
-      List of 1
-       $ :List of 5
-        ..$ opt_fun  :function (f, p, ..., hessian = FALSE, typsize = rep(1, length(p)), fscale = 1, 
-          print.level = 0, ndigit = 12, gradtol = 1e-06, stepmax = max(1000 * 
-              sqrt(sum((p/typsize)^2)), 1000), steptol = 1e-06, iterlim = 100, 
-          check.analyticals = TRUE)  
-        ..$ opt_name : chr "stats::nlm"
-        ..$ add      : list()
-        ..$ arg_names:List of 4
-        .. ..$ f: chr "f"
-        .. ..$ p: chr "p"
-        .. ..$ v: chr "minimum"
-        .. ..$ z: chr "estimate"
-        ..$ out_ign  : chr [1:2] "minimum" "estimate"
-        ..- attr(*, "class")= chr "optimizer"
-      
 
