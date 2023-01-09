@@ -1,4 +1,4 @@
-#' ino: Initialization strategies for numerical optimization
+#' ino: Analysis of initialization for numerical optimization
 #'
 #' @description
 #' This package implements tools for analyzing the initialization of
@@ -27,12 +27,8 @@
 #' @keywords internal
 
 .onAttach <- function(lib, pkg) {
-  msg <- paste0(
-    "Thanks for using {ino} ", utils::packageVersion("ino"), "."
-  )
-  packageStartupMessage(
-    glue::glue("Thanks for using {{ino}} {utils::packageVersion('ino')}.")
-  )
+  msg <- glue::glue("Thanks for using {{ino}} {utils::packageVersion('ino')}.")
+  packageStartupMessage(msg)
   invisible()
 }
 
@@ -42,24 +38,18 @@
 #' @keywords internal
 
 ino_status <- function(msg, verbose = getOption("ino_verbose")) {
-  if (verbose) {
-    cli::cli_alert_info(glue::glue(msg))
-  }
+  if (verbose) cli::cli_alert_info(glue::glue(msg))
 }
 
 #' @noRd
 #' @importFrom cli cli_abort
-#' @importFrom glue glue
 #' @keywords internal
 
 ino_stop <- function(msg, ...) {
   msg <- c(msg, ...)
   names(msg)[1] <- "x"
   names(msg)[-1] <- "*"
-  cli::cli_abort(
-    msg,
-    call = NULL
-  )
+  cli::cli_abort(msg, call = NULL)
 }
 
 #' @noRd
@@ -69,8 +59,5 @@ ino_stop <- function(msg, ...) {
 ino_warn <- function(msg, ...) {
   msg <- list(...)
   names(msg) <- c("!", rep(">", length(msg)))[1:length(msg)]
-  cli::cli_warn(
-    unlist(msg),
-    call = NULL
-  )
+  cli::cli_warn(unlist(msg), call = NULL)
 }

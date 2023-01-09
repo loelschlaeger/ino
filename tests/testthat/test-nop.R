@@ -12,9 +12,6 @@ test_that("Nop object can be initialized", {
   expect_error({ackley$npar <- 1}, "is read only.")
   expect_error(Nop$new(f = function() 1, npar = 0),
                "should have at least one argument.")
-})
-
-test_that("Nop object can be printed", {
   expect_snapshot(ackley)
   expect_snapshot(print(ackley))
   expect_snapshot(ackley$print())
@@ -31,22 +28,25 @@ test_that("Nop object with parameters can be initialized", {
   expect_error(hmm$remove_argument("test_arg3"), "does not exist.")
   expect_s3_class(hmm$remove_argument("test_arg2"), "Nop")
   expect_error(hmm$set_argument(), "Please specify an argument.")
-  expect_error(hmm$remove_argument(), "Please specify 'argument_names'.")
-  expect_error(hmm$remove_argument(argument_names = 1:2))
+  expect_equal(hmm$get_argument("test_arg1"), 1)
+  expect_error(hmm$get_argument("does_not_exist"), "does not exist")
+  expect_error(hmm$remove_argument(), "Please specify 'argument_name'.")
+  expect_error(hmm$remove_argument(argument_name = 1:2))
 })
 
 test_that("function can be evaluated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(ackley$evaluate(1),
                "Argument 'at' must be a numeric vector of length 2.")
-  expect_type(ackley$evaluate(c(1,2)), "double")
+  expect_type(ackley$evaluate(c(1, 2)), "double")
+  expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
   hmm <- Nop$new(f = f_ll_hmm, npar = 6, "data" = earthquakes)$
     set_argument("N" = 2, "neg" = TRUE)
-  expect_type(hmm$evaluate(at = c(0,2,1,4,2,3)), "double")
+  expect_type(hmm$evaluate(at = c(0, 2, 1, 4, 2, 3)), "double")
   hmm$remove_argument("neg")
-  expect_type(hmm$evaluate(at = c(0,2,1,4,2,3)), "double")
+  expect_type(hmm$evaluate(at = c(0, 2, 1, 4, 2, 3)), "double")
   hmm$remove_argument("N")
-  expect_error(hmm$evaluate(at = c(0,2,1,4,2,3)), "must be specified for")
+  expect_error(hmm$evaluate(at = c(0, 2, 1, 4, 2, 3)), "does not exist")
 })
 
 test_that("true value can be set", {
@@ -113,12 +113,20 @@ test_that("optimizer can be removed", {
 
 test_that("function can be optimized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(optimizer_nlm())
-  ackley$optimize()
+  ackley$optimize(return_results = TRUE, runs = 100, ncores = 2)
 })
 
+test_that("Nop object can be tested", {
+  # TODO
+})
 
+test_that("standardization works", {
+  # TODO
+})
 
-
+test_that("reducing works", {
+  # TODO
+})
 
 
 
