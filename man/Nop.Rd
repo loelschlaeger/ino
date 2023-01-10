@@ -4,17 +4,22 @@
 \alias{Nop}
 \title{Nop Object (R6 Class)}
 \description{
-A \code{Nop} object defines a numerical optimization problem.
+A \code{Nop} object defines a \emph{n}umerical \emph{o}ptimization \emph{p}roblem.
 }
-\section{Initialize}{
-TODO
+\section{Getting Started}{
 \subsection{Step 1: Create a new \code{Nop} object.}{
+
+TODO
 }
 
 \subsection{Step 2: Add additional arguments.}{
+
+TODO
 }
 
 \subsection{Step 2: Specify numerical optimizer.}{
+
+TODO
 }
 }
 
@@ -37,13 +42,13 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 \describe{
 \item{\code{f}}{The \code{function} to be optimized.}
 
-\item{\code{npar}}{The length of the first argument of \code{$f}.}
+\item{\code{npar}}{The length of the first argument of \code{f}.}
 
 \item{\code{arguments}}{A \code{list} of specified additional arguments for \code{f}.}
 
-\item{\code{true_parameter}}{The true optimum parameter vector of length \code{$npar} (if available).}
+\item{\code{true_parameter}}{The true optimum parameter vector of length \code{npar} (if available).}
 
-\item{\code{true_value}}{The true optimum value of \code{$f} (if available).}
+\item{\code{true_value}}{The true optimum value of \code{f} (if available).}
 }
 \if{html}{\out{</div>}}
 }
@@ -53,6 +58,7 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 \item \href{#method-Nop-new}{\code{Nop$new()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-set_argument}{\code{Nop$set_argument()}}
+\item \href{#method-Nop-get_argument}{\code{Nop$get_argument()}}
 \item \href{#method-Nop-remove_argument}{\code{Nop$remove_argument()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-set_true_value}{\code{Nop$set_true_value()}}
@@ -62,7 +68,7 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-test}{\code{Nop$test()}}
 \item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
-\item \href{#method-Nop-subset}{\code{Nop$subset()}}
+\item \href{#method-Nop-reduce}{\code{Nop$reduce()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
@@ -131,18 +137,35 @@ Set additional arguments for \code{f}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-remove_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-remove_argument}{}}}
-\subsection{Method \code{remove_argument()}}{
-Remove additional arguments for \code{f}.
+\if{html}{\out{<a id="method-Nop-get_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-get_argument}{}}}
+\subsection{Method \code{get_argument()}}{
+Get value of additional argument for \code{f}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_argument(argument_names)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$get_argument(argument_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_names}}{A \code{character} (vector), the names of arguments to remove.}
+\item{\code{argument_name}}{A \code{character}, the argument to extract.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-remove_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-remove_argument}{}}}
+\subsection{Method \code{remove_argument()}}{
+Remove additional arguments for \code{f}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_argument(argument_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{A \code{character}, the argument to remove.}
 }
 \if{html}{\out{</div>}}
 }
@@ -188,7 +211,7 @@ Optionally set the true optimum value.
 \if{html}{\out{<a id="method-Nop-set_true_parameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-set_true_parameter}{}}}
 \subsection{Method \code{set_true_parameter()}}{
-Optionally set the true optimum parameter
+Optionally set the true optimum parameter vector.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$set_true_parameter(true_parameter, set_true_value = FALSE)}\if{html}{\out{</div>}}
 }
@@ -219,12 +242,12 @@ Set a numerical optimizer.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{optimizer}}{An object of class \code{optimizer}, which can be created with the
-\code{\link[optimizeR]{set_optimizer}} function from the {optimizeR}
+\code{\link[optimizeR]{set_optimizer}} function from the \{optimizeR\}
 package.}
 
 \item{\code{label}}{A \code{character}, a unique label for the optimizer.
-By default \code{label = NULL}, in which case the default label from
-\code{optimizer} is used.}
+By default \code{label = NULL}, in which case the default label saved
+inside \code{optimizer} is used.}
 }
 \if{html}{\out{</div>}}
 }
@@ -245,7 +268,7 @@ Remove numerical optimizer.
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
 \item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 }
 \if{html}{\out{</div>}}
@@ -264,43 +287,46 @@ Optimize the function.
   seed = NULL,
   save_results = TRUE,
   return_results = FALSE,
+  label = "",
   ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_verbose")
+  verbose = getOption("ino_verbose"),
+  simplify = TRUE
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{initial}}{Specify the point where the optimizer should start. Either:
+\item{\code{initial}}{Specify the initial point where the optimizer should start. Either:
 \itemize{
 \item the character \code{"random"} (the default) for random initial values
 drawn from a standard normal distribution
-\item a \code{numeric} vector of length \code{$npar}, the starting point for
+\item a \code{numeric} vector of length \code{npar}, the starting point for
 optimization
 \item a \code{function} without any arguments that returns a \code{numeric}
-vector of length \code{$npar}
+vector of length \code{npar}
 }}
 
-\item{\code{runs}}{An \code{integer}, the number of optimization.
+\item{\code{runs}}{An \code{integer}, the number of optimization runs.
 By default, \code{runs = 1}.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
 \item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
 \item{\code{seed}}{Set a seed. No seed by default.}
 
-\item{\code{save_results}}{A \code{logical}, whether to save the optimization results inside the
-object.
-By default, \code{save_results = TRUE}.
-That allows to analyze them later with the \code{$summary()} method.}
+\item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
+inside the \code{Nop} object.
+By default, \code{save_results = TRUE}.}
 
-\item{\code{return_results}}{A \code{logical}, whether to return the optimization results.
+\item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned.
 By default, \code{return_results = FALSE}.}
+
+\item{\code{label}}{TODO}
 
 \item{\code{ncores}}{An \code{integer}, the number of cores for parallel computation.
 The default is \code{getOption("ino_ncores")}, which is set to \code{1}
@@ -310,15 +336,16 @@ when the package is loaded.}
 Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
 The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
 when the package is loaded.}
+
+\item{\code{simplify}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The return value depends on the \code{return_results} argument:
+The return value depends on the value of \code{return_results}:
 \itemize{
-\item If \code{return_results = TRUE}, the function returns a \code{list}
-of length \code{runs} of optimization results for each run.
-\item If \code{return_results = FALSE}, the object is returned invisibly.
+\item if \code{return_results = FALSE} (default), invisibly the \code{Nop} object
+\item if \code{return_results = TRUE}, the output of \code{\link[optimizeR]{apply_optimizer}}.
 }
 }
 }
@@ -334,20 +361,21 @@ Test the configuration of numerical optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{A \code{numeric} of length \code{self$npar}, the point at which
-function (\code{$f}) and the specified optimizer are tested.
-Per default, \code{at = rnorm(self$npar)}.}
+\item{\code{at}}{A \code{numeric} of length \code{npar}, the point at which the
+function \code{f} and the specified optimizer are tested.
+Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
 \item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
 \item{\code{time_limit}}{A \code{numeric}, the time limit in seconds for testing the function
-call and the optimization. If no error occurred after \code{time_limit}
-seconds, the test is considered to be successful.
+call and the optimization.
+If no error occurred after \code{time_limit} seconds, the test is
+considered to be successful.
 By default, \code{time_limit = 10}.}
 }
 \if{html}{\out{</div>}}
@@ -357,7 +385,7 @@ By default, \code{time_limit = 10}.}
 \if{html}{\out{<a id="method-Nop-standardize"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-standardize}{}}}
 \subsection{Method \code{standardize()}}{
-TODO
+Standardize the optimization problem.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$standardize(
   argument_name,
@@ -371,53 +399,70 @@ TODO
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{TODO}
+\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be standardized.
+The argument must be either a \code{data.frame} or a \code{matrix}.}
 
-\item{\code{by_column}}{TODO}
+\item{\code{by_column}}{Either \code{TRUE} to standardize column-wise (default) or \code{FALSE}
+to standardize row-wise.}
 
-\item{\code{center}}{TODO}
+\item{\code{center}}{Passed to \code{\link[base]{scale}}. Default is \code{TRUE}.}
 
-\item{\code{scale}}{TODO}
+\item{\code{scale}}{Passed to \code{\link[base]{scale}}. Default is \code{TRUE}.}
 
-\item{\code{ignore}}{TODO}
+\item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
+\code{by_column = FALSE}) to not standardize.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-subset"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-subset}{}}}
-\subsection{Method \code{subset()}}{
-TODO
+\if{html}{\out{<a id="method-Nop-reduce"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-reduce}{}}}
+\subsection{Method \code{reduce()}}{
+Reduce the optimization problem.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$subset(
+\if{html}{\out{<div class="r">}}\preformatted{Nop$reduce(
   argument_name,
   by_row = TRUE,
-  how = "first",
+  how = "random",
   proportion = 0.5,
-  ignore = integer()
+  centers = 2,
+  ignore = integer(),
+  seed = NULL
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{TODO}
+\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be subsetted.
+The argument must be either a \code{data.frame} or a \code{matrix}.}
 
-\item{\code{by_row}}{TODO}
+\item{\code{by_row}}{Either \code{TRUE} to subset row-wise (default) or \code{FALSE}
+to subset column-wise.}
 
-\item{\code{how}}{A \code{character}, specifying ..., one of
+\item{\code{how}}{A \code{character}, specifying how to select the subset. Can be one of:
 \itemize{
+\item \code{"random"} (default)
 \item \code{"first"}
 \item \code{"last"}
-\item \code{"random"}
 \item \code{"similar"}
-\item \code{"different"}
+\item \code{"unsimilar"}
 }}
 
-\item{\code{proportion}}{TODO}
+\item{\code{proportion}}{A \code{numeric} between \code{0} and \code{1}, specifying the proportion
+of the subset.
+By default, \code{proportion = 0.5}.}
 
-\item{\code{ignore}}{TODO}
+\item{\code{centers}}{Only relevant if \code{how = "(un)similar"}.
+In that case, passed to \code{\link[stats]{kmeans}}.
+By default, \code{centers = 2}.}
+
+\item{\code{ignore}}{Only relevant if \code{how = "(un)similar"}.
+In that case a \code{integer} (vector) of row indices (or column indices
+if \code{by_row = FALSE}) to ignore for clustering.}
+
+\item{\code{seed}}{Set a seed. No seed by default.}
 }
 \if{html}{\out{</div>}}
 }
