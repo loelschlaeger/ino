@@ -8,6 +8,15 @@
 #' - \code{"all"} for all specified optimizer (default)
 #' - a \code{character} vector of specified optimizer labels
 #' - a \code{numeric} vector of optimizer ids (see the output of \code{$print()})
+#' @param ncores
+#' An \code{integer}, the number of cores for parallel computation.
+#' The default is \code{getOption("ino_ncores")}, which is set to \code{1}
+#' when the package is loaded.
+#' @param verbose
+#' A \code{logical}, which indicates whether progress should be printed.
+#' Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
+#' The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+#' when the package is loaded.
 #'
 #' @details
 #' # Initialize
@@ -82,7 +91,7 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Print method for numerical optimization problem.
+    #' Prints details of numerical optimization problem.
     #' @importFrom crayon underline
     #' @importFrom glue glue
     #' @param ...
@@ -145,7 +154,7 @@ Nop <- R6::R6Class(
     #' Set additional arguments for \code{f}.
     #' @param ...
     #' Optionally additional arguments for \code{f}.
-    set_argument = function(...) {
+    set_argument = function (...) {
       arguments <- list(...)
       if (length(arguments) == 0) {
         ino_stop(
@@ -178,7 +187,7 @@ Nop <- R6::R6Class(
     #' Remove additional arguments for \code{f}.
     #' @param argument_names
     #' A \code{character} (vector), the names of arguments to remove.
-    remove_argument = function(argument_names) {
+    remove_argument = function (argument_names) {
       if (missing(argument_names)) {
         ino_stop(
           "Please specify 'argument_names'."
@@ -208,7 +217,7 @@ Nop <- R6::R6Class(
     #' A \code{numeric} vector of length \code{npar}.
     #' @return
     #' A \code{numeric} value.
-    evaluate = function(at) {
+    evaluate = function (at) {
       private$.check_add_args_complete()
       private$.check_target_arg(at, arg_name = "at")
       private$.evaluate(at)
@@ -324,14 +333,22 @@ Nop <- R6::R6Class(
     #' @param seed
     #' Set a seed. No seed by default.
     #' @param save_results
-    #' TODO
+    #' A \code{logical}, whether to save the optimization results inside the
+    #' object.
+    #' By default, \code{save_results = TRUE}.
+    #' That allows to analyze them later with the \code{$summary()} method.
     #' @param return_results
-    #' TODO
+    #' A \code{logical}, whether to return the optimization results.
+    #' By default, \code{return_results = FALSE}.
     #' @return
-    #' TODO
-    optimize = function(
+    #' The return value depends on the \code{return_results} argument:
+    #' - If \code{return_results = TRUE}, the function returns a \code{list}
+    #'   of length \code{runs} of optimization results for each run.
+    #' - If \code{return_results = FALSE}, the object is returned invisibly.
+    optimize = function (
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
-      save_results = TRUE, return_results = FALSE
+      save_results = TRUE, return_results = FALSE,
+      ncores = getOption("ino_ncores"), verbose = getOption("ino_verbose")
     ) {
       ### make `initial` to function call `get_initial`
       get_initial <- if (identical(initial, "random")) {
@@ -356,20 +373,49 @@ Nop <- R6::R6Class(
           "Input `runs` must be a positive integer."
         )
       }
+      if (!isTRUE(save_results) && !isFALSE(save_results)) {
+        ino_stop(
+          "Input `save_results` must be either TRUE or FALSE."
+        )
+      }
+      if (!isTRUE(return_results) && !isFALSE(return_results)) {
+        ino_stop(
+          "Input `return_results` must be either TRUE or FALSE."
+        )
+      }
+      if (!(is.numeric(ncores) && length(ncores) == 1 && ncores > 0 && ncores %% 1 == 0)) {
+        ino_stop(
+          "Input `ncores` must be a positive integer."
+        )
+      }
+      if (!isTRUE(verbose) && !isFALSE(verbose)) {
+        ino_stop(
+          "Input `verbose` must be either TRUE or FALSE."
+        )
+      }
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
       if (!is.null(seed)) {
         set.seed(seed)
       }
-      # TODO: parallelize
-      results <- list()
-      for (run in runs) {
+      ### set parallel
+      parallel <- ncores > 1 && runs >= 2 * ncores
+      if (parallel) {
+        cluster <- parallel::makeCluster(ncores)
+        on.exit(parallel::stopCluster(cluster))
+        doSNOW::registerDoSNOW(cluster)
+        `%par_seq%` <- foreach::`%dopar%`
+      } else {
+        `%par_seq%` <- foreach::`%do%`
+      }
+      # TODO: progress bar
+      results <- foreach::foreach(
+        run = 1:runs, .packages = c("ino")
+      ) %par_seq% {
         initial <- get_initial()
-        for (optimizer_id in optimizer_ids) {
-          results[[optimizer_id]] <- private$.optimize(initial, optimizer_id)
-        }
+        lapply(optimizer_ids, function (i) private$.optimize(initial, i))
       }
       if (save_results) {
-        # TODO: save results
+        private$.save_results(results)
       }
       if (return_results) {
         return(results)
@@ -389,7 +435,9 @@ Nop <- R6::R6Class(
     #' call and the optimization. If no error occurred after \code{time_limit}
     #' seconds, the test is considered to be successful.
     #' By default, \code{time_limit = 10}.
-    test = function (at = rnorm(self$npar), which_optimizer = "all", time_limit = 10) {
+    test = function (
+      at = rnorm(self$npar), which_optimizer = "all", time_limit = 10
+      ) {
 
       ### test f
       out <- suppressWarnings(
@@ -422,7 +470,7 @@ Nop <- R6::R6Class(
     #' TODO
     #' @param ignore
     #' TODO
-    standardize = function(
+    standardize = function (
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
       ignore = integer()
     ) {
@@ -437,12 +485,17 @@ Nop <- R6::R6Class(
     #' @param by_row
     #' TODO
     #' @param how
-    #' TODO
+    #' A \code{character}, specifying ..., one of
+    #' - \code{"first"}
+    #' - \code{"last"}
+    #' - \code{"random"}
+    #' - \code{"similar"}
+    #' - \code{"different"}
     #' @param proportion
     #' TODO
     #' @param ignore
     #' TODO
-    subset = function(
+    subset = function (
       argument_name, by_row = TRUE, how = "first", proportion = 0.5,
       ignore = integer()
     ) {
@@ -541,7 +594,7 @@ Nop <- R6::R6Class(
       return(ids)
     },
 
-    .evaluate = function(at) {
+    .evaluate = function (at) {
       at <- list(at)
       names(at) <- private$.f_target
       do.call(
@@ -550,7 +603,7 @@ Nop <- R6::R6Class(
       )
     },
 
-    .optimize = function(initial, optimizer_id) {
+    .optimize = function (initial, optimizer_id) {
       do.call(
         what = optimizeR::apply_optimizer,
         args = list(
@@ -559,13 +612,18 @@ Nop <- R6::R6Class(
           "p" = initial
         )
       )
+      # TODO: here needs to go check if optimization is to be continued with full data
+    },
+
+    .save_results = function (results) {
+      stop("not yet implemented.")
     }
 
   ),
   active = list(
 
     #' @field f The \code{function} to be optimized.
-    f = function(value) {
+    f = function (value) {
       if (missing(value)) {
         private$.f
       } else {
@@ -576,7 +634,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field npar The length of the first argument of \code{$f}.
-    npar = function(value) {
+    npar = function (value) {
       if (missing(value)) {
         private$.npar
       } else {
@@ -587,7 +645,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field arguments A \code{list} of specified additional arguments for \code{f}.
-    arguments = function(value) {
+    arguments = function (value) {
       if (missing(value)) {
         private$.arguments
       } else {
@@ -600,7 +658,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field true_parameter The true optimum parameter vector of length \code{$npar} (if available).
-    true_parameter = function(value) {
+    true_parameter = function (value) {
       if (missing(value)) {
         private$.true_parameter
       } else {
@@ -609,7 +667,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field true_value The true optimum value of \code{$f} (if available).
-    true_value = function(value) {
+    true_value = function (value) {
       if (missing(value)) {
         private$.true_value
       } else {

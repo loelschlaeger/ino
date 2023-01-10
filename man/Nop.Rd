@@ -100,7 +100,7 @@ A new \code{Nop} object.
 \if{html}{\out{<a id="method-Nop-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-print}{}}}
 \subsection{Method \code{print()}}{
-Print method for numerical optimization problem.
+Prints details of numerical optimization problem.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$print(...)}\if{html}{\out{</div>}}
 }
@@ -263,7 +263,9 @@ Optimize the function.
   which_optimizer = "all",
   seed = NULL,
   save_results = TRUE,
-  return_results = FALSE
+  return_results = FALSE,
+  ncores = getOption("ino_ncores"),
+  verbose = getOption("ino_verbose")
 )}\if{html}{\out{</div>}}
 }
 
@@ -292,14 +294,32 @@ By default, \code{runs = 1}.}
 
 \item{\code{seed}}{Set a seed. No seed by default.}
 
-\item{\code{save_results}}{TODO}
+\item{\code{save_results}}{A \code{logical}, whether to save the optimization results inside the
+object.
+By default, \code{save_results = TRUE}.
+That allows to analyze them later with the \code{$summary()} method.}
 
-\item{\code{return_results}}{TODO}
+\item{\code{return_results}}{A \code{logical}, whether to return the optimization results.
+By default, \code{return_results = FALSE}.}
+
+\item{\code{ncores}}{An \code{integer}, the number of cores for parallel computation.
+The default is \code{getOption("ino_ncores")}, which is set to \code{1}
+when the package is loaded.}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
+The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+when the package is loaded.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-TODO
+The return value depends on the \code{return_results} argument:
+\itemize{
+\item If \code{return_results = TRUE}, the function returns a \code{list}
+of length \code{runs} of optimization results for each run.
+\item If \code{return_results = FALSE}, the object is returned invisibly.
+}
 }
 }
 \if{html}{\out{<hr>}}
@@ -386,7 +406,14 @@ TODO
 
 \item{\code{by_row}}{TODO}
 
-\item{\code{how}}{TODO}
+\item{\code{how}}{A \code{character}, specifying ..., one of
+\itemize{
+\item \code{"first"}
+\item \code{"last"}
+\item \code{"random"}
+\item \code{"similar"}
+\item \code{"different"}
+}}
 
 \item{\code{proportion}}{TODO}
 

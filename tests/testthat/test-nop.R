@@ -15,6 +15,7 @@ test_that("Nop object can be initialized", {
 })
 
 test_that("Nop object can be printed", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_snapshot(ackley)
   expect_snapshot(print(ackley))
   expect_snapshot(ackley$print())
@@ -112,8 +113,13 @@ test_that("optimizer can be removed", {
 })
 
 test_that("function can be optimized", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(optimizer_nlm())
-  ackley$optimize()
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  out <- ackley$optimize(runs = 5, return_results = TRUE)
+  expect_type(out, "list")
+  expect_length(out, 5)
+  expect_length(out[[1]], 2)
 })
 
 
