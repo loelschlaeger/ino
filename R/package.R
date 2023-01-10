@@ -42,6 +42,26 @@ ino_status <- function(msg, verbose = getOption("ino_verbose")) {
 }
 
 #' @noRd
+#' @importFrom cli cli_alert_success
+#' @importFrom glue glue
+#' @keywords internal
+
+ino_success <- function(msg, verbose = getOption("ino_verbose"), delay = 0.1) {
+  if (verbose) cli::cli_alert_success(glue::glue(msg))
+  Sys.sleep(delay)
+}
+
+#' @noRd
+#' @importFrom cli cli_alert
+#' @importFrom glue glue
+#' @keywords internal
+
+ino_alert <- function(msg, verbose = getOption("ino_verbose"), delay = 0.1) {
+  if (verbose) cli::cli_alert(glue::glue(msg))
+  Sys.sleep(delay)
+}
+
+#' @noRd
 #' @importFrom cli cli_abort
 #' @keywords internal
 

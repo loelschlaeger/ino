@@ -15,13 +15,6 @@ summary.Nop <- function(object, ...) {
 #' @noRd
 #' @exportS3Method
 
-print.summary.Nop <- function(x, ...) {
-  print(x)
-}
-
-#' @noRd
-#' @exportS3Method
-
 plot.Nop <- function(x, ...) {
   x$plot()
 }

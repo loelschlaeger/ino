@@ -1,11 +1,11 @@
-# Nop object can be printed
+# Nop object can be initialized
 
     Code
       ackley
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
@@ -18,7 +18,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
@@ -31,7 +31,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
@@ -44,7 +44,7 @@
     Output
       Optimization problem:
        Function: f_ll_hmm
-       Optimize over: theta (dimension 6)
+       Optimize over: theta (length 6)
        Additional arguments: data 
       Numerical optimizer:
        No optimizer specified.
@@ -58,7 +58,7 @@
     Output
       Optimization problem:
        Function: f_ll_hmm
-       Optimize over: theta (dimension 6)
+       Optimize over: theta (length 6)
        Additional arguments: data, test_arg1, test_arg2 
       Numerical optimizer:
        No optimizer specified.
@@ -72,7 +72,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
        True optimum value: 3
       Numerical optimizer:
        No optimizer specified.
@@ -86,7 +86,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
        True optimum at: 0 0
        True optimum value: 0
       Numerical optimizer:
@@ -101,7 +101,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        1: nlm
       Optimization results:
@@ -114,7 +114,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        1: nlm
        2: stats::optim
@@ -128,7 +128,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        1: A
        2: B
@@ -144,7 +144,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
@@ -157,7 +157,7 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        1: A
        2: C
@@ -172,9 +172,25 @@
     Output
       Optimization problem:
        Function: f_ackley
-       Optimize over: x (dimension 2)
+       Optimize over: x (length 2)
       Numerical optimizer:
        1: C
       Optimization results:
        No optimization records.
+
+# function can be optimized
+
+    Code
+      ackley
+    Output
+      Optimization problem:
+       Function: f_ackley
+       Optimize over: x (length 2)
+      Numerical optimizer:
+       1: stats::nlm
+       2: stats::optim
+      Optimization results:
+       Optimization records: 10
+       Found optimum at: 
+       Found optimum value: 
 

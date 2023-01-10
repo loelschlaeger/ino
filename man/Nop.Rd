@@ -4,7 +4,7 @@
 \alias{Nop}
 \title{Nop Object (R6 Class)}
 \description{
-A \code{Nop} object defines a \emph{n}umerical \emph{o}ptimization \emph{p}roblem.
+A \code{Nop} object defines a \emph{N}umerical \emph{O}ptimization \emph{P}roblem.
 }
 \section{Getting Started}{
 \subsection{Step 1: Create a new \code{Nop} object.}{
@@ -32,9 +32,10 @@ TODO
 }
 
 \examples{
-ackley <- Nop$new(f = f_ackley, npar = 2)$
+Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer_nlm())$
-  optimize()
+  optimize(runs = 10)$
+  summary()
 
 }
 \section{Active bindings}{
@@ -46,9 +47,16 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 
 \item{\code{arguments}}{A \code{list} of specified additional arguments for \code{f}.}
 
-\item{\code{true_parameter}}{The true optimum parameter vector of length \code{npar} (if available).}
+\item{\code{true_parameter}}{The true optimum \code{numeric} parameter vector of length \code{npar} (if available).}
 
-\item{\code{true_value}}{The true optimum value of \code{f} (if available).}
+\item{\code{true_value}}{The true \code{numeric} optimum value of \code{f} (if available).}
+
+\item{\code{show_minimum}}{A \code{logical}, set to \code{TRUE} (default) to
+show best minimum in \code{$best_value} and \code{$best_parameter}.}
+
+\item{\code{best_parameter}}{The best found \code{numeric} parameter vector of length \code{npar} (if available).}
+
+\item{\code{best_value}}{The best found \code{numeric} value of \code{f} (if available).}
 }
 \if{html}{\out{</div>}}
 }
@@ -79,7 +87,7 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 \if{html}{\out{<a id="method-Nop-new"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new numerical optimization problem.
+Create a new \code{Nop} (numerical optimization problem) object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$new(f, npar, ...)}\if{html}{\out{</div>}}
 }
@@ -165,7 +173,7 @@ Remove additional arguments for \code{f}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{A \code{character}, the argument to remove.}
+\item{\code{argument_name}}{A \code{character} (vector), the argument(s) to remove.}
 }
 \if{html}{\out{</div>}}
 }
@@ -317,7 +325,7 @@ By default, \code{runs = 1}.}
 \item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
-\item{\code{seed}}{Set a seed. No seed by default.}
+\item{\code{seed}}{Set a seed for reproducibility. No seed by default.}
 
 \item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
 inside the \code{Nop} object.
@@ -326,18 +334,23 @@ By default, \code{save_results = TRUE}.}
 \item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned.
 By default, \code{return_results = FALSE}.}
 
-\item{\code{label}}{TODO}
+\item{\code{label}}{Only relevant if \code{save_results = TRUE}.
+In this case, optionally a \code{character} for a custom label of the
+optimization.}
 
 \item{\code{ncores}}{An \code{integer}, the number of cores for parallel computation.
 The default is \code{getOption("ino_ncores")}, which is set to \code{1}
 when the package is loaded.}
 
-\item{\code{verbose}}{A \code{logical}, which indicates whether progress should be printed.
-Set to \code{TRUE} (\code{FALSE}) to print (hide) progress.
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
 The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
 when the package is loaded.}
 
-\item{\code{simplify}}{TODO}
+\item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
+only one optimizer is specified.
+In this case, if \code{simplify = TRUE} (default), the nested list output
+is flattened.}
 }
 \if{html}{\out{</div>}}
 }
@@ -353,9 +366,14 @@ The return value depends on the value of \code{return_results}:
 \if{html}{\out{<a id="method-Nop-test"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-test}{}}}
 \subsection{Method \code{test()}}{
-Test the configuration of numerical optimization problem.
+Test the configuration of a \code{Nop} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$test(at = rnorm(self$npar), which_optimizer = "all", time_limit = 10)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$test(
+  at = rnorm(self$npar),
+  which_optimizer = "all",
+  time_limit = 10,
+  verbose = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -372,13 +390,21 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
 \item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
-\item{\code{time_limit}}{A \code{numeric}, the time limit in seconds for testing the function
-call and the optimization.
+\item{\code{time_limit}}{An \code{integer}, the time limit in seconds for testing the
+function call and the optimization.
 If no error occurred after \code{time_limit} seconds, the test is
 considered to be successful.
 By default, \code{time_limit = 10}.}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+when the package is loaded.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Either \code{TRUE} if the tests are successful, otherwise ... TODO
 }
 }
 \if{html}{\out{<hr>}}
@@ -462,7 +488,7 @@ By default, \code{centers = 2}.}
 In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 
-\item{\code{seed}}{Set a seed. No seed by default.}
+\item{\code{seed}}{Set a seed for reproducibility. No seed by default.}
 }
 \if{html}{\out{</div>}}
 }
