@@ -153,15 +153,34 @@ test_that("parallel optimization works", {
 
 test_that("Nop object can be tested", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_warning(ackley$test(verbose = FALSE), "No optimizer specified, testing optimizer is skipped.")
   ackley$set_optimizer(optimizer_nlm())
   ackley$set_optimizer(optimizer_optim())
-  expect_error(ackley$test(time_limit = -1), "`time_limit` is not a positive integer.")
+  expect_error(ackley$test(time_limit_fun = -1), "`time_limit_fun` is not a positive integer.")
+  expect_error(ackley$test(time_limit_opt = -1), "`time_limit_opt` is not a positive integer.")
   expect_error(ackley$test(verbose = "FALSE"), "`verbose` must be either `TRUE` or `FALSE`.")
-  sink(tempfile())
-  # TODO: sink does not work here
-  expect_true(ackley$test())
-  sink()
   expect_true(ackley$test(verbose = FALSE))
+  bad_f <- Nop$new(f = function(x) stop(), 1)
+  expect_error(bad_f$test(verbose = FALSE), "Function call failed.")
+  lengthy_f <- Nop$new(f = function(x) 1:2, 1)
+  expect_error(lengthy_f$test(verbose = FALSE), "Test function call returned a `numeric` of length 2.")
+  character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
+  expect_error(character_f$test(verbose = FALSE), "function call returned an object of class `character`.")
+  slow_f <- Nop$new(f = function(x) {Sys.sleep(2); 1}, 1)
+  expect_warning(
+    expect_warning(slow_f$test(verbose = FALSE, time_limit_fun = 1), "The time limit of 1s was reached"),
+    "No optimizer specified, testing optimizer is skipped."
+  )
+  slow_f$set_optimizer(optimizer_nlm())
+  expect_warning(slow_f$test(verbose = FALSE, time_limit_fun = 3, time_limit_opt = 1), "The time limit of 1s was reached")
+  ackley$remove_optimizer(1:2)
+  bad_optimizer_fun <- function(f, p) {
+    if (identical(p, 1:2)) stop()
+    list(v = 1, z = 1:2)
+  }
+  bad_optimizer <- optimizeR::set_optimizer(bad_optimizer_fun, f = "f", p = "p", v = "v", z = "z")
+  ackley$set_optimizer(bad_optimizer)
+  expect_error(ackley$test(at = 1:2, verbose = FALSE), "Optimization with optimizer `bad_optimizer_fun` failed.")
 })
 
 test_that("standardization works", {

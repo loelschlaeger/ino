@@ -371,7 +371,8 @@ Test the configuration of a \code{Nop} object.
 \if{html}{\out{<div class="r">}}\preformatted{Nop$test(
   at = rnorm(self$npar),
   which_optimizer = "all",
-  time_limit = 10,
+  time_limit_fun = 10,
+  time_limit_opt = time_limit_fun,
   verbose = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -390,11 +391,17 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
 \item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
-\item{\code{time_limit}}{An \code{integer}, the time limit in seconds for testing the
-function call and the optimization.
-If no error occurred after \code{time_limit} seconds, the test is
+\item{\code{time_limit_fun}}{An \code{integer}, the time limit in seconds for testing the
+function call.
+If no error occurred after \code{time_limit_fun} seconds, the test is
 considered to be successful.
-By default, \code{time_limit = 10}.}
+By default, \code{time_limit_fun = 10}.}
+
+\item{\code{time_limit_opt}}{An \code{integer}, the time limit in seconds for testing the
+optimization call.
+If no error occurred after \code{time_limit_opt} seconds, the test is
+considered to be successful.
+By default, \code{time_limit_opt = 10}.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -404,7 +411,7 @@ when the package is loaded.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Either \code{TRUE} if the tests are successful, otherwise ... TODO
+Returns invisibly \code{TRUE} if the tests are successful.
 }
 }
 \if{html}{\out{<hr>}}
