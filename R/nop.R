@@ -229,7 +229,7 @@ Nop <- R6::R6Class(
       }
       if (!is.character(argument_name)) {
         ino_stop(
-          "Input `argument_name` must be a character."
+          "Input `argument_name` must be a `character` (vector)."
         )
       }
       for (i in seq_along(argument_name)) {
@@ -239,6 +239,28 @@ Nop <- R6::R6Class(
         private$.narguments <- private$.narguments - 1
       }
       invisible(self)
+    },
+
+    #' @description
+    #' Reset additional arguments for \code{f} after transformation with
+    #' \code{$standardize()} or \code{$reduce()}.
+    #' @param argument_name
+    #' A \code{character} (vector), the argument(s) to reset.
+    reset_argument = function (argument_name, verbose = getOption("ino_verbose")) {
+      if (missing(argument_name)) {
+        ino_stop(
+          "Please specify `argument_name`."
+        )
+      }
+      if (!is.character(argument_name)) {
+        ino_stop(
+          "Input `argument_name` must be a `character` (vector)."
+        )
+      }
+      for (arg in argument_name) {
+        private$.check_add_arg_exists(argument_name)
+        private$.reset_orig_argument(arg, verbose = verbose)
+      }
     },
 
     #' @description
@@ -502,7 +524,7 @@ Nop <- R6::R6Class(
     #' Returns invisibly \code{TRUE} if the tests are successful.
     test = function (
       at = rnorm(self$npar), which_optimizer = "all", time_limit_fun = 10,
-      time_limit_opt = time_limit_fun, verbose = TRUE
+      time_limit_opt = time_limit_fun, verbose = getOption("ino_verbose")
       ) {
 
       ### input checks
@@ -697,7 +719,7 @@ Nop <- R6::R6Class(
     #' if \code{by_row = FALSE}) to ignore for clustering.
     reduce = function(
       argument_name, by_row = TRUE, how = "random", proportion = 0.5, centers = 2,
-      ignore = integer(), seed = NULL
+      ignore = integer(), seed = NULL, verbose = getOption("ino_verbose")
     ) {
 
       ### input checks
@@ -707,16 +729,18 @@ Nop <- R6::R6Class(
           "Argument 'by_row' must be `TRUE` or `FALSE`."
         )
       }
-      if (!all(is.numeric(ignore) & ignore > 0 & ignore %% 1 == 0)) {
-        ino_stop(
-          "Argument 'ignore' must be a vector of indices."
-        )
-      }
-      if (!(is.character(how) && length(how) == 1) &&
-          how %in% c("random", "first", "last", "similar", "unsimilar")) {
+      if (!(is.character(how) && length(how) == 1 &&
+          how %in% c("random", "first", "last", "similar", "unsimilar"))) {
         ino_stop(
           "Argument 'how' must be one of `random`, `first`, `last`, `similar` or `unsimilar`."
         )
+      }
+      if (how %in% c("similar", "unsimilar")) {
+        if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
+          ino_stop(
+            "Argument 'ignore' must be a vector of indices."
+          )
+        }
       }
       if (!(is.numeric(proportion) && length(proportion) == 1 && proportion > 0 && proportion < 1)) {
         ino_stop(
@@ -739,26 +763,45 @@ Nop <- R6::R6Class(
         ind <- tail(seq_len(n), m)
       } else {
         stopifnot(how == "similar" || how == "unsimilar")
-        arg_val_ign <- arg_val
-        if (!is.null(ind_ign)) {
-          arg_val_ign <- arg_val_ign[, -ind_ign, drop = FALSE]
+        argument_ign <- argument
+        if (length(ignore) > 0) {
+          argument_ign <- argument_ign[, -ignore, drop = FALSE]
         }
-        kmeans_out <- stats::kmeans(argument, centers = centers)
-        nc <- ceiling(arg_val_subset_length / centers)
-        subset_ind <- c()
-        for (i in 1:centers) {
-          subset_ind_i <- which(kmeans_out$cluster == i)
-          subset_ind <- c(subset_ind, sample(
-            x = subset_ind_i,
-            size = min(nc, length(subset_ind_i))
-          ))
+        cluster <- stats::kmeans(argument_ign, centers = centers)$cluster
+        ind <- integer(0)
+        if (how == "similar") {
+          i <- 1
+          while (length(ind) < m && i <= centers) {
+            ind_i <- which(cluster == i)
+            ind <- c(ind, ind_i[seq_len(min(m - length(ind), length(ind_i)))])
+            i <- i + 1
+          }
+        } else if (how == "unsimilar") {
+          ind_cluster <- split(1:n, cluster)
+          i <- 0
+          while (length(ind) < m) {
+            i_mod <- i %% centers + 1
+            if (length(ind_cluster[[i_mod]]) == 0) next
+            ind <- c(ind, ind_cluster[[i_mod]][1])
+            ind_cluster[[i_mod]] <- ind_cluster[[i_mod]][-1]
+            i <- i + 1
+          }
         }
-        subset_ind <- sort(subset_ind)
+        ind <- sort(ind)
       }
+      argument <- argument[ind, ]
+      ino_status(
+        glue::glue("Reduced {class(argument)} `{argument_name}` from {nrow(orig_argument)} to {how} {nrow(argument)} {ifelse(by_row, 'row(s)', 'column(s)')}."),
+        verbose = verbose
+      )
       if (!by_row) argument <- t(argument)
 
+      ### save reduced argument
+      private$.arguments[[argument_name]] <- argument
+
       ### temporally save original argument
-      private$.save_orig_arg(orig_argument, argument_name) # TODO
+      private$.save_orig_argument(orig_argument, argument_name)
+
       invisible(self)
     },
 
@@ -792,6 +835,7 @@ Nop <- R6::R6Class(
     .npar = NULL,
     .arguments = list(),
     .narguments = 0,
+    .orig_arguments = list(),
     .true_parameter = NULL,
     .true_value = NULL,
 
@@ -831,6 +875,7 @@ Nop <- R6::R6Class(
       if (!is.data.frame(argument) && !is.matrix(argument)) {
         ino_stop(
           glue::glue("Argument `{argument_name}` must be a `data.frame` or a `matrix`."),
+          verbose = verbose
         )
       }
     },
@@ -898,10 +943,13 @@ Nop <- R6::R6Class(
     .optimize = function(initial, optimizer_id) {
       do.call(
         what = optimizeR::apply_optimizer,
-        args = list(
-          "optimizer" = private$.optimizer[[optimizer_id]],
-          "f" = private$.f,
-          "p" = initial
+        args = c(
+          list(
+            "optimizer" = private$.optimizer[[optimizer_id]],
+            "f" = private$.f,
+            "p" = initial
+          ),
+          private$.arguments
         )
       )
       # TODO: here needs to go check if optimization is to be continued with full data
@@ -916,6 +964,25 @@ Nop <- R6::R6Class(
         }
       }
       private$.records <- append(private$.records, results)
+    },
+
+    ### save original arguments before standardization / reducing
+    .save_orig_argument = function (orig_argument, argument_name) {
+      if (is.null(private$.orig_arguments[[argument_name]])) {
+        private$.orig_arguments[[argument_name]] <- orig_argument
+      }
+    },
+
+    ### reset transformed argument to original argument
+    .reset_orig_argument = function (argument_name, verbose = FALSE) {
+      if (!is.null(private$.orig_arguments[[argument_name]])) {
+        private$.arguments[[argument_name]] <- private$.orig_arguments[[argument_name]]
+        private$.orig_arguments[[argument_name]] <- NULL
+        ino_status(
+          glue::glue("Reset {class(argument)} `{argument_name}`."),
+          verbose = verbose
+        )
+      }
     }
 
   ),

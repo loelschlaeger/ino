@@ -18,7 +18,7 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 
 ackley$evaluate(c(0,0))
 
-ackley$optimize(initial = c(-3,3), runs = 1)
+ackley$optimize(initial = c(-3,3), runs = 1, return_results = TRUE)
 
 ackley$test()
 
@@ -53,26 +53,12 @@ plot(x, by = ".optimizer")
 # Example: HMM LL for earthquake data -------------------------------------
 
 hmm <- Nop$new(f = f_ll_hmm, npar = 6)$
-  set_argument("data", earthquakes)$
-  set_argument("N", 2)$
-  set_argument("neg", TRUE)$
-  set_optimizer(optimizer = optimizer_nlm(), label = "nlm")
+  set_argument("data" = earthquakes, "N" = 2, "neg" = TRUE)$
+  set_optimizer(optimizer = optimizer_nlm(), label = "nlm")$
   print()
 
+hmm$reduce("data", how = "first")
 
-
-
-hmm_ino <- setup_ino(
-  f = f_ll_hmm,
-  npar = 6,
-  data = earthquakes,
-  N = 2,
-  neg = TRUE,
-  opt = list(
-    "nlm" = set_optimizer_nlm(),
-    "ao" = set_optimizer_ao(partition = list(1:2, 3:4))
-  )
-)
 
 hmm_ino <- fixed_initialization(hmm_ino, at = c(-1, -1, 0.1, 0.2))
 

@@ -1,3 +1,5 @@
+options("ino_verbose" = FALSE)
+
 test_that("Nop object can be initialized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_s3_class(ackley, c("Nop", "R6"), exact = TRUE)
@@ -31,7 +33,7 @@ test_that("Nop object with parameters can be initialized", {
   expect_error(hmm$get_argument("does_not_exist"), "does not exist")
   expect_error(hmm$get_argument(1), "must be a single character")
   expect_error(hmm$remove_argument(), "Please specify `argument_name`.")
-  expect_error(hmm$remove_argument(argument_name = 1:2), "must be a character")
+  expect_error(hmm$remove_argument(argument_name = 1:2), "must be a `character`")
   hmm$remove_argument("data")
   expect_equal(hmm$arguments, list("test_arg1" = 1))
   expect_error({hmm$arguments <- list()}, "is read only.")
@@ -143,36 +145,36 @@ test_that("parallel optimization works", {
   expect_error(ackley$optimize(ncores = "1"), "`ncores` must be a positive integer.")
   skip_on_cran()
   t1_seq <- Sys.time()
-  ackley$optimize(runs = 5000, ncores = 1, save_results = FALSE)
+  ackley$optimize(runs = 6000, ncores = 1, save_results = FALSE)
   t2_seq <- Sys.time()
   t1_par <- Sys.time()
-  ackley$optimize(runs = 5000, ncores = 2, save_results = FALSE)
+  ackley$optimize(runs = 6000, ncores = 2, save_results = FALSE)
   t2_par <- Sys.time()
   expect_gt(difftime(t2_seq, t1_seq), difftime(t2_par, t1_par))
 })
 
 test_that("Nop object can be tested", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_warning(ackley$test(verbose = FALSE), "No optimizer specified, testing optimizer is skipped.")
+  expect_warning(ackley$test(), "No optimizer specified, testing optimizer is skipped.")
   ackley$set_optimizer(optimizer_nlm())
   ackley$set_optimizer(optimizer_optim())
   expect_error(ackley$test(time_limit_fun = -1), "`time_limit_fun` is not a positive integer.")
   expect_error(ackley$test(time_limit_opt = -1), "`time_limit_opt` is not a positive integer.")
   expect_error(ackley$test(verbose = "FALSE"), "`verbose` must be either `TRUE` or `FALSE`.")
-  expect_true(ackley$test(verbose = FALSE))
+  expect_true(ackley$test())
   bad_f <- Nop$new(f = function(x) stop(), 1)
-  expect_error(bad_f$test(verbose = FALSE), "Function call failed.")
+  expect_error(bad_f$test(), "Function call failed.")
   lengthy_f <- Nop$new(f = function(x) 1:2, 1)
-  expect_error(lengthy_f$test(verbose = FALSE), "Test function call returned a `numeric` of length 2.")
+  expect_error(lengthy_f$test(), "Test function call returned a `numeric` of length 2.")
   character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
-  expect_error(character_f$test(verbose = FALSE), "function call returned an object of class `character`.")
+  expect_error(character_f$test(), "function call returned an object of class `character`.")
   slow_f <- Nop$new(f = function(x) {Sys.sleep(2); 1}, 1)
   expect_warning(
-    expect_warning(slow_f$test(verbose = FALSE, time_limit_fun = 1), "The time limit of 1s was reached"),
+    expect_warning(slow_f$test(time_limit_fun = 1), "The time limit of 1s was reached"),
     "No optimizer specified, testing optimizer is skipped."
   )
   slow_f$set_optimizer(optimizer_nlm())
-  expect_warning(slow_f$test(verbose = FALSE, time_limit_fun = 3, time_limit_opt = 1), "The time limit of 1s was reached")
+  expect_warning(slow_f$test(time_limit_fun = 3, time_limit_opt = 1), "The time limit of 1s was reached")
   ackley$remove_optimizer(1:2)
   bad_optimizer_fun <- function(f, p) {
     if (identical(p, 1:2)) stop()
@@ -180,7 +182,7 @@ test_that("Nop object can be tested", {
   }
   bad_optimizer <- optimizeR::set_optimizer(bad_optimizer_fun, f = "f", p = "p", v = "v", z = "z")
   ackley$set_optimizer(bad_optimizer)
-  expect_error(ackley$test(at = 1:2, verbose = FALSE), "Optimization with optimizer `bad_optimizer_fun` failed.")
+  expect_error(ackley$test(at = 1:2), "Optimization with optimizer `bad_optimizer_fun` failed.")
 })
 
 test_that("standardization works", {
@@ -188,7 +190,30 @@ test_that("standardization works", {
 })
 
 test_that("reducing works", {
-  # TODO
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  hmm$set_argument("data" = earthquakes, "N" = 2, "neg" = TRUE)
+  expect_error(hmm$reset_argument(), "Please specify `argument_name`.")
+  expect_error(hmm$reset_argument(1), "must be a `character`")
+  expect_error(hmm$reduce("data", how = "random", by_row = "TRUE"), "'by_row' must be `TRUE` or `FALSE`.")
+  expect_error(hmm$reduce("data", how = "bad_argument"), "'how' must be one of")
+  expect_error(hmm$reduce("data", proportion = 1), "'proportion' must be a numeric between 0 and 1.")
+  expect_error(hmm$reduce("N"), "must be a `data.frame` or a `matrix`.")
+  hmm$reduce("data", how = "random", proportion = 0.5)
+  hmm$reset_argument("data")
+  hmm$reduce("data", how = "first", proportion = 0.5)
+  hmm$reset_argument("data")
+  hmm$reduce("data", how = "first", by_row = FALSE, proportion = 0.5)
+  hmm$reset_argument("data")
+  hmm$reduce("data", how = "last", proportion = 0.9)
+  hmm$reset_argument("data")
+  expect_error(hmm$reduce("data", how = "similar", ignore = "not_an_integer"), "Argument 'ignore' must be a vector of indices.")
+  hmm$reduce("data", how = "similar", ignore = 1, seed = 1)
+  hmm$reset_argument("data")
+  hmm$reduce("data", how = "similar", ignore = 1, seed = 1)
+  hmm$reset_argument("data")
+  hmm$reduce("data", how = "unsimilar", ignore = 2)
+  hmm$reset_argument("data")
+  hmm$set_optimizer(optimizer = optimizer_nlm(), label = "nlm")
 })
 
 test_that("overview of optima works", {
