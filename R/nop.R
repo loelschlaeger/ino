@@ -371,8 +371,8 @@ Nop <- R6::R6Class(
     #' Optimize the function.
     #' @param initial
     #' Specify the initial point where the optimizer should start. Either:
-    #' - the character \code{"random"} (the default) for random initial values
-    #'   drawn from a standard normal distribution
+    #' - the \code{character} \code{"random"} (the default) for random initial
+    #'   values drawn from a standard normal distribution
     #' - a \code{numeric} vector of length \code{npar}, the starting point for
     #'   optimization
     #' - a \code{function} without any arguments that returns a \code{numeric}
@@ -396,6 +396,8 @@ Nop <- R6::R6Class(
     #' only one optimizer is specified.
     #' In this case, if \code{simplify = TRUE} (default), the nested list output
     #' is flattened.
+    #' @param reset_arguments_afterwards
+    #' TODO
     #' @return
     #' The return value depends on the value of \code{return_results}:
     #' - if \code{return_results = FALSE} (default), invisibly the \code{Nop} object
@@ -407,7 +409,7 @@ Nop <- R6::R6Class(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
       save_results = TRUE, return_results = FALSE, label = "",
       ncores = getOption("ino_ncores"), verbose = getOption("ino_verbose"),
-      simplify = TRUE
+      simplify = TRUE, reset_arguments_afterwards = TRUE
     ) {
 
       ### check `initial` and make it to function call `get_initial`
@@ -483,10 +485,17 @@ Nop <- R6::R6Class(
         lapply(optimizer_ids, function (i) private$.optimize(initial, i))
       }
 
-      ### process results
+      ### save results
       if (save_results) {
         private$.save_results(results, optimizer_ids, label)
       }
+
+      ### reset transformed arguments
+      if (reset_arguments_afterwards) {
+        lapply(names(private$.orig_arguments), private$.reset_orig_argument, verbose = verbose)
+      }
+
+      ### return results
       if (return_results) {
         if (simplify) {
           if (runs == 1) {
@@ -584,7 +593,7 @@ Nop <- R6::R6Class(
       } else {
         if (!is.numeric(out)) {
           ino_stop(
-            glue::glue("Test function call returned an object of class `{class(out)}`."),
+            glue::glue("Test function call returned an object of class `{class(out)[1]}`."),
             "It should return a single `numeric` value."
           )
         } else {
@@ -654,22 +663,31 @@ Nop <- R6::R6Class(
     #' \code{by_column = FALSE}) to not standardize.
     standardize = function(
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
-      ignore = integer()
+      ignore = integer(), verbose = getOption("ino_verbose")
     ) {
 
       ### input checks
-      private$.check_add_arg_matrix_df(argument_name)
-      if (!isTRUE(by_column) && !isFALSE(by_column)) {
+      if (missing(argument_name)) {
         ino_stop(
-          "Argument 'by_column' must be `TRUE` or `FALSE`."
+          "Please specify `argument_name`.",
+          "It is the name of the argument of `f` to be standardized."
         )
       }
-      if (length(ignore) > 0) {
-        if (!all(is.numeric(ignore) & ignore > 0 & ignore %% 1 == 0)) {
-          ino_stop(
-            "Argument 'ignore' must be a vector of indices."
-          )
-        }
+      if (!is.character(argument_name) && length(argument_name) == 1) {
+        ino_stop(
+          "Input `argument_name` must be a `character`."
+        )
+      }
+      private$.check_add_arg_matrix_df(argument_name, verbose = verbose)
+      if (!isTRUE(by_column) && !isFALSE(by_column)) {
+        ino_stop(
+          "Argument `by_column` must be `TRUE` or `FALSE`."
+        )
+      }
+      if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
+        ino_stop(
+          "Argument 'ignore' must be a vector of indices."
+        )
       }
 
       ### standardizing
@@ -677,16 +695,25 @@ Nop <- R6::R6Class(
       orig_argument <- argument
       attr_argument <- attributes(argument)
       if (!by_column) argument <- t(argument)
-      if (length(ignore) > 0) argument <- argument[, -ignore, drop = FALSE]
-      argument <- scale(argument, center = center, scale = scale)
-      if (is.data.frame(orig_argument)) argument <- as.data.frame(argument)
-      if (length(ignore) > 0) argument <- replace(orig_argument, -ignore, argument)
+      if (length(ignore) > 0) {
+        argument[, -ignore] <- scale(argument[, -ignore], center = center, scale = scale)
+      } else {
+        argument <- scale(argument, center = center, scale = scale)
+      }
       if (!by_column) argument <- t(argument)
+      if (is.data.frame(orig_argument)) argument <- as.data.frame(argument)
       attributes(argument) <- attr_argument
-      self$set_argument(argument) # TODO: overwrite
+      ino_status(
+        glue::glue("Standardized {class(argument)[1]} `{argument_name}`."),
+        verbose = verbose
+      )
+
+      ### save standardized argument
+      private$.arguments[[argument_name]] <- argument
 
       ### temporally save original argument
-      private$.save_orig_arg(orig_argument, argument_name) # TODO
+      private$.save_orig_argument(orig_argument, argument_name)
+
       invisible(self)
     },
 
@@ -723,7 +750,13 @@ Nop <- R6::R6Class(
     ) {
 
       ### input checks
-      private$.check_add_arg_matrix_df(argument_name)
+      if (missing(argument_name)) {
+        ino_stop(
+          "Please specify argument `argument_name`.",
+          "It is the name of the argument of `f` to be standardized."
+        )
+      }
+      private$.check_add_arg_matrix_df(argument_name, verbose = verbose)
       if (!isTRUE(by_row) && !isFALSE(by_row)) {
         ino_stop(
           "Argument 'by_row' must be `TRUE` or `FALSE`."
@@ -791,7 +824,7 @@ Nop <- R6::R6Class(
       }
       argument <- argument[ind, ]
       ino_status(
-        glue::glue("Reduced {class(argument)} `{argument_name}` from {nrow(orig_argument)} to {how} {nrow(argument)} {ifelse(by_row, 'row(s)', 'column(s)')}."),
+        glue::glue("Reduced {class(argument)[1]} `{argument_name}` from {nrow(orig_argument)} to {how} {nrow(argument)} {ifelse(by_row, 'row(s)', 'column(s)')}."),
         verbose = verbose
       )
       if (!by_row) argument <- t(argument)
@@ -807,15 +840,37 @@ Nop <- R6::R6Class(
 
     #' @description
     #' TODO
-    #' @param digits
-    #' TODO
-    optima = function (digits = 2) {
+    #' @importFrom dplyr bind_rows
+    summary = function (columns = c("value", "estimate", "seconds", "optimizer")) {
 
+      ### combine records in data.frame
+      records <- private$.records
+      out <- data.frame()
+      for (run in 1:length(records)) {
+        for (opt in 1:length(records[[run]])) {
+          out_tmp <- as.data.frame(t(cbind(records[[run]][[opt]])))
+          out <- dplyr::bind_rows(out, out_tmp)
+        }
+      }
+
+      ### unlist single-valued records
+      for (i in 1:ncol(out)) {
+        if (all(sapply(out[,i], length) == 1 & sapply(out[,i], class) %in% c("character", "numeric"))) {
+          out[,i] <- unlist(out[,i])
+        }
+      }
+
+      ### filter columns
+      out <- dplyr::select(out, dplyr::all_of(columns))
+
+      return(out)
     },
 
     #' @description
     #' TODO
-    summary = function () {
+    #' @param digits
+    #' TODO
+    optima = function (digits = 2) {
 
     },
 
@@ -869,7 +924,7 @@ Nop <- R6::R6Class(
     },
 
     ### checks if argument is matrix or data.frame
-    .check_add_arg_matrix_df = function (argument_name) {
+    .check_add_arg_matrix_df = function (argument_name, verbose = TRUE) {
       private$.check_add_arg_exists(argument_name)
       argument <- private$.arguments[[argument_name]]
       if (!is.data.frame(argument) && !is.matrix(argument)) {
@@ -885,7 +940,8 @@ Nop <- R6::R6Class(
       args_all <- formals(private$.f)
       args_all[private$.f_target] <- NULL
       for (arg in names(args_all)) {
-        if (!nzchar(args_all[[arg]]) & is.name(args_all[[arg]])) {
+        ### checks if `arg` has default value in `f`
+        if (!all(nzchar(args_all[[arg]])) && is.name(args_all[[arg]])) {
           private$.check_add_arg_exists(arg)
         }
       }
@@ -979,7 +1035,7 @@ Nop <- R6::R6Class(
         private$.arguments[[argument_name]] <- private$.orig_arguments[[argument_name]]
         private$.orig_arguments[[argument_name]] <- NULL
         ino_status(
-          glue::glue("Reset {class(argument)} `{argument_name}`."),
+          glue::glue("Reset `{argument_name}`."),
           verbose = verbose
         )
       }

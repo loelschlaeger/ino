@@ -18,27 +18,13 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 
 ackley$evaluate(c(0,0))
 
-ackley$optimize(initial = c(-3,3), runs = 1, return_results = TRUE)
+ackley$optimize(initial = c(-3,3), runs = 1, save_results = TRUE, return_results = TRUE)
 
 ackley$test()
 
+ackley$optimize(runs = 100)
+
 ackley$optima(digits = 2)
-
-x <- setup_ino(
-  f = f_ackley,
-  npar = 2,
-  global = c(0,0),
-  opt = list(
-    "nlm" = set_optimizer_nlm(),
-    "optim" = set_optimizer_optim()
-  )
-)
-
-random_initialization(x) %>% get_vars()
-
-x <- random_initialization(x, runs = 20)
-
-overview_optima(x, digits = 2)
 
 var_names(x)
 
@@ -144,20 +130,22 @@ X <- function() {
   mean <- ifelse(class, 2, -2)
   matrix(stats::rnorm(J*P, mean = mean), nrow = J, ncol = P)
 }
-probit_data <- replicate(10, sim_mnp(
+probit_data <- sim_mnp(
   N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X
-), simplify = FALSE)
-true <- attr(probit_data[[1]], "true")[-1]
-
-probit_ino <- setup_ino(
-  f = f_ll_mnp,
-  npar = 5,
-  global = true,
-  data = probit_data,
-  neg = TRUE,
-  mpvs = "data",
-  opt = set_optimizer_nlm(iterlim = 1000)
 )
+true <- attr(probit_data, "true")[-1]
+
+probit <- Nop$new(f = f_ll_mnp, npar = 5, data = probit_data, neg = TRUE)$
+  set_true_parameter(true_par = true, set_true_value = TRUE)
+
+probit$test()
+
+probit$set_optimizer(optimizer_nlm(iterlim = 1000))
+
+
+
+
+
 
 probit_ino <- random_initialization(probit_ino, runs = 100)
 

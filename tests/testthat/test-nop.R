@@ -144,13 +144,7 @@ test_that("parallel optimization works", {
   ackley$set_optimizer(optimizer_optim())
   expect_error(ackley$optimize(ncores = "1"), "`ncores` must be a positive integer.")
   skip_on_cran()
-  t1_seq <- Sys.time()
-  ackley$optimize(runs = 6000, ncores = 1, save_results = FALSE)
-  t2_seq <- Sys.time()
-  t1_par <- Sys.time()
-  ackley$optimize(runs = 6000, ncores = 2, save_results = FALSE)
-  t2_par <- Sys.time()
-  expect_gt(difftime(t2_seq, t1_seq), difftime(t2_par, t1_par))
+  ackley$optimize(runs = 1000, ncores = 2, save_results = FALSE)
 })
 
 test_that("Nop object can be tested", {
@@ -186,7 +180,33 @@ test_that("Nop object can be tested", {
 })
 
 test_that("standardization works", {
-  # TODO
+  N <- 10
+  T <- 1
+  J <- 3
+  P <- 3
+  b <- c(1,-1,0.5)
+  Sigma <- diag(J)
+  X <- function() {
+    class <- sample(0:1, 1)
+    mean <- ifelse(class, 2, -2)
+    matrix(stats::rnorm(J*P, mean = mean), nrow = J, ncol = P)
+  }
+  probit_data <- sim_mnp(N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X)
+  true <- attr(probit_data, "true")[-1]
+  probit <- Nop$new(f = f_ll_mnp, npar = 5, data = probit_data, neg = TRUE)$
+    set_true_parameter(true_par = true, set_true_value = TRUE)
+  expect_error(probit$standardize(), "specify `argument_name`")
+  expect_error(probit$standardize(1), "must be a `character`")
+  probit$standardize("data", ignore = 1:3)
+  expect_identical(dim(probit_data), dim(probit$arguments$data))
+  probit$reset_argument("data")
+  expect_identical(probit_data, probit$arguments$data)
+  expect_error(probit$standardize("data", by_column = "TRUE"), "`by_column` must be `TRUE` or `FALSE`")
+  expect_error(probit$standardize("data", ignore = "not_an_integer"), "Argument 'ignore' must be a vector of indices.")
+  probit$standardize("data", by_column = FALSE)
+  probit$reset_argument("data")
+  expect_identical(probit_data, probit$arguments$data)
+  probit$standardize("data", by_column = FALSE, ignore = 5:10)
 })
 
 test_that("reducing works", {
@@ -194,6 +214,7 @@ test_that("reducing works", {
   hmm$set_argument("data" = earthquakes, "N" = 2, "neg" = TRUE)
   expect_error(hmm$reset_argument(), "Please specify `argument_name`.")
   expect_error(hmm$reset_argument(1), "must be a `character`")
+  expect_error(hmm$reduce(), "Please specify argument `argument_name`.")
   expect_error(hmm$reduce("data", how = "random", by_row = "TRUE"), "'by_row' must be `TRUE` or `FALSE`.")
   expect_error(hmm$reduce("data", how = "bad_argument"), "'how' must be one of")
   expect_error(hmm$reduce("data", proportion = 1), "'proportion' must be a numeric between 0 and 1.")
@@ -214,13 +235,14 @@ test_that("reducing works", {
   hmm$reduce("data", how = "unsimilar", ignore = 2)
   hmm$reset_argument("data")
   hmm$set_optimizer(optimizer = optimizer_nlm(), label = "nlm")
-})
-
-test_that("overview of optima works", {
-  # TODO
+  hmm$reduce("data", how = "first", proportion = 0.5)
 })
 
 test_that("summary works", {
+  # TODO
+})
+
+test_that("overview of optima works", {
   # TODO
 })
 

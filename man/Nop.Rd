@@ -449,7 +449,8 @@ Standardize the optimization problem.
   by_column = TRUE,
   center = TRUE,
   scale = TRUE,
-  ignore = integer()
+  ignore = integer(),
+  verbose = getOption("ino_verbose")
 )}\if{html}{\out{</div>}}
 }
 
@@ -468,6 +469,11 @@ to standardize row-wise.}
 
 \item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
 \code{by_column = FALSE}) to not standardize.}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+when the package is loaded.}
 }
 \if{html}{\out{</div>}}
 }
