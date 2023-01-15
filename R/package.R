@@ -1,4 +1,4 @@
-#' ino: Analysis of initialization for numerical optimization
+#' ino: Analysis of Initialization for Numerical Optimization
 #'
 #' @description
 #' This package implements tools for analyzing the initialization of
