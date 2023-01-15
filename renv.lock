@@ -144,22 +144,6 @@
         "vctrs"
       ]
     },
-    "bookdown": {
-      "Package": "bookdown",
-      "Version": "0.29",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "bf913e433c84b3a616a9ea6ee0bf0b14",
-      "Requirements": [
-        "htmltools",
-        "jquerylib",
-        "knitr",
-        "rmarkdown",
-        "tinytex",
-        "xfun",
-        "yaml"
-      ]
-    },
     "brew": {
       "Package": "brew",
       "Version": "1.0-7",
@@ -293,17 +277,6 @@
       "Hash": "fa53ce256cd280f468c080a58ea5ba8c",
       "Requirements": []
     },
-    "cranlogs": {
-      "Package": "cranlogs",
-      "Version": "2.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "cfa4eec97df94fd69cb8652368966020",
-      "Requirements": [
-        "httr",
-        "jsonlite"
-      ]
-    },
     "crayon": {
       "Package": "crayon",
       "Version": "1.5.2",
@@ -426,34 +399,6 @@
       "Hash": "cf6b206a045a684728c3267ef7596190",
       "Requirements": []
     },
-    "distill": {
-      "Package": "distill",
-      "Version": "1.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0d53db535903a1d0dc53b6e9cb29f60d",
-      "Requirements": [
-        "base64enc",
-        "bookdown",
-        "digest",
-        "downlit",
-        "htmltools",
-        "jsonlite",
-        "knitr",
-        "lubridate",
-        "mime",
-        "openssl",
-        "png",
-        "rmarkdown",
-        "rprojroot",
-        "rstudioapi",
-        "stringr",
-        "whisker",
-        "xfun",
-        "xml2",
-        "yaml"
-      ]
-    },
     "doSNOW": {
       "Package": "doSNOW",
       "Version": "1.0.20",
@@ -464,25 +409,6 @@
         "foreach",
         "iterators",
         "snow"
-      ]
-    },
-    "downlit": {
-      "Package": "downlit",
-      "Version": "0.4.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "79bf3f66590752ffbba20f8d2da94c7c",
-      "Requirements": [
-        "brio",
-        "desc",
-        "digest",
-        "evaluate",
-        "fansi",
-        "memoise",
-        "rlang",
-        "vctrs",
-        "withr",
-        "yaml"
       ]
     },
     "dplyr": {
@@ -828,17 +754,6 @@
         "openssl"
       ]
     },
-    "hunspell": {
-      "Package": "hunspell",
-      "Version": "3.0.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "656219b6f3f605499d7cdbe208656639",
-      "Requirements": [
-        "Rcpp",
-        "digest"
-      ]
-    },
     "ids": {
       "Package": "ids",
       "Version": "1.0.1",
@@ -1040,11 +955,19 @@
     },
     "optimizeR": {
       "Package": "optimizeR",
-      "Version": "0.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "7863f06b46975935ea1d94d33a09a3c2",
-      "Requirements": []
+      "Version": "0.2.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "optimizeR",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "13b5afeb77b374a69c6db6f00dc33447893b763e",
+      "Hash": "ebb626b6f3a432dff27f5da9ccd60919",
+      "Requirements": [
+        "cli",
+        "glue"
+      ]
     },
     "pillar": {
       "Package": "pillar",
@@ -1103,14 +1026,6 @@
         "rprojroot",
         "withr"
       ]
-    },
-    "png": {
-      "Package": "png",
-      "Version": "0.1-7",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "03b7076c234cb3331288919983326c55",
-      "Requirements": []
     },
     "pracma": {
       "Package": "pracma",
@@ -1292,36 +1207,6 @@
         "rmarkdown",
         "rstudioapi",
         "withr"
-      ]
-    },
-    "rjtools": {
-      "Package": "rjtools",
-      "Version": "1.0.4",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "rjtools",
-      "RemoteUsername": "rjournal",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "726a42e0b0154f918f89ab2d08099e459b488f7d",
-      "Hash": "e02b84c403c7db2ed7bd2d1d9c26d5b6",
-      "Requirements": [
-        "bookdown",
-        "callr",
-        "cli",
-        "cranlogs",
-        "distill",
-        "fs",
-        "glue",
-        "hunspell",
-        "purrr",
-        "rlang",
-        "stringr",
-        "tinytex",
-        "whisker",
-        "xfun",
-        "yaml",
-        "yesno"
       ]
     },
     "rlang": {
@@ -1795,14 +1680,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "458bb38374d73bf83b1bb85e353da200",
-      "Requirements": []
-    },
-    "yesno": {
-      "Package": "yesno",
-      "Version": "0.1.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "4a2fb54761fec7c92bcf7d30b3d017e1",
       "Requirements": []
     },
     "zip": {
