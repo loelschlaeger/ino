@@ -18,22 +18,20 @@ ackley <- Nop$new(f = f_ackley, npar = 2)$
 
 ackley$evaluate(c(0,0))
 
-ackley$optimize(initial = c(-3,3), runs = 1, save_results = TRUE, return_results = TRUE)
+ackley$optimize(
+  initial = c(-3,3), runs = 1, which_optimizer = "nlm",
+  save_results = FALSE, return_results = TRUE
+)
 
 ackley$test()
 
-ackley$optimize(runs = 100)
+ackley$optimize(runs = 10)
+
+ackley$summary(dist = "sqrt(sum((true_parameter - parameter)^2))")
 
 ackley$optima(digits = 2)
 
-var_names(x)
-
-summary(x, dist = "sqrt(sum((.global-.estimate)^2))") %>%
-  group_by(.optimizer) %>%
-  ggplot(aes(x = .optimizer, y = dist)) +
-  geom_boxplot()
-
-plot(x, by = ".optimizer")
+plot(x, by = "optimizer")
 
 
 # Example: HMM LL for earthquake data -------------------------------------

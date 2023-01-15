@@ -4,7 +4,7 @@
 \name{ino}
 \alias{ino}
 \alias{ino-package}
-\title{ino: Analysis of initialization for numerical optimization}
+\title{ino: Analysis of Initialization for Numerical Optimization}
 \description{
 This package implements tools for analyzing the initialization of
 numerical optimization.

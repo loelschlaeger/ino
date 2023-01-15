@@ -17,6 +17,8 @@
 #' An \code{integer}, the number of cores for parallel computation.
 #' The default is \code{getOption("ino_ncores")}, which is set to \code{1}
 #' when the package is loaded.
+#' @param digits
+#' TODO: number of significant decimal places, by default \code{getOption("ino_digits")}
 #' @param seed
 #' Set a seed for reproducibility. No seed by default.
 #'
@@ -840,11 +842,33 @@ Nop <- R6::R6Class(
 
     #' @description
     #' TODO
+    continue = function () {
+      # continue runs from last `optimize()` call
+    },
+
+    #' @description
+    #' TODO
+    #' @param columns
+    #' TODO
+    #' @param ...
+    #' Expressions of variables from summary columns as characters.
+    #' TODO \code{$summary_columns()}
+    #' @return
+    #' TODO
     #' @importFrom dplyr bind_rows
-    summary = function (columns = c("value", "estimate", "seconds", "optimizer")) {
+    summary = function (
+      columns = c("value", "parameter", "seconds", "optimizer"), ...
+    ) {
+
+      ### check if records exist
+      records <- private$.records
+      if (length(records) == 0) {
+        ino_stop(
+          "No records exist."
+        )
+      }
 
       ### combine records in data.frame
-      records <- private$.records
       out <- data.frame()
       for (run in 1:length(records)) {
         for (opt in 1:length(records[[run]])) {
@@ -852,6 +876,25 @@ Nop <- R6::R6Class(
           out <- dplyr::bind_rows(out, out_tmp)
         }
       }
+
+      ### add elements
+      # TODO
+      # add_vars <- list(...)
+      # for (i in seq_along(add_vars)) {
+      #   out[[names(add_vars)[i]]] <- sapply(object$runs, function(r) {
+      #     env <- new.env()
+      #     env$.global <- object$prob$global
+      #     list2env(r, env)
+      #     tryCatch(
+      #       expr = {
+      #         out <- eval(parse(text = add_vars[[i]]), env)
+      #         stopifnot(length(out) == 1)
+      #         out
+      #       },
+      #       error = function(cond) NA
+      #     )
+      #   })
+      # }
 
       ### unlist single-valued records
       for (i in 1:ncol(out)) {
@@ -861,23 +904,45 @@ Nop <- R6::R6Class(
       }
 
       ### filter columns
-      out <- dplyr::select(out, dplyr::all_of(columns))
+      out <- dplyr::select(out, dplyr::any_of(columns))
 
       return(out)
     },
 
     #' @description
-    #' TODO
-    #' @param digits
-    #' TODO
+    #' Overview of the identified optima.
     optima = function (digits = 2) {
-
+      optima <- round(self$summary("value"), digits = digits)
+      optima <- as.data.frame(table(optima))
+      colnames(optima) <- c("value", "frequency")
+      optima[order(optima$frequency, decreasing = TRUE), ]
     },
 
     #' @description
-    #' TODO
-    plot = function () {
-
+    #' Visualization of optimization time.
+    #' @param by
+    #' A character vector of variables to group by.
+    #' Can be \code{NULL} (default).
+    #' @param nrow
+    #' Passed to \code{\link[ggplot2]{facet_wrap}}.
+    #' @importFrom ggplot2 ggplot aes scale_y_continuous geom_boxplot facet_wrap
+    #' theme element_blank ylab
+    plot = function (by = NULL, nrow = NULL) {
+      self$summary() %>%
+        ggplot2::ggplot(aes(x = "", y = .data$seconds)) +
+        ggplot2::scale_y_continuous() +
+        ggplot2::geom_boxplot() +
+        {
+          if (!is.null(by)) {
+            ggplot2::facet_wrap(by, labeller = "label_both", nrow = nrow)
+          }
+        } +
+        ggplot2::theme(
+          axis.title.x = ggplot2::element_blank(),
+          axis.text.x = ggplot2::element_blank(),
+          axis.ticks.x = ggplot2::element_blank()
+        ) +
+        ggplot2::ylab("optimization time in seconds")
     }
 
   ),
@@ -1002,16 +1067,15 @@ Nop <- R6::R6Class(
         args = c(
           list(
             "optimizer" = private$.optimizer[[optimizer_id]],
-            "f" = private$.f,
-            "p" = initial
+            "objective" = private$.f,
+            "initial" = initial
           ),
           private$.arguments
         )
       )
-      # TODO: here needs to go check if optimization is to be continued with full data
     },
 
-    ### save optimization results inside Nop object
+    ### save optimization results inside `Nop` object
     .save_results = function (results, optimizer_ids, label) {
       for (i in seq_along(results)) {
         for (j in seq_along(optimizer_ids)) {
@@ -1020,6 +1084,7 @@ Nop <- R6::R6Class(
         }
       }
       private$.records <- append(private$.records, results)
+      # TODO: add total time
     },
 
     ### save original arguments before standardization / reducing
@@ -1116,7 +1181,10 @@ Nop <- R6::R6Class(
     #' @field best_parameter The best found \code{numeric} parameter vector of length \code{npar} (if available).
     best_parameter = function (value) {
       if (missing(value)) {
-        # TODO: find best parameter from summary
+        best_value <- self$best_value
+        x <- self$summary(c("value", "parameter"))
+        ind <- which(x$value == best_value)
+        x$parameter[[ind]]
       } else {
         ino_stop(
           "`$best_parameter` is read only."
@@ -1127,7 +1195,11 @@ Nop <- R6::R6Class(
     #' @field best_value The best found \code{numeric} value of \code{f} (if available).
     best_value = function (value) {
       if (missing(value)) {
-        # TODO: find best parameter from summary
+        if (private$.show_minimum) {
+          min(self$summary("value")$value)
+        } else {
+          max(self$summary("value")$value)
+        }
       } else {
         ino_stop(
           "`$best_value` is read only."

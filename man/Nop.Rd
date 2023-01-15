@@ -78,8 +78,9 @@ show best minimum in \code{$best_value} and \code{$best_parameter}.}
 \item \href{#method-Nop-test}{\code{Nop$test()}}
 \item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
 \item \href{#method-Nop-reduce}{\code{Nop$reduce()}}
-\item \href{#method-Nop-optima}{\code{Nop$optima()}}
+\item \href{#method-Nop-continue}{\code{Nop$continue()}}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
+\item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
 \item \href{#method-Nop-clone}{\code{Nop$clone()}}
 }
@@ -322,7 +323,8 @@ Optimize the function.
   label = "",
   ncores = getOption("ino_ncores"),
   verbose = getOption("ino_verbose"),
-  simplify = TRUE
+  simplify = TRUE,
+  reset_arguments_afterwards = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -331,8 +333,8 @@ Optimize the function.
 \describe{
 \item{\code{initial}}{Specify the initial point where the optimizer should start. Either:
 \itemize{
-\item the character \code{"random"} (the default) for random initial values
-drawn from a standard normal distribution
+\item the \code{character} \code{"random"} (the default) for random initial
+values drawn from a standard normal distribution
 \item a \code{numeric} vector of length \code{npar}, the starting point for
 optimization
 \item a \code{function} without any arguments that returns a \code{numeric}
@@ -375,6 +377,8 @@ when the package is loaded.}
 only one optimizer is specified.
 In this case, if \code{simplify = TRUE} (default), the nested list output
 is flattened.}
+
+\item{\code{reset_arguments_afterwards}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
@@ -537,21 +541,14 @@ when the package is loaded.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-optima"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
-\subsection{Method \code{optima()}}{
+\if{html}{\out{<a id="method-Nop-continue"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-continue}{}}}
+\subsection{Method \code{continue()}}{
 TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = 2)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$continue()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{digits}}{TODO}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-summary"></a>}}
@@ -559,19 +556,59 @@ TODO
 \subsection{Method \code{summary()}}{
 TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$summary()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$summary(columns = c("value", "parameter", "seconds", "optimizer"), ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{columns}}{TODO}
+
+\item{\code{...}}{Expressions of variables from summary columns as characters.
+TODO \code{$summary_columns()}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+TODO
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-optima"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
+\subsection{Method \code{optima()}}{
+Overview of the identified optima.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = 2)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{digits}}{TODO: number of significant decimal places, by default \code{getOption("ino_digits")}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-plot}{}}}
 \subsection{Method \code{plot()}}{
-TODO
+Visualization of optimization time.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$plot()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, nrow = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{by}}{A character vector of variables to group by.
+Can be \code{NULL} (default).}
+
+\item{\code{nrow}}{Passed to \code{\link[ggplot2]{facet_wrap}}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-clone"></a>}}
