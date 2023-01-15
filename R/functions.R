@@ -197,6 +197,7 @@ sim_hmm <- function(T, N, theta) {
 
 f_ll_hmm <- function(theta, data, N, neg = FALSE) {
   stopifnot(is.numeric(theta), is.data.frame(data), N%%1==0)
+  stopifnot(length(theta) == N * (N - 1) + 2*N)
   T <- nrow(data)
   tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])

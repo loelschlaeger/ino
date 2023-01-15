@@ -95,7 +95,11 @@ Nop <- R6::R6Class(
         )
       }
       private$.f <- f
-      private$.f_name <- deparse(substitute(f))
+      f_name <- deparse(substitute(f))
+      if (!is.character(f_name) || length(f_name) != 1) {
+        f_name <- "unnamed function"
+      }
+      private$.f_name <- f_name
       private$.f_target <- names(formals(f))[1]
       private$.npar <- as.integer(npar)
       if(length(list(...)) > 0) self$set_argument(...)
@@ -225,7 +229,7 @@ Nop <- R6::R6Class(
       }
       if (!is.character(argument_name)) {
         ino_stop(
-          "Input `argument_name` must be a character."
+          "Input `argument_name` must be a `character` (vector)."
         )
       }
       for (i in seq_along(argument_name)) {
@@ -235,6 +239,28 @@ Nop <- R6::R6Class(
         private$.narguments <- private$.narguments - 1
       }
       invisible(self)
+    },
+
+    #' @description
+    #' Reset additional arguments for \code{f} after transformation with
+    #' \code{$standardize()} or \code{$reduce()}.
+    #' @param argument_name
+    #' A \code{character} (vector), the argument(s) to reset.
+    reset_argument = function (argument_name, verbose = getOption("ino_verbose")) {
+      if (missing(argument_name)) {
+        ino_stop(
+          "Please specify `argument_name`."
+        )
+      }
+      if (!is.character(argument_name)) {
+        ino_stop(
+          "Input `argument_name` must be a `character` (vector)."
+        )
+      }
+      for (arg in argument_name) {
+        private$.check_add_arg_exists(argument_name)
+        private$.reset_orig_argument(arg, verbose = verbose)
+      }
     },
 
     #' @description
@@ -345,8 +371,8 @@ Nop <- R6::R6Class(
     #' Optimize the function.
     #' @param initial
     #' Specify the initial point where the optimizer should start. Either:
-    #' - the character \code{"random"} (the default) for random initial values
-    #'   drawn from a standard normal distribution
+    #' - the \code{character} \code{"random"} (the default) for random initial
+    #'   values drawn from a standard normal distribution
     #' - a \code{numeric} vector of length \code{npar}, the starting point for
     #'   optimization
     #' - a \code{function} without any arguments that returns a \code{numeric}
@@ -370,6 +396,8 @@ Nop <- R6::R6Class(
     #' only one optimizer is specified.
     #' In this case, if \code{simplify = TRUE} (default), the nested list output
     #' is flattened.
+    #' @param reset_arguments_afterwards
+    #' TODO
     #' @return
     #' The return value depends on the value of \code{return_results}:
     #' - if \code{return_results = FALSE} (default), invisibly the \code{Nop} object
@@ -381,7 +409,7 @@ Nop <- R6::R6Class(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
       save_results = TRUE, return_results = FALSE, label = "",
       ncores = getOption("ino_ncores"), verbose = getOption("ino_verbose"),
-      simplify = TRUE
+      simplify = TRUE, reset_arguments_afterwards = TRUE
     ) {
 
       ### check `initial` and make it to function call `get_initial`
@@ -457,10 +485,17 @@ Nop <- R6::R6Class(
         lapply(optimizer_ids, function (i) private$.optimize(initial, i))
       }
 
-      ### process results
+      ### save results
       if (save_results) {
         private$.save_results(results, optimizer_ids, label)
       }
+
+      ### reset transformed arguments
+      if (reset_arguments_afterwards) {
+        lapply(names(private$.orig_arguments), private$.reset_orig_argument, verbose = verbose)
+      }
+
+      ### return results
       if (return_results) {
         if (simplify) {
           if (runs == 1) {
@@ -482,26 +517,39 @@ Nop <- R6::R6Class(
     #' A \code{numeric} of length \code{npar}, the point at which the
     #' function \code{f} and the specified optimizer are tested.
     #' Per default, \code{at = rnorm(self$npar)}, i.e., random values.
-    #' @param time_limit
+    #' @param time_limit_fun
     #' An \code{integer}, the time limit in seconds for testing the
-    #' function call and the optimization.
-    #' If no error occurred after \code{time_limit} seconds, the test is
+    #' function call.
+    #' If no error occurred after \code{time_limit_fun} seconds, the test is
     #' considered to be successful.
-    #' By default, \code{time_limit = 10}.
+    #' By default, \code{time_limit_fun = 10}.
+    #' @param time_limit_opt
+    #' An \code{integer}, the time limit in seconds for testing the
+    #' optimization call.
+    #' If no error occurred after \code{time_limit_opt} seconds, the test is
+    #' considered to be successful.
+    #' By default, \code{time_limit_opt = 10}.
     #' @return
-    #' Either \code{TRUE} if the tests are successful, otherwise ... TODO
+    #' Returns invisibly \code{TRUE} if the tests are successful.
     test = function (
-      at = rnorm(self$npar), which_optimizer = "all", time_limit = 10,
-      verbose = TRUE
+      at = rnorm(self$npar), which_optimizer = "all", time_limit_fun = 10,
+      time_limit_opt = time_limit_fun, verbose = getOption("ino_verbose")
       ) {
 
       ### input checks
       private$.check_target_arg(at, "at")
-      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      if (!(is.numeric(time_limit) && length(npar) == 1 && time_limit > 0 && time_limit%%1 == 0)) {
+      optimizer_ids <- private$.get_optimizer_ids(which_optimizer, no_optimizer = "ignored")
+      optimizer_selected <- length(optimizer_ids) > 0
+      if (!(is.numeric(time_limit_fun) && length(time_limit_fun) == 1 && time_limit_fun > 0 && time_limit_fun %% 1 == 0)) {
         ino_stop(
-          "Argument `time_limit` is not a positive integer.",
-          "Please specify `time_limit` as the number of seconds for testing the function call and the optimization."
+          "Argument `time_limit_fun` is not a positive integer.",
+          "Please specify `time_limit_fun` as the number of seconds for testing the function call."
+        )
+      }
+      if (!(is.numeric(time_limit_opt) && length(time_limit_opt) == 1 && time_limit_opt > 0 && time_limit_opt %% 1 == 0)) {
+        ino_stop(
+          "Argument `time_limit_opt` is not a positive integer.",
+          "Please specify `time_limit_opt` as the number of seconds for testing the function call."
         )
       }
       if (!isTRUE(verbose) && !isFALSE(verbose)) {
@@ -512,29 +560,90 @@ Nop <- R6::R6Class(
 
       ### test configurations
       ino_status("Test configurations:", verbose = verbose)
-      ino_success(glue::glue("Function: {private$.f_name}") , verbose = verbose)
-      ino_success(glue::glue("Optimize over: {private$.f_target} (length {private$.npar})") , verbose = verbose)
-      ino_success(glue::glue("Optimizer: {}"), verbose = verbose)
+      ino_success(glue::glue("Function specified: {private$.f_name}") , verbose = verbose)
+      ino_success(glue::glue("Target argument specified: {private$.f_target} (length {private$.npar})") , verbose = verbose)
+      if (optimizer_selected) {
+        ino_success(glue::glue("Optimizer specified: {paste(private$.optimizer_label[optimizer_ids], collapse = ', ')}"), verbose = verbose)
+      }
 
       ### test function call
       ino_status("Test function call:", verbose = verbose)
-      out <- suppressWarnings(
-        try(self$evaluate(at), silent = TRUE)
+      setTimeLimit(cpu = time_limit_fun, elapsed = time_limit_fun, transient = TRUE)
+      on.exit({
+        setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+      })
+      out <- tryCatch(
+        {
+          self$evaluate(at)
+        },
+        error = function(e) {
+          if (grepl("reached elapsed time limit|reached CPU time limit", e$message)) {
+            return(".ino_time_limit_fun_reached")
+          } else {
+            ino_stop("Function call failed.")
+          }
+        }
       )
-      if (inherits(out, "try-error") || !is.numeric(out)) {
-        ino_stop(
-          "Test function call failed. I used the following inputs:",
-          glue::glue("{private$f_target} = {paste(at, collapse = ' ')}"), # TODO other inputs
-          "Result is not a numeric."
+      ino_success("Calling the function did not throw an error.", verbose = verbose)
+      if (identical(out, ".ino_time_limit_fun_reached")) {
+        ino_warn(
+          glue::glue("The time limit of {time_limit_fun}s was reached in the test function call."),
+          "To make sure that the test function call returns a single numeric value, consider increasing `time_limit_fun`."
         )
-
+      } else {
+        if (!is.numeric(out)) {
+          ino_stop(
+            glue::glue("Test function call returned an object of class `{class(out)[1]}`."),
+            "It should return a single `numeric` value."
+          )
+        } else {
+          ino_success("Test function call returned a `numeric`.", verbose = verbose)
+        }
+        if (length(out) != 1) {
+          ino_stop(
+            glue::glue("Test function call returned a `numeric` of length {length(out)}."),
+            "It should return a single `numeric` value."
+          )
+        } else {
+          ino_success(glue::glue("Return value is {out}."), verbose = verbose)
+        }
       }
 
       ### test optimization
-      ino_status("Test optimization:", verbose = verbose)
-      # TODO
+      if (!optimizer_selected) {
+        ino_warn("No optimizer specified, testing optimizer is skipped.")
+      } else {
+        ino_status("Test optimization:", verbose = verbose)
+        for (i in seq_along(optimizer_ids)) {
+          setTimeLimit(cpu = time_limit_opt, elapsed = time_limit_opt, transient = TRUE)
+          out <- tryCatch(
+            {
+              private$.optimize(initial = at, optimizer_id = i)
+            },
+            error = function(e) {
+              if (grepl("reached elapsed time limit|reached CPU time limit", e$message)) {
+                return(".ino_time_limit_opt_reached")
+              } else {
+                ino_stop(
+                  glue::glue("Optimization with optimizer `{private$.optimizer_label[i]}` failed.")
+                )
+              }
+            }
+          )
+          ino_success(
+            glue::glue("Calling optimizer `{private$.optimizer_label[i]}` did not throw an error."),
+            verbose = verbose
+          )
+          if (identical(out, ".ino_time_limit_opt_reached")) {
+            ino_warn(
+              glue::glue("The time limit of {time_limit_opt}s was reached in the test optimization call with optimizer `{private$.optimizer_label[i]}`."),
+              "To make sure that the optimization ends successful, consider increasing `time_limit_opt`."
+            )
+          }
+        }
+      }
 
-      return(TRUE)
+      invisible(TRUE)
     },
 
     #' @description
@@ -554,22 +663,31 @@ Nop <- R6::R6Class(
     #' \code{by_column = FALSE}) to not standardize.
     standardize = function(
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
-      ignore = integer()
+      ignore = integer(), verbose = getOption("ino_verbose")
     ) {
 
       ### input checks
-      private$.check_add_arg_matrix_df(argument_name)
-      if (!isTRUE(by_column) && !isFALSE(by_column)) {
+      if (missing(argument_name)) {
         ino_stop(
-          "Argument 'by_column' must be `TRUE` or `FALSE`."
+          "Please specify `argument_name`.",
+          "It is the name of the argument of `f` to be standardized."
         )
       }
-      if (length(ignore) > 0) {
-        if (!all(is.numeric(ignore) & ignore > 0 & ignore %% 1 == 0)) {
-          ino_stop(
-            "Argument 'ignore' must be a vector of indices."
-          )
-        }
+      if (!is.character(argument_name) && length(argument_name) == 1) {
+        ino_stop(
+          "Input `argument_name` must be a `character`."
+        )
+      }
+      private$.check_add_arg_matrix_df(argument_name, verbose = verbose)
+      if (!isTRUE(by_column) && !isFALSE(by_column)) {
+        ino_stop(
+          "Argument `by_column` must be `TRUE` or `FALSE`."
+        )
+      }
+      if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
+        ino_stop(
+          "Argument 'ignore' must be a vector of indices."
+        )
       }
 
       ### standardizing
@@ -577,16 +695,25 @@ Nop <- R6::R6Class(
       orig_argument <- argument
       attr_argument <- attributes(argument)
       if (!by_column) argument <- t(argument)
-      if (length(ignore) > 0) argument <- argument[, -ignore, drop = FALSE]
-      argument <- scale(argument, center = center, scale = scale)
-      if (is.data.frame(orig_argument)) argument <- as.data.frame(argument)
-      if (length(ignore) > 0) argument <- replace(orig_argument, -ignore, argument)
+      if (length(ignore) > 0) {
+        argument[, -ignore] <- scale(argument[, -ignore], center = center, scale = scale)
+      } else {
+        argument <- scale(argument, center = center, scale = scale)
+      }
       if (!by_column) argument <- t(argument)
+      if (is.data.frame(orig_argument)) argument <- as.data.frame(argument)
       attributes(argument) <- attr_argument
-      self$set_argument(argument) # TODO: overwrite
+      ino_status(
+        glue::glue("Standardized {class(argument)[1]} `{argument_name}`."),
+        verbose = verbose
+      )
+
+      ### save standardized argument
+      private$.arguments[[argument_name]] <- argument
 
       ### temporally save original argument
-      private$.save_orig_arg(orig_argument, argument_name) # TODO
+      private$.save_orig_argument(orig_argument, argument_name)
+
       invisible(self)
     },
 
@@ -619,26 +746,34 @@ Nop <- R6::R6Class(
     #' if \code{by_row = FALSE}) to ignore for clustering.
     reduce = function(
       argument_name, by_row = TRUE, how = "random", proportion = 0.5, centers = 2,
-      ignore = integer(), seed = NULL
+      ignore = integer(), seed = NULL, verbose = getOption("ino_verbose")
     ) {
 
       ### input checks
-      private$.check_add_arg_matrix_df(argument_name)
+      if (missing(argument_name)) {
+        ino_stop(
+          "Please specify argument `argument_name`.",
+          "It is the name of the argument of `f` to be standardized."
+        )
+      }
+      private$.check_add_arg_matrix_df(argument_name, verbose = verbose)
       if (!isTRUE(by_row) && !isFALSE(by_row)) {
         ino_stop(
           "Argument 'by_row' must be `TRUE` or `FALSE`."
         )
       }
-      if (!all(is.numeric(ignore) & ignore > 0 & ignore %% 1 == 0)) {
-        ino_stop(
-          "Argument 'ignore' must be a vector of indices."
-        )
-      }
-      if (!(is.character(how) && length(how) == 1) &&
-          how %in% c("random", "first", "last", "similar", "unsimilar")) {
+      if (!(is.character(how) && length(how) == 1 &&
+          how %in% c("random", "first", "last", "similar", "unsimilar"))) {
         ino_stop(
           "Argument 'how' must be one of `random`, `first`, `last`, `similar` or `unsimilar`."
         )
+      }
+      if (how %in% c("similar", "unsimilar")) {
+        if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
+          ino_stop(
+            "Argument 'ignore' must be a vector of indices."
+          )
+        }
       }
       if (!(is.numeric(proportion) && length(proportion) == 1 && proportion > 0 && proportion < 1)) {
         ino_stop(
@@ -661,27 +796,74 @@ Nop <- R6::R6Class(
         ind <- tail(seq_len(n), m)
       } else {
         stopifnot(how == "similar" || how == "unsimilar")
-        arg_val_ign <- arg_val
-        if (!is.null(ind_ign)) {
-          arg_val_ign <- arg_val_ign[, -ind_ign, drop = FALSE]
+        argument_ign <- argument
+        if (length(ignore) > 0) {
+          argument_ign <- argument_ign[, -ignore, drop = FALSE]
         }
-        kmeans_out <- stats::kmeans(argument, centers = centers)
-        nc <- ceiling(arg_val_subset_length / centers)
-        subset_ind <- c()
-        for (i in 1:centers) {
-          subset_ind_i <- which(kmeans_out$cluster == i)
-          subset_ind <- c(subset_ind, sample(
-            x = subset_ind_i,
-            size = min(nc, length(subset_ind_i))
-          ))
+        cluster <- stats::kmeans(argument_ign, centers = centers)$cluster
+        ind <- integer(0)
+        if (how == "similar") {
+          i <- 1
+          while (length(ind) < m && i <= centers) {
+            ind_i <- which(cluster == i)
+            ind <- c(ind, ind_i[seq_len(min(m - length(ind), length(ind_i)))])
+            i <- i + 1
+          }
+        } else if (how == "unsimilar") {
+          ind_cluster <- split(1:n, cluster)
+          i <- 0
+          while (length(ind) < m) {
+            i_mod <- i %% centers + 1
+            if (length(ind_cluster[[i_mod]]) == 0) next
+            ind <- c(ind, ind_cluster[[i_mod]][1])
+            ind_cluster[[i_mod]] <- ind_cluster[[i_mod]][-1]
+            i <- i + 1
+          }
         }
-        subset_ind <- sort(subset_ind)
+        ind <- sort(ind)
       }
+      argument <- argument[ind, ]
+      ino_status(
+        glue::glue("Reduced {class(argument)[1]} `{argument_name}` from {nrow(orig_argument)} to {how} {nrow(argument)} {ifelse(by_row, 'row(s)', 'column(s)')}."),
+        verbose = verbose
+      )
       if (!by_row) argument <- t(argument)
 
+      ### save reduced argument
+      private$.arguments[[argument_name]] <- argument
+
       ### temporally save original argument
-      private$.save_orig_arg(orig_argument, argument_name) # TODO
+      private$.save_orig_argument(orig_argument, argument_name)
+
       invisible(self)
+    },
+
+    #' @description
+    #' TODO
+    #' @importFrom dplyr bind_rows
+    summary = function (columns = c("value", "estimate", "seconds", "optimizer")) {
+
+      ### combine records in data.frame
+      records <- private$.records
+      out <- data.frame()
+      for (run in 1:length(records)) {
+        for (opt in 1:length(records[[run]])) {
+          out_tmp <- as.data.frame(t(cbind(records[[run]][[opt]])))
+          out <- dplyr::bind_rows(out, out_tmp)
+        }
+      }
+
+      ### unlist single-valued records
+      for (i in 1:ncol(out)) {
+        if (all(sapply(out[,i], length) == 1 & sapply(out[,i], class) %in% c("character", "numeric"))) {
+          out[,i] <- unlist(out[,i])
+        }
+      }
+
+      ### filter columns
+      out <- dplyr::select(out, dplyr::all_of(columns))
+
+      return(out)
     },
 
     #' @description
@@ -689,12 +871,6 @@ Nop <- R6::R6Class(
     #' @param digits
     #' TODO
     optima = function (digits = 2) {
-
-    },
-
-    #' @description
-    #' TODO
-    summary = function () {
 
     },
 
@@ -714,6 +890,7 @@ Nop <- R6::R6Class(
     .npar = NULL,
     .arguments = list(),
     .narguments = 0,
+    .orig_arguments = list(),
     .true_parameter = NULL,
     .true_value = NULL,
 
@@ -747,12 +924,13 @@ Nop <- R6::R6Class(
     },
 
     ### checks if argument is matrix or data.frame
-    .check_add_arg_matrix_df = function (argument_name) {
+    .check_add_arg_matrix_df = function (argument_name, verbose = TRUE) {
       private$.check_add_arg_exists(argument_name)
       argument <- private$.arguments[[argument_name]]
       if (!is.data.frame(argument) && !is.matrix(argument)) {
         ino_stop(
           glue::glue("Argument `{argument_name}` must be a `data.frame` or a `matrix`."),
+          verbose = verbose
         )
       }
     },
@@ -762,19 +940,26 @@ Nop <- R6::R6Class(
       args_all <- formals(private$.f)
       args_all[private$.f_target] <- NULL
       for (arg in names(args_all)) {
-        if (!nzchar(args_all[[arg]]) & is.name(args_all[[arg]])) {
+        ### checks if `arg` has default value in `f`
+        if (!all(nzchar(args_all[[arg]])) && is.name(args_all[[arg]])) {
           private$.check_add_arg_exists(arg)
         }
       }
     },
 
     ### returns numeric IDs of specified optimizer
-    .get_optimizer_ids = function (which_optimizer) {
+    .get_optimizer_ids = function (which_optimizer, no_optimizer = "fatal") {
+      stopifnot(no_optimizer %in% c("fatal", "ignored"))
       if (length(private$.optimizer) == 0) {
-        ino_stop(
-          "No optimizer specified.",
-          "Please use `$set_optimizer()` to specify an optimizer."
-        )
+        if (no_optimizer == "fatal") {
+          ino_stop(
+            "No optimizer specified.",
+            "Please use `$set_optimizer()` to specify an optimizer."
+          )
+        }
+        if (no_optimizer == "ignored") {
+          return(integer(0))
+        }
       }
       if (identical(which_optimizer, "all")) {
         return(seq_along(private$.optimizer))
@@ -788,9 +973,14 @@ Nop <- R6::R6Class(
         )
       }
       if (length(ids) == 0) {
-        ino_stop(
-          "Please check argument `which_optimizer`, it fits to no specified optimizer."
-        )
+        if (no_optimizer == "fatal") {
+          ino_stop(
+            "Please check argument `which_optimizer`, it fits to no specified optimizer."
+          )
+        }
+        if (no_optimizer == "ignored") {
+          return(integer(0))
+        }
       }
       return(ids)
     },
@@ -809,10 +999,13 @@ Nop <- R6::R6Class(
     .optimize = function(initial, optimizer_id) {
       do.call(
         what = optimizeR::apply_optimizer,
-        args = list(
-          "optimizer" = private$.optimizer[[optimizer_id]],
-          "f" = private$.f,
-          "p" = initial
+        args = c(
+          list(
+            "optimizer" = private$.optimizer[[optimizer_id]],
+            "f" = private$.f,
+            "p" = initial
+          ),
+          private$.arguments
         )
       )
       # TODO: here needs to go check if optimization is to be continued with full data
@@ -827,6 +1020,25 @@ Nop <- R6::R6Class(
         }
       }
       private$.records <- append(private$.records, results)
+    },
+
+    ### save original arguments before standardization / reducing
+    .save_orig_argument = function (orig_argument, argument_name) {
+      if (is.null(private$.orig_arguments[[argument_name]])) {
+        private$.orig_arguments[[argument_name]] <- orig_argument
+      }
+    },
+
+    ### reset transformed argument to original argument
+    .reset_orig_argument = function (argument_name, verbose = FALSE) {
+      if (!is.null(private$.orig_arguments[[argument_name]])) {
+        private$.arguments[[argument_name]] <- private$.orig_arguments[[argument_name]]
+        private$.orig_arguments[[argument_name]] <- NULL
+        ino_status(
+          glue::glue("Reset `{argument_name}`."),
+          verbose = verbose
+        )
+      }
     }
 
   ),

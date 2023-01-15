@@ -68,6 +68,7 @@ show best minimum in \code{$best_value} and \code{$best_parameter}.}
 \item \href{#method-Nop-set_argument}{\code{Nop$set_argument()}}
 \item \href{#method-Nop-get_argument}{\code{Nop$get_argument()}}
 \item \href{#method-Nop-remove_argument}{\code{Nop$remove_argument()}}
+\item \href{#method-Nop-reset_argument}{\code{Nop$reset_argument()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-set_true_value}{\code{Nop$set_true_value()}}
 \item \href{#method-Nop-set_true_parameter}{\code{Nop$set_true_parameter()}}
@@ -174,6 +175,29 @@ Remove additional arguments for \code{f}.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{argument_name}}{A \code{character} (vector), the argument(s) to remove.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-reset_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-reset_argument}{}}}
+\subsection{Method \code{reset_argument()}}{
+Reset additional arguments for \code{f} after transformation with
+\code{$standardize()} or \code{$reduce()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$reset_argument(argument_name, verbose = getOption("ino_verbose"))}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{A \code{character} (vector), the argument(s) to reset.}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+when the package is loaded.}
 }
 \if{html}{\out{</div>}}
 }
@@ -371,8 +395,9 @@ Test the configuration of a \code{Nop} object.
 \if{html}{\out{<div class="r">}}\preformatted{Nop$test(
   at = rnorm(self$npar),
   which_optimizer = "all",
-  time_limit = 10,
-  verbose = TRUE
+  time_limit_fun = 10,
+  time_limit_opt = time_limit_fun,
+  verbose = getOption("ino_verbose")
 )}\if{html}{\out{</div>}}
 }
 
@@ -390,11 +415,17 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
 \item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
-\item{\code{time_limit}}{An \code{integer}, the time limit in seconds for testing the
-function call and the optimization.
-If no error occurred after \code{time_limit} seconds, the test is
+\item{\code{time_limit_fun}}{An \code{integer}, the time limit in seconds for testing the
+function call.
+If no error occurred after \code{time_limit_fun} seconds, the test is
 considered to be successful.
-By default, \code{time_limit = 10}.}
+By default, \code{time_limit_fun = 10}.}
+
+\item{\code{time_limit_opt}}{An \code{integer}, the time limit in seconds for testing the
+optimization call.
+If no error occurred after \code{time_limit_opt} seconds, the test is
+considered to be successful.
+By default, \code{time_limit_opt = 10}.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -404,7 +435,7 @@ when the package is loaded.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Either \code{TRUE} if the tests are successful, otherwise ... TODO
+Returns invisibly \code{TRUE} if the tests are successful.
 }
 }
 \if{html}{\out{<hr>}}
@@ -418,7 +449,8 @@ Standardize the optimization problem.
   by_column = TRUE,
   center = TRUE,
   scale = TRUE,
-  ignore = integer()
+  ignore = integer(),
+  verbose = getOption("ino_verbose")
 )}\if{html}{\out{</div>}}
 }
 
@@ -437,6 +469,11 @@ to standardize row-wise.}
 
 \item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
 \code{by_column = FALSE}) to not standardize.}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+when the package is loaded.}
 }
 \if{html}{\out{</div>}}
 }
@@ -454,7 +491,8 @@ Reduce the optimization problem.
   proportion = 0.5,
   centers = 2,
   ignore = integer(),
-  seed = NULL
+  seed = NULL,
+  verbose = getOption("ino_verbose")
 )}\if{html}{\out{</div>}}
 }
 
@@ -489,6 +527,11 @@ In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 
 \item{\code{seed}}{Set a seed for reproducibility. No seed by default.}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+when the package is loaded.}
 }
 \if{html}{\out{</div>}}
 }
