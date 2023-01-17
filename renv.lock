@@ -61,20 +61,25 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "0.11.2.0.0",
+      "Version": "0.11.4.3.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "1d3c02a90401734e893954c7f8f92f3e",
+      "Hash": "836c1aeec6a7a2b28273bd42a0511a9e",
       "Requirements": [
         "Rcpp"
       ]
     },
     "ao": {
       "Package": "ao",
-      "Version": "0.2.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0e0d7af38d26346a1954ee03bd6e5beb",
+      "Version": "0.2.4.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "ao",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "ac3067610cb85eef1f99ef75f306c253c080e609",
+      "Hash": "6d29175d5b8bd0d42776042c9383ddee",
       "Requirements": [
         "ggplot2",
         "optimizeR",
@@ -469,14 +474,20 @@
     },
     "fHMM": {
       "Package": "fHMM",
-      "Version": "1.0.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0178b44dddd6f362b4f4ce6fbcfcf4ce",
+      "Version": "1.0.3.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "fHMM",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "5693929182919f4f1dde4f169a90f0c41f4578f6",
+      "Hash": "b0566f2d1a199b0a5074ed056365d015",
       "Requirements": [
         "MASS",
         "Rcpp",
         "RcppArmadillo",
+        "cli",
         "foreach",
         "progress"
       ]
@@ -962,8 +973,8 @@
       "RemoteRepo": "optimizeR",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "13b5afeb77b374a69c6db6f00dc33447893b763e",
-      "Hash": "ebb626b6f3a432dff27f5da9ccd60919",
+      "RemoteSha": "225c91545a2d3d7825408496f67b0ef98d876f9a",
+      "Hash": "851bcb82cedc8d1ce21deab6f611de39",
       "Requirements": [
         "cli",
         "glue"

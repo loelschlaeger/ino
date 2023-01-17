@@ -7,16 +7,15 @@
 #' The function has multiple local minima and one global minimum in the origin.
 #'
 #' @param x
-#' A numeric vector of length 2.
+#' A \code{numeric} vector of length 2.
 #'
 #' @examples
 #' f_ackley(c(0, 0))
 #'
 #' @return
-#' The function value at \code{x}, a single numeric value.
+#' The function value at \code{x}, a single \code{numeric}.
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 #'
 #' @export
 
@@ -32,19 +31,19 @@ f_ackley <- function(x) {
 #' https://en.wikipedia.org/wiki/Test_functions_for_optimization
 #'
 #' @details
-#' The function has multiple local minima and one global minimum in (3, 0.5).
+#' The function has multiple local minima and one global minimum in
+#' \code{(3, 0.5)}.
 #'
 #' @param x
-#' A numeric vector of length 2.
+#' A \code{numeric} vector of length 2.
 #'
 #' @examples
 #' f_beale(c(3, 0.5))
 #'
 #' @return
-#' The function value at \code{x}, a single numeric value.
+#' The function value at \code{x}, a single \code{numeric}.
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 #'
 #' @export
 
@@ -63,18 +62,17 @@ f_beale <- function(x) {
 #' The function has multiple local minima and one global minimum in the origin.
 #'
 #' @param x
-#' A numeric vector of length 2.
+#' A \code{numeric} vector of length 2.
 #'
 #' @examples
 #' f_matyas(c(0, 0))
 #'
 #' @return
-#' The function value at \code{x}, a single numeric value.
+#' The function value at \code{x}, a single \code{numeric}.
 #'
 #' @export
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 
 f_matyas <- function(x) {
   stopifnot(is.numeric(x), length(x) == 2)
@@ -90,16 +88,15 @@ f_matyas <- function(x) {
 #' The function has multiple local minima and one global minimum in (pi, pi).
 #'
 #' @param x
-#' A numeric vector of length 2.
+#' A \code{numeric} vector of length 2.
 #'
 #' @examples
 #' f_easom(c(pi, pi))
 #'
 #' @return
-#' The function value at \code{x}, a single numeric value.
+#' The function value at \code{x}, a single \code{numeric}.
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 #'
 #' @export
 
@@ -115,11 +112,11 @@ f_easom <- function(x) {
 #' model
 #'
 #' @param T
-#' The number of observations.
+#' An \code{integer}, the number of observations.
 #' @param N
-#' The number of states.
+#' An \code{integer}, the number of states.
 #' @param theta
-#' A numeric vector of model parameters.
+#' A \code{numeric} vector of model parameters.
 #' - The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
 #'   elements of the transition probability matrix.
 #' - The next \code{N} elements are the mean values of the state-dependent
@@ -141,8 +138,7 @@ f_easom <- function(x) {
 #'
 #' @importFrom stats rnorm
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 #'
 #' @export
 
@@ -188,10 +184,9 @@ sim_hmm <- function(T, N, theta) {
 #' @importFrom stats dnorm
 #'
 #' @return
-#' The log-likelihood value at \code{theta}.
+#' A \code{numeric}, the log-likelihood value at \code{theta}.
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 #'
 #' @export
 
@@ -228,23 +223,27 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #' multinomial probit model.
 #'
 #' @param N
-#' The number of observations.
+#' An \code{integer}, the number of observations.
 #' @param T
-#' The number of choice occasions with \code{T = 1} per default.
+#' An \code{integer}, the number of choice occasions.
+#' By default, \code{T = 1}.
 #' @param J
-#' The number of alternatives.
+#' An \code{integer}, the number of alternatives.
 #' @param P
-#' The number of choice covariates.
+#' An \code{integer}, the number of choice covariates.
 #' @param b
-#' The mean effects vector of length \code{P}, first element must be \code{1}.
+#' A \code{numeric} vector, the mean effects vector of length \code{P}.
+#' The first element must be \code{1} (for normalization).
 #' @param Omega
-#' The covariance matrix of the normal mixing distribution of dimension \code{P}
-#' times \code{P}. Set to \code{NULL} (the default) for no mixing distribution.
+#' A \code{matrix}, the covariance matrix of the normal mixing distribution of
+#' dimension \code{P} times \code{P}.
+#' Set to \code{NULL} (the default) for no mixing distribution.
 #' @param Sigma
-#' The error term covariance matrix of dimension \code{J} times \code{J}.
+#' A \code{matrix}, the error term covariance matrix of dimension \code{J}
+#' times \code{J}.
 #' @param X
-#' A function that samples the covariates. It must return a numeric matrix
-#' of dimension \code{J} times \code{P}.
+#' A \code{function} that samples the covariates. It must return a
+#' \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
 #'
 #' @return
 #' A \code{data.frame}. The first column (\code{N}) is the identifier for the
@@ -265,8 +264,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #'
 #' @importFrom stats rnorm
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 #'
 #' @export
 
@@ -334,13 +332,14 @@ sim_mnp <- function(
 #' }
 #'
 #' @param theta
-#' The vector of model coefficients, see the details.
+#' A \code{numeric}, the vector of model coefficients, see the details.
 #' @param data
 #' A \code{data.frame}, the output of \code{\link{sim_mnp}}.
 #' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #' @param normal_cdf
-#' A function that evaluates the CDF of an \code{n}-variate normal distribution.
+#' A \code{function} that evaluates the CDF of an \code{n}-variate normal
+#' distribution.
 #' It must take the arguments
 #' \itemize{
 #'   \item \code{lower}, the vector of lower limits of length \code{n},
@@ -348,10 +347,10 @@ sim_mnp <- function(
 #'   \item \code{mean}, the mean vector of length \code{n},
 #'   \item \code{sigma}, the \code{n} times \code{n} covariance matrix,
 #' }
-#' and return a single numeric value.
+#' and return a single \code{numeric}.
 #'
 #' @return
-#' The log-likelihood value at \code{theta}.
+#' A \code{numeric}, the log-likelihood value at \code{theta}.
 #'
 #' @examples
 #' data <- sim_mnp(N = 200, J = 3, P = 2, b = c(1,3))
@@ -361,8 +360,7 @@ sim_mnp <- function(
 #' nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 #' }
 #'
-#' @keywords
-#' internal function
+#' @keywords function
 #'
 #' @export
 #'

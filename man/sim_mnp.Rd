@@ -16,23 +16,27 @@ sim_mnp(
 )
 }
 \arguments{
-\item{N}{The number of observations.}
+\item{N}{An \code{integer}, the number of observations.}
 
-\item{T}{The number of choice occasions with \code{T = 1} per default.}
+\item{T}{An \code{integer}, the number of choice occasions.
+By default, \code{T = 1}.}
 
-\item{J}{The number of alternatives.}
+\item{J}{An \code{integer}, the number of alternatives.}
 
-\item{P}{The number of choice covariates.}
+\item{P}{An \code{integer}, the number of choice covariates.}
 
-\item{b}{The mean effects vector of length \code{P}, first element must be \code{1}.}
+\item{b}{A \code{numeric} vector, the mean effects vector of length \code{P}.
+The first element must be \code{1} (for normalization).}
 
-\item{Omega}{The covariance matrix of the normal mixing distribution of dimension \code{P}
-times \code{P}. Set to \code{NULL} (the default) for no mixing distribution.}
+\item{Omega}{A \code{matrix}, the covariance matrix of the normal mixing distribution of
+dimension \code{P} times \code{P}.
+Set to \code{NULL} (the default) for no mixing distribution.}
 
-\item{Sigma}{The error term covariance matrix of dimension \code{J} times \code{J}.}
+\item{Sigma}{A \code{matrix}, the error term covariance matrix of dimension \code{J}
+times \code{J}.}
 
-\item{X}{A function that samples the covariates. It must return a numeric matrix
-of dimension \code{J} times \code{P}.}
+\item{X}{A \code{function} that samples the covariates. It must return a
+\code{numeric} \code{matrix} of dimension \code{J} times \code{P}.}
 }
 \value{
 A \code{data.frame}. The first column (\code{N}) is the identifier for the
@@ -60,4 +64,3 @@ sim_mnp(N = 3, J = 2, P = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
 multinomial probit model.
 }
 \keyword{function}
-\keyword{internal}

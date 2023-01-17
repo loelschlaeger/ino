@@ -3,7 +3,7 @@
 \docType{data}
 \name{hmm_ino}
 \alias{hmm_ino}
-\title{Example application of {ino} to fit an HMM}
+\title{Example application of \{ino\} to HMM likelihood}
 \format{
 An object of class \code{ino}.
 }
@@ -11,6 +11,7 @@ An object of class \code{ino}.
 data("hmm_ino")
 }
 \description{
-The ino object that is obtained when running the code provided in the hidden Markov model vignette.
+See the vignette about the HMM likelihood for details:
+\code{vignette("example_hmm", package = "ino")}
 }
 \keyword{dataset}

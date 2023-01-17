@@ -22,8 +22,8 @@ Call \code{object <- Nop$new(f, npar, ...)} where
 Call \code{object$set_optimizer(<optimizer object>)} where
 \code{<optimizer object>} is an object of class \code{optimizer}, which can
 be created with the \code{\link[optimizeR]{set_optimizer}} function from the
-\{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm()}}
-and \code{\link[optimizeR]{optimizer_optim()}} are already available.
+\{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm}}
+and \code{\link[optimizeR]{optimizer_optim}} are already available.
 }
 
 \subsection{Step 3: Test the configuration}{
@@ -51,7 +51,7 @@ optimal parameter vector and optimal value over all optimization runs.
 \examples{
 Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer_nlm())$
-  optimize(runs = 1e6, verbose = TRUE)$
+  optimize(runs = 100, verbose = TRUE)$
   optima()
 
 }
@@ -74,6 +74,8 @@ show best minimum in \code{$best_value} and \code{$best_parameter}.}
 \item{\code{best_parameter}}{The best found \code{numeric} parameter vector of length \code{npar} (if available).}
 
 \item{\code{best_value}}{The best found \code{numeric} value of \code{f} (if available).}
+
+\item{\code{summary_columns}}{A \code{character}, the names of available statistics from the optimization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -135,12 +137,16 @@ A new \code{Nop} object.
 \subsection{Method \code{print()}}{
 Prints details of numerical optimization problem.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$print(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$print(digits = getOption("ino_digits"), ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
+The default is \code{getOption("ino_digits")}, which is set to \code{2}
+when the package is loaded.}
+
 \item{\code{...}}{Currently not used.}
 }
 \if{html}{\out{</div>}}
@@ -337,11 +343,12 @@ Optimize the function.
   seed = NULL,
   save_results = TRUE,
   return_results = FALSE,
-  label = NULL,
+  label = "unlabeled",
   ncores = getOption("ino_ncores"),
   verbose = getOption("ino_verbose"),
   simplify = TRUE,
-  reset_arguments_afterwards = TRUE
+  reset_arguments_afterwards = FALSE,
+  hide_warnings = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -368,7 +375,8 @@ By default, \code{runs = 1}.}
 \item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
-\item{\code{seed}}{Set a seed for reproducibility. No seed by default.}
+\item{\code{seed}}{Set a seed for reproducibility.
+No seed by default.}
 
 \item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
 inside the \code{Nop} object.
@@ -380,7 +388,7 @@ By default, \code{return_results = FALSE}.}
 \item{\code{label}}{Only relevant if \code{save_results = TRUE}.
 In this case, optionally a \code{character} for a custom label of the
 optimization.
-By default, \code{label = NULL}, i.e. no label.
+By default, \code{label = "unlabeled"}.
 Labels can be useful to distinguish optimization runs later.}
 
 \item{\code{ncores}}{An \code{integer}, the number of cores for parallel computation.
@@ -397,8 +405,13 @@ only one optimizer is specified.
 In this case, if \code{simplify = TRUE} (default), the nested list output
 is flattened.}
 
-\item{\code{reset_arguments_afterwards}}{A \code{logical}. Set to \code{TRUE} (default) to reset all transformed
-arguments after the optimization runs.}
+\item{\code{reset_arguments_afterwards}}{A \code{logical}. Set to \code{TRUE} to reset all transformed
+arguments after the optimization runs.
+By default, \code{reset_arguments_afterwards = FALSE}.
+Alternatively, reset arguments using \code{$reset_argument()}.}
+
+\item{\code{hide_warnings}}{A \code{logical}. Set to \code{TRUE} (default) to hide warnings during
+optimization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -423,7 +436,8 @@ Test the configuration of a \code{Nop} object.
   which_optimizer = "all",
   time_limit_fun = 10,
   time_limit_opt = time_limit_fun,
-  verbose = getOption("ino_verbose")
+  verbose = getOption("ino_verbose"),
+  digits = getOption("ino_digits")
 )}\if{html}{\out{</div>}}
 }
 
@@ -456,6 +470,10 @@ By default, \code{time_limit_opt = 10}.}
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
 The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
+when the package is loaded.}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
+The default is \code{getOption("ino_digits")}, which is set to \code{2}
 when the package is loaded.}
 }
 \if{html}{\out{</div>}}
@@ -552,7 +570,8 @@ By default, \code{centers = 2}.}
 In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 
-\item{\code{seed}}{Set a seed for reproducibility. No seed by default.}
+\item{\code{seed}}{Set a seed for reproducibility.
+No seed by default.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -566,33 +585,61 @@ when the package is loaded.}
 \if{html}{\out{<a id="method-Nop-continue"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-continue}{}}}
 \subsection{Method \code{continue()}}{
-TODO
+Continue last optimization runs, e.g., with a transformed parameter.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$continue()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-summary}{}}}
-\subsection{Method \code{summary()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$summary(columns = c("value", "parameter", "seconds", "optimizer"), ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$continue(hide_warnings = TRUE, save_results = TRUE, return_results = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{columns}}{TODO}
+\item{\code{hide_warnings}}{A \code{logical}. Set to \code{TRUE} (default) to hide warnings during
+optimization.}
 
-\item{\code{...}}{Expressions of variables from summary columns as characters.
-TODO \code{$summary_columns()}}
+\item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
+inside the \code{Nop} object.
+By default, \code{save_results = TRUE}.}
+
+\item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned.
+By default, \code{return_results = FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-summary}{}}}
+\subsection{Method \code{summary()}}{
+Overview of the optimization runs.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$summary(columns = c("value", "parameter", "seconds"), ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{columns}}{A \code{character} (vector), the names of columns to include in the
+summary output.
+By default, \code{columns = c("value", "parameter", "seconds")},
+which returns the columns
+\enumerate{
+\item \code{"value"}, the value of the estimated function optimum,
+\item \code{"parameter"}, the parameter vector at which the optimum is obtained,
+\item \code{"seconds"}, the optimization time in seconds.
+See \code{$summary_columns} for an overview of the available columns.
+Specify \code{columns = "all"} to include all of them in the output.
+}}
+
+\item{\code{...}}{Optionally named expressions of variables from summary columns as
+\code{character}.
+See \code{$summary_columns} for an overview of the available columns.
+Also, \code{"true_value"} and \code{"true_parameter"} are available
+(if specified).}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-TODO
+A \code{data.frame}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -601,7 +648,7 @@ TODO
 \subsection{Method \code{optima()}}{
 Overview of the identified optima.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = 2)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = getOption("ino_digits"))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

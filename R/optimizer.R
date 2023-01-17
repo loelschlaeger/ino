@@ -14,18 +14,18 @@
 #' @importFrom ao ao
 #' @importFrom optimizeR set_optimizer
 
-optimizer_ao <- function(..., out_ign = character(), test_par = list()) {
-  if ("partition" %in% names(list(...)) && identical(test_par, list())) {
-    test_par$validate <- FALSE
-  }
+optimizer_ao <- function(
+    ..., output_ignore = character(), validate = TRUE, validation_settings = list()
+  ) {
   optimizeR::set_optimizer(
-    opt_fun = ao::ao,
-    f = "f",
-    p = "p",
-    v = "optimum",
-    z = "estimate",
+    optimizer = ao::ao,
+    objective = "f",
+    initial = "p",
+    value = "optimum",
+    parameter = "estimate",
     ...,
-    out_ign = out_ign,
-    test_par = test_par
+    output_ignore = output_ignore,
+    validate = validate,
+    validation_settings = validation_settings
   )
 }

@@ -121,6 +121,7 @@ test_that("function can be optimized", {
   ackley$optimize(runs = 1, initial = runif(2))
   ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)
   ackley$optimize(initial = c(0,0))
+  expect_error(ackley$optimize(initial = c(1:3)), "misspecified.")
   expect_snapshot(ackley)
   expect_error(ackley$optimize(save_results = "TRUE"), "`save_results` must be either `TRUE` or `FALSE`.")
   expect_error(ackley$optimize(return_results = "TRUE"), "`return_results` must be either `TRUE` or `FALSE`.")
@@ -136,6 +137,21 @@ test_that("function can be optimized", {
   expect_type(out, "list")
   expect_error(ackley$optimize(initial = function() "not_a_numeric"), "should return a `numeric`")
   expect_error(ackley$optimize(initial = "initial_misspecified"), "`initial` is misspecified")
+  expect_error(ackley$optimize(reset_arguments_afterwards = "FALSE"), "must be either")
+  ackley$optimize()
+  expect_length(ackley$best_parameter, 2)
+  expect_error({ackley$best_parameter <- "bad"}, "read only")
+  expect_length(ackley$best_value, 1)
+  expect_error({ackley$best_value <- "bad"}, "read only")
+  expect_true(ackley$show_minimum)
+  ackley$show_minimum <- FALSE
+  expect_error({ackley$show_minimum <- "bad"}, "must be")
+  expect_false(ackley$show_minimum)
+  expect_length(ackley$best_parameter, 2)
+  expect_error({ackley$best_parameter <- "bad"}, "read only")
+  expect_length(ackley$best_value, 1)
+  expect_error({ackley$best_value <- "bad"}, "read only")
+  expect_error(ackley$optimize(hide_warnings = "bad"), "must be")
 })
 
 test_that("parallel optimization works", {
@@ -144,7 +160,7 @@ test_that("parallel optimization works", {
   ackley$set_optimizer(optimizer_optim())
   expect_error(ackley$optimize(ncores = "1"), "`ncores` must be a positive `integer`.")
   skip_on_cran()
-  ackley$optimize(runs = 1000, ncores = 2, save_results = FALSE)
+  ackley$optimize(runs = 1000, ncores = 2, save_results = FALSE, reset_arguments_afterwards = TRUE)
 })
 
 test_that("Nop object can be tested", {
@@ -238,16 +254,48 @@ test_that("reducing works", {
   hmm$reduce("data", how = "first", proportion = 0.5)
 })
 
+test_that("continue optimization works", {
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  hmm$set_argument("data" = earthquakes, "N" = 2, "neg" = TRUE)
+  hmm$set_optimizer(optimizer_nlm())
+  hmm$set_optimizer(optimizer_optim())
+  hmm$reduce("data", how = "random", proportion = 0.5, seed = 1)
+  hmm$optimize(seed = 1, runs = 2)
+  hmm$reset_argument("data")
+  expect_true(is.list(hmm$continue(save_results = FALSE, return_results = TRUE)))
+  hmm$continue()
+  expect_s3_class(hmm, "Nop")
+})
+
 test_that("summary works", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  ackley$set_optimizer(optimizer_nlm())
+  ackley$set_optimizer(optimizer_optim())
+  ackley$set_true_value(0)
+  expect_error(ackley$summary(), "No optimization results saved.")
+  ackley$optimize(runs = 10)
+  out <- ackley$summary()
+  expect_named(ackley$summary(), c("value", "parameter", "seconds"))
+  expect_true(is.data.frame(ackley$summary("distance" = "true_value - value")))
+  expect_true(is.character(ackley$summary_columns))
+  expect_error({ackley$summary_columns <- "bad"}, "read only")
 })
 
 test_that("overview of optima works", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  ackley$set_optimizer(optimizer_nlm())
+  ackley$optimize(runs = 10)
+  out <- ackley$optima()
+  expect_named(out, c("value", "frequency"))
 })
 
 test_that("plotting works", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  ackley$set_optimizer(optimizer_nlm())
+  ackley$optimize(runs = 10)
+  pdf(file = tempfile())
+  expect_s3_class(ackley$plot(), "ggplot")
+  dev.off()
 })
 
 

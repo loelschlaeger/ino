@@ -21,10 +21,11 @@
 #' dataset
 "earthquakes"
 
-#' Example application of {ino} to fit an HMM
+#' Example application of \{ino\} to HMM likelihood
 #'
 #' @description
-#' The ino object that is obtained when running the code provided in the hidden Markov model vignette.
+#' See the vignette about the HMM likelihood for details:
+#' \code{vignette("example_hmm", package = "ino")}
 #'
 #' @docType data
 #'
@@ -37,7 +38,7 @@
 #' dataset
 "hmm_ino"
 
-#' Example application of {ino} to probit likelihood
+#' Example application of \{ino\} to probit likelihood
 #'
 #' @description
 #' See the vignette about the probit likelihood for details:

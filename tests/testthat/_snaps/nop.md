@@ -9,7 +9,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 ---
 
@@ -22,7 +22,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 ---
 
@@ -35,7 +35,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 # Nop object with parameters can be initialized
 
@@ -49,7 +49,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 ---
 
@@ -63,7 +63,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 # true value can be set
 
@@ -77,7 +77,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 # true parameter can be set
 
@@ -92,7 +92,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 # optimizer can be set
 
@@ -105,7 +105,7 @@
       Numerical optimizer:
        1: nlm
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 ---
 
@@ -119,7 +119,7 @@
        1: nlm
        2: stats::optim
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 # optimizer can be removed
 
@@ -135,7 +135,7 @@
        3: C
        4: stats::nlm
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 ---
 
@@ -148,7 +148,7 @@
       Numerical optimizer:
        No optimizer specified.
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 ---
 
@@ -163,7 +163,7 @@
        2: C
        3: stats::nlm
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 ---
 
@@ -176,7 +176,7 @@
       Numerical optimizer:
        1: C
       Optimization results:
-       No optimization records.
+       No optimization results saved.
 
 # function can be optimized
 
@@ -190,7 +190,7 @@
        1: stats::nlm
        2: stats::optim
       Optimization results:
-       Optimization records: 10
-       Found optimum at: 
-       Found optimum value: 
+       Optimization runs: 10
+       Best parameter: 0 0
+       Best value: 0
 

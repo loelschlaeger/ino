@@ -7,10 +7,10 @@
 f_matyas(x)
 }
 \arguments{
-\item{x}{A numeric vector of length 2.}
+\item{x}{A \code{numeric} vector of length 2.}
 }
 \value{
-The function value at \code{x}, a single numeric value.
+The function value at \code{x}, a single \code{numeric}.
 }
 \description{
 Matyas function
@@ -26,4 +26,3 @@ f_matyas(c(0, 0))
 https://en.wikipedia.org/wiki/Test_functions_for_optimization
 }
 \keyword{function}
-\keyword{internal}

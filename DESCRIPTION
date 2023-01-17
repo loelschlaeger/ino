@@ -23,15 +23,14 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
 Imports: 
     ggplot2,
-    rlang,
     mvtnorm,
     crayon,
     cli,
-    progress,
     dplyr,
     foreach,
     doSNOW,
-    ao (>= 0.2.3)
+    ao (>= 0.2.3),
+    glue
 Suggests: 
     knitr,
     rmarkdown,

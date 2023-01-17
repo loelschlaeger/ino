@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
   out.width = "75%"
 )
 library("ino")
-options(ino_progress = FALSE)
+options("ino_verbose" = FALSE)
 set.seed(1)
 ```
 
@@ -64,7 +64,7 @@ The `faithful` data set contains information about the eruption times of the Old
 library("ggplot2")
 data("faithful")
 str(faithful)
-ggplot(faithful, aes(x = eruptions, y = ..density..)) + 
+ggplot(faithful, aes(x = eruptions, y = after_stat(density))) + 
   geom_histogram(bins = 30) + 
   xlab("Eruption time (min)") 
 ```
@@ -102,13 +102,13 @@ The optimization problem is specified using the function `setup_ino`. Here,
 Numerical optimizer must be specified through the framework provided by the [{optimizeR} package](https://CRAN.R-project.org/package=optimizeR). It is possible to define a list of multiple optimizer for comparison.
 
 ```{r}
-geyser_ino <- setup_ino(
-  f = normal_mixture_llk,
-  npar = 5,
-  data = faithful,
-  column = "eruptions",
-  opt = set_optimizer_nlm()
-)
+geyser_ino <- Nop$new(
+  f = normal_mixture_llk, 
+  npar = 5, 
+  data = faithful, 
+  column = "eruptions"
+ )$
+ set_optimizer(optimizer_nlm())
 geyser_ino
 ```
 
@@ -135,7 +135,7 @@ The function provided by {ino} to run the optimization with chosen starting valu
 
 ```{r}
 for(val in starting_values)
-  geyser_ino <- fixed_initialization(geyser_ino, at = val)
+  geyser_ino$optimize(initial = val)
 ```
 
 Let's look at the results:
@@ -151,7 +151,8 @@ The `summary()` method returns an overview of the three optimization runs. The f
 The third run (with the unplausible starting values) converged to a local minimum, as we can deduce from the column ".optimum". We discard this run from further comparisons:
 
 ```{r}
-geyser_ino <- clear_ino(geyser_ino, which = 3)
+# geyser_ino <- clear_ino(geyser_ino, which = 3)
+# not implemented yet, should we?
 ```
 
 ### More information about the optimization runs
@@ -159,7 +160,7 @@ geyser_ino <- clear_ino(geyser_ino, which = 3)
 The `geyser_ino` object saved more information than those provided by the `summary()` method. The `var_names()` function returns the names of all available variables:
 
 ```{r}
-var_names(geyser_ino)
+geyser_ino$summary_columns
 ``` 
 
 Variable names starting with a "." are the variables that {ino} provides per default:
@@ -175,7 +176,8 @@ Variable names starting with a "." are the variables that {ino} provides per def
 The other variables come either from the function or the optimizer. For example, "iterations" is the number of iterations of the `stats::nlm()` optimizer. The value can be accessed via the `get_vars()` function:
 
 ```{r}
-get_vars(geyser_ino, runs = 1:2, vars = "iterations")
+# get_vars(geyser_ino, runs = 1:2, vars = "iterations")
+# not implemented yet, should we?
 ```
 
 ### Randomly chosen starting values
@@ -183,16 +185,14 @@ get_vars(geyser_ino, runs = 1:2, vars = "iterations")
 When using randomly chosen starting values, we apply the function `random_initialization()`. The most simple function call would be as follows:
 
 ```{r}
-geyser_ino <- random_initialization(geyser_ino, runs = 10)
+geyser_ino$optimize(initial = "random", runs = 10)
 ```
 
 Here, starting values are randomly drawn from a standard normal distribution. Depending on the application and the magnitude of the parameters to be estimated, this may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(2, 0.5)$:
 
 ```{r}
 sampler <- function() stats::rnorm(5, mean = 2, sd = 0.5)
-geyser_ino <- random_initialization(
-  geyser_ino, runs = 10, sampler = sampler, label = "random_cs"
-)
+geyser_ino$optimize(initial = sampler, runs = 10, label = "random_cs")
 ```
 
 The argument `sampler` allows to use any random number generator, while further arguments for the sampler can easily be added. 
@@ -200,7 +200,7 @@ The argument `sampler` allows to use any random number generator, while further 
 The `overview_optime()` function provides an overview of the identified local and global optima so far:
 
 ```{r}
-overview_optima(geyser_ino)
+geyser_ino$optima()
 ```
 
 ### Standardized initialization
@@ -208,10 +208,9 @@ overview_optima(geyser_ino)
 For standardized initialization, we standardize all columns in our data before running the optimization. Specifically, after standardizing the data, we can again select to use either fixed or randomly chosen starting values. In the example code snippet shown below, we consider ten sets of randomly selected starting values:
 
 ```{r}
-geyser_ino <- standardize_initialization(
-  geyser_ino, initialization = random_initialization(runs = 10),
-  label = "standardize"
-)
+geyser_ino$standardize("data")
+geyser_ino$optimize(runs = 10, label = "standardize")
+geyser_ino$reset_argument("data")
 ```
 
 ### Subset initialization
@@ -221,11 +220,9 @@ If the data set considered shows some complex structures or is very large, numer
 The function `subset_initialization` first optimizes the function on a data subset of proportion `prop`, and subsequently optimizes on the full data set using the estimates from the first step as initial values. For example, the following code snippet randomly samples 25\% of the observations and uses random initialization:
 
 ```{r}
-geyser_ino <- subset_initialization(
-  geyser_ino, how = "random", prop = 0.25, 
-  initialization = random_initialization(runs = 10),
-  label = "subset"
-)
+geyser_ino$reduce("data", how = "random", prop = 0.25)
+geyser_ino$optimize(runs = 10, label = "subset")
+geyser_ino$reset_argument("data")
 ```
 
 In addition to selecting subsamples at random, we can specify two further options using the argument `how`. When dealing with time series data, we usually do not want to delete single observations at random. Instead, we can select a proportion of the first rows by specifying `how = "first"`. We could also cluster our data first using `how = "kmeans"`. 
@@ -235,7 +232,7 @@ In addition to selecting subsamples at random, we can specify two further option
 The `plot()` method provides a boxplot comparison of the optimization times. We can compare the optimization times across initialization strategies by specifying `by = .strategy`:
 
 ```{r, out.width = "100%"}
-plot(geyser_ino, by = ".strategy", nrow = 1)
+geyser_ino$plot(by = "label", nrow = 1)
 ```
 
 ## References

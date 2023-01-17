@@ -7,11 +7,11 @@
 sim_hmm(T, N, theta)
 }
 \arguments{
-\item{T}{The number of observations.}
+\item{T}{An \code{integer}, the number of observations.}
 
-\item{N}{The number of states.}
+\item{N}{An \code{integer}, the number of states.}
 
-\item{theta}{A numeric vector of model parameters.
+\item{theta}{A \code{numeric} vector of model parameters.
 \itemize{
 \item The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
 elements of the transition probability matrix.
@@ -42,4 +42,3 @@ sim_hmm(T = 100, N = 2, theta = theta)
 model
 }
 \keyword{function}
-\keyword{internal}

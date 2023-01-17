@@ -100,21 +100,21 @@ for(how in c("random", "kmeans")) for(prop in c(0.2,0.5)) {
 
 3 optimization runs reached the iteration limit of 1000 iterations:
 
-```{r}
+```{r, eval = FALSE}
 library("dplyr", warn.conflicts = FALSE)
 summary(probit_ino, "iterations" = "iterations") %>% filter(iterations >= 1000)
 ```
 
 We exclude them from further analysis:
 
-```{r}
+```{r, eval = FALSE}
 ind <- which(summary(probit_ino, "iterations" = "iterations")$iterations >= 1000)
 probit_ino <- clear_ino(probit_ino, which = ind) 
 ```
 
 ## Comparison
 
-```{r, out.width = "100%", fig.dim = c(10, 6)}
+```{r, out.width = "100%", fig.dim = c(10, 6), eval = FALSE}
 plot(probit_ino, by = ".strategy", time_unit = "mins", nrow = 1)
 ```
 
