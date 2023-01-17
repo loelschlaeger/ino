@@ -7,35 +7,52 @@
 A \code{Nop} object defines a \emph{N}umerical \emph{O}ptimization \emph{P}roblem.
 }
 \section{Getting Started}{
-\subsection{Step 1: Create a new \code{Nop} object.}{
+\subsection{Step 1: Create a new \code{Nop} object:}{
 
-TODO
-}
-
-\subsection{Step 2: Add additional arguments.}{
-
-TODO
-}
-
-\subsection{Step 2: Specify numerical optimizer.}{
-
-TODO
+Call \code{object <- Nop$new(f, npar, ...)} where
+\itemize{
+\item \code{f} is the function to be optimized over its first argument,
+\item \code{npar} is the length of the first argument of \code{f},
+\item and \code{...} are additional arguments for \code{f}.
 }
 }
 
-\section{Optimize}{
-TODO
+\subsection{Step 2: Specify numerical optimizer:}{
+
+Call \code{object$set_optimizer(<optimizer object>)} where
+\code{<optimizer object>} is an object of class \code{optimizer}, which can
+be created with the \code{\link[optimizeR]{set_optimizer}} function from the
+\{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm()}}
+and \code{\link[optimizeR]{optimizer_optim()}} are already available.
 }
 
-\section{Evaluate}{
-TODO
+\subsection{Step 3: Test the configuration}{
+
+Call \code{object$test()} to validate your configuration.
+}
+}
+
+\section{Optimization}{
+Call \code{object$optimize()} for optimization. See also the methods
+\code{object$standardize()}, \code{object$reduce()}, and
+\code{object$continue()} for initialization strategies.
+}
+
+\section{Analysis of the results}{
+\itemize{
+\item \code{object$summary()} returns a \code{data.frame} optimization details
+\item \code{object$optima()} returns a frequency \code{table} of found optima
+\item \code{object$print()} prints an overview of optimization times
+\item \code{object$best_parameter()} and \code{object$best_value()} return the
+optimal parameter vector and optimal value over all optimization runs.
+}
 }
 
 \examples{
 Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer_nlm())$
-  optimize(runs = 10)$
-  summary()
+  optimize(runs = 1e6, verbose = TRUE)$
+  optima()
 
 }
 \section{Active bindings}{
@@ -150,7 +167,7 @@ Set additional arguments for \code{f}.
 \if{html}{\out{<a id="method-Nop-get_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-get_argument}{}}}
 \subsection{Method \code{get_argument()}}{
-Get value of additional argument for \code{f}.
+Get value of an argument for \code{f}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$get_argument(argument_name)}\if{html}{\out{</div>}}
 }
@@ -320,7 +337,7 @@ Optimize the function.
   seed = NULL,
   save_results = TRUE,
   return_results = FALSE,
-  label = "",
+  label = NULL,
   ncores = getOption("ino_ncores"),
   verbose = getOption("ino_verbose"),
   simplify = TRUE,
@@ -334,11 +351,11 @@ Optimize the function.
 \item{\code{initial}}{Specify the initial point where the optimizer should start. Either:
 \itemize{
 \item the \code{character} \code{"random"} (the default) for random initial
-values drawn from a standard normal distribution
+values drawn from a standard normal distribution,
 \item a \code{numeric} vector of length \code{npar}, the starting point for
-optimization
-\item a \code{function} without any arguments that returns a \code{numeric}
-vector of length \code{npar}
+optimization,
+\item or a \code{function} without any arguments that returns a
+\code{numeric} vector of length \code{npar}.
 }}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization runs.
@@ -362,7 +379,9 @@ By default, \code{return_results = FALSE}.}
 
 \item{\code{label}}{Only relevant if \code{save_results = TRUE}.
 In this case, optionally a \code{character} for a custom label of the
-optimization.}
+optimization.
+By default, \code{label = NULL}, i.e. no label.
+Labels can be useful to distinguish optimization runs later.}
 
 \item{\code{ncores}}{An \code{integer}, the number of cores for parallel computation.
 The default is \code{getOption("ino_ncores")}, which is set to \code{1}
@@ -378,15 +397,18 @@ only one optimizer is specified.
 In this case, if \code{simplify = TRUE} (default), the nested list output
 is flattened.}
 
-\item{\code{reset_arguments_afterwards}}{TODO}
+\item{\code{reset_arguments_afterwards}}{A \code{logical}. Set to \code{TRUE} (default) to reset all transformed
+arguments after the optimization runs.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 The return value depends on the value of \code{return_results}:
 \itemize{
-\item if \code{return_results = FALSE} (default), invisibly the \code{Nop} object
-\item if \code{return_results = TRUE}, the output of \code{\link[optimizeR]{apply_optimizer}}.
+\item if \code{return_results = FALSE} (default), invisibly the \code{Nop}
+object,
+\item if \code{return_results = TRUE}, the output of
+\code{\link[optimizeR]{apply_optimizer}}.
 }
 }
 }
@@ -585,7 +607,9 @@ Overview of the identified optima.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{digits}}{TODO: number of significant decimal places, by default \code{getOption("ino_digits")}}
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
+The default is \code{getOption("ino_digits")}, which is set to \code{2}
+when the package is loaded.}
 }
 \if{html}{\out{</div>}}
 }

@@ -61,7 +61,7 @@ test_that("true value can be set", {
   ackley$set_true_value(3)
   expect_equal(ackley$true_value, 3)
   expect_snapshot(ackley)
-  expect_error({ackley$true_value <- "1"}, "must be a single numeric.")
+  expect_error({ackley$true_value <- "1"}, "must be a `numeric`.")
 })
 
 test_that("true parameter can be set", {
@@ -85,7 +85,7 @@ test_that("optimizer can be set", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(ackley$set_optimizer(), "Please specify argument `optimizer`.")
   expect_error(ackley$set_optimizer("not_an_optimizer_object"), "must be an object of class `optimizer`.")
-  expect_error(ackley$set_optimizer(optimizer_nlm(), label = 1), "must be a single character.")
+  expect_error(ackley$set_optimizer(optimizer_nlm(), label = 1), "must be a `character` of length 1.")
   ackley$set_optimizer(optimizer_nlm(), label = "nlm")
   expect_snapshot(ackley)
   expect_error(ackley$set_optimizer(optimizer_nlm(), label = "nlm"))
@@ -134,7 +134,7 @@ test_that("function can be optimized", {
   expect_type(out, "list")
   out <- ackley$optimize(runs = 1, return_results = TRUE, save_results = FALSE, simplify = FALSE)
   expect_type(out, "list")
-  expect_error(ackley$optimize(initial = function() "not_a_numeric"), "should return a numeric vector")
+  expect_error(ackley$optimize(initial = function() "not_a_numeric"), "should return a `numeric`")
   expect_error(ackley$optimize(initial = "initial_misspecified"), "`initial` is misspecified")
 })
 
@@ -142,7 +142,7 @@ test_that("parallel optimization works", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   ackley$set_optimizer(optimizer_nlm())
   ackley$set_optimizer(optimizer_optim())
-  expect_error(ackley$optimize(ncores = "1"), "`ncores` must be a positive integer.")
+  expect_error(ackley$optimize(ncores = "1"), "`ncores` must be a positive `integer`.")
   skip_on_cran()
   ackley$optimize(runs = 1000, ncores = 2, save_results = FALSE)
 })
@@ -174,7 +174,7 @@ test_that("Nop object can be tested", {
     if (identical(p, 1:2)) stop()
     list(v = 1, z = 1:2)
   }
-  bad_optimizer <- optimizeR::set_optimizer(bad_optimizer_fun, f = "f", p = "p", v = "v", z = "z")
+  bad_optimizer <- optimizeR::set_optimizer(bad_optimizer_fun, objective = "f", initial = "p", value = "v", parameter = "z")
   ackley$set_optimizer(bad_optimizer)
   expect_error(ackley$test(at = 1:2), "Optimization with optimizer `bad_optimizer_fun` failed.")
 })

@@ -18,33 +18,48 @@
 #' The default is \code{getOption("ino_ncores")}, which is set to \code{1}
 #' when the package is loaded.
 #' @param digits
-#' TODO: number of significant decimal places, by default \code{getOption("ino_digits")}
+#' An \code{integer}, the number of decimal places.
+#' The default is \code{getOption("ino_digits")}, which is set to \code{2}
+#' when the package is loaded.
 #' @param seed
 #' Set a seed for reproducibility. No seed by default.
 #'
 #' @details
 #' # Getting Started
 #'
-#' ## Step 1: Create a new \code{Nop} object.
-#' TODO
+#' ## Step 1: Create a new \code{Nop} object:
+#' Call \code{object <- Nop$new(f, npar, ...)} where
+#' - \code{f} is the function to be optimized over its first argument,
+#' - \code{npar} is the length of the first argument of \code{f},
+#' - and \code{...} are additional arguments for \code{f}.
 #'
-#' ## Step 2: Add additional arguments.
-#' TODO
+#' ## Step 2: Specify numerical optimizer:
+#' Call \code{object$set_optimizer(<optimizer object>)} where
+#' \code{<optimizer object>} is an object of class \code{optimizer}, which can
+#' be created with the \code{\link[optimizeR]{set_optimizer}} function from the
+#' \{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm()}}
+#' and \code{\link[optimizeR]{optimizer_optim()}} are already available.
 #'
-#' ## Step 2: Specify numerical optimizer.
-#' TODO
+#' ## Step 3: Test the configuration
+#' Call \code{object$test()} to validate your configuration.
 #'
-#' # Optimize
-#' TODO
+#' # Optimization
+#' Call \code{object$optimize()} for optimization. See also the methods
+#' \code{object$standardize()}, \code{object$reduce()}, and
+#' \code{object$continue()} for initialization strategies.
 #'
-#' # Evaluate
-#' TODO
+#' # Analysis of the results
+#' - \code{object$summary()} returns a \code{data.frame} optimization details
+#' - \code{object$optima()} returns a frequency \code{table} of found optima
+#' - \code{object$print()} prints an overview of optimization times
+#' - \code{object$best_parameter()} and \code{object$best_value()} return the
+#' optimal parameter vector and optimal value over all optimization runs.
 #'
 #' @examples
 #' Nop$new(f = f_ackley, npar = 2)$
 #'   set_optimizer(optimizer_nlm())$
-#'   optimize(runs = 10)$
-#'   summary()
+#'   optimize(runs = 1e6, verbose = TRUE)$
+#'   optima()
 #'
 #' @export
 
@@ -81,7 +96,8 @@ Nop <- R6::R6Class(
       if (is.null(formals(f))) {
         ino_stop(
           "The function `f` should have at least one argument.",
-          "Mind that `f` is optimized over its first argument which should be a numeric vector of length `npar`."
+          "Mind that `f` is optimized over its first argument.",
+          "It should be a numeric vector of length `npar`."
         )
       }
       if (missing(npar)) {
@@ -99,7 +115,7 @@ Nop <- R6::R6Class(
       private$.f <- f
       f_name <- deparse(substitute(f))
       if (!is.character(f_name) || length(f_name) != 1) {
-        f_name <- "unnamed function"
+        f_name <- "unnamed_function"
       }
       private$.f_name <- f_name
       private$.f_target <- names(formals(f))[1]
@@ -201,7 +217,7 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Get value of additional argument for \code{f}.
+    #' Get value of an argument for \code{f}.
     #' @param argument_name
     #' A \code{character}, the argument to extract.
     get_argument = function (argument_name) {
@@ -284,7 +300,7 @@ Nop <- R6::R6Class(
     set_true_value = function (true_value) {
       if (!(is.numeric(true_value) && length(true_value) == 1)) {
         ino_stop(
-          "Argument `true_value` must be a single numeric."
+          "Argument `true_value` must be a `numeric` of length 1."
         )
       }
       private$.true_value <- true_value
@@ -338,15 +354,16 @@ Nop <- R6::R6Class(
       if (!inherits(optimizer, "optimizer")) {
         ino_stop(
           "Argument `optimizer` must be an object of class `optimizer`.",
-          "Please use `optimizeR::set_optimizer()` to create such an object."
+          "Please see `?optimizeR::set_optimizer` to create such an object.",
+          "You can also use `optimizer_nlm()` or `optimizer_optim()`."
         )
       }
       if (is.null(label)) {
-        label <- optimizer$opt_name
+        label <- optimizer$optimizer_name
       }
       if (!(is.character(label) && length(label) == 1)) {
         ino_stop(
-          "Argument `label` must be a single character."
+          "Argument `label` must be a `character` of length 1."
         )
       }
       if (label %in% private$.optimizer_label) {
@@ -374,11 +391,11 @@ Nop <- R6::R6Class(
     #' @param initial
     #' Specify the initial point where the optimizer should start. Either:
     #' - the \code{character} \code{"random"} (the default) for random initial
-    #'   values drawn from a standard normal distribution
+    #'   values drawn from a standard normal distribution,
     #' - a \code{numeric} vector of length \code{npar}, the starting point for
-    #'   optimization
-    #' - a \code{function} without any arguments that returns a \code{numeric}
-    #'   vector of length \code{npar}
+    #'   optimization,
+    #' - or a \code{function} without any arguments that returns a
+    #'   \code{numeric} vector of length \code{npar}.
     #' @param runs
     #' An \code{integer}, the number of optimization runs.
     #' By default, \code{runs = 1}.
@@ -393,23 +410,28 @@ Nop <- R6::R6Class(
     #' Only relevant if \code{save_results = TRUE}.
     #' In this case, optionally a \code{character} for a custom label of the
     #' optimization.
+    #' By default, \code{label = NULL}, i.e. no label.
+    #' Labels can be useful to distinguish optimization runs later.
     #' @param simplify
     #' Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
     #' only one optimizer is specified.
     #' In this case, if \code{simplify = TRUE} (default), the nested list output
     #' is flattened.
     #' @param reset_arguments_afterwards
-    #' TODO
+    #' A \code{logical}. Set to \code{TRUE} (default) to reset all transformed
+    #' arguments after the optimization runs.
     #' @return
     #' The return value depends on the value of \code{return_results}:
-    #' - if \code{return_results = FALSE} (default), invisibly the \code{Nop} object
-    #' - if \code{return_results = TRUE}, the output of \code{\link[optimizeR]{apply_optimizer}}.
+    #' - if \code{return_results = FALSE} (default), invisibly the \code{Nop}
+    #'   object,
+    #' - if \code{return_results = TRUE}, the output of
+    #'   \code{\link[optimizeR]{apply_optimizer}}.
     #' @importFrom parallel makeCluster stopCluster
     #' @importFrom doSNOW registerDoSNOW
     #' @importFrom foreach foreach %dopar% %do%
     optimize = function(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
-      save_results = TRUE, return_results = FALSE, label = "",
+      save_results = TRUE, return_results = FALSE, label = NULL,
       ncores = getOption("ino_ncores"), verbose = getOption("ino_verbose"),
       simplify = TRUE, reset_arguments_afterwards = TRUE
     ) {
@@ -417,19 +439,27 @@ Nop <- R6::R6Class(
       ### check `initial` and make it to function call `get_initial`
       get_initial <- if (identical(initial, "random")) {
         function() rnorm(private$.npar)
-      } else if (is.numeric(initial) && length(initial) == private$.npar) {
-        function() initial
+      } else if (is.numeric(initial)) {
+        if (length(initial) == private$.npar) {
+          function() initial
+        } else {
+          ino_stop(
+            glue::glue("The input `initial` is misspecified."),
+            glue::glue("It should be a `numeric` of length {private$.npar}.")
+          )
+        }
       } else if (is.function(initial)) {
         try_initial <- try(initial(), silent = TRUE)
         if (!(is.numeric(try_initial) && length(try_initial) == private$.npar)) {
           ino_stop(
-            glue::glue("The function `initial` should return a numeric vector of length {private$.npar}.")
+            glue::glue("The function `initial` is misspecified."),
+            glue::glue("It should return a `numeric` of length {private$.npar}.")
           )
         }
         initial
       } else {
         ino_stop(
-          "Input `initial` is misspecified."
+          "The input `initial` is misspecified, please see the documentation."
         )
       }
 
@@ -458,7 +488,7 @@ Nop <- R6::R6Class(
       }
       if (!(is.numeric(ncores) && length(ncores) == 1 && ncores > 0 && ncores %% 1 == 0)) {
         ino_stop(
-          "Input `ncores` must be a positive integer."
+          "Input `ncores` must be a positive `integer`."
         )
       }
       if (!isTRUE(verbose) && !isFALSE(verbose)) {
@@ -466,6 +496,18 @@ Nop <- R6::R6Class(
           "Input `verbose` must be either `TRUE` or `FALSE`."
         )
       }
+
+      ### build progress bar
+      pb <- progress::progress_bar$new(
+        format = ":current of :total, ETA :eta", total = runs,
+        clear = FALSE
+      )
+      opts <- structure(
+        list(function(n) {
+          if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
+        }),
+        names = "progress"
+      )
 
       ### optimization
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
@@ -475,16 +517,19 @@ Nop <- R6::R6Class(
         cluster <- parallel::makeCluster(ncores)
         on.exit(parallel::stopCluster(cluster))
         doSNOW::registerDoSNOW(cluster)
-        `%par_seq%` <- foreach::`%dopar%`
+        results <- foreach::foreach(
+          run = 1:runs, .packages = "ino", .export = "private", .inorder = FALSE,
+          .options.snow = opts
+        ) %dopar% {
+          initial <- get_initial()
+          lapply(optimizer_ids, function (i) private$.optimize(initial, i))
+        }
       } else {
-        `%par_seq%` <- foreach::`%do%`
-      }
-      # TODO: progress bar
-      results <- foreach::foreach(
-        run = 1:runs, .packages = "ino", .export = "private", .inorder = FALSE
-      ) %par_seq% {
-        initial <- get_initial()
-        lapply(optimizer_ids, function (i) private$.optimize(initial, i))
+        results <- foreach::foreach(run = 1:runs) %do% {
+          pb$tick()
+          initial <- get_initial()
+          lapply(optimizer_ids, function (i) private$.optimize(initial, i))
+        }
       }
 
       ### save results
@@ -494,7 +539,11 @@ Nop <- R6::R6Class(
 
       ### reset transformed arguments
       if (reset_arguments_afterwards) {
-        lapply(names(private$.orig_arguments), private$.reset_orig_argument, verbose = verbose)
+        lapply(
+          names(private$.orig_arguments),
+          private$.reset_orig_argument,
+          verbose = verbose
+        )
       }
 
       ### return results
