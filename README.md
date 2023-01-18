@@ -8,6 +8,8 @@
 [![CRAN
 status](https://www.r-pkg.org/badges/version/ino)](https://CRAN.R-project.org/package=ino)
 [![R-CMD-check](https://github.com/loelschlaeger/ino/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ino/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/loelschlaeger/ino/branch/master/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ino?branch=master)
 <!-- badges: end -->
 
 The R-package {ino} provides implementation of several initialization
