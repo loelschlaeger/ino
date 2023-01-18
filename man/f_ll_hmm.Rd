@@ -7,7 +7,7 @@
 f_ll_hmm(theta, data, N, neg = FALSE)
 }
 \arguments{
-\item{theta}{A numeric vector of model parameters.
+\item{theta}{A \code{numeric} vector of model parameters.
 \itemize{
 \item The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
 elements of the transition probability matrix.
@@ -19,12 +19,12 @@ the state-dependent normal distributions.
 
 \item{data}{A \code{data.frame} with a column \code{obs} that includes a time series.}
 
-\item{N}{The number of states.}
+\item{N}{An \code{integer}, the number of states.}
 
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
-The log-likelihood value at \code{theta}.
+A \code{numeric}, the log-likelihood value at \code{theta}.
 }
 \description{
 Log-likelihood function of a Gaussian-hidden Markov model
@@ -42,4 +42,3 @@ nlm(f_ll_hmm, p = theta, data = data, N = 2, neg = TRUE)$estimate
 https://en.wikipedia.org/wiki/Hidden_Markov_model
 }
 \keyword{function}
-\keyword{internal}

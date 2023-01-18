@@ -7,13 +7,14 @@
 f_ll_mnp(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm)
 }
 \arguments{
-\item{theta}{The vector of model coefficients, see the details.}
+\item{theta}{A \code{numeric}, the vector of model coefficients, see the details.}
 
 \item{data}{A \code{data.frame}, the output of \code{\link{sim_mnp}}.}
 
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 
-\item{normal_cdf}{A function that evaluates the CDF of an \code{n}-variate normal distribution.
+\item{normal_cdf}{A \code{function} that evaluates the CDF of an \code{n}-variate normal
+distribution.
 It must take the arguments
 \itemize{
 \item \code{lower}, the vector of lower limits of length \code{n},
@@ -21,10 +22,10 @@ It must take the arguments
 \item \code{mean}, the mean vector of length \code{n},
 \item \code{sigma}, the \code{n} times \code{n} covariance matrix,
 }
-and return a single numeric value.}
+and return a single \code{numeric}.}
 }
 \value{
-The log-likelihood value at \code{theta}.
+A \code{numeric}, the log-likelihood value at \code{theta}.
 }
 \description{
 Log-likelihood function of the (normally mixed) multinomial probit model
@@ -56,4 +57,3 @@ https://en.wikipedia.org/wiki/Multinomial_probit
 \code{\link[=sim_mnp]{sim_mnp()}} for simulating a data set from a probit model.
 }
 \keyword{function}
-\keyword{internal}

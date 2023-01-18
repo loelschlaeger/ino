@@ -1,6 +1,10 @@
+
+
 # ino 0.2.0.9000
 
 * The `get_vars()` function has a new argument `simplify`. If it is set to `TRUE` (the default), the nested list output will be simplified.
+
+* Big update: using R6 classes now.
 
 # ino 0.2.0
 

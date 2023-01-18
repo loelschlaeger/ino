@@ -1,10 +1,10 @@
+^renv$
+^renv\.lock$
 ^ino\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
 ^\.github$
 sandbox.R
-TODO.md
 cran-comments.md
 ^CRAN-SUBMISSION$
-rjournal/

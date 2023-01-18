@@ -7,16 +7,17 @@
 f_beale(x)
 }
 \arguments{
-\item{x}{A numeric vector of length 2.}
+\item{x}{A \code{numeric} vector of length 2.}
 }
 \value{
-The function value at \code{x}, a single numeric value.
+The function value at \code{x}, a single \code{numeric}.
 }
 \description{
 Beale function
 }
 \details{
-The function has multiple local minima and one global minimum in (3, 0.5).
+The function has multiple local minima and one global minimum in
+\code{(3, 0.5)}.
 }
 \examples{
 f_beale(c(3, 0.5))
@@ -26,4 +27,3 @@ f_beale(c(3, 0.5))
 https://en.wikipedia.org/wiki/Test_functions_for_optimization
 }
 \keyword{function}
-\keyword{internal}
