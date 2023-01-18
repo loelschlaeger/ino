@@ -9,8 +9,18 @@ test_that("Nop object can be initialized", {
   expect_error(Nop$new(f = f_ackley, npar = 0), "Argument `npar` is not a positive integer.")
   expect_identical(ackley$f, f_ackley)
   expect_identical(ackley$npar, 2L)
-  expect_error({ackley$f <- function(x) x}, "is read only.")
-  expect_error({ackley$npar <- 1}, "is read only.")
+  expect_error(
+    {
+      ackley$f <- function(x) x
+    },
+    "is read only."
+  )
+  expect_error(
+    {
+      ackley$npar <- 1
+    },
+    "is read only."
+  )
   expect_error(Nop$new(f = function() 1, npar = 0), "should have at least one argument.")
   expect_snapshot(ackley)
   expect_snapshot(print(ackley))
@@ -36,7 +46,12 @@ test_that("Nop object with parameters can be initialized", {
   expect_error(hmm$remove_argument(argument_name = 1:2), "must be a `character`")
   hmm$remove_argument("data")
   expect_equal(hmm$arguments, list("test_arg1" = 1))
-  expect_error({hmm$arguments <- list()}, "is read only.")
+  expect_error(
+    {
+      hmm$arguments <- list()
+    },
+    "is read only."
+  )
 })
 
 test_that("function can be evaluated", {
@@ -61,24 +76,34 @@ test_that("true value can be set", {
   ackley$set_true_value(3)
   expect_equal(ackley$true_value, 3)
   expect_snapshot(ackley)
-  expect_error({ackley$true_value <- "1"}, "must be a `numeric`.")
+  expect_error(
+    {
+      ackley$true_value <- "1"
+    },
+    "must be a `numeric`."
+  )
 })
 
 test_that("true parameter can be set", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_null(ackley$true_parameter)
-  expect_error({ackley$true_parameter <- 2}, "must be a numeric vector of length 2.")
-  ackley$true_parameter <- c(0,0)
-  expect_equal(ackley$true_parameter, c(0,0))
+  expect_error(
+    {
+      ackley$true_parameter <- 2
+    },
+    "must be a numeric vector of length 2."
+  )
+  ackley$true_parameter <- c(0, 0)
+  expect_equal(ackley$true_parameter, c(0, 0))
   expect_error(ackley$set_true_parameter(1:2, "not_a_logical"), "must be `TRUE` or `FALSE`.")
   expect_error(ackley$set_true_parameter(3))
-  ackley$set_true_parameter(c(1,0))
-  expect_equal(ackley$true_parameter, c(1,0))
+  ackley$set_true_parameter(c(1, 0))
+  expect_equal(ackley$true_parameter, c(1, 0))
   expect_null(ackley$true_value)
-  ackley$set_true_parameter(c(0,0), set_true_value = TRUE)
-  expect_equal(ackley$true_value, f_ackley(c(0,0)))
+  ackley$set_true_parameter(c(0, 0), set_true_value = TRUE)
+  expect_equal(ackley$true_value, f_ackley(c(0, 0)))
   expect_snapshot(ackley)
-  expect_error(ackley$set_true_parameter(c(1,1), set_true_value = FALSE), "also update the true optimum value.")
+  expect_error(ackley$set_true_parameter(c(1, 1), set_true_value = FALSE), "also update the true optimum value.")
 })
 
 test_that("optimizer can be set", {
@@ -120,7 +145,7 @@ test_that("function can be optimized", {
   ackley$optimize(runs = 5)
   ackley$optimize(runs = 1, initial = runif(2))
   ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)
-  ackley$optimize(initial = c(0,0))
+  ackley$optimize(initial = c(0, 0))
   expect_error(ackley$optimize(initial = c(1:3)), "misspecified.")
   expect_snapshot(ackley)
   expect_error(ackley$optimize(save_results = "TRUE"), "`save_results` must be either `TRUE` or `FALSE`.")
@@ -140,17 +165,42 @@ test_that("function can be optimized", {
   expect_error(ackley$optimize(reset_arguments_afterwards = "FALSE"), "must be either")
   ackley$optimize()
   expect_length(ackley$best_parameter, 2)
-  expect_error({ackley$best_parameter <- "bad"}, "read only")
+  expect_error(
+    {
+      ackley$best_parameter <- "bad"
+    },
+    "read only"
+  )
   expect_length(ackley$best_value, 1)
-  expect_error({ackley$best_value <- "bad"}, "read only")
+  expect_error(
+    {
+      ackley$best_value <- "bad"
+    },
+    "read only"
+  )
   expect_true(ackley$show_minimum)
   ackley$show_minimum <- FALSE
-  expect_error({ackley$show_minimum <- "bad"}, "must be")
+  expect_error(
+    {
+      ackley$show_minimum <- "bad"
+    },
+    "must be"
+  )
   expect_false(ackley$show_minimum)
   expect_length(ackley$best_parameter, 2)
-  expect_error({ackley$best_parameter <- "bad"}, "read only")
+  expect_error(
+    {
+      ackley$best_parameter <- "bad"
+    },
+    "read only"
+  )
   expect_length(ackley$best_value, 1)
-  expect_error({ackley$best_value <- "bad"}, "read only")
+  expect_error(
+    {
+      ackley$best_value <- "bad"
+    },
+    "read only"
+  )
   expect_error(ackley$optimize(hide_warnings = "bad"), "must be")
 })
 
@@ -178,7 +228,10 @@ test_that("Nop object can be tested", {
   expect_error(lengthy_f$test(), "Test function call returned a `numeric` of length 2.")
   character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
   expect_error(character_f$test(), "function call returned an object of class `character`.")
-  slow_f <- Nop$new(f = function(x) {Sys.sleep(2); 1}, 1)
+  slow_f <- Nop$new(f = function(x) {
+    Sys.sleep(2)
+    1
+  }, 1)
   expect_warning(
     expect_warning(slow_f$test(time_limit_fun = 1), "The time limit of 1s was reached"),
     "No optimizer specified, testing optimizer is skipped."
@@ -200,12 +253,12 @@ test_that("standardization works", {
   T <- 1
   J <- 3
   P <- 3
-  b <- c(1,-1,0.5)
+  b <- c(1, -1, 0.5)
   Sigma <- diag(J)
   X <- function() {
     class <- sample(0:1, 1)
     mean <- ifelse(class, 2, -2)
-    matrix(stats::rnorm(J*P, mean = mean), nrow = J, ncol = P)
+    matrix(stats::rnorm(J * P, mean = mean), nrow = J, ncol = P)
   }
   probit_data <- sim_mnp(N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X)
   true <- attr(probit_data, "true")[-1]
@@ -278,7 +331,12 @@ test_that("summary works", {
   expect_named(ackley$summary(), c("value", "parameter", "seconds"))
   expect_true(is.data.frame(ackley$summary("distance" = "true_value - value")))
   expect_true(is.character(ackley$summary_columns))
-  expect_error({ackley$summary_columns <- "bad"}, "read only")
+  expect_error(
+    {
+      ackley$summary_columns <- "bad"
+    },
+    "read only"
+  )
 })
 
 test_that("overview of optima works", {
@@ -297,9 +355,3 @@ test_that("plotting works", {
   expect_s3_class(ackley$plot(), "ggplot")
   dev.off()
 })
-
-
-
-
-
-

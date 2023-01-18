@@ -14,9 +14,7 @@
 #' @importFrom ao ao
 #' @importFrom optimizeR set_optimizer
 
-optimizer_ao <- function(
-    ..., output_ignore = character(), validate = TRUE, validation_settings = list()
-  ) {
+optimizer_ao <- function(..., output_ignore = character(), validate = TRUE, validation_settings = list()) {
   optimizeR::set_optimizer(
     optimizer = ao::ao,
     objective = "f",
