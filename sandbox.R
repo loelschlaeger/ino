@@ -4,7 +4,7 @@
 # install.packages(path, repos = NULL, type = "source", INSTALL_opts = c('--no-lock'))
 devtools::load_all()
 library("tidyverse")
-options(ino_ncores = parallel::detectCores() - 1)
+options("ino_ncores" = parallel::detectCores() - 1)
 # Sys.setenv(LANG = "en")
 
 
@@ -31,7 +31,7 @@ ackley$summary(dist = "sqrt(sum((true_parameter - parameter)^2))")
 
 ackley$optima(digits = 2)
 
-plot(x, by = "optimizer")
+plot(ackley, by = "optimizer")
 
 
 # Example: HMM LL for earthquake data -------------------------------------
@@ -41,84 +41,64 @@ hmm <- Nop$new(f = f_ll_hmm, npar = 6)$
   set_optimizer(optimizer = optimizer_nlm(), label = "nlm")$
   print()
 
-hmm$reduce("data", how = "first")
+hmm$optimize(runs = 10, label = "random")
 
+hmm$reduce("data", how = "first", prop = 0.5)
 
-hmm_ino <- fixed_initialization(hmm_ino, at = c(-1, -1, 0.1, 0.2))
+hmm$optimize(runs = 10, label = "subset", reset_arguments_afterwards = TRUE)$continue()
 
-hmm_ino <- random_initialization(hmm_ino, runs = 10)
+hmm$optima()
 
-hmm_ino <- subset_initialization(
-  hmm_ino, how = "first", prop = 0.4,
-  initialization = random_initialization(runs = 10)
-)
+summary(hmm, c("label", "value"))
 
-overview_optima(hmm_ino)
+summary(hmm, "all") %>%
+  group_by(label) %>%
+  summarize("mean_time" = mean(seconds))
 
-summary(hmm_ino) %>%
-  group_by(.strategy) %>%
-  summarize("mean_time" = mean(.time))
-
-plot(hmm_ino, by = ".strategy")
+plot(hmm, by = "label")
 
 
 # Example: HMM LL for financial data --------------------------------------
 
-library("fHMM")
-file <- tempfile()
-fHMM::download_data(symbol = "DBK.DE", from = "2020-01-01", file = file)
+db_data <- fHMM::download_data(symbol = "DBK.DE", from = "2020-01-01", file = NULL)
 
 library("dplyr")
-db_data <- read.csv(file) %>%
-  as_tibble() %>%
+db_data <- as_tibble(db_data) %>%
   summarize(date = as.Date(Date, format = "%Y-%m-%d"),
-            obs = c(NA, diff(log(Close), lag=1) * 100)) %>%
+            obs = c(NA, diff(log(Close), lag = 1) * 100)) %>%
   filter(!is.na(obs)) %>%
   print()
 
-library("ggplot2")
-ggplot(db_data, aes(x = date, y = obs)) +
-  geom_point() +
-  geom_line() +
-  ylab("log-returns [%]")
-
-library("ino")
-hmm_ino <- setup_ino(
+hmm_finance <- Nop$new(
   f = f_ll_hmm,
   npar = 6,
   data = db_data,
   N = 2,
-  neg = TRUE,
-  opt = set_optimizer_nlm()
-)
+  neg = TRUE
+)$set_optimizer(optimizer_nlm())
 
 sampler <- function() c(log(stats::runif(2, 0.1, 0.9)),
                         stats::rnorm(2),
                         log(stats::runif(2, 0.5, 2)))
 
-hmm_ino <- random_initialization(hmm_ino, runs = 100, sampler = sampler)
+hmm_finance$optimize(initial = sampler, runs = 20, label = "random")
 
-starting_values <- list(c(-2, -2, 0, 0, log(2), log(3)),
-                        c(-1.5, -1.5, -2, 2, log(1), log(2)),
-                        c(-1, -1, -3, 3, log(2), log(2)))
-for(val in starting_values)
-  hmm_ino <- fixed_initialization(hmm_ino, at = val)
+hmm_finance$reduce("data", how = "first", prop = 0.2)
+hmm_finance$optimize(initial = sampler, runs = 20, label = "subset", reset_arguments_afterwards = TRUE)$continue()
 
-for(prop in c(0.05, 0.25, 0.5))
-  hmm_ino <- subset_initialization(
-    hmm_ino, arg = "data", how = "first", prop = prop,
-    initialization =  random_initialization(runs = 100, sampler = sampler)
-  )
+hmm_finance$optima()
 
-overview_optima(hmm_ino)
+plot(hmm_finance, by = "label")
 
-plot(hmm_ino, by = ".strategy")
+hmm_finance$summary(c("label", "seconds", "value")) %>%
+  group_by(label) %>%
+  summarize("mean_time" = mean(seconds))
 
 
 # Example: Probit LL ------------------------------------------------------
 
 N <- 100
-T <- 10
+T <- 1
 J <- 3
 P <- 3
 b <- c(1,-1,0.5)
@@ -133,47 +113,28 @@ probit_data <- sim_mnp(
 )
 true <- attr(probit_data, "true")[-1]
 
-probit <- Nop$new(f = f_ll_mnp, npar = 5, data = probit_data, neg = TRUE)$
-  set_true_parameter(true_par = true, set_true_value = TRUE)
-
-probit$test()
+probit <- Nop$new(
+  f = f_ll_mnp,
+  npar = 5,
+  data = probit_data,
+  neg = TRUE
+)$set_true_parameter(true_par = true, set_true_value = TRUE)
 
 probit$set_optimizer(optimizer_nlm(iterlim = 1000))
 
+probit$test(time_limit_opt = 30)
 
+probit$optimize("random", runs = 10, label = "random")
 
+probit$reduce("data", how = "unsimilar", proportion = 0.5)
 
+probit$optimize("random", runs = 10, label = "subset", reset_arguments_afterwards = TRUE)$continue()
 
+probit$standardize("data")
 
-probit_ino <- random_initialization(probit_ino, runs = 100)
+probit$optimize("random", runs = 10, label = "standardize", reset_arguments_afterwards = TRUE)$continue()
 
-saveRDS(probit_ino, "probit_ino.rds")
+probit$optima()
 
-for(how in c("random", "kmeans")) for(prop in c(0.2,0.5)) {
-  probit_ino <- subset_initialization(
-    probit_ino, arg = "data", how = how, prop = prop,
-    ind_ign = 1:3, initialization = random_initialization(runs = 100)
-  )
-}
-
-saveRDS(probit_ino, "probit_ino.rds")
-
-probit_ino <- standardize_initialization(
-  probit_ino, ind_ign = 1:3, initialization = random_initialization(runs = 100)
-)
-
-saveRDS(probit_ino, "probit_ino.rds")
-
-probit_ino <- update_opt(
-  probit_ino,
-  opt = set_optimizer_ao(partition = list(1:2, 1:5))
-)
-
-probit_ino <- random_initialization(probit_ino, runs = 100)
-
-saveRDS(probit_ino, "probit_ino.rds")
-
-overview_optima(probit_ino, digits = 2)
-
-plot(probit_ino, by = c(".strategy",".optimizer"))
+plot(probit, by = "label")
 
