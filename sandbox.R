@@ -20,7 +20,7 @@ ackley$evaluate(c(0,0))
 
 ackley$optimize(
   initial = c(-3,3), runs = 1, which_optimizer = "nlm",
-  save_results = FALSE, return_results = TRUE
+  save_results = FALSE, return_results = TRUE, label = "label"
 )
 
 ackley$test()
@@ -33,6 +33,8 @@ ackley$optima(digits = 2)
 
 plot(ackley, by = "optimizer")
 
+ackley$plot() + theme_minimal()
+
 
 # Example: HMM LL for earthquake data -------------------------------------
 
@@ -41,11 +43,13 @@ hmm <- Nop$new(f = f_ll_hmm, npar = 6)$
   set_optimizer(optimizer = optimizer_nlm(), label = "nlm")$
   print()
 
-hmm$optimize(runs = 10, label = "random")
+hmm$optimize(runs = 20, label = "random")
 
-hmm$reduce("data", how = "first", prop = 0.5)
+hmm$reduce("data", how = "first", prop = 0.4)
 
-hmm$optimize(runs = 10, label = "subset", reset_arguments_afterwards = TRUE)$continue()
+hmm$optimize(runs = 20, label = "subset")$
+  reset_argument("data")$
+  continue()
 
 hmm$optima()
 
