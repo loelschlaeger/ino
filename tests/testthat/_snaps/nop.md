@@ -1,4 +1,4 @@
-# Nop object can be initialized
+# ackley Nop object can be initialized
 
     Code
       ackley
@@ -37,7 +37,7 @@
       Optimization results:
        No optimization results saved.
 
-# Nop object with parameters can be initialized
+# hmm Nop object with parameters can be initialized
 
     Code
       print(hmm)

@@ -8,6 +8,10 @@
 #' - \code{"all"} for all specified optimizer (default)
 #' - a \code{character} vector of specified optimizer labels
 #' - a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+#' @param which_runs
+#' Select recorded results of optimization runs. Either:
+#' - \code{"all"} for all records (default)
+#' - \code{"last"} the the records from the last optimization
 #' @param verbose
 #' A \code{logical}, which indicates whether progress/details should be printed.
 #' Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -24,13 +28,14 @@
 #' @param seed
 #' Set a seed for reproducibility.
 #' No seed by default.
+#' @param return_results
+#' A \code{logical}, which indicates whether the results should be returned as
+#' a \code{list}.
+#' By default, \code{return_results = FALSE}.
 #' @param save_results
 #' A \code{logical}, which indicates whether the results should be saved
 #' inside the \code{Nop} object.
 #' By default, \code{save_results = TRUE}.
-#' @param return_results
-#' A \code{logical}, which indicates whether the results should be returned.
-#' By default, \code{return_results = FALSE}.
 #' @param hide_warnings
 #' A \code{logical}. Set to \code{TRUE} (default) to hide warnings during
 #' optimization.
@@ -405,8 +410,11 @@ Nop <- R6::R6Class(
     #'   values drawn from a standard normal distribution,
     #' - a \code{numeric} vector of length \code{npar}, the starting point for
     #'   optimization,
-    #' - or a \code{function} without any arguments that returns a
-    #'   \code{numeric} vector of length \code{npar}.
+    #' - a \code{list} of such vectors (in this case, \code{runs} is set to the
+    #'   length of the \code{list}),
+    #' - or a \code{function} that returns a \code{numeric} vector of length
+    #'   \code{npar} (the function can but not has to have a single integer
+    #'   argument that specifies the optimization run).
     #' @param runs
     #' An \code{integer}, the number of optimization runs.
     #' By default, \code{runs = 1}.
@@ -437,17 +445,29 @@ Nop <- R6::R6Class(
     #' @importFrom foreach foreach %dopar% %do%
     optimize = function(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
-      save_results = TRUE, return_results = FALSE, label = "unlabeled",
-      ncores = getOption("ino_ncores"), verbose = getOption("ino_verbose"),
-      simplify = TRUE, reset_arguments_afterwards = FALSE, hide_warnings = TRUE
+      return_results = FALSE, save_results = TRUE,
+      label = "unlabeled", ncores = getOption("ino_ncores"),
+      verbose = getOption("ino_verbose"), simplify = TRUE,
+      reset_arguments_afterwards = TRUE, hide_warnings = TRUE
     ) {
 
       ### check `initial` and make it to function call `get_initial`
       get_initial <- if (identical(initial, "random")) {
-        function() rnorm(private$.npar)
+        function(run) rnorm(private$.npar)
+      } else if (is.list(initial)) {
+        if (all(sapply(initial, is.numeric) &
+                sapply(initial, length) == private$.npar)) {
+          runs <- length(initial)
+          function(run) initial[[run]]
+        } else {
+          ino_stop(
+            glue::glue("You specified a `list` as input `initial`."),
+            glue::glue("It should only contain `numeric` vectors of length {private$.npar}.")
+          )
+        }
       } else if (is.numeric(initial)) {
         if (length(initial) == private$.npar) {
-          function() initial
+          function(run) initial
         } else {
           ino_stop(
             glue::glue("The input `initial` is misspecified."),
@@ -455,14 +475,28 @@ Nop <- R6::R6Class(
           )
         }
       } else if (is.function(initial)) {
-        try_initial <- try(initial(), silent = TRUE)
-        if (!(is.numeric(try_initial) && length(try_initial) == private$.npar)) {
+        nargs <- length(formals(initial))
+        initial_tmp <- if (nargs == 0) {
+          function(run) initial()
+        } else if (nargs == 1) {
+          initial
+        } else {
           ino_stop(
             glue::glue("The function `initial` is misspecified."),
-            glue::glue("It should return a `numeric` of length {private$.npar}.")
+            glue::glue("It can have 0 or 1 arguments, but not {nargs}.")
           )
         }
-        initial
+        for (run in runs) {
+          try_initial <- try(initial_tmp(run), silent = TRUE)
+          if (!(is.numeric(try_initial) && length(try_initial) == private$.npar)) {
+            ino_stop(
+              glue::glue("The function `initial` is misspecified."),
+              glue::glue("It should return a `numeric` of length {private$.npar}."),
+              glue::glue("But `initial({run})` returned something else.")
+            )
+          }
+        }
+        initial_tmp
       } else {
         ino_stop(
           "The input `initial` is misspecified, please see the documentation."
@@ -525,14 +559,22 @@ Nop <- R6::R6Class(
           run = 1:runs, .packages = "ino", .export = "private", .inorder = FALSE,
           .options.snow = opts
         ) %dopar% {
-          initial <- get_initial()
-          lapply(optimizer_ids, function (i) private$.optimize(initial, i, hide_warnings))
+          lapply(optimizer_ids, function (i) {
+            private$.optimize(
+              initial = get_initial(run),
+              optimizer_id = i,
+              hide_warnings = hide_warnings)
+          })
         }
       } else {
         results <- foreach::foreach(run = 1:runs) %do% {
           pb$tick()
-          initial <- get_initial()
-          lapply(optimizer_ids, function (i) private$.optimize(initial, i, hide_warnings))
+          lapply(optimizer_ids, function (i) {
+            private$.optimize(
+              initial = get_initial(run),
+              optimizer_id = i,
+              hide_warnings = hide_warnings)
+          })
         }
       }
 
@@ -935,9 +977,11 @@ Nop <- R6::R6Class(
     #' By default, \code{columns = c("value", "parameter", "seconds")},
     #' which returns the columns
     #' 1. \code{"value"}, the value of the estimated function optimum,
-    #' 2. \code{"parameter"}, the parameter vector at which the optimum is obtained,
+    #' 2. \code{"parameter"}, the parameter vector at which the optimum is
+    #'    obtained,
     #' 3. \code{"seconds"}, the optimization time in seconds.
-    #' See \code{$summary_columns} for an overview of the available columns.
+    #' See \code{$summary_columns} for an overview of the available column
+    #' names.
     #' Specify \code{columns = "all"} to include all of them in the output.
     #' @param ...
     #' Optionally named expressions of variables from summary columns as
@@ -949,27 +993,23 @@ Nop <- R6::R6Class(
     #' A \code{data.frame}.
     #' @importFrom dplyr bind_rows
     summary = function (
-      columns = c("value", "parameter", "seconds"), ...
+      columns = c("value", "parameter", "seconds"), which_runs = "all",
+      which_optimizer = "all", ...
     ) {
 
-      ### check if records exist
-      records <- private$.records
-      if (length(private$.records) == 0) {
-        ino_stop(
-          "No optimization results saved.",
-          "Please call `$optimize(save_results = TRUE)`."
-        )
-      }
       if (!is.character(columns)) {
         ino_stop(
           "Inputs `columns` must be a `character` (vector)."
         )
       }
+      run_ids <- private$.get_run_ids(which_runs)
+      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
+      records <- private$.records[run_ids]
 
       ### combine records in data.frame
       out <- data.frame()
-      for (run in 1:length(private$.records)) {
-        for (opt in 1:length(records[[run]])) {
+      for (run in run_ids) {
+        for (opt in optimizer_ids) {
           out_tmp <- as.data.frame(t(cbind(records[[run]][[opt]])))
           out <- dplyr::bind_rows(out, out_tmp)
         }
@@ -1008,11 +1048,32 @@ Nop <- R6::R6Class(
 
     #' @description
     #' Overview of the identified optima.
-    optima = function (digits = getOption("ino_digits")) {
+    #' @param sort_by
+    #' Either \code{"frequency"} (default) to sort rows by frequency or
+    #' \code{"value"} to sort rows by value.
+    optima = function (digits = getOption("ino_digits"), sort_by = "frequency") {
+      if (!is.numeric(digits) && length(digits) == 1) {
+        ino_stop(
+          "Input `digits` must be an `integer`."
+        )
+      }
+      if (!(identical(sort_by, "frequency") | identical(sort_by, "value"))) {
+        ino_stop(
+          "Input `sort_by` must be either \"frequency\" or \"value\"."
+        )
+      }
       optima <- round(self$summary("value"), digits = digits)
-      optima <- as.data.frame(table(optima))
+      optima <- data.frame(table(optima))
       colnames(optima) <- c("value", "frequency")
-      optima[order(optima$frequency, decreasing = TRUE), ]
+
+      ### sort rows
+      optima <- optima[order(
+        optima[[sort_by]],
+        decreasing = ifelse(sort_by == "value" && private$.show_minimum, FALSE, TRUE)
+        ), ]
+      rownames(optima) <- NULL
+
+      return(optima)
     },
 
     #' @description
@@ -1140,6 +1201,44 @@ Nop <- R6::R6Class(
         if (no_optimizer == "fatal") {
           ino_stop(
             "Please check argument `which_optimizer`, it fits to no specified optimizer."
+          )
+        }
+        if (no_optimizer == "ignored") {
+          return(integer(0))
+        }
+      }
+      return(ids)
+    },
+
+    ### returns numeric IDs of recorded optimization runs
+    .get_run_ids = function (which_runs, no_runs = "fatal") {
+      stopifnot(no_runs %in% c("fatal", "ignored"))
+      if (length(private$.records) == 0) {
+        if (no_runs == "fatal") {
+          ino_stop(
+            "No optimization results saved.",
+            "Please call `$optimize(save_results = TRUE)`."
+          )
+        }
+        if (no_optimizer == "ignored") {
+          return(integer(0))
+        }
+      }
+      if (identical(which_runs, "all")) {
+        return(seq_along(private$.records))
+      } else if (identical(which_runs, "last")) {
+        return(seq_along(private$.runs_last))
+      } else if (is.numeric(which_optimizer)) {
+        ids <- which(seq_along(private$.records) %in% which_runs)
+      } else {
+        ino_stop(
+          "Argument `which_runs` is misspecified."
+        )
+      }
+      if (length(ids) == 0) {
+        if (no_optimizer == "fatal") {
+          ino_stop(
+            "Please check argument `which_runs`, it fits to no recorded result."
           )
         }
         if (no_optimizer == "ignored") {

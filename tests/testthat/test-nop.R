@@ -1,6 +1,6 @@
 options("ino_verbose" = FALSE)
 
-test_that("Nop object can be initialized", {
+test_that("ackley Nop object can be initialized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_s3_class(ackley, c("Nop", "R6"), exact = TRUE)
   expect_error(Nop$new(), "Please specify argument `f`.")
@@ -27,7 +27,7 @@ test_that("Nop object can be initialized", {
   expect_snapshot(ackley$print())
 })
 
-test_that("Nop object with parameters can be initialized", {
+test_that("hmm Nop object with parameters can be initialized", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = earthquakes)
   expect_s3_class(hmm, c("Nop", "R6"), exact = TRUE)
   expect_error(hmm$set_argument(earthquakes), "Please name argument 1.")
@@ -54,7 +54,7 @@ test_that("Nop object with parameters can be initialized", {
   )
 })
 
-test_that("function can be evaluated", {
+test_that("ackley function can be evaluated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(ackley$evaluate(1), "Argument `at` must be a numeric vector of length 2.")
   expect_type(ackley$evaluate(c(1, 2)), "double")

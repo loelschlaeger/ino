@@ -341,13 +341,13 @@ Optimize the function.
   runs = 1,
   which_optimizer = "all",
   seed = NULL,
-  save_results = TRUE,
   return_results = FALSE,
+  save_results = TRUE,
   label = "unlabeled",
   ncores = getOption("ino_ncores"),
   verbose = getOption("ino_verbose"),
   simplify = TRUE,
-  reset_arguments_afterwards = FALSE,
+  reset_arguments_afterwards = TRUE,
   hide_warnings = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -361,8 +361,11 @@ Optimize the function.
 values drawn from a standard normal distribution,
 \item a \code{numeric} vector of length \code{npar}, the starting point for
 optimization,
-\item or a \code{function} without any arguments that returns a
-\code{numeric} vector of length \code{npar}.
+\item a \code{list} of such vectors (in this case, \code{runs} is set to the
+length of the \code{list}),
+\item or a \code{function} that returns a \code{numeric} vector of length
+\code{npar} (the function can but not has to have a single integer
+argument that specifies the optimization run).
 }}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization runs.
@@ -378,12 +381,13 @@ By default, \code{runs = 1}.}
 \item{\code{seed}}{Set a seed for reproducibility.
 No seed by default.}
 
+\item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned as
+a \code{list}.
+By default, \code{return_results = FALSE}.}
+
 \item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
 inside the \code{Nop} object.
 By default, \code{save_results = TRUE}.}
-
-\item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned.
-By default, \code{return_results = FALSE}.}
 
 \item{\code{label}}{Only relevant if \code{save_results = TRUE}.
 In this case, optionally a \code{character} for a custom label of the
@@ -600,7 +604,8 @@ optimization.}
 inside the \code{Nop} object.
 By default, \code{save_results = TRUE}.}
 
-\item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned.
+\item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned as
+a \code{list}.
 By default, \code{return_results = FALSE}.}
 }
 \if{html}{\out{</div>}}
@@ -612,7 +617,12 @@ By default, \code{return_results = FALSE}.}
 \subsection{Method \code{summary()}}{
 Overview of the optimization runs.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$summary(columns = c("value", "parameter", "seconds"), ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$summary(
+  columns = c("value", "parameter", "seconds"),
+  which_runs = "all",
+  which_optimizer = "all",
+  ...
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -624,10 +634,25 @@ By default, \code{columns = c("value", "parameter", "seconds")},
 which returns the columns
 \enumerate{
 \item \code{"value"}, the value of the estimated function optimum,
-\item \code{"parameter"}, the parameter vector at which the optimum is obtained,
+\item \code{"parameter"}, the parameter vector at which the optimum is
+obtained,
 \item \code{"seconds"}, the optimization time in seconds.
-See \code{$summary_columns} for an overview of the available columns.
+See \code{$summary_columns} for an overview of the available column
+names.
 Specify \code{columns = "all"} to include all of them in the output.
+}}
+
+\item{\code{which_runs}}{Select recorded results of optimization runs. Either:
+\itemize{
+\item \code{"all"} for all records (default)
+\item \code{"last"} the the records from the last optimization
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
+\itemize{
+\item \code{"all"} for all specified optimizer (default)
+\item a \code{character} vector of specified optimizer labels
+\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
 
 \item{\code{...}}{Optionally named expressions of variables from summary columns as
@@ -648,7 +673,7 @@ A \code{data.frame}.
 \subsection{Method \code{optima()}}{
 Overview of the identified optima.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = getOption("ino_digits"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = getOption("ino_digits"), sort_by = "frequency")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -657,6 +682,9 @@ Overview of the identified optima.
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
 The default is \code{getOption("ino_digits")}, which is set to \code{2}
 when the package is loaded.}
+
+\item{\code{sort_by}}{Either \code{"frequency"} (default) to sort rows by frequency or
+\code{"value"} to sort rows by value.}
 }
 \if{html}{\out{</div>}}
 }
