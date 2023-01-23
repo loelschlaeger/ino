@@ -624,7 +624,7 @@ Nop <- R6::R6Class(
     #' considered to be successful.
     #' By default, \code{time_limit_opt = 10}.
     #' @return
-    #' Returns invisibly \code{TRUE} if the tests are successful.
+    #' Invisibly \code{TRUE} if the tests are successful.
     test = function (
       at = rnorm(self$npar), which_optimizer = "all", time_limit_fun = 10,
       time_limit_opt = time_limit_fun, verbose = getOption("ino_verbose"),
@@ -637,13 +637,13 @@ Nop <- R6::R6Class(
       optimizer_selected <- length(optimizer_ids) > 0
       if (!(is.numeric(time_limit_fun) && length(time_limit_fun) == 1 && time_limit_fun > 0 && time_limit_fun %% 1 == 0)) {
         ino_stop(
-          "Argument `time_limit_fun` is not a positive integer.",
+          "Argument `time_limit_fun` is not a positive `integer`.",
           "Please specify `time_limit_fun` as the number of seconds for testing the function call."
         )
       }
       if (!(is.numeric(time_limit_opt) && length(time_limit_opt) == 1 && time_limit_opt > 0 && time_limit_opt %% 1 == 0)) {
         ino_stop(
-          "Argument `time_limit_opt` is not a positive integer.",
+          "Argument `time_limit_opt` is not a positive `integer`.",
           "Please specify `time_limit_opt` as the number of seconds for testing the function call."
         )
       }
@@ -654,7 +654,7 @@ Nop <- R6::R6Class(
       }
 
       ### test configurations
-      ino_status("Test configurations:", verbose = verbose)
+      ino_status("Test configuration", verbose = verbose)
       ino_success(glue::glue("Function specified: {private$.f_name}") , verbose = verbose)
       ino_success(glue::glue("Target argument specified: {private$.f_target} (length {private$.npar})") , verbose = verbose)
       if (optimizer_selected) {
@@ -662,7 +662,12 @@ Nop <- R6::R6Class(
       }
 
       ### test function call
-      ino_status("Test function call:", verbose = verbose)
+      ino_status("Test function call", verbose = verbose)
+      ino_success(
+        glue::glue(
+          "Test values specified: ", {paste(round(at, digits = digits), collapse = ' ')}
+        ), verbose = verbose
+      )
       setTimeLimit(cpu = time_limit_fun, elapsed = time_limit_fun, transient = TRUE)
       on.exit({
         setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
@@ -708,7 +713,12 @@ Nop <- R6::R6Class(
       if (!optimizer_selected) {
         ino_warn("No optimizer specified, testing optimizer is skipped.")
       } else {
-        ino_status("Test optimization:", verbose = verbose)
+        ino_status("Test optimization", verbose = verbose)
+        ino_success(
+          glue::glue(
+            "Initial values specified: ", {paste(round(at, digits = digits), collapse = ' ')}
+          ), verbose = verbose
+        )
         for (i in seq_along(optimizer_ids)) {
           setTimeLimit(cpu = time_limit_opt, elapsed = time_limit_opt, transient = TRUE)
           out <- tryCatch(
@@ -734,6 +744,14 @@ Nop <- R6::R6Class(
               glue::glue("The time limit of {time_limit_opt}s was reached in the test optimization call with optimizer `{private$.optimizer_label[i]}`."),
               "To make sure that the optimization ends successful, consider increasing `time_limit_opt`."
             )
+          } else {
+            if (is.list(out)) {
+              ino_success("Output is a `list`.", verbose = verbose)
+            } else {
+              ino_stop(
+                glue::glue("Output of optimizer `{private$.optimizer_label[i]}` is not a `list`.")
+              )
+            }
           }
         }
       }

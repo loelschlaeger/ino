@@ -243,7 +243,7 @@ test_that("Nop object can be tested", {
     if (identical(p, 1:2)) stop()
     list(v = 1, z = 1:2)
   }
-  bad_optimizer <- optimizeR::set_optimizer(bad_optimizer_fun, objective = "f", initial = "p", value = "v", parameter = "z")
+  bad_optimizer <- optimizeR::define_optimizer(bad_optimizer_fun, objective = "f", initial = "p", value = "v", parameter = "z")
   ackley$set_optimizer(bad_optimizer)
   expect_error(ackley$test(at = 1:2), "Optimization with optimizer `bad_optimizer_fun` failed.")
 })

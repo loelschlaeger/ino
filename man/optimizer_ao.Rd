@@ -48,6 +48,6 @@ By default, \code{check_seconds = 10}.}
 An object of class \code{optimizer}.
 }
 \description{
-This function is a wrapper for \code{\link[optimizeR]{set_optimizer}} with
+This function is a wrapper for \code{\link[optimizeR]{define_optimizer}} with
 the \code{\link[ao]{ao}} optimizer.
 }
