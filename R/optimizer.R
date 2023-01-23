@@ -16,8 +16,7 @@
 
 optimizer_ao <- function(
     ..., output_ignore = character(), validate = TRUE,
-    validation_settings = list()
-  ) {
+    validation_settings = list()) {
   optimizeR::define_optimizer(
     optimizer = ao::ao,
     objective = "f",
