@@ -483,7 +483,7 @@ when the package is loaded.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Returns invisibly \code{TRUE} if the tests are successful.
+Invisibly \code{TRUE} if the tests are successful.
 }
 }
 \if{html}{\out{<hr>}}
@@ -621,6 +621,7 @@ Overview of the optimization runs.
   columns = c("value", "parameter", "seconds"),
   which_runs = "all",
   which_optimizer = "all",
+  digits = getOption("ino_digits"),
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -654,6 +655,10 @@ Specify \code{columns = "all"} to include all of them in the output.
 \item a \code{character} vector of specified optimizer labels
 \item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
+The default is \code{getOption("ino_digits")}, which is set to \code{2}
+when the package is loaded.}
 
 \item{\code{...}}{Optionally named expressions of variables from summary columns as
 \code{character}.

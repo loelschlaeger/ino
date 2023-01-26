@@ -1012,7 +1012,7 @@ Nop <- R6::R6Class(
     #' @importFrom dplyr bind_rows
     summary = function (
       columns = c("value", "parameter", "seconds"), which_runs = "all",
-      which_optimizer = "all", ...
+      which_optimizer = "all", digits = getOption("ino_digits"), ...
     ) {
 
       if (!is.character(columns)) {
@@ -1053,6 +1053,9 @@ Nop <- R6::R6Class(
       for (i in 1:ncol(out)) {
         if (all(sapply(out[,i], length) == 1 & sapply(out[,i], class) %in% c("character", "numeric"))) {
           out[,i] <- unlist(out[,i])
+        }
+        if (is.vector(out[,i]) && is.numeric(out[,i])) {
+          out[,i] <- round(out[,i], digits = digits)
         }
       }
 
