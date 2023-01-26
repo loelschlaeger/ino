@@ -63,13 +63,13 @@ The {ino} package provides the R6 class `Nop` (an acronym for *n*umerical *o*pti
 
 ## Working with {ino}
 
-We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times in the popular `faithful` data set that is provided via base R.
+We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times from the popular `faithful` data set that is provided by the {datasets} package.
 
 > **Remark:** Optimization in this example is very fast. This is because the data set is relatively small and we consider a model with only two classes. Therefore, it might not seem relevant to be concerned about initialization here. However, the problem scales: optimization time will rise with more data and more parameters, in which case initialization becomes a greater issue, see for example @Shireman:2017. Additionally, we will see that this simple optimization problem suffers heavily from local optima, depending on the choice of initial values.
 
 ### The optimization problem
 
-The `faithful` data set provided by the {datasets} package contains information about eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA. The following histogram hints at two clusters with short and long eruption times, respectively:
+The `faithful` data set contains information about eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA. The following histogram hints at two clusters with short and long eruption times, respectively:
 
 ```{r, include = FALSE, warning = FALSE}
 library("ggplot2")
@@ -133,7 +133,7 @@ The next specification step concerns the numerical optimizer, which we can speci
 
 > **Remark:** Numerical optimizer must be specified through the unified framework provided by the [{optimizeR} package](https://CRAN.R-project.org/package=optimizeR). This is necessary, because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizer and to compare their results, see [the {optimizeR} README file for details](https://cran.r-project.org/package=optimizeR/readme/README.html).
 
-It is possible to define any numerical optimizer through the {optimizeR} framework. Here, we select two of the most popular R optimizer, `stats::nlm()` and `stats::optim()`:
+It is possible to define any numerical optimizer implemented in R through the {optimizeR} framework. Here, we select two of the most popular ones, `stats::nlm()` and `stats::optim()`:
 
 ```{r}
 geyser$
@@ -149,7 +149,7 @@ geyser$test()
 
 ### Function evaluation
 
-Once the `Nop` object is specified, evaluating the `normal_mixture_llk` at some value for the parameter vector `theta` is simple with the `$evaluate()` method, for example:
+Once the `Nop` object is specified, evaluating `normal_mixture_llk` at some value for the parameter vector `theta` is simple with the `$evaluate()` method, for example:
 
 ```{r}
 geyser$evaluate(at = 1:5)
@@ -205,12 +205,14 @@ TODO: extract and compare parameters that led to different minima.
 
 ### Custom sampler for initial values
 
-Depending on the application and the magnitude of the parameters to be estimated, initial values drawn from a standard normal distribution (which is the default behavior when calling `$optimize(initial = "random")`) may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(2, 0.5)$ distribution:
+Depending on the application and the magnitude of the parameters to be estimated, initial values drawn from a standard normal distribution (which is the default behavior when calling `$optimize(initial = "random")`) may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(\mu = 2, \sigma = 0.5)$ distribution:
 
 ```{r}
 sampler <- function() stats::rnorm(5, mean = 2, sd = 0.5)
 geyser$optimize(initial = sampler, runs = 100, label = "custom_sampler")
 ```
+
+TODO: show results
 
 ### Educated guesses
 
@@ -219,14 +221,14 @@ Next we make "educated guesses" about starting values that are probably close to
 We will use two sets of starting values where the means are lower and larger than 2 and 4, respectively. For both sets, the starting value for the mixing proportion is 0.5.
 
 ```{r}
-starting_values <- list(c(1.7, 4.3, log(1), log(1), qlogis(0.5)),
-                        c(2.3, 3.7, log(1), log(1), qlogis(0.5)))
+starting_values <- list(c(1.8, 4.2, log(1), log(1), qlogis(0.5)),
+                        c(2.2, 3.8, log(1), log(1), qlogis(0.5)))
 ```
 
 For comparison, we also consider a third set of starting values which are somewhat implausible.
 
 ```{r}
-starting_values[[3]] <- c(10, 8, log(0.1), log(0.2), qlogis(0.5))
+starting_values[[3]] <- rep(0, 5)
 ```
 
 In the `$optimize()` method, instead of `label = "random"`, we can set `label` to a numeric vector of length `npar`, or for convenience to a `list` of such vectors, like `starting_values`:
@@ -248,14 +250,14 @@ The `summary()` method returns an overview of the three optimization runs perfor
 TODO: Show more values with the `"comment"` argument. See names of all available columns with `"geyser$summary_columns"`.
 
 ```{r}
-# geyser$get_value(which_value = "initial", which_run = 10, which_optimizer = 100)
+# geyser$get_value(which_value = "initial", which_runs = 10, which_optimizer = "nlm")
 ```
 
 ### Discard optimization runs
 
 The third run (with the unplausible starting values) converged to a local minimum, as we can deduce from the column "value". We discard this run from further comparisons:
 
-TODO
+TODO: 
 
 ```{r}
 # geyser$clear(which_runs = 103, which_optimizer = "all")
@@ -283,7 +285,12 @@ geyser$optimize(runs = 10, label = "subset")$continue()
 geyser$reset_argument("data")
 ```
 
-In addition to selecting sub samples at random, we can specify two further options using the argument `how`. When dealing with time series data, we usually do not want to delete single observations at random. Instead, we can select a proportion of the first rows by specifying `how = "first"`. We could also cluster our data first using `how = "kmeans"`. 
+In addition to selecting sub samples at random, we can specify four other options using the argument `how`:
+
+- `"first"`
+- `"last"`
+- `"similar`
+- `"unsimilar"`
 
 ### Evaluating the optimization runs
 
@@ -300,5 +307,22 @@ geyser$plot(by = "label", nrow = 1)
 ```
 
 TODO: sort boxplots by their median in descending order
+
+TODO: relative times
+
+TODO: plot of values
+
+### The final `Nop` object
+
+```{r}
+print(geyser)
+```
+
+The best optimization result can be extracted via:
+
+```{r}
+print(geyser$best_value)
+print(geyser$best_parameter)
+```
 
 ## References
