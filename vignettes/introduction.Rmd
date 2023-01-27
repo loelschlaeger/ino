@@ -19,8 +19,8 @@ knitr::opts_chunk$set(
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
-library("ino")
-# devtools::load_all() # remove later
+#library("ino")
+devtools::load_all() # remove later
 options("ino_verbose" = FALSE)
 options("ino_ncores" = 1)
 options("ino_digits" = 2)
@@ -37,7 +37,7 @@ One thing that all of these numerical optimizers have in common is that initial 
 
 2. putting effort on identifying good starting values.
 
-However, it is generally unclear what good initial values are and how they might affect the optimization. Therefore, the purpose of the {ino} R package (*ino* is an acronym for *i*nitialization of *n*umerical *o*ptimization) is to provide a comprehensive toolbox for 
+However, it is generally unclear what good initial values are and how they might affect the optimization. Therefore, the purpose of the {ino} R package (*ino* is an acronym for ***i***nitialization of ***n***umerical ***o***ptimization) is to provide a comprehensive toolbox for 
 
 1. evaluating the effect of the initial values on the optimization,
 
@@ -47,7 +47,10 @@ However, it is generally unclear what good initial values are and how they might
 
 ## Functionality of {ino}
 
-The {ino} package provides the R6 class `Nop` (an acronym for *n*umerical *o*ptimization *p*roblem).
+To specify an optimization problem in {ino}, we use an object-oriented framework based on the package R6. The general workflow is to first create
+an object (specifying a numerical optimization problem), and then apply methods to change the attributes of that object, e.g., to optimize the function and investigate the optimization results. 
+
+In particular, the {ino} package provides the R6 class `Nop` (an acronym for *n*umerical *o*ptimization *p*roblem).
 
 - The starting point for working with {ino} is to define a `Nop` object via `Nop$new()`.
 
@@ -195,7 +198,7 @@ geyser$optimize(initial = "random", runs = 100, label = "random", save_results =
 
 We label the optimization results with `label = "random"`, which is useful later for comparison. We set `save_results = TRUE` to save the optimization results inside the `geyser` object (so that we can use the `$optima()`, `$summary()`, and `$plot()` methods for comparisons, see below). The `seed = 1` argument ensures reproducibility.
 
-The `$optima()` method provides an overview of the identified optima. We see below that the different runs led to `r nrow(geyser$optima(digits = 0, sort_by = "value"))` different optima (minima in this case, because we minimize `normal_mixture_llk()`), hence the initial starting values have a hugh impact on the optimization result.
+The `$optima()` method provides an overview of the identified optima. We see below that the different runs led to `r nrow(geyser$optima(digits = 0, sort_by = "value"))` different optima (minima in this case, because we minimize `normal_mixture_llk()`), hence the initial starting values have a huge impact on the optimization result.
 
 ```{r}
 geyser$optima(digits = 0, sort_by = "value")
@@ -212,7 +215,22 @@ sampler <- function() stats::rnorm(5, mean = 2, sd = 0.5)
 geyser$optimize(initial = sampler, runs = 100, label = "custom_sampler")
 ```
 
-TODO: show results
+To obtain the results of these optimization runs, we can use `summary()` to obtain (e.g.) the optima and the initial parameters. Together with functions from the dplyr package, we access only the optimization runs of the `custom_sampler`: 
+
+```{r}
+summary(geyser, c("value", "label")) %>% 
+  dplyr::filter(label == "custom_sampler") %>% 
+  head(n = 10)
+```
+
+Here, we still obtain different optima, but most of the runs lead to the optimum of `r summary(geyser, c("value", "parameter", "label")) %>%  dplyr::filter(label == "custom_sampler") %>% dplyr::count(value) %>% dplyr::pull(value) %>% .[1] %>% round()`:
+
+```{r}
+summary(geyser, c("value", "label")) %>%  
+  dplyr::filter(label == "custom_sampler") %>% 
+  dplyr::mutate(value_rounded = round(value)) %>% 
+  dplyr::count(value_rounded)
+```
 
 ### Educated guesses
 
@@ -240,14 +258,21 @@ geyser$optimize(initial = starting_values, label = "educated_guess")
 Let's look at the results:
 
 ```{r}
-summary(geyser, which_runs = "last")
+summary(geyser, c("value", "seconds", "label")) %>% 
+  dplyr::filter(label == "educated_guess")
 ```
 
 TODO: apply round to reduce decimal places
 
-The `summary()` method returns an overview of the three optimization runs performed with the two optimizer.
+The `summary()` method returns an overview of the three optimization runs performed with the two optimizer. In addition to the optima, the optimization time and the label, `summary()` can also show the estimated parameters for all optimization runs:
 
-TODO: Show more values with the `"comment"` argument. See names of all available columns with `"geyser$summary_columns"`.
+```{r}
+summary(geyser, c("value", "parameters", "seconds", "label")) %>% 
+  dplyr::filter(label == "educated_guess")
+```
+
+With `geyser$summary_columns`, the names of all available columns of the `summary()` output are shown. 
+
 
 ```{r}
 # geyser$get_value(which_value = "initial", which_runs = 10, which_optimizer = "nlm")
@@ -265,13 +290,16 @@ TODO:
 
 ### Standardized initialization
 
-For standardized initialization, we standardize all columns in our data before running the optimization. The method `$standardize()` ... TODO
+For standardized initialization, we standardize all columns in our data before running the optimization. The method `$standardize()` thus requires the name of the data set to be standardized --- in our case `data`. To optimize the likelihood using the standardized data set, we again use `optmize()`, which by default uses random starting values. Here, we could again specify the distribution from which we draw the random initial values, or we could of course also set fixed starting values.   
 
 ```{r}
 geyser$standardize("data")
 geyser$optimize(runs = 10, label = "standardize")
 geyser$reset_argument("data")
 ```
+
+To perform further optimization runs after having applied standardized initialization, we use `reset_argument("data")` to unstandardize the data and obtain the actual data set we considered before. If we do not use `reset_argument()`, all further optimizations runs will be carried out on the standardized data set. 
+
 
 ### Subset initialization
 
@@ -306,11 +334,26 @@ We can compare the optimization times across initialization strategies by specif
 geyser$plot(by = "label", nrow = 1)
 ```
 
-TODO: sort boxplots by their median in descending order
+We can also create that these boxplots manually by using the data.frame provided by `summary()` and sort the boxplots by their medians:
+```{r}
+summary(geyser, c("label", "seconds")) %>% 
+  ggplot(aes(x = reorder(label, seconds, median), y = seconds)) + 
+           geom_boxplot() + xlab("")
+```
+
+Using again the `summary()` table, we can also plot the optima obtained under the different optimization strategies. However, note that the optima values obtained for the standardized initialization cannot be directly compared to the other approaches:
+
+```{r}
+summary(geyser, c("label", "value")) %>% 
+  ggplot(aes(x = label, y = value)) + 
+           geom_boxplot() + xlab("")
+```
 
 TODO: relative times
-
+TODO: sort boxplots by their median in descending order
 TODO: plot of values
+
+
 
 ### The final `Nop` object
 
@@ -319,6 +362,8 @@ print(geyser)
 ```
 
 The best optimization result can be extracted via:
+
+TODO: We need to be a bit careful here because of `standardize()`
 
 ```{r}
 print(geyser$best_value)
