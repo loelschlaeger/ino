@@ -11,7 +11,8 @@
 #' @param which_runs
 #' Select recorded results of optimization runs. Either:
 #' - \code{"all"} for all records (default)
-#' - \code{"last"} the the records from the last optimization
+#' - \code{"last"} the records from the last optimization
+#' - a \code{vector} of one or more labels specified in \code{$optimize()}.
 #' @param verbose
 #' A \code{logical}, which indicates whether progress/details should be printed.
 #' Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -52,7 +53,7 @@
 #' ## Step 2: Specify numerical optimizer:
 #' Call \code{object$set_optimizer(<optimizer object>)} where
 #' \code{<optimizer object>} is an object of class \code{optimizer}, which can
-#' be created with the \code{\link[optimizeR]{set_optimizer}} function from the
+#' be created with the \code{\link[optimizeR]{define_optimizer}} function from the
 #' \{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm}}
 #' and \code{\link[optimizeR]{optimizer_optim}} are already available.
 #'
@@ -355,7 +356,7 @@ Nop <- R6::R6Class(
     #' Set a numerical optimizer.
     #' @param optimizer
     #' An object of class \code{optimizer}, which can be created with the
-    #' \code{\link[optimizeR]{set_optimizer}} function from the \{optimizeR\}
+    #' \code{\link[optimizeR]{define_optimizer}} function from the \{optimizeR\}
     #' package.
     #' @param label
     #' A \code{character}, a unique label for the optimizer.
@@ -370,7 +371,7 @@ Nop <- R6::R6Class(
       if (!inherits(optimizer, "optimizer")) {
         ino_stop(
           "Argument `optimizer` must be an object of class `optimizer`.",
-          "Please see `?optimizeR::set_optimizer` to create such an object.",
+          "Please see `?optimizeR::define_optimizer` to create such an object.",
           "You can also use `optimizer_nlm()` or `optimizer_optim()`."
         )
       }
@@ -1014,7 +1015,6 @@ Nop <- R6::R6Class(
       columns = c("value", "parameter", "seconds"), which_runs = "all",
       which_optimizer = "all", digits = getOption("ino_digits"), ...
     ) {
-
       if (!is.character(columns)) {
         ino_stop(
           "Inputs `columns` must be a `character` (vector)."
@@ -1028,7 +1028,7 @@ Nop <- R6::R6Class(
       out <- data.frame()
       for (run in run_ids) {
         for (opt in optimizer_ids) {
-          out_tmp <- as.data.frame(t(cbind(records[[run]][[opt]])))
+          out_tmp <- as.data.frame(t(cbind(private$.records[[run]][[opt]])))
           out <- dplyr::bind_rows(out, out_tmp)
         }
       }
@@ -1072,7 +1072,10 @@ Nop <- R6::R6Class(
     #' @param sort_by
     #' Either \code{"frequency"} (default) to sort rows by frequency or
     #' \code{"value"} to sort rows by value.
-    optima = function (digits = getOption("ino_digits"), sort_by = "frequency") {
+    optima = function (
+      digits = getOption("ino_digits"), sort_by = "frequency",
+      which_runs = "all"
+    ) {
       if (!is.numeric(digits) && length(digits) == 1) {
         ino_stop(
           "Input `digits` must be an `integer`."
@@ -1083,8 +1086,11 @@ Nop <- R6::R6Class(
           "Input `sort_by` must be either \"frequency\" or \"value\"."
         )
       }
-      optima <- round(self$summary("value"), digits = digits)
-      optima <- data.frame(table(optima))
+      optima <- as.data.frame(
+        table(
+          self$summary(columns = "value", which_runs = which_runs, digits = digits)
+        )
+      )
       colnames(optima) <- c("value", "frequency")
 
       ### sort rows
@@ -1095,6 +1101,24 @@ Nop <- R6::R6Class(
       rownames(optima) <- NULL
 
       return(optima)
+    },
+
+    #' @description
+    #' From all saved optimization results, extract the parameter vector that
+    #' led to a function value closest to \code{value}.
+    #' @param value
+    #' A single \code{numeric}.
+    which_parameter = function (value, which_optimizer = "all") {
+      if (!(is.numeric(value) && is.vector(value) && length(value) == 1)) {
+        ino_stop(
+          "Input 'value' must be a single `numeric`."
+        )
+      }
+      results <- self$summary(
+        columns = c("value", "parameter"), which_optimizer = which_optimizer
+      )
+      index <- which.min(abs(value - results$value))
+      results$parameter[[index]]
     },
 
     #' @description
@@ -1241,20 +1265,22 @@ Nop <- R6::R6Class(
             "Please call `$optimize(save_results = TRUE)`."
           )
         }
-        if (no_optimizer == "ignored") {
+        if (no_runs == "ignored") {
           return(integer(0))
         }
       }
-      if (identical(which_runs, "all")) {
-        return(seq_along(private$.records))
-      } else if (identical(which_runs, "last")) {
-        return(seq_along(private$.runs_last))
-      } else if (is.numeric(which_optimizer)) {
+      if (is.character(which_runs)) {
+        if (identical(which_runs, "all")) {
+          ids <- seq_along(private$.records)
+        } else if (identical(which_runs, "last")) {
+          ids <- seq_along(private$.runs_last)
+        } else {
+          ids <- which(sapply(lapply(private$.records, `[[`, 1), `[[`, "label") %in% which_runs)
+        }
+      } else if (is.numeric(which_runs)) {
         ids <- which(seq_along(private$.records) %in% which_runs)
       } else {
-        ino_stop(
-          "Argument `which_runs` is misspecified."
-        )
+        ids <- integer(0)
       }
       if (length(ids) == 0) {
         if (no_optimizer == "fatal") {
@@ -1262,7 +1288,7 @@ Nop <- R6::R6Class(
             "Please check argument `which_runs`, it fits to no recorded result."
           )
         }
-        if (no_optimizer == "ignored") {
+        if (no_runs == "ignored") {
           return(integer(0))
         }
       }

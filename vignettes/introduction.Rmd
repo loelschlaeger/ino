@@ -19,8 +19,8 @@ knitr::opts_chunk$set(
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
-#library("ino")
-devtools::load_all() # remove later
+library("ino")
+# devtools::load_all() # remove later
 options("ino_verbose" = FALSE)
 options("ino_ncores" = 1)
 options("ino_digits" = 2)
@@ -47,10 +47,10 @@ However, it is generally unclear what good initial values are and how they might
 
 ## Functionality of {ino}
 
-To specify an optimization problem in {ino}, we use an object-oriented framework based on the package R6. The general workflow is to first create
+To specify an optimization problem in {ino}, we use an object-oriented framework based on the package {R6} [@Chang:2021]. The general workflow is to first create
 an object (specifying a numerical optimization problem), and then apply methods to change the attributes of that object, e.g., to optimize the function and investigate the optimization results. 
 
-In particular, the {ino} package provides the R6 class `Nop` (an acronym for *n*umerical *o*ptimization *p*roblem).
+In particular, the {ino} package provides the R6 class `Nop` (an acronym for ***n***umerical ***o***ptimization ***p***roblem).
 
 - The starting point for working with {ino} is to define a `Nop` object via `Nop$new()`.
 
@@ -68,21 +68,24 @@ In particular, the {ino} package provides the R6 class `Nop` (an acronym for *n*
 
 We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times from the popular `faithful` data set that is provided by the {datasets} package.
 
+TODO: reference to Zucchini and Hastie book which have done the same?
+
 > **Remark:** Optimization in this example is very fast. This is because the data set is relatively small and we consider a model with only two classes. Therefore, it might not seem relevant to be concerned about initialization here. However, the problem scales: optimization time will rise with more data and more parameters, in which case initialization becomes a greater issue, see for example @Shireman:2017. Additionally, we will see that this simple optimization problem suffers heavily from local optima, depending on the choice of initial values.
 
 ### The optimization problem
 
-The `faithful` data set contains information about eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA. The following histogram hints at two clusters with short and long eruption times, respectively:
-
-```{r, include = FALSE, warning = FALSE}
-library("ggplot2")
-data("faithful")
-```
+The `faithful` data set contains information about eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
 
 ```{r}
 str(faithful)
-ggplot(faithful, aes(x = eruptions, y = after_stat(density))) + 
-  geom_histogram(bins = 30) + 
+```
+
+The following histogram hints at two clusters with short and long eruption times, respectively:
+
+```{r, warning = FALSE}
+library("ggplot2")
+ggplot(faithful, aes(x = eruptions)) + 
+  geom_histogram(aes(y = after_stat(density)), bins = 30) + 
   xlab("Eruption time (min)") 
 ```
 
@@ -134,7 +137,7 @@ print(geyser)
 
 The next specification step concerns the numerical optimizer, which we can specify via the `$set_optimizer()` method. 
 
-> **Remark:** Numerical optimizer must be specified through the unified framework provided by the [{optimizeR} package](https://CRAN.R-project.org/package=optimizeR). This is necessary, because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizer and to compare their results, see [the {optimizeR} README file for details](https://cran.r-project.org/package=optimizeR/readme/README.html).
+> **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary, because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file for details](https://cran.r-project.org/package=optimizeR/readme/README.html).
 
 It is possible to define any numerical optimizer implemented in R through the {optimizeR} framework. Here, we select two of the most popular ones, `stats::nlm()` and `stats::optim()`:
 
@@ -198,13 +201,63 @@ geyser$optimize(initial = "random", runs = 100, label = "random", save_results =
 
 We label the optimization results with `label = "random"`, which is useful later for comparison. We set `save_results = TRUE` to save the optimization results inside the `geyser` object (so that we can use the `$optima()`, `$summary()`, and `$plot()` methods for comparisons, see below). The `seed = 1` argument ensures reproducibility.
 
-The `$optima()` method provides an overview of the identified optima. We see below that the different runs led to `r nrow(geyser$optima(digits = 0, sort_by = "value"))` different optima (minima in this case, because we minimize `normal_mixture_llk()`), hence the initial starting values have a huge impact on the optimization result.
+The `$optima()` method provides an overview of the identified optima (we ignore the decimal places by setting `digits = 0`):
 
 ```{r}
 geyser$optima(digits = 0, sort_by = "value")
 ```
 
-TODO: extract and compare parameters that led to different minima.
+```{r, include = FALSE}
+### check assumptions about optimization results
+noptima <- nrow(geyser$optima(digits = 0, sort_by = "value"))
+stopifnot(noptima == 24)
+most_occuring <- geyser$optima(digits = 0, sort_by = "frequency")[1:2, ]
+most_occuring_value <- as.numeric(as.character(most_occuring$value))
+most_occuring_frequency <- most_occuring$frequency
+optima_values <- as.numeric(as.character(geyser$optima(digits = 0)$value))
+stopifnot(most_occuring_value == c(421, 276))
+stopifnot(min(optima_values) == 276)
+```
+
+The 100 optimization runs with 2 optimizers using random starting values led to `r noptima` different optima (minima in this case, because we minimize `normal_mixture_llk()`). Hence we can deduce that the initial starting values have a huge impact on the optimization result.
+
+The two most occurring optimum values are `r paste(most_occuring_value, collapse = " and ")` with frequencies `r paste(most_occuring_frequency, collapse = " and ")`, respectively. The value 276 is the overall minimum (potentially the global minimum), while 421 is clearly worse. To compare the parameter vectors that led to these different values, we can use the `$which_parameter()` method:
+
+```{r}
+(mle <- geyser$which_parameter(value = 276))
+(bad <- geyser$which_parameter(value = 421))
+```
+
+The parameter vectors are denoted as `mle` (this is our maximum likelihood estimate) and `bad` (this clearly is a bad estimate). To understand the values in terms of means, standard distribution, and mixing proportion (i.e., in the form $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \pi)$), they need transformation (see above):
+
+```{r}
+transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
+(mle <- transform(mle))
+(bad <- transform(bad))
+```
+
+They correspond to the following mixture densities:
+
+```{r}
+mixture_density <- function (x, mu, sigma, pi) {
+  pi * dnorm(x, mu[1], sigma[1]) + (1 - pi) * dnorm(x, mu[2], sigma[2])
+}
+ggplot(faithful, aes(x = eruptions)) + 
+  geom_histogram(aes(y = after_stat(density)), bins = 30) + 
+  xlab("Eruption time (min)") +
+  stat_function(
+    fun = function(x) {
+      mixture_density(x, mu = mle[1:2], sigma = mle[3:4], pi = mle[5])
+    }, aes(color = "mle"), linewidth = 1
+  ) +
+  stat_function(
+    fun = function(x) {
+      mixture_density(x, mu = bad[1:2], sigma = bad[3:4], pi = bad[5])
+    }, aes(color = "bad"), linewidth = 1
+  )
+```
+
+It becomes very clear that the mixture defined by `mle` fits much better than the other one.
 
 ### Custom sampler for initial values
 
@@ -215,21 +268,17 @@ sampler <- function() stats::rnorm(5, mean = 2, sd = 0.5)
 geyser$optimize(initial = sampler, runs = 100, label = "custom_sampler")
 ```
 
-To obtain the results of these optimization runs, we can use `summary()` to obtain (e.g.) the optima and the initial parameters. Together with functions from the dplyr package, we access only the optimization runs of the `custom_sampler`: 
+To obtain the first results of these optimization runs, we can use  the `summary()` method:
 
 ```{r}
-summary(geyser, c("value", "label")) %>% 
-  dplyr::filter(label == "custom_sampler") %>% 
+summary(geyser, which_runs = "custom_sampler") |>
   head(n = 10)
 ```
 
-Here, we still obtain different optima, but most of the runs lead to the optimum of `r summary(geyser, c("value", "parameter", "label")) %>%  dplyr::filter(label == "custom_sampler") %>% dplyr::count(value) %>% dplyr::pull(value) %>% .[1] %>% round()`:
+We still obtain different optima, but (in contrast to the example above) most of the runs here lead to the optimum of `r summary(geyser, c("value", "parameter", "label")) %>%  dplyr::filter(label == "custom_sampler") %>% dplyr::count(value) %>% dplyr::pull(value) %>% .[1] %>% round()`:
 
 ```{r}
-summary(geyser, c("value", "label")) %>%  
-  dplyr::filter(label == "custom_sampler") %>% 
-  dplyr::mutate(value_rounded = round(value)) %>% 
-  dplyr::count(value_rounded)
+geyser$optima(digits = 0, sort_by = "value", which_runs = "custom_sampler")
 ```
 
 ### Educated guesses
@@ -249,7 +298,7 @@ For comparison, we also consider a third set of starting values which are somewh
 starting_values[[3]] <- rep(0, 5)
 ```
 
-In the `$optimize()` method, instead of `label = "random"`, we can set `label` to a numeric vector of length `npar`, or for convenience to a `list` of such vectors, like `starting_values`:
+In the `$optimize()` method, instead of `initial = "random"`, we can set `initial` to a numeric vector of length `npar`, or for convenience to a `list` of such vectors, like `starting_values`:
 
 ```{r}
 geyser$optimize(initial = starting_values, label = "educated_guess")
@@ -258,31 +307,18 @@ geyser$optimize(initial = starting_values, label = "educated_guess")
 Let's look at the results:
 
 ```{r}
-summary(geyser, c("value", "seconds", "label")) %>% 
-  dplyr::filter(label == "educated_guess")
+summary(geyser, which_runs = "educated_guess") 
 ```
 
-TODO: apply round to reduce decimal places
+TODO: also round parameters
 
-The `summary()` method returns an overview of the three optimization runs performed with the two optimizer. In addition to the optima, the optimization time and the label, `summary()` can also show the estimated parameters for all optimization runs:
-
-```{r}
-summary(geyser, c("value", "parameters", "seconds", "label")) %>% 
-  dplyr::filter(label == "educated_guess")
-```
-
-With `geyser$summary_columns`, the names of all available columns of the `summary()` output are shown. 
-
-
-```{r}
-# geyser$get_value(which_value = "initial", which_runs = 10, which_optimizer = "nlm")
-```
+TODO: compare
 
 ### Discard optimization runs
 
 The third run (with the unplausible starting values) converged to a local minimum, as we can deduce from the column "value". We discard this run from further comparisons:
 
-TODO: 
+TODO: implement removing runs
 
 ```{r}
 # geyser$clear(which_runs = 103, which_optimizer = "all")
@@ -346,14 +382,12 @@ Using again the `summary()` table, we can also plot the optima obtained under th
 ```{r}
 summary(geyser, c("label", "value")) %>% 
   ggplot(aes(x = label, y = value)) + 
-           geom_boxplot() + xlab("")
+  geom_point(position = "jitter")
 ```
 
 TODO: relative times
+
 TODO: sort boxplots by their median in descending order
-TODO: plot of values
-
-
 
 ### The final `Nop` object
 

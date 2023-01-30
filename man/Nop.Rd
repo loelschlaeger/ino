@@ -21,7 +21,7 @@ Call \code{object <- Nop$new(f, npar, ...)} where
 
 Call \code{object$set_optimizer(<optimizer object>)} where
 \code{<optimizer object>} is an object of class \code{optimizer}, which can
-be created with the \code{\link[optimizeR]{set_optimizer}} function from the
+be created with the \code{\link[optimizeR]{define_optimizer}} function from the
 \{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm}}
 and \code{\link[optimizeR]{optimizer_optim}} are already available.
 }
@@ -100,6 +100,7 @@ show best minimum in \code{$best_value} and \code{$best_parameter}.}
 \item \href{#method-Nop-continue}{\code{Nop$continue()}}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
+\item \href{#method-Nop-which_parameter}{\code{Nop$which_parameter()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
 \item \href{#method-Nop-clone}{\code{Nop$clone()}}
 }
@@ -298,7 +299,7 @@ Set a numerical optimizer.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{optimizer}}{An object of class \code{optimizer}, which can be created with the
-\code{\link[optimizeR]{set_optimizer}} function from the \{optimizeR\}
+\code{\link[optimizeR]{define_optimizer}} function from the \{optimizeR\}
 package.}
 
 \item{\code{label}}{A \code{character}, a unique label for the optimizer.
@@ -646,7 +647,8 @@ Specify \code{columns = "all"} to include all of them in the output.
 \item{\code{which_runs}}{Select recorded results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all records (default)
-\item \code{"last"} the the records from the last optimization
+\item \code{"last"} the records from the last optimization
+\item a \code{vector} of one or more labels specified in \code{$optimize()}.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
@@ -678,7 +680,11 @@ A \code{data.frame}.
 \subsection{Method \code{optima()}}{
 Overview of the identified optima.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(digits = getOption("ino_digits"), sort_by = "frequency")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
+  digits = getOption("ino_digits"),
+  sort_by = "frequency",
+  which_runs = "all"
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -690,6 +696,38 @@ when the package is loaded.}
 
 \item{\code{sort_by}}{Either \code{"frequency"} (default) to sort rows by frequency or
 \code{"value"} to sort rows by value.}
+
+\item{\code{which_runs}}{Select recorded results of optimization runs. Either:
+\itemize{
+\item \code{"all"} for all records (default)
+\item \code{"last"} the records from the last optimization
+\item a \code{vector} of one or more labels specified in \code{$optimize()}.
+}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-which_parameter"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-which_parameter}{}}}
+\subsection{Method \code{which_parameter()}}{
+From all saved optimization results, extract the parameter vector that
+led to a function value closest to \code{value}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$which_parameter(value, which_optimizer = "all")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A single \code{numeric}.}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
+\itemize{
+\item \code{"all"} for all specified optimizer (default)
+\item a \code{character} vector of specified optimizer labels
+\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+}}
 }
 \if{html}{\out{</div>}}
 }
