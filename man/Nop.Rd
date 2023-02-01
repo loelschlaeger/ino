@@ -51,7 +51,7 @@ optimal parameter vector and optimal value over all optimization runs.
 \examples{
 Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer_nlm())$
-  optimize(runs = 100, verbose = TRUE)$
+  optimize(runs = 100)$
   optima()
 
 }
@@ -61,6 +61,8 @@ Nop$new(f = f_ackley, npar = 2)$
 \item{\code{f}}{The \code{function} to be optimized.}
 
 \item{\code{npar}}{The length of the first argument of \code{f}.}
+
+\item{\code{noptimizer}}{The number of specified optimizers.}
 
 \item{\code{arguments}}{A \code{list} of specified additional arguments for \code{f}.}
 
@@ -99,6 +101,7 @@ show best minimum in \code{$best_value} and \code{$best_parameter}.}
 \item \href{#method-Nop-reduce}{\code{Nop$reduce()}}
 \item \href{#method-Nop-continue}{\code{Nop$continue()}}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
+\item \href{#method-Nop-clear}{\code{Nop$clear()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-which_parameter}{\code{Nop$which_parameter()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
@@ -138,15 +141,14 @@ A new \code{Nop} object.
 \subsection{Method \code{print()}}{
 Prints details of numerical optimization problem.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$print(digits = getOption("ino_digits"), ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$print(digits = getOption("ino_digits", default = 2), ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
-The default is \code{getOption("ino_digits")}, which is set to \code{2}
-when the package is loaded.}
+The default is \code{2}.}
 
 \item{\code{...}}{Currently not used.}
 }
@@ -211,7 +213,10 @@ Remove additional arguments for \code{f}.
 Reset additional arguments for \code{f} after transformation with
 \code{$standardize()} or \code{$reduce()}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$reset_argument(argument_name, verbose = getOption("ino_verbose"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$reset_argument(
+  argument_name,
+  verbose = getOption("ino_verbose", default = TRUE)
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -221,8 +226,7 @@ Reset additional arguments for \code{f} after transformation with
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
-The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
-when the package is loaded.}
+The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -345,8 +349,8 @@ Optimize the function.
   return_results = FALSE,
   save_results = TRUE,
   label = "unlabeled",
-  ncores = getOption("ino_ncores"),
-  verbose = getOption("ino_verbose"),
+  ncores = getOption("ino_ncores", default = 1),
+  verbose = getOption("ino_verbose", default = TRUE),
   simplify = TRUE,
   reset_arguments_afterwards = TRUE,
   hide_warnings = TRUE
@@ -396,14 +400,14 @@ optimization.
 By default, \code{label = "unlabeled"}.
 Labels can be useful to distinguish optimization runs later.}
 
-\item{\code{ncores}}{An \code{integer}, the number of cores for parallel computation.
-The default is \code{getOption("ino_ncores")}, which is set to \code{1}
-when the package is loaded.}
+\item{\code{ncores}}{An \code{integer}, the number of CPU cores for parallel computation.
+The default is \code{1}.
+You can use \code{parallel::detectCores()} to detect the number of available
+CPU cores.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
-The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
-when the package is loaded.}
+The default is \code{TRUE}.}
 
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
@@ -441,8 +445,8 @@ Test the configuration of a \code{Nop} object.
   which_optimizer = "all",
   time_limit_fun = 10,
   time_limit_opt = time_limit_fun,
-  verbose = getOption("ino_verbose"),
-  digits = getOption("ino_digits")
+  verbose = getOption("ino_verbose", default = TRUE),
+  digits = getOption("ino_digits", default = 2)
 )}\if{html}{\out{</div>}}
 }
 
@@ -474,12 +478,10 @@ By default, \code{time_limit_opt = 10}.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
-The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
-when the package is loaded.}
+The default is \code{TRUE}.}
 
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
-The default is \code{getOption("ino_digits")}, which is set to \code{2}
-when the package is loaded.}
+The default is \code{2}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -499,7 +501,7 @@ Standardize the optimization problem.
   center = TRUE,
   scale = TRUE,
   ignore = integer(),
-  verbose = getOption("ino_verbose")
+  verbose = getOption("ino_verbose", default = TRUE)
 )}\if{html}{\out{</div>}}
 }
 
@@ -521,8 +523,7 @@ to standardize row-wise.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
-The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
-when the package is loaded.}
+The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -541,7 +542,7 @@ Reduce the optimization problem.
   centers = 2,
   ignore = integer(),
   seed = NULL,
-  verbose = getOption("ino_verbose")
+  verbose = getOption("ino_verbose", default = TRUE)
 )}\if{html}{\out{</div>}}
 }
 
@@ -580,8 +581,7 @@ No seed by default.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
-The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
-when the package is loaded.}
+The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -619,10 +619,10 @@ By default, \code{return_results = FALSE}.}
 Overview of the optimization runs.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$summary(
-  columns = c("value", "parameter", "seconds"),
+  columns = c("value", "parameter", "seconds", if (self$noptimizer > 1) "optimizer"),
   which_runs = "all",
   which_optimizer = "all",
-  digits = getOption("ino_digits"),
+  digits = getOption("ino_digits", default = 2),
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -639,7 +639,7 @@ which returns the columns
 \item \code{"parameter"}, the parameter vector at which the optimum is
 obtained,
 \item \code{"seconds"}, the optimization time in seconds.
-See \code{$summary_columns} for an overview of the available column
+See \code{$summary_columns()} for an overview of the available column
 names.
 Specify \code{columns = "all"} to include all of them in the output.
 }}
@@ -659,12 +659,11 @@ Specify \code{columns = "all"} to include all of them in the output.
 }}
 
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
-The default is \code{getOption("ino_digits")}, which is set to \code{2}
-when the package is loaded.}
+The default is \code{2}.}
 
 \item{\code{...}}{Optionally named expressions of variables from summary columns as
 \code{character}.
-See \code{$summary_columns} for an overview of the available columns.
+See \code{$summary_columns()} for an overview of the available columns.
 Also, \code{"true_value"} and \code{"true_parameter"} are available
 (if specified).}
 }
@@ -675,13 +674,35 @@ A \code{data.frame}.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-clear"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-clear}{}}}
+\subsection{Method \code{clear()}}{
+Delete optimization results.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$clear(which_runs = "all")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_runs}}{Select recorded results of optimization runs. Either:
+\itemize{
+\item \code{"all"} for all records (default)
+\item \code{"last"} the records from the last optimization
+\item a \code{vector} of one or more labels specified in \code{$optimize()}.
+}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optima"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
 \subsection{Method \code{optima()}}{
 Overview of the identified optima.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
-  digits = getOption("ino_digits"),
+  digits = getOption("ino_digits", default = 2),
   sort_by = "frequency",
   which_runs = "all"
 )}\if{html}{\out{</div>}}
@@ -691,8 +712,7 @@ Overview of the identified optima.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
-The default is \code{getOption("ino_digits")}, which is set to \code{2}
-when the package is loaded.}
+The default is \code{2}.}
 
 \item{\code{sort_by}}{Either \code{"frequency"} (default) to sort rows by frequency or
 \code{"value"} to sort rows by value.}
@@ -738,7 +758,7 @@ led to a function value closest to \code{value}.
 \subsection{Method \code{plot()}}{
 Visualization of optimization time.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, nrow = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, nrow = 1)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -747,7 +767,8 @@ Visualization of optimization time.
 \item{\code{by}}{A character vector of variables to group by.
 Can be \code{NULL} (default).}
 
-\item{\code{nrow}}{Passed to \code{\link[ggplot2]{facet_wrap}}.}
+\item{\code{nrow}}{Passed to \code{\link[ggplot2]{facet_wrap}}.
+By default, \code{nrow = 1}.}
 }
 \if{html}{\out{</div>}}
 }

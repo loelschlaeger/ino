@@ -96,7 +96,7 @@ Nop <- R6::R6Class(
     #' Optionally additional arguments for \code{f}.
     #' @return
     #' A new \code{Nop} object.
-    initialize = function (f, npar, ...) {
+    initialize = function(f, npar, ...) {
       if (missing(f)) {
         ino_stop(
           "Please specify argument `f`.",
@@ -145,7 +145,7 @@ Nop <- R6::R6Class(
     #' @importFrom glue glue
     #' @param ...
     #' Currently not used.
-    print = function (digits = getOption("ino_digits", default = 2), ...) {
+    print = function(digits = getOption("ino_digits", default = 2), ...) {
       cat(
         crayon::underline("Optimization problem:"), "\n",
         glue::glue(" Function: {private$.f_name}"), "\n",
@@ -203,7 +203,7 @@ Nop <- R6::R6Class(
     #' Set additional arguments for \code{f}.
     #' @param ...
     #' Optionally additional arguments for \code{f}.
-    set_argument = function (...) {
+    set_argument = function(...) {
       arguments <- list(...)
       if (length(arguments) == 0) {
         ino_stop(
@@ -236,7 +236,7 @@ Nop <- R6::R6Class(
     #' Get value of an argument for \code{f}.
     #' @param argument_name
     #' A \code{character}, the argument to extract.
-    get_argument = function (argument_name) {
+    get_argument = function(argument_name) {
       if (missing(argument_name)) {
         ino_stop(
           "Please specify `argument_name`."
@@ -255,7 +255,7 @@ Nop <- R6::R6Class(
     #' Remove additional arguments for \code{f}.
     #' @param argument_name
     #' A \code{character} (vector), the argument(s) to remove.
-    remove_argument = function (argument_name) {
+    remove_argument = function(argument_name) {
       if (missing(argument_name)) {
         ino_stop(
           "Please specify `argument_name`."
@@ -280,7 +280,7 @@ Nop <- R6::R6Class(
     #' \code{$standardize()} or \code{$reduce()}.
     #' @param argument_name
     #' A \code{character} (vector), the argument(s) to reset.
-    reset_argument = function (
+    reset_argument = function(
       argument_name, verbose = getOption("ino_verbose", default = TRUE)
     ) {
       if (missing(argument_name)) {
@@ -297,6 +297,7 @@ Nop <- R6::R6Class(
         private$.check_add_arg_exists(argument_name)
         private$.reset_orig_argument(arg, verbose = verbose)
       }
+      invisible(self)
     },
 
     #' @description
@@ -305,7 +306,7 @@ Nop <- R6::R6Class(
     #' A \code{numeric} vector of length \code{npar}.
     #' @return
     #' A \code{numeric} value.
-    evaluate = function (at) {
+    evaluate = function(at) {
       private$.check_add_args_complete()
       private$.check_target_arg(at, arg_name = "at")
       private$.evaluate(at)
@@ -315,7 +316,7 @@ Nop <- R6::R6Class(
     #' Optionally set the true optimum value.
     #' @param true_value
     #' A single \code{numeric}, the value of \code{f} at its optimum.
-    set_true_value = function (true_value) {
+    set_true_value = function(true_value) {
       if (!(is.numeric(true_value) && length(true_value) == 1)) {
         ino_stop(
           "Argument `true_value` must be a `numeric` of length 1."
@@ -334,7 +335,7 @@ Nop <- R6::R6Class(
     #' Set to \code{TRUE} to use \code{true_parameter} to compute the true
     #' optimum value of \code{f}.
     #' Set to \code{FALSE} (default) if not.
-    set_true_parameter = function (true_parameter, set_true_value = FALSE) {
+    set_true_parameter = function(true_parameter, set_true_value = FALSE) {
       private$.check_target_arg(true_parameter, "true_parameter")
       if (!(isTRUE(set_true_value) || isFALSE(set_true_value))) {
         ino_stop(
@@ -363,7 +364,7 @@ Nop <- R6::R6Class(
     #' A \code{character}, a unique label for the optimizer.
     #' By default \code{label = NULL}, in which case the default label saved
     #' inside \code{optimizer} is used.
-    set_optimizer = function (optimizer, label = NULL) {
+    set_optimizer = function(optimizer, label = NULL) {
       if (missing(optimizer)) {
         ino_stop(
           "Please specify argument `optimizer`."
@@ -397,7 +398,7 @@ Nop <- R6::R6Class(
 
     #' @description
     #' Remove numerical optimizer.
-    remove_optimizer = function (which_optimizer = "all") {
+    remove_optimizer = function(which_optimizer = "all") {
       opt_ids <- private$.get_optimizer_ids(which_optimizer)
       private$.optimizer <- private$.optimizer[-opt_ids]
       private$.optimizer_label <- private$.optimizer_label[-opt_ids]
@@ -561,7 +562,7 @@ Nop <- R6::R6Class(
           run = 1:runs, .packages = "ino", .export = "private", .inorder = FALSE,
           .options.snow = opts
         ) %dopar% {
-          lapply(optimizer_ids, function (i) {
+          lapply(optimizer_ids, function(i) {
             private$.optimize(
               initial = get_initial(run),
               optimizer_id = i,
@@ -571,7 +572,7 @@ Nop <- R6::R6Class(
       } else {
         results <- foreach::foreach(run = 1:runs) %do% {
           pb$tick()
-          lapply(optimizer_ids, function (i) {
+          lapply(optimizer_ids, function(i) {
             private$.optimize(
               initial = get_initial(run),
               optimizer_id = i,
@@ -627,7 +628,7 @@ Nop <- R6::R6Class(
     #' By default, \code{time_limit_opt = 10}.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
-    test = function (
+    test = function(
       at = rnorm(self$npar), which_optimizer = "all", time_limit_fun = 10,
       time_limit_opt = time_limit_fun, verbose = getOption("ino_verbose", default = TRUE),
       digits = getOption("ino_digits", default = 2)
@@ -955,7 +956,7 @@ Nop <- R6::R6Class(
 
     #' @description
     #' Continue last optimization runs, e.g., with a transformed parameter.
-    continue = function (
+    continue = function(
       hide_warnings = TRUE, save_results = TRUE, return_results = FALSE
     ) {
       records_old <- private$.records[private$.runs_last]
@@ -1012,9 +1013,10 @@ Nop <- R6::R6Class(
     #' @return
     #' A \code{data.frame}.
     #' @importFrom dplyr bind_rows
-    summary = function (
-      columns = c("value", "parameter", "seconds"), which_runs = "all",
-      which_optimizer = "all", digits = getOption("ino_digits", default = 2), ...
+    summary = function(
+      columns = c("value", "parameter", "seconds", if (self$noptimizer > 1) "optimizer"),
+      which_runs = "all", which_optimizer = "all",
+      digits = getOption("ino_digits", default = 2), ...
     ) {
       if (!is.character(columns)) {
         ino_stop(
@@ -1077,11 +1079,19 @@ Nop <- R6::R6Class(
     },
 
     #' @description
+    #' Delete optimization results.
+    clear = function(which_runs = "all") {
+      run_ids <- private$.get_run_ids(which_runs)
+      private$.records[run_ids] <- NULL
+      private$.nruns <- private$.nruns - length(run_ids)
+    },
+
+    #' @description
     #' Overview of the identified optima.
     #' @param sort_by
     #' Either \code{"frequency"} (default) to sort rows by frequency or
     #' \code{"value"} to sort rows by value.
-    optima = function (
+    optima = function(
       digits = getOption("ino_digits", default = 2), sort_by = "frequency",
       which_runs = "all"
     ) {
@@ -1117,14 +1127,17 @@ Nop <- R6::R6Class(
     #' led to a function value closest to \code{value}.
     #' @param value
     #' A single \code{numeric}.
-    which_parameter = function (value, which_optimizer = "all") {
+    which_parameter = function(
+      value, which_optimizer = "all"
+    ) {
       if (!(is.numeric(value) && is.vector(value) && length(value) == 1)) {
         ino_stop(
           "Input 'value' must be a single `numeric`."
         )
       }
       results <- self$summary(
-        columns = c("value", "parameter"), which_optimizer = which_optimizer
+        columns = c("value", "parameter"), which_optimizer = which_optimizer,
+        digits = Inf
       )
       index <- which.min(abs(value - results$value))
       results$parameter[[index]]
@@ -1137,9 +1150,10 @@ Nop <- R6::R6Class(
     #' Can be \code{NULL} (default).
     #' @param nrow
     #' Passed to \code{\link[ggplot2]{facet_wrap}}.
+    #' By default, \code{nrow = 1}.
     #' @importFrom ggplot2 ggplot aes scale_y_continuous geom_boxplot facet_wrap
     #' theme element_blank ylab
-    plot = function (by = NULL, nrow = NULL) {
+    plot = function(by = NULL, nrow = 1) {
       self$summary(columns = "all") %>%
         ggplot2::ggplot(aes(x = "", y = .data$seconds)) +
         ggplot2::scale_y_continuous() +
@@ -1182,7 +1196,7 @@ Nop <- R6::R6Class(
     .show_minimum = TRUE,
 
     ### checks supplied value for target argument
-    .check_target_arg = function (target_arg, arg_name) {
+    .check_target_arg = function(target_arg, arg_name) {
       stopifnot(is.character(arg_name), length(arg_name) == 1)
       if (!(is.numeric(target_arg) && length(target_arg) == private$.npar)) {
         ino_stop(
@@ -1192,7 +1206,7 @@ Nop <- R6::R6Class(
     },
 
     ### checks if specific argument exists
-    .check_add_arg_exists = function (argument_name) {
+    .check_add_arg_exists = function(argument_name) {
       stopifnot(is.character(argument_name), length(argument_name) == 1)
       if (!argument_name %in% names(private$.arguments)) {
         ino_stop(
@@ -1203,7 +1217,7 @@ Nop <- R6::R6Class(
     },
 
     ### checks if argument is matrix or data.frame
-    .check_add_arg_matrix_df = function (argument_name, verbose = TRUE) {
+    .check_add_arg_matrix_df = function(argument_name, verbose = TRUE) {
       private$.check_add_arg_exists(argument_name)
       argument <- private$.arguments[[argument_name]]
       if (!is.data.frame(argument) && !is.matrix(argument)) {
@@ -1215,7 +1229,7 @@ Nop <- R6::R6Class(
     },
 
     ### checks if all required arguments for function are specified
-    .check_add_args_complete = function () {
+    .check_add_args_complete = function() {
       args_all <- formals(private$.f)
       args_all[private$.f_target] <- NULL
       for (arg in names(args_all)) {
@@ -1227,7 +1241,7 @@ Nop <- R6::R6Class(
     },
 
     ### returns numeric IDs of specified optimizer
-    .get_optimizer_ids = function (which_optimizer, no_optimizer = "fatal") {
+    .get_optimizer_ids = function(which_optimizer, no_optimizer = "fatal") {
       stopifnot(no_optimizer %in% c("fatal", "ignored"))
       if (length(private$.optimizer) == 0) {
         if (no_optimizer == "fatal") {
@@ -1265,7 +1279,7 @@ Nop <- R6::R6Class(
     },
 
     ### returns numeric IDs of recorded optimization runs
-    .get_run_ids = function (which_runs, no_runs = "fatal") {
+    .get_run_ids = function(which_runs, no_runs = "fatal") {
       stopifnot(no_runs %in% c("fatal", "ignored"))
       if (length(private$.records) == 0) {
         if (no_runs == "fatal") {
@@ -1305,7 +1319,7 @@ Nop <- R6::R6Class(
     },
 
     ### cheap function evaluation
-    .evaluate = function (at) {
+    .evaluate = function(at) {
       at <- list(at)
       names(at) <- private$.f_target
       do.call(
@@ -1338,7 +1352,7 @@ Nop <- R6::R6Class(
     },
 
     ### save optimization results inside `Nop` object
-    .save_results = function (results, run_ids, optimizer_ids, label) {
+    .save_results = function(results, run_ids, optimizer_ids, label) {
       for (i in seq_along(results)) {
         for (j in seq_along(optimizer_ids)) {
           results[[i]][[j]][["optimizer"]] <- private$.optimizer_label[optimizer_ids[j]]
@@ -1349,7 +1363,7 @@ Nop <- R6::R6Class(
     },
 
     ### return optimization results as a `list`
-    .return_results = function (results, simplify = TRUE) {
+    .return_results = function(results, simplify = TRUE) {
       if (!isTRUE(simplify) && !isFALSE(simplify)) {
         ino_stop(
           "Input `simplify` must be either `TRUE` or `FALSE`."
@@ -1367,14 +1381,14 @@ Nop <- R6::R6Class(
     },
 
     ### save original arguments before standardization / reducing
-    .save_orig_argument = function (orig_argument, argument_name) {
+    .save_orig_argument = function(orig_argument, argument_name) {
       if (is.null(private$.orig_arguments[[argument_name]])) {
         private$.orig_arguments[[argument_name]] <- orig_argument
       }
     },
 
     ### reset transformed argument to original argument
-    .reset_orig_argument = function (argument_name, verbose = FALSE) {
+    .reset_orig_argument = function(argument_name, verbose = FALSE) {
       if (!is.null(private$.orig_arguments[[argument_name]])) {
         private$.arguments[[argument_name]] <- private$.orig_arguments[[argument_name]]
         private$.orig_arguments[[argument_name]] <- NULL
@@ -1389,7 +1403,7 @@ Nop <- R6::R6Class(
   active = list(
 
     #' @field f The \code{function} to be optimized.
-    f = function (value) {
+    f = function(value) {
       if (missing(value)) {
         private$.f
       } else {
@@ -1410,8 +1424,19 @@ Nop <- R6::R6Class(
       }
     },
 
+    #' @field noptimizer The number of specified optimizers.
+    noptimizer = function(value) {
+      if (missing(value)) {
+        length(private$.optimizer)
+      } else {
+        ino_stop(
+          "`$noptimizer` is read only."
+        )
+      }
+    },
+
     #' @field arguments A \code{list} of specified additional arguments for \code{f}.
-    arguments = function (value) {
+    arguments = function(value) {
       if (missing(value)) {
         private$.arguments
       } else {
@@ -1425,7 +1450,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field true_parameter The true optimum \code{numeric} parameter vector of length \code{npar} (if available).
-    true_parameter = function (value) {
+    true_parameter = function(value) {
       if (missing(value)) {
         private$.true_parameter
       } else {
@@ -1434,7 +1459,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field true_value The true \code{numeric} optimum value of \code{f} (if available).
-    true_value = function (value) {
+    true_value = function(value) {
       if (missing(value)) {
         private$.true_value
       } else {
@@ -1444,7 +1469,7 @@ Nop <- R6::R6Class(
 
     #' @field show_minimum A \code{logical}, set to \code{TRUE} (default) to
     #' show best minimum in \code{$best_value} and \code{$best_parameter}.
-    show_minimum = function (value) {
+    show_minimum = function(value) {
       if (missing(value)) {
         private$.show_minimum
       } else {
@@ -1458,7 +1483,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field best_parameter The best found \code{numeric} parameter vector of length \code{npar} (if available).
-    best_parameter = function (value) {
+    best_parameter = function(value) {
       if (missing(value)) {
         best_value <- self$best_value
         x <- self$summary(c("value", "parameter"))
@@ -1472,7 +1497,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field best_value The best found \code{numeric} value of \code{f} (if available).
-    best_value = function (value) {
+    best_value = function(value) {
       if (missing(value)) {
         if (private$.show_minimum) {
           min(self$summary("value")$value)
@@ -1487,7 +1512,7 @@ Nop <- R6::R6Class(
     },
 
     #' @field summary_columns A \code{character}, the names of available statistics from the optimization.
-    summary_columns = function (value) {
+    summary_columns = function(value) {
       if (missing(value)) {
         colnames(self$summary(columns = "all"))
       } else {
