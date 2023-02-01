@@ -5,7 +5,6 @@
 ^LICENSE\.md$
 ^README\.Rmd$
 ^\.github$
-sandbox.R
 cran-comments.md
 ^CRAN-SUBMISSION$
 ^codecov\.yml$
