@@ -237,7 +237,10 @@ test_that("Nop object can be tested", {
     "No optimizer specified, testing optimizer is skipped."
   )
   slow_f$set_optimizer(optimizer_nlm())
-  expect_warning(slow_f$test(time_limit_fun = 3, time_limit_opt = 1), "The time limit of 1s was reached")
+  expect_warning(
+    slow_f$test(time_limit_fun = 1, time_limit_opt = 10),
+    "The time limit of 1s was reached"
+  )
   ackley$remove_optimizer(1:2)
   bad_optimizer_fun <- function(f, p) {
     if (identical(p, 1:2)) stop()
@@ -328,7 +331,7 @@ test_that("summary works", {
   expect_error(ackley$summary(), "No optimization results saved.")
   ackley$optimize(runs = 10)
   out <- ackley$summary()
-  expect_named(ackley$summary(), c("value", "parameter", "seconds"))
+  expect_named(ackley$summary(), c("value", "parameter", "seconds", "optimizer"))
   expect_true(is.data.frame(ackley$summary("distance" = "true_value - value")))
   expect_true(is.character(ackley$summary_columns))
   expect_error(
