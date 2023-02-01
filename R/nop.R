@@ -16,16 +16,15 @@
 #' @param verbose
 #' A \code{logical}, which indicates whether progress/details should be printed.
 #' Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
-#' The default is \code{getOption("ino_verbose")}, which is set to \code{TRUE}
-#' when the package is loaded.
+#' The default is \code{TRUE}.
 #' @param ncores
-#' An \code{integer}, the number of cores for parallel computation.
-#' The default is \code{getOption("ino_ncores")}, which is set to \code{1}
-#' when the package is loaded.
+#' An \code{integer}, the number of CPU cores for parallel computation.
+#' The default is \code{1}.
+#' You can use \code{parallel::detectCores()} to detect the number of available
+#' CPU cores.
 #' @param digits
 #' An \code{integer}, the number of decimal places.
-#' The default is \code{getOption("ino_digits")}, which is set to \code{2}
-#' when the package is loaded.
+#' The default is \code{2}.
 #' @param seed
 #' Set a seed for reproducibility.
 #' No seed by default.
@@ -75,7 +74,7 @@
 #' @examples
 #' Nop$new(f = f_ackley, npar = 2)$
 #'   set_optimizer(optimizer_nlm())$
-#'   optimize(runs = 100, verbose = TRUE)$
+#'   optimize(runs = 100)$
 #'   optima()
 #'
 #' @export
@@ -146,7 +145,7 @@ Nop <- R6::R6Class(
     #' @importFrom glue glue
     #' @param ...
     #' Currently not used.
-    print = function (digits = getOption("ino_digits"), ...) {
+    print = function (digits = getOption("ino_digits", default = 2), ...) {
       cat(
         crayon::underline("Optimization problem:"), "\n",
         glue::glue(" Function: {private$.f_name}"), "\n",
@@ -281,7 +280,9 @@ Nop <- R6::R6Class(
     #' \code{$standardize()} or \code{$reduce()}.
     #' @param argument_name
     #' A \code{character} (vector), the argument(s) to reset.
-    reset_argument = function (argument_name, verbose = getOption("ino_verbose")) {
+    reset_argument = function (
+      argument_name, verbose = getOption("ino_verbose", default = TRUE)
+    ) {
       if (missing(argument_name)) {
         ino_stop(
           "Please specify `argument_name`."
@@ -447,8 +448,8 @@ Nop <- R6::R6Class(
     optimize = function(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
       return_results = FALSE, save_results = TRUE,
-      label = "unlabeled", ncores = getOption("ino_ncores"),
-      verbose = getOption("ino_verbose"), simplify = TRUE,
+      label = "unlabeled", ncores = getOption("ino_ncores", default = 1),
+      verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
       reset_arguments_afterwards = TRUE, hide_warnings = TRUE
     ) {
 
@@ -628,8 +629,8 @@ Nop <- R6::R6Class(
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function (
       at = rnorm(self$npar), which_optimizer = "all", time_limit_fun = 10,
-      time_limit_opt = time_limit_fun, verbose = getOption("ino_verbose"),
-      digits = getOption("ino_digits")
+      time_limit_opt = time_limit_fun, verbose = getOption("ino_verbose", default = TRUE),
+      digits = getOption("ino_digits", default = 2)
       ) {
 
       ### input checks
@@ -777,7 +778,7 @@ Nop <- R6::R6Class(
     #' \code{by_column = FALSE}) to not standardize.
     standardize = function(
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
-      ignore = integer(), verbose = getOption("ino_verbose")
+      ignore = integer(), verbose = getOption("ino_verbose", default = TRUE)
     ) {
 
       ### input checks
@@ -860,7 +861,7 @@ Nop <- R6::R6Class(
     #' if \code{by_row = FALSE}) to ignore for clustering.
     reduce = function(
       argument_name, by_row = TRUE, how = "random", proportion = 0.5, centers = 2,
-      ignore = integer(), seed = NULL, verbose = getOption("ino_verbose")
+      ignore = integer(), seed = NULL, verbose = getOption("ino_verbose", default = TRUE)
     ) {
 
       ### input checks
@@ -1013,7 +1014,7 @@ Nop <- R6::R6Class(
     #' @importFrom dplyr bind_rows
     summary = function (
       columns = c("value", "parameter", "seconds"), which_runs = "all",
-      which_optimizer = "all", digits = getOption("ino_digits"), ...
+      which_optimizer = "all", digits = getOption("ino_digits", default = 2), ...
     ) {
       if (!is.character(columns)) {
         ino_stop(
@@ -1073,7 +1074,7 @@ Nop <- R6::R6Class(
     #' Either \code{"frequency"} (default) to sort rows by frequency or
     #' \code{"value"} to sort rows by value.
     optima = function (
-      digits = getOption("ino_digits"), sort_by = "frequency",
+      digits = getOption("ino_digits", default = 2), sort_by = "frequency",
       which_runs = "all"
     ) {
       if (!is.numeric(digits) && length(digits) == 1) {

@@ -14,15 +14,6 @@
 "_PACKAGE"
 
 #' @noRd
-#' @keywords internal
-
-.onLoad <- function(lib, pkg) {
-  options("ino_verbose" = TRUE)
-  options("ino_ncores" = 1)
-  options("ino_digits" = 2)
-}
-
-#' @noRd
 #' @importFrom utils packageVersion
 #' @importFrom glue glue
 #' @keywords internal
