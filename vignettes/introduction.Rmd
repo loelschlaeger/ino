@@ -19,11 +19,9 @@ knitr::opts_chunk$set(
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
-library("ino")
-# devtools::load_all() # remove later
+# library("ino")
+devtools::load_all() # remove later
 options("ino_verbose" = FALSE)
-options("ino_ncores" = 1)
-options("ino_digits" = 2)
 set.seed(1)
 ```
 
@@ -47,7 +45,7 @@ However, it is generally unclear what good initial values are and how they might
 
 ## Functionality of {ino}
 
-To specify an optimization problem in {ino}, we use an object-oriented framework based on the package {R6} [@Chang:2021]. The general workflow is to first create
+To specify an optimization problem in {ino}, we use an object-oriented framework based on the {R6} package [@Chang:2021]. The general workflow is to first create
 an object (specifying a numerical optimization problem), and then apply methods to change the attributes of that object, e.g., to optimize the function and investigate the optimization results. 
 
 In particular, the {ino} package provides the R6 class `Nop` (an acronym for ***n***umerical ***o***ptimization ***p***roblem).
@@ -58,23 +56,23 @@ In particular, the {ino} package provides the R6 class `Nop` (an acronym for ***
 
 - Then, `$evaluate()` evaluates and `$optimize()` optimizes the target function.
 
-- For evaluating the results, `$optima()` prints an overview of all optima, and the `plot()` and `summary()` methods summarize the optimization runs.
+- For evaluating the results, `$optima()` prints an overview of all optima, and the `$plot()` and `$summary()` methods summarize the optimization runs.
 
 - The method `$standardize()` can be used to standardize the optimization problem.
 
 - The method `$reduce()` can be used to simplify the optimization problem.
 
+These methods are illustrated in the following example.
+
 ## Working with {ino}
 
 We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times from the popular `faithful` data set that is provided by the {datasets} package.
 
-TODO: reference to Zucchini and Hastie book which have done the same?
-
-> **Remark:** Optimization in this example is very fast. This is because the data set is relatively small and we consider a model with only two classes. Therefore, it might not seem relevant to be concerned about initialization here. However, the problem scales: optimization time will rise with more data and more parameters, in which case initialization becomes a greater issue, see for example @Shireman:2017. Additionally, we will see that this simple optimization problem suffers heavily from local optima, depending on the choice of initial values.
+> **Remark:** Optimization in this example is very fast. This is because the data set is relatively small and we consider a model with only two classes. Therefore, it might not seem relevant to be concerned about initialization here. However, the problem scales: optimization time will rise with more data and more parameters, in which case initialization becomes a greater issue, see for example @Shireman:2017. Additionally, we will see that even this simple optimization problem suffers heavily from local optima, depending on the choice of initial values.
 
 ### The optimization problem
 
-The `faithful` data set contains information about eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
+The `faithful` data set contains information about eruption times (`eruptions`) of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
 
 ```{r}
 str(faithful)
@@ -92,23 +90,27 @@ ggplot(faithful, aes(x = eruptions)) +
 For both clusters, we assume a normal distribution here, such that we consider a mixture of two Gaussian densities for modeling the overall eruption times. The log-likelihood function is given by
 
 $$
-\ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \pi f_{\mu_1, \sigma_1^2}(x_i) + (1-\pi)f_{\mu_2,\sigma_2^2} (x_i) \Big),
+\ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \pi \phi_{\mu_1, \sigma_1^2}(x_i) + (1-\pi)\phi_{\mu_2,\sigma_2^2} (x_i) \Big),
 $$
 
-where $f_{\mu_1, \sigma_1^2}$ and $f_{\mu_2, \sigma_2^2}$ denote the normal density for the first and second cluster, respectively, and $\pi$ is the mixing proportion. The vector of parameters to be estimated is thus $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \pi)$. As there exists no closed-form solution for the maximum likelihood estimator, we need numerical optimization for finding the function optimum. 
+where $\phi_{\mu_1, \sigma_1^2}$ and $\phi_{\mu_2, \sigma_2^2}$ denote the normal density for the first and second cluster, respectively, and $\pi$ is the mixing proportion. The vector of parameters to be estimated is thus $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \pi)$. As there exists no closed-form solution for the maximum likelihood estimator $\boldsymbol{\theta}^* = \arg\max_\boldsymbol{\theta} l(\boldsymbol{\theta})$, we need numerical optimization for finding the function optimum. 
 
-The following function calculates the log-likelihood value of the normal mixture, given the parameter vector `theta` and column `column` of the `data.frame` `data`. Note that we restrict the standard deviations `sigma` to be positive (via the exponential transformation) and `pi` to be between 0 and 1 (via the logit transformation), and that the function returns the negative log-likelihood value by default.
+The following function calculates the log-likelihood value of the two-class Gaussian mixture model, given the parameter vector `theta` and column `column` of the `data.frame` `data`. Note:
+
+1. We restrict the standard deviations `sd` to be positive (via the exponential transformation) and `pi` to be between 0 and 1 (via the logit transformation).
+2. The function returns the negative log-likelihood value by default (`neg = TRUE`). This is necessary because most R optimizers only minimize (e.g., `stats::nlm`), where we can use that $\arg\max_\boldsymbol{\theta} l(\boldsymbol{\theta}) = \arg\min_\boldsymbol{\theta} -l(\boldsymbol{\theta})$.
 
 ```{r}
 normal_mixture_llk <- function(theta, data, column, neg = TRUE){
   stopifnot(length(theta) == 5)
   mu <- theta[1:2]
-  sigma <- exp(theta[3:4])
+  sd <- exp(theta[3:4])
   pi <- plogis(theta[5])
   x <- data[[column]]
-  llk <- sum(log(pi * dnorm(x, mu[1], sigma[1]) + (1 - pi) * dnorm(x, mu[2], sigma[2])))
+  llk <- sum(log(pi * dnorm(x, mu[1], sd[1]) + (1 - pi) * dnorm(x, mu[2], sd[2])))
   ifelse(neg, -llk, llk)
 }
+normal_mixture_llk(1:5, faithful, "eruptions")
 ```
 
 ### Specification in {ino}
@@ -129,13 +131,13 @@ geyser <- Nop$new(
 )
 ```
 
-The `print()` method provides an overview of the specification.
+Printing the object provides an overview of the specification:
 
 ```{r}
 print(geyser)
 ```
 
-The next specification step concerns the numerical optimizer, which we can specify via the `$set_optimizer()` method. 
+The next step concerns specifying the numerical optimizer via the `$set_optimizer()` method. 
 
 > **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary, because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file for details](https://cran.r-project.org/package=optimizeR/readme/README.html).
 
@@ -147,7 +149,9 @@ geyser$
   set_optimizer(optimizer_optim(), label = "optim")
 ```
 
-Finally, we recommend to test the configuration with the `$test()` method:
+> **Remark:** In the previous code chunk we use a technique called "method chaining" [see @Wickham:2019, ch. 14.2.1]. Basically, this means that `geyser$set_optimizer()` returns the modified `geyser` object, for which we can specify a second optimizer by calling `$set_optimizer()` again. 
+
+Finally, we recommend to test the specification with the `$test()` method:
 
 ```{r, R.options = list("ino_verbose" = TRUE)}
 geyser$test()
@@ -193,15 +197,19 @@ The return value is a `list` of:
 
 ### Initialization effect
 
-We are interested in the effect of the starting values on the optimization, i.e., whether different initial values lead to different results. We therefore optimize the likelihood function `runs = 100` times with different random starting points and compare the identified optima:
+We are interested in the effect of the starting values on the optimization, i.e., whether different initial values lead to different results. We therefore optimize the likelihood function `runs = 100` times at different random starting points and compare the identified optima:
 
 ```{r}
 geyser$optimize(initial = "random", runs = 100, label = "random", save_results = TRUE, seed = 1)
 ```
 
-We label the optimization results with `label = "random"`, which is useful later for comparison. We set `save_results = TRUE` to save the optimization results inside the `geyser` object (so that we can use the `$optima()`, `$summary()`, and `$plot()` methods for comparisons, see below). The `seed = 1` argument ensures reproducibility.
+Note:
 
-The `$optima()` method provides an overview of the identified optima (we ignore the decimal places by setting `digits = 0`):
+1. We label the optimization results with `label = "random"`, which is useful later for comparison, see below. 
+2. We set `save_results = TRUE` to save the optimization results inside the `geyser` object (so that we can use the `$optima()`, `$summary()`, and `$plot()` methods for comparisons, see below). 
+3. The `seed = 1` argument ensures reproducibility.
+
+The `$optima()` method provides an overview of the identified optima. Here, we ignore the decimal places by setting `digits = 0` and sort by the optimum function `value`:
 
 ```{r}
 geyser$optima(digits = 0, sort_by = "value")
@@ -219,16 +227,16 @@ stopifnot(most_occuring_value == c(421, 276))
 stopifnot(min(optima_values) == 276)
 ```
 
-The 100 optimization runs with 2 optimizers using random starting values led to `r noptima` different optima (minima in this case, because we minimize `normal_mixture_llk()`). Hence we can deduce that the initial starting values have a huge impact on the optimization result.
+The 100 optimization runs with 2 optimizers using random starting values led to `r noptima` different optima (minima in this case, because we minimize `normal_mixture_llk()`). We therefore can deduce that the initial values have a huge impact on the optimization result.
 
-The two most occurring optimum values are `r paste(most_occuring_value, collapse = " and ")` with frequencies `r paste(most_occuring_frequency, collapse = " and ")`, respectively. The value 276 is the overall minimum (potentially the global minimum), while 421 is clearly worse. To compare the parameter vectors that led to these different values, we can use the `$which_parameter()` method:
+The two most occurring optimum values are `r paste(most_occuring_value, collapse = " and ")` with frequencies `r paste(most_occuring_frequency, collapse = " and ")`, respectively. The value 276 is the overall minimum (potentially the global minimum), while 421 is significantly worse. To compare the parameter vectors that led to these different values, we can use the `$which_parameter()` method. From the saved optimization runs, it extracts the parameter vector corresponding to an optimum closest to `value`:
 
 ```{r}
 (mle <- geyser$which_parameter(value = 276))
 (bad <- geyser$which_parameter(value = 421))
 ```
 
-The parameter vectors are denoted as `mle` (this is our maximum likelihood estimate) and `bad` (this clearly is a bad estimate). To understand the values in terms of means, standard distribution, and mixing proportion (i.e., in the form $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \pi)$), they need transformation (see above):
+These two parameter vectors are saved as `mle` (this is our maximum likelihood estimate) and `bad` (this clearly is a bad estimate). To understand the values in terms of means, standard deviations, and mixing proportion (i.e., in the form $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \pi)$), they need transformation (see above):
 
 ```{r}
 transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
@@ -236,23 +244,23 @@ transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
 (bad <- transform(bad))
 ```
 
-They correspond to the following mixture densities:
+The two estimates `mle` and `bad` for $\boldsymbol{\theta}$ correspond to the following mixture densities:
 
 ```{r}
-mixture_density <- function (x, mu, sigma, pi) {
-  pi * dnorm(x, mu[1], sigma[1]) + (1 - pi) * dnorm(x, mu[2], sigma[2])
+mixture_density <- function (x, mu, sd, pi) {
+  pi * dnorm(x, mu[1], sd[1]) + (1 - pi) * dnorm(x, mu[2], sd[2])
 }
 ggplot(faithful, aes(x = eruptions)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30) + 
   xlab("Eruption time (min)") +
   stat_function(
     fun = function(x) {
-      mixture_density(x, mu = mle[1:2], sigma = mle[3:4], pi = mle[5])
+      mixture_density(x, mu = mle[1:2], sd = mle[3:4], pi = mle[5])
     }, aes(color = "mle"), linewidth = 1
   ) +
   stat_function(
     fun = function(x) {
-      mixture_density(x, mu = bad[1:2], sigma = bad[3:4], pi = bad[5])
+      mixture_density(x, mu = bad[1:2], sd = bad[3:4], pi = bad[5])
     }, aes(color = "bad"), linewidth = 1
   )
 ```
@@ -261,21 +269,30 @@ It becomes very clear that the mixture defined by `mle` fits much better than th
 
 ### Custom sampler for initial values
 
-Depending on the application and the magnitude of the parameters to be estimated, initial values drawn from a standard normal distribution (which is the default behavior when calling `$optimize(initial = "random")`) may not be a good guess. We can, however, easily modify the distribution that is used to draw the random numbers. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(\mu = 2, \sigma = 0.5)$ distribution:
+Depending on the application and the magnitude of the parameters to be estimated, initial values drawn from a standard normal distribution (which is the default behavior when calling `$optimize(initial = "random")`) may not be a good guess. We can, however, easily modify the distribution that is used to draw the initial values. For example, the next code snippet uses starting values drawn from a $\mathcal{N}(\mu = 2, \sigma = 0.5)$ distribution:
 
 ```{r}
 sampler <- function() stats::rnorm(5, mean = 2, sd = 0.5)
 geyser$optimize(initial = sampler, runs = 100, label = "custom_sampler")
 ```
 
-To obtain the first results of these optimization runs, we can use  the `summary()` method:
+To obtain the first results of these optimization runs, we can use the `summary()` method. Note that setting `which_runs = "custom_sampler"` allows filtering, which is the benefit of setting a `label` when calling `$optimize()`.
 
 ```{r}
-summary(geyser, which_runs = "custom_sampler") |>
+summary(geyser, which_runs = "custom_sampler", digits = 2) |>
   head(n = 10)
 ```
 
-We still obtain different optima, but (in contrast to the example above) most of the runs here lead to the optimum of `r summary(geyser, c("value", "parameter", "label")) %>%  dplyr::filter(label == "custom_sampler") %>% dplyr::count(value) %>% dplyr::pull(value) %>% .[1] %>% round()`:
+```{r, include = FALSE}
+### check assumptions about optimization results
+noptima <- nrow(geyser$optima(digits = 0, sort_by = "value", which_runs = "custom_sampler"))
+most_occuring <- geyser$optima(digits = 0, sort_by = "frequency", which_runs = "custom_sampler")[1:2, ]
+most_occuring_value <- as.numeric(as.character(most_occuring$value))
+stopifnot(most_occuring_value == c(276, 421))
+stopifnot(min(most_occuring_value) == 276)
+```
+
+We still obtain different optima, even more than before. But in contrast, most of the runs here lead to the presumably global optimum of `r summary(geyser, c("value", "parameter", "label")) %>%  dplyr::filter(label == "custom_sampler") %>% dplyr::count(value) %>% dplyr::pull(value) %>% .[1] %>% round()`:
 
 ```{r}
 geyser$optima(digits = 0, sort_by = "value", which_runs = "custom_sampler")
@@ -283,99 +300,98 @@ geyser$optima(digits = 0, sort_by = "value", which_runs = "custom_sampler")
 
 ### Educated guesses
 
-Next we make "educated guesses" about starting values that are probably close to the global optimum. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. For the variances, we set the starting values to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). 
-
-We will use two sets of starting values where the means are lower and larger than 2 and 4, respectively. For both sets, the starting value for the mixing proportion is 0.5.
+Next we make "educated guesses" about starting values that are probably close to the global optimum. Based on the histogram above, the means of the two normal distributions may be somewhere around 2 and 4. We will use two sets of starting values where the means are lower and larger than 2 and 4, respectively. For the variances, we set the starting values close to 1 (note that we use the log transformation here since we restrict the standard deviations to be positive by using `exp()` in the log-likelihood function). The starting value for the mixing proportion shall be around 0.5.
 
 ```{r}
-starting_values <- list(c(1.8, 4.2, log(1), log(1), qlogis(0.5)),
-                        c(2.2, 3.8, log(1), log(1), qlogis(0.5)))
+mu_1 <- c(1.7, 2.3)
+mu_2 <- c(4.3, 3.7)
+sd_1 <- sd_2 <- c(log(0.8), log(1.2))
+pi <- c(qlogis(0.4), qlogis(0.6))
+starting_values <- asplit(expand.grid(mu_1, mu_2, sd_1, sd_2, pi), MARGIN = 1)
 ```
 
-For comparison, we also consider a third set of starting values which are somewhat implausible.
-
-```{r}
-starting_values[[3]] <- rep(0, 5)
-```
-
-In the `$optimize()` method, instead of `initial = "random"`, we can set `initial` to a numeric vector of length `npar`, or for convenience to a `list` of such vectors, like `starting_values`:
+In the `$optimize()` method, instead of `initial = "random"`, we can set `initial` to a numeric vector of length `npar`, or, for convenience, to a `list` of such vectors, like `starting_values`:
 
 ```{r}
 geyser$optimize(initial = starting_values, label = "educated_guess")
 ```
 
-Let's look at the results:
+These "educated guesses" lead to a more stable optimization:
 
 ```{r}
-summary(geyser, which_runs = "educated_guess") 
+geyser$optima(digits = 0, which_runs = "educated_guess")
 ```
 
-TODO: also round parameters
-
-TODO: compare
-
-### Discard optimization runs
-
-The third run (with the unplausible starting values) converged to a local minimum, as we can deduce from the column "value". We discard this run from further comparisons:
-
-TODO: implement removing runs
+For comparison, we consider a set of implausible starting values. They converged to a local minimum, as we can deduce from the column "value":
 
 ```{r}
-# geyser$clear(which_runs = 103, which_optimizer = "all")
+geyser$optimize(initial = rep(0, 5), label = "bad_educated_guess")
+summary(geyser, which_runs = "bad_educated_guess") 
 ```
 
-### Standardized initialization
+Using the `$clear()` method, it is possible to discard these results from further comparisons:
 
-For standardized initialization, we standardize all columns in our data before running the optimization. The method `$standardize()` thus requires the name of the data set to be standardized --- in our case `data`. To optimize the likelihood using the standardized data set, we again use `optmize()`, which by default uses random starting values. Here, we could again specify the distribution from which we draw the random initial values, or we could of course also set fixed starting values.   
+```{r}
+geyser$clear(which_runs = "bad_educated_guess")
+```
+
+### Standardizing the optimization problem
+
+In some situations, it is possible to consider a standardized version of the optimization problem, which could potentially improve the performance of the numerical optimizer. In our example, we can standardize the geyser data before running the optimization via the method `$standardize()` method:
 
 ```{r}
 geyser$standardize("data")
-geyser$optimize(runs = 10, label = "standardize")
-geyser$reset_argument("data")
+str(geyser$get_argument("data"))
 ```
 
-To perform further optimization runs after having applied standardized initialization, we use `reset_argument("data")` to unstandardize the data and obtain the actual data set we considered before. If we do not use `reset_argument()`, all further optimizations runs will be carried out on the standardized data set. 
-
-
-### Subset initialization
-
-If the data set considered shows some complex structures or is very large, numerical optimization may become computationally costly. In such cases, subset initialization can be a helpful tool. 
-
-The method `$reduce()` ... TODO
+To optimize the likelihood using the standardized data set, we again use `$optmize()`, which by default uses random starting values. Below, we will compare this results with those obtained on the original optimization problem. 
 
 ```{r}
-geyser$reduce("data", how = "random", prop = 0.25)
-geyser$optimize(runs = 10, label = "subset")$continue()
-geyser$reset_argument("data")
+geyser$
+  optimize(runs = 100, label = "data_standardized")$
+  reset_argument("data")
 ```
 
-In addition to selecting sub samples at random, we can specify four other options using the argument `how`:
+Note the usage of `$reset_argument("data")` here: to perform further optimization runs after having applied standardized initialization, we undo the standardization of the data and obtain the original data set. If we would not use `$reset_argument()`, all further optimization runs will be carried out on the standardized data set. 
 
-- `"first"`
-- `"last"`
-- `"similar`
-- `"unsimilar"`
+### Reducing the optimization problem
+
+In some situations, it is possible to first optimize a sub-problem and use those results as an initialization for the full optimization problem. For example in the context of likelihood maximization, if the data set considered shows some complex structures or is very large, numerical optimization may become computationally costly. In such cases, it can be beneficial to initially consider a reduced data set. The `$reduce()` method transforms `"data"` by selecting a proportion of 30\% data points at random.
+
+```{r}
+geyser$reduce("data", how = "random", prop = 0.3)
+str(geyser$get_argument("data"))
+```
+
+Similar to the standardizing above, calling `$optimize()` now optimizes on the reduced data set:
+
+```{r}
+geyser$
+  optimize(runs = 100, label = "data_subset")$
+  reset_argument("data")$
+  continue()
+```
+
+Again, we use `$reset_argument("data")` to obtain the original data set. The `$continue()` method now optimizes on the whole data set using the estimates obtained on the reduced data as initial values.
+
+In addition to selecting sub samples at random (`how = "random"`), four other options exist via specifying the argument `how`:
+
+- `"first"` selects the top data points,
+- `"last"` selects the last data points,
+- `"similar` selects similar data points based on k-means clustering,
+- `"unsimilar"` is similar to `"similar"` but selects unsimilar data points.
 
 ### Evaluating the optimization runs
 
-The `plot()` method provides an overview of the optimization times. 
-
-```{r, out.width = "50%"}
-geyser$plot()
-```
-
-We can compare the optimization times across initialization strategies by specifying `by = label`:
+The `$plot()` method provides an overview of the optimization times. Setting `"by = "label"` allows comparison across initialization strategies, setting `"relative = TRUE"` plots relative differences to the median of the best strategy (the left boxplot):
 
 ```{r}
-geyser$plot(by = "label", nrow = 1)
+geyser$plot(by = "label", relative = TRUE)
 ```
 
-We can also create that these boxplots manually by using the data.frame provided by `summary()` and sort the boxplots by their medians:
-```{r}
-summary(geyser, c("label", "seconds")) %>% 
-  ggplot(aes(x = reorder(label, seconds, median), y = seconds)) + 
-           geom_boxplot() + xlab("")
-```
+TODO: relative times
+
+TODO: sort boxplots by their median in descending order
 
 Using again the `summary()` table, we can also plot the optima obtained under the different optimization strategies. However, note that the optima values obtained for the standardized initialization cannot be directly compared to the other approaches:
 
@@ -385,10 +401,6 @@ summary(geyser, c("label", "value")) %>%
   geom_point(position = "jitter")
 ```
 
-TODO: relative times
-
-TODO: sort boxplots by their median in descending order
-
 ### The final `Nop` object
 
 ```{r}
@@ -397,11 +409,11 @@ print(geyser)
 
 The best optimization result can be extracted via:
 
-TODO: We need to be a bit careful here because of `standardize()`
-
 ```{r}
 print(geyser$best_value)
 print(geyser$best_parameter)
 ```
+
+TODO: comparable results
 
 ## References
