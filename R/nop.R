@@ -1000,13 +1000,13 @@ Nop <- R6::R6Class(
     #' 2. \code{"parameter"}, the parameter vector at which the optimum is
     #'    obtained,
     #' 3. \code{"seconds"}, the optimization time in seconds.
-    #' See \code{$summary_columns} for an overview of the available column
+    #' See \code{$summary_columns()} for an overview of the available column
     #' names.
     #' Specify \code{columns = "all"} to include all of them in the output.
     #' @param ...
     #' Optionally named expressions of variables from summary columns as
     #' \code{character}.
-    #' See \code{$summary_columns} for an overview of the available columns.
+    #' See \code{$summary_columns()} for an overview of the available columns.
     #' Also, \code{"true_value"} and \code{"true_parameter"} are available
     #' (if specified).
     #' @return
@@ -1050,21 +1050,29 @@ Nop <- R6::R6Class(
       }
       columns <- c(columns, names(add_vars))
 
-      ### unlist single-valued records
-      for (i in 1:ncol(out)) {
-        if (all(sapply(out[,i], length) == 1 & sapply(out[,i], class) %in% c("character", "numeric"))) {
-          out[,i] <- unlist(out[,i])
-        }
-        if (is.vector(out[,i]) && is.numeric(out[,i])) {
-          out[,i] <- round(out[,i], digits = digits)
-        }
-      }
-
       ### filter columns
       if (!identical(columns, "all")) {
         out <- dplyr::select(out, dplyr::any_of(columns))
       }
 
+      ### unlist single-valued records
+      for (i in 1:ncol(out)) {
+        if (all(sapply(out[,i], length) == 1 & sapply(out[,i], class) %in% c("character", "numeric"))) {
+          out[,i] <- unlist(out[,i])
+        }
+      }
+
+      ### round numeric records
+      for (i in 1:ncol(out)) {
+        if (is.vector(out[,i]) && is.numeric(out[,i])) {
+          out[,i] <- round(out[,i], digits = digits)
+        }
+        if (is.list(out[,i]) && all(sapply(out[,i], is.numeric))) {
+          out[[i]] <- lapply(out[,i], round, digits = digits)
+        }
+      }
+
+      ### return data.frame
       return(out)
     },
 
