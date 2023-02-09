@@ -7,9 +7,9 @@
        Function: f_ackley
        Optimize over: x (length 2)
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 ---
 
@@ -20,9 +20,9 @@
        Function: f_ackley
        Optimize over: x (length 2)
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 ---
 
@@ -33,9 +33,9 @@
        Function: f_ackley
        Optimize over: x (length 2)
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 # hmm Nop object with parameters can be initialized
 
@@ -47,9 +47,9 @@
        Optimize over: theta (length 6)
        Additional arguments: data 
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 ---
 
@@ -61,9 +61,9 @@
        Optimize over: theta (length 6)
        Additional arguments: data, test_arg1, test_arg2 
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 # true value can be set
 
@@ -75,9 +75,9 @@
        Optimize over: x (length 2)
        True optimum value: 3
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 # true parameter can be set
 
@@ -90,9 +90,9 @@
        True optimum at: 0 0
        True optimum value: 0
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 # optimizer can be set
 
@@ -105,7 +105,7 @@
       Numerical optimizer:
        1: nlm
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 ---
 
@@ -119,7 +119,7 @@
        1: nlm
        2: stats::optim
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 # optimizer can be removed
 
@@ -135,7 +135,7 @@
        3: C
        4: stats::nlm
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 ---
 
@@ -146,9 +146,9 @@
        Function: f_ackley
        Optimize over: x (length 2)
       Numerical optimizer:
-       No optimizer specified.
+       No optimizer specified yet.
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 ---
 
@@ -163,7 +163,7 @@
        2: C
        3: stats::nlm
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 ---
 
@@ -176,7 +176,7 @@
       Numerical optimizer:
        1: C
       Optimization results:
-       No optimization results saved.
+       No optimization results saved yet.
 
 # function can be optimized
 

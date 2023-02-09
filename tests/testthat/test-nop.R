@@ -263,7 +263,10 @@ test_that("Nop object can be tested", {
     1
   }, 1)
   expect_warning(
-    expect_warning(slow_f$test(time_limit_fun = 1), "The time limit of 1s was reached"),
+    expect_warning(
+      slow_f$test(time_limit_fun = 1),
+      "The time limit of 1s was reached"
+    ),
     "No optimizer specified, testing optimizer is skipped."
   )
   slow_f$set_optimizer(optimizer_nlm())
@@ -274,11 +277,17 @@ test_that("Nop object can be tested", {
   ackley$remove_optimizer(1:2)
   bad_optimizer_fun <- function(f, p) {
     if (identical(p, 1:2)) stop()
-    list(v = 1, z = 1:2)
+    list(v = f(p), z = 1:2)
   }
-  bad_optimizer <- optimizeR::define_optimizer(bad_optimizer_fun, objective = "f", initial = "p", value = "v", parameter = "z")
+  bad_optimizer <- optimizeR::define_optimizer(
+    bad_optimizer_fun, objective = "f", initial = "p", value = "v",
+    parameter = "z"
+  )
   ackley$set_optimizer(bad_optimizer)
-  expect_error(ackley$test(at = 1:2), "Optimization with optimizer `bad_optimizer_fun` failed.")
+  expect_error(
+    ackley$test(at = 1:2),
+    "Optimization with optimizer `bad_optimizer_fun` failed."
+  )
 })
 
 test_that("standardization works", {

@@ -176,7 +176,7 @@ Nop <- R6::R6Class(
       )
       if (length(private$.optimizer) == 0) {
         cat(
-          " No optimizer specified.\n"
+          " No optimizer specified yet.\n"
         )
       } else {
         for (i in seq_along(private$.optimizer)) {
@@ -190,7 +190,7 @@ Nop <- R6::R6Class(
       )
       if (length(private$.records) == 0) {
         cat(
-          " No optimization results saved.\n"
+          " No optimization results saved yet.\n"
         )
       } else {
         cat(
@@ -636,7 +636,8 @@ Nop <- R6::R6Class(
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function(
       at = rnorm(self$npar), which_optimizer = "all", time_limit_fun = 10,
-      time_limit_opt = time_limit_fun, verbose = getOption("ino_verbose", default = TRUE),
+      time_limit_opt = time_limit_fun,
+      verbose = getOption("ino_verbose", default = TRUE),
       digits = getOption("ino_digits", default = 2)
       ) {
 
@@ -739,6 +740,11 @@ Nop <- R6::R6Class(
               }
             }
           )
+          if (any(is.na(out$value))) {
+            ino_stop(
+              glue::glue("Optimization with optimizer `{private$.optimizer_label[i]}` failed.")
+            )
+          }
           ino_success(
             glue::glue("Calling optimizer `{private$.optimizer_label[i]}` did not throw an error."),
             verbose = verbose
@@ -1178,7 +1184,8 @@ Nop <- R6::R6Class(
     #' \code{"value"} to sort rows by value.
     optima = function(
       digits = getOption("ino_digits", default = 2), sort_by = "frequency",
-      which_runs = "all", which_optimizer = "all"
+      which_runs = "all", which_optimizer = "all",
+      only_comparable = TRUE
     ) {
       if (!is.numeric(digits) && length(digits) == 1) {
         ino_stop(
@@ -1194,7 +1201,8 @@ Nop <- R6::R6Class(
         table(
           self$summary(
             columns = "value", which_runs = which_runs,
-            which_optimizer = which_optimizer, digits = digits
+            which_optimizer = which_optimizer, digits = digits,
+            only_comparable = only_comparable
           ),
           useNA = "ifany"
         )
@@ -1249,24 +1257,43 @@ Nop <- R6::R6Class(
     #' Either \code{TRUE} (default) to plot relative time differences with
     #' respect to the median of the top boxplot, or \code{FALSE} to plot
     #' absolute computation time.
+    #' @param log
+    #' Either \code{TRUE} to plot a log10-x-axis, or \code{FALSE} (default)
+    #' if not.
     #' @importFrom ggplot2 ggplot aes scale_y_continuous geom_boxplot facet_wrap
     #' theme element_blank ylab
+    #' @importFrom scales percent
     #' @importFrom dplyr group_by %>% mutate
     #' @importFrom rlang .data
-    plot = function(by = NULL, relative = TRUE) {
-      if (!(is.null(by) || identical(by, "label") || identical(by, "optimizer"))) {
+    plot = function(by = NULL, relative = TRUE, log = FALSE) {
+
+      ### input checks
+      if (is.null(by)) {
+        relative <- FALSE
+      } else {
+        if (!(identical(by, "label") || identical(by, "optimizer"))) {
+          ino_stop(
+            "Argument 'by' must be `NULL`, `\"label\"`, or `\"optimizer\"`."
+          )
+        }
+        if (!isTRUE(relative) && !isFALSE(relative)) {
+          ino_stop(
+            "Argument 'relative' must be `TRUE` or `FALSE`."
+          )
+        }
+      }
+      if (!isTRUE(log) && !isFALSE(log)) {
         ino_stop(
-          "Argument 'by' must be `NULL`, `\"label\"`, or `\"optimizer\"`."
+          "Argument 'log' must be `TRUE` or `FALSE`."
         )
       }
-      if (!isTRUE(relative) && !isFALSE(relative)) {
-        ino_stop(
-          "Argument 'relative' must be `TRUE` or `FALSE`."
-        )
-      }
+
+      ### prepare times
       x <- self$summary(columns = c("seconds", by), digits = Inf)
       if (!is.null(by)) {
-        x[[by]] <- reorder(x[[by]], x[["seconds"]], FUN = median, decreasing = TRUE)
+        x[[by]] <- reorder(
+          x[[by]], x[["seconds"]], FUN = median, decreasing = TRUE, na.rm = TRUE
+        )
         x <- dplyr::group_by(x, .data[[by]])
       }
       if (relative) {
@@ -1276,24 +1303,47 @@ Nop <- R6::R6Class(
           dplyr::select(median) %>% min()
         x <- x %>% dplyr::mutate("seconds" = (seconds - med) / med + 1)
       }
-      base_plot <- if (is.null(by)) {
-        ggplot2::ggplot(x, aes(y = "")) +
+
+      ### build plot
+      if (is.null(by)) {
+        base_plot <- ggplot2::ggplot(x, aes(y = "")) +
           ggplot2::theme(
             axis.text.y = ggplot2::element_blank(),
             axis.ticks.y = ggplot2::element_blank()
           )
       } else {
-        ggplot2::ggplot(x, aes(y = .data[[by]]))
+        base_plot <- ggplot2::ggplot(x, aes(y = .data[[by]]))
       }
       base_plot <- base_plot +
-        ggplot2::scale_x_continuous(labels = scales::percent) +
-        ggplot2::geom_boxplot(aes(x = .data$seconds), na.rm = TRUE) +
-        ggplot2::xlab("optimization time in seconds") +
+        ggplot2::geom_boxplot(aes(x = .data$seconds), na.rm = TRUE)
+      if (relative) {
+        base_plot <- base_plot +
+          ggplot2::xlab("relative optimization time")
+        if (log) {
+          base_plot <- base_plot +
+            ggplot2::scale_x_log10(labels = scales::percent)
+        } else {
+          base_plot <- base_plot +
+            ggplot2::scale_x_continuous(labels = scales::percent)
+        }
+      } else {
+        base_plot <- base_plot +
+          ggplot2::xlab("optimization time in seconds")
+        if (log) {
+          base_plot <- base_plot +
+            ggplot2::scale_x_log10()
+        } else {
+          base_plot <- base_plot +
+            ggplot2::scale_x_continuous()
+        }
+      }
+      base_plot <- base_plot +
         ggplot2::theme(
           axis.title.y = ggplot2::element_blank()
         )
       base_plot
     }
+
   ),
   private = list(
 
