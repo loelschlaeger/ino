@@ -127,8 +127,10 @@ test_that("optimizer can be set", {
     ackley$set_optimizer(),
     "Please specify argument `optimizer`."
   )
-  expect_error(ackley$set_optimizer(
-    "not_an_optimizer_object"),
+  expect_error(
+    ackley$set_optimizer(
+      "not_an_optimizer_object"
+    ),
     "must be an object of class `optimizer`."
   )
   expect_error(
@@ -280,7 +282,8 @@ test_that("Nop object can be tested", {
     list(v = f(p), z = 1:2)
   }
   bad_optimizer <- optimizeR::define_optimizer(
-    bad_optimizer_fun, objective = "f", initial = "p", value = "v",
+    bad_optimizer_fun,
+    objective = "f", initial = "p", value = "v",
     parameter = "z"
   )
   ackley$set_optimizer(bad_optimizer)
