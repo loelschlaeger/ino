@@ -13,6 +13,10 @@
 #' - \code{"all"} for all records (default)
 #' - \code{"last"} the records from the last optimization
 #' - a \code{vector} of one or more labels specified in \code{$optimize()}.
+#' @param only_comparable
+#' Either \code{TRUE} to show only comparable results (i.e., results obtained
+#' for the original optimization problem), or \code{FALSE} (default) to
+#' include all optimization results.
 #' @param verbose
 #' A \code{logical}, which indicates whether progress/details should be printed.
 #' Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -552,7 +556,9 @@ Nop <- R6::R6Class(
 
       ### optimization
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      if (!is.null(seed)) set.seed(seed)
+      if (!is.null(seed)) {
+        set.seed(seed)
+      }
       parallel <- ncores > 1 && runs >= 2 * ncores
       if (parallel) {
         cluster <- parallel::makeCluster(ncores)
@@ -663,14 +669,14 @@ Nop <- R6::R6Class(
       if (optimizer_selected) {
         ino_success(glue::glue("Optimizer specified: {paste(private$.optimizer_label[optimizer_ids], collapse = ', ')}"), verbose = verbose)
       }
-
-      ### test function call
-      ino_status("Test function call", verbose = verbose)
       ino_success(
         glue::glue(
           "Test values specified: ", {paste(round(at, digits = digits), collapse = ' ')}
         ), verbose = verbose
       )
+
+      ### test function call
+      ino_status("Test function call", verbose = verbose)
       setTimeLimit(cpu = time_limit_fun, elapsed = time_limit_fun, transient = TRUE)
       on.exit({
         setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
@@ -717,11 +723,6 @@ Nop <- R6::R6Class(
         ino_warn("No optimizer specified, testing optimizer is skipped.")
       } else {
         ino_status("Test optimization", verbose = verbose)
-        ino_success(
-          glue::glue(
-            "Initial values specified: ", {paste(round(at, digits = digits), collapse = ' ')}
-          ), verbose = verbose
-        )
         for (i in seq_along(optimizer_ids)) {
           setTimeLimit(cpu = time_limit_opt, elapsed = time_limit_opt, transient = TRUE)
           out <- tryCatch(
@@ -747,14 +748,6 @@ Nop <- R6::R6Class(
               glue::glue("The time limit of {time_limit_opt}s was reached in the test optimization call with optimizer `{private$.optimizer_label[i]}`."),
               "To make sure that the optimization ends successful, consider increasing `time_limit_opt`."
             )
-          } else {
-            if (is.list(out)) {
-              ino_success("Output is a `list`.", verbose = verbose)
-            } else {
-              ino_stop(
-                glue::glue("Output of optimizer `{private$.optimizer_label[i]}` is not a `list`.")
-              )
-            }
           }
         }
       }
@@ -765,18 +758,24 @@ Nop <- R6::R6Class(
     #' @description
     #' Standardize the optimization problem.
     #' @param argument_name
-    #' A \code{character}, the name of the argument of \code{f} to be standardized.
-    #' The argument must be either a \code{data.frame} or a \code{matrix}.
+    #' A \code{character}, the name of the argument of \code{f} to be
+    #' standardized. The argument must be \code{numeric}.
     #' @param by_column
-    #' Either \code{TRUE} to standardize column-wise (default) or \code{FALSE}
-    #' to standardize row-wise.
+    #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
+    #' a \code{data.frame}.
+    #' In that case, either \code{TRUE} to standardize column-wise (default) or
+    #' \code{FALSE} to standardize row-wise.
     #' @param center
-    #' Passed to \code{\link[base]{scale}}. Default is \code{TRUE}.
+    #' Passed to \code{\link[base]{scale}}.
+    #' Default is \code{TRUE}.
     #' @param scale
-    #' Passed to \code{\link[base]{scale}}. Default is \code{TRUE}.
+    #' Passed to \code{\link[base]{scale}}.
+    #' Default is \code{TRUE}.
     #' @param ignore
-    #' A \code{integer} (vector) of column indices (or row indices if
-    #' \code{by_column = FALSE}) to not standardize.
+    #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
+    #' a \code{data.frame}.
+    #' In that case, a \code{integer} (vector) of column indices (or row indices
+    #' if \code{by_column = FALSE}) to not standardize.
     standardize = function(
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
       ignore = integer(), verbose = getOption("ino_verbose", default = TRUE)
@@ -785,40 +784,60 @@ Nop <- R6::R6Class(
       ### input checks
       if (missing(argument_name)) {
         ino_stop(
-          "Please specify `argument_name`.",
-          "It is the name of the argument of `f` to be standardized."
+          "Please specify 'argument_name'.",
+          "It is the name of the argument to be standardized."
         )
       }
-      if (!is.character(argument_name) && length(argument_name) == 1) {
+      argument <- self$get_argument(argument_name)
+      orig_argument <- argument
+      attr_argument <- attributes(argument)
+      if (is.vector(argument) && length(argument) > 1) {
+        argument <- as.data.frame(argument)
+        vector_flag <- TRUE
+        by_column <- TRUE
+        ignore <- integer()
+      } else if (is.data.frame(argument) || is.matrix(argument)) {
+        if (!isTRUE(by_column) && !isFALSE(by_column)) {
+          ino_stop(
+            "Argument 'by_column' must be `TRUE` or `FALSE`."
+          )
+        }
+        if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
+          ino_stop(
+            "Argument 'ignore' must be a vector of indices."
+          )
+        }
+        vector_flag <- FALSE
+      } else {
         ino_stop(
-          "Input `argument_name` must be a `character`."
-        )
-      }
-      private$.check_add_arg_matrix_df(argument_name, verbose = verbose)
-      if (!isTRUE(by_column) && !isFALSE(by_column)) {
-        ino_stop(
-          "Argument `by_column` must be `TRUE` or `FALSE`."
-        )
-      }
-      if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
-        ino_stop(
-          "Argument 'ignore' must be a vector of indices."
+          glue::glue(
+            "Argument `{argument_name}` is not suited for standardization."
+          )
         )
       }
 
       ### standardizing
-      argument <- self$get_argument(argument_name)
-      orig_argument <- argument
-      attr_argument <- attributes(argument)
-      if (!by_column) argument <- t(argument)
+      if (!by_column) {
+        argument <- t(argument)
+      }
       if (length(ignore) > 0) {
         argument[, -ignore] <- scale(argument[, -ignore], center = center, scale = scale)
       } else {
         argument <- scale(argument, center = center, scale = scale)
       }
-      if (!by_column) argument <- t(argument)
-      if (is.data.frame(orig_argument)) argument <- as.data.frame(argument)
+      if (vector_flag) {
+        argument <- argument[, 1]
+      } else {
+        if (!by_column) {
+          argument <- t(argument)
+        }
+        if (is.data.frame(orig_argument)) {
+          argument <- as.data.frame(argument)
+        }
+      }
       attributes(argument) <- attr_argument
+
+      ### report standardization
       ino_status(
         glue::glue("Standardized {class(argument)[1]} `{argument_name}`."),
         verbose = verbose
@@ -830,78 +849,105 @@ Nop <- R6::R6Class(
       ### temporally save original argument
       private$.save_orig_argument(orig_argument, argument_name)
 
+      ### return object
       invisible(self)
     },
 
     #' @description
     #' Reduce the optimization problem.
     #' @param argument_name
-    #' A \code{character}, the name of the argument of \code{f} to be subsetted.
-    #' The argument must be either a \code{data.frame} or a \code{matrix}.
+    #' A \code{character}, the name of the argument of \code{f} to be reduced.
     #' @param by_row
-    #' Either \code{TRUE} to subset row-wise (default) or \code{FALSE}
-    #' to subset column-wise.
+    #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
+    #' a \code{data.frame}.
+    #' In that case, either \code{TRUE} to reduce row-wise (default) or
+    #' \code{FALSE} to reduce column-wise.
     #' @param how
-    #' A \code{character}, specifying how to select the subset. Can be one of:
-    #' - \code{"random"} (default)
-    #' - \code{"first"}
-    #' - \code{"last"}
-    #' - \code{"similar"}
-    #' - \code{"unsimilar"}
+    #' A \code{character}, specifying how to reduce. Can be one of:
+    #' - \code{"random"} (default), reduce at random
+    #' - \code{"first"}, reduce to the first elements
+    #' - \code{"last"}, reduce to the last elements
+    #' - \code{"similar"}, reduce to similar elements
+    #' - \code{"dissimilar"}, reduce to dissimilar elements
+    #' Note that \code{"similar"} and \code{"dissimilar"} are based on k-means
+    #' clustering via \code{\link[stats]{kmeans}}. To apply these options,
+    #' the argument \code{argument_name} must be \code{numeric}.
     #' @param proportion
-    #' A \code{numeric} between \code{0} and \code{1}, specifying the proportion
-    #' of the subset.
+    #' A \code{numeric} between \code{0} and \code{1}, specifying the
+    #' reduction proportion.
     #' By default, \code{proportion = 0.5}.
     #' @param centers
-    #' Only relevant if \code{how = "(un)similar"}.
+    #' Only relevant, if \code{how = "(dis)similar"}.
     #' In that case, passed to \code{\link[stats]{kmeans}}.
     #' By default, \code{centers = 2}.
     #' @param ignore
-    #' Only relevant if \code{how = "(un)similar"}.
+    #' Only relevant, if \code{how = "(dis)similar"} and the argument
+    #' \code{argument_name} is a \code{matrix} or a \code{data.frame}.
     #' In that case a \code{integer} (vector) of row indices (or column indices
     #' if \code{by_row = FALSE}) to ignore for clustering.
     reduce = function(
-      argument_name, by_row = TRUE, how = "random", proportion = 0.5, centers = 2,
-      ignore = integer(), seed = NULL, verbose = getOption("ino_verbose", default = TRUE)
+      argument_name, by_row = TRUE, how = "random", proportion = 0.5,
+      centers = 2, ignore = integer(), seed = NULL,
+      verbose = getOption("ino_verbose", default = TRUE)
     ) {
 
       ### input checks
       if (missing(argument_name)) {
         ino_stop(
-          "Please specify argument `argument_name`.",
-          "It is the name of the argument of `f` to be standardized."
+          "Please specify 'argument_name'.",
+          "It is the name of the argument to be reduced."
         )
       }
-      private$.check_add_arg_matrix_df(argument_name, verbose = verbose)
-      if (!isTRUE(by_row) && !isFALSE(by_row)) {
-        ino_stop(
-          "Argument 'by_row' must be `TRUE` or `FALSE`."
-        )
-      }
-      if (!(is.character(how) && length(how) == 1 &&
-          how %in% c("random", "first", "last", "similar", "unsimilar"))) {
-        ino_stop(
-          "Argument 'how' must be one of `random`, `first`, `last`, `similar` or `unsimilar`."
-        )
-      }
-      if (how %in% c("similar", "unsimilar")) {
-        if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
-          ino_stop(
-            "Argument 'ignore' must be a vector of indices."
-          )
-        }
-      }
-      if (!(is.numeric(proportion) && length(proportion) == 1 && proportion > 0 && proportion < 1)) {
-        ino_stop(
-          "Argument 'proportion' must be a numeric between 0 and 1."
-        )
-      }
-      if (!is.null(seed)) set.seed(seed)
-
-      ### subsetting
       argument <- self$get_argument(argument_name)
       orig_argument <- argument
-      if (!by_row) argument <- t(argument)
+      if (!(is.character(how) && length(how) == 1 &&
+          how %in% c("random", "first", "last", "similar", "dissimilar"))) {
+        ino_stop(
+          "Argument 'how' is misspecified.",
+          "It must be one of `random`, `first`, `last`, `similar` or `dissimilar`."
+        )
+      }
+      if (!(is.numeric(proportion) && length(proportion) == 1 &&
+            proportion > 0 && proportion < 1)) {
+        ino_stop(
+          "Argument 'proportion' is misspecified.",
+          "It must be a `numeric` between 0 and 1."
+        )
+      }
+      if (!is.null(seed)) {
+        set.seed(seed)
+      }
+      if (is.vector(argument) && length(argument) > 1) {
+        argument <- as.data.frame(argument)
+        vector_flag <- TRUE
+        by_row <- TRUE
+        ignore <- integer()
+      } else if (is.data.frame(argument) || is.matrix(argument)) {
+        if (!isTRUE(by_row) && !isFALSE(by_row)) {
+          ino_stop(
+            "Argument 'by_row' must be `TRUE` or `FALSE`."
+          )
+        }
+        if (how %in% c("similar", "dissimilar")) {
+          if (!is.numeric(ignore) || !all(ignore > 0 & ignore %% 1 == 0)) {
+            ino_stop(
+              "Argument 'ignore' must be a `vector` of indices."
+            )
+          }
+        }
+        vector_flag <- FALSE
+      } else {
+        ino_stop(
+          glue::glue(
+            "Argument `{argument_name}` is not suited for reduction."
+          )
+        )
+      }
+
+      ### subsetting
+      if (!by_row) {
+        argument <- t(argument)
+      }
       n <- nrow(argument)
       m <- ceiling(n * proportion)
       if (how == "random") {
@@ -911,7 +957,7 @@ Nop <- R6::R6Class(
       } else if (how == "last") {
         ind <- tail(seq_len(n), m)
       } else {
-        stopifnot(how == "similar" || how == "unsimilar")
+        stopifnot(how == "similar" || how == "dissimilar")
         argument_ign <- argument
         if (length(ignore) > 0) {
           argument_ign <- argument_ign[, -ignore, drop = FALSE]
@@ -925,7 +971,7 @@ Nop <- R6::R6Class(
             ind <- c(ind, ind_i[seq_len(min(m - length(ind), length(ind_i)))])
             i <- i + 1
           }
-        } else if (how == "unsimilar") {
+        } else if (how == "dissimilar") {
           ind_cluster <- split(1:n, cluster)
           i <- 0
           while (length(ind) < m) {
@@ -938,12 +984,35 @@ Nop <- R6::R6Class(
         }
         ind <- sort(ind)
       }
-      argument <- argument[ind, ]
+      argument <- argument[ind, , drop = FALSE]
+      if (vector_flag) {
+        argument <- argument[, 1]
+      } else {
+        if (!by_row) {
+          argument <- t(argument)
+        }
+      }
+
+      ### report reduction
       ino_status(
-        glue::glue("Reduced {class(argument)[1]} `{argument_name}` from {nrow(orig_argument)} to {how} {nrow(argument)} {ifelse(by_row, 'row(s)', 'column(s)')}."),
+        glue::glue(
+          "Reduced `{class(argument)[1]}` '{argument_name}' from ",
+          if (is.vector(argument)) {
+            "length {length(orig_argument)} to {length(argument)} {how} element(s)."
+          } else {
+            if (by_row) {
+              glue::glue(
+                "{nrow(orig_argument)} to {nrow(argument)} {how} row(s).",
+              )
+            } else {
+              glue::glue(
+                "{ncol(orig_argument)} to {ncol(argument)} {how} column(s).",
+              )
+            }
+          }
+        ),
         verbose = verbose
       )
-      if (!by_row) argument <- t(argument)
 
       ### save reduced argument
       private$.arguments[[argument_name]] <- argument
@@ -951,6 +1020,7 @@ Nop <- R6::R6Class(
       ### temporally save original argument
       private$.save_orig_argument(orig_argument, argument_name)
 
+      ### return object
       invisible(self)
     },
 
@@ -971,7 +1041,9 @@ Nop <- R6::R6Class(
             initial = initial, optimizer_id = o, hide_warnings = hide_warnings
           )
           record_new$label <- record_old_o$label
+          record_new$optimizer <- record_old_o$optimizer
           record_new$seconds <- record_new$seconds + record_old_o$seconds
+          record_new$comparable <- length(private$.orig_arguments) == 0
           record_new$sub_run <- record_old_o
           results[[i]][[o]] <- record_new
         }
@@ -995,15 +1067,16 @@ Nop <- R6::R6Class(
     #' @param columns
     #' A \code{character} (vector), the names of columns to include in the
     #' summary output.
-    #' By default, \code{columns = c("value", "parameter", "seconds")},
-    #' which returns the columns
-    #' 1. \code{"value"}, the value of the estimated function optimum,
+    #' The following columns are included by default:
+    #' 1. \code{"value"}, the value of the estimated function optimum
     #' 2. \code{"parameter"}, the parameter vector at which the optimum is
-    #'    obtained,
-    #' 3. \code{"seconds"}, the optimization time in seconds.
+    #'    obtained
+    #' 3. \code{"seconds"}, the optimization time in seconds
+    #' 4. \code{"optimizer"}, the optimizer name
+    #' 5. \code{"label"}, the optimization label
     #' See \code{$summary_columns()} for an overview of the available column
     #' names.
-    #' Specify \code{columns = "all"} to include all of them in the output.
+    #' Set \code{columns = "all"} to include all of them in the output.
     #' @param ...
     #' Optionally named expressions of variables from summary columns as
     #' \code{character}.
@@ -1014,13 +1087,19 @@ Nop <- R6::R6Class(
     #' A \code{data.frame}.
     #' @importFrom dplyr bind_rows
     summary = function(
-      columns = c("value", "parameter", "seconds", if (self$noptimizer > 1) "optimizer"),
+      columns = c("value", "parameter", "seconds", "optimizer", "label"),
       which_runs = "all", which_optimizer = "all",
-      digits = getOption("ino_digits", default = 2), ...
+      digits = getOption("ino_digits", default = 2),
+      only_comparable = FALSE, ...
     ) {
       if (!is.character(columns)) {
         ino_stop(
           "Inputs `columns` must be a `character` (vector)."
+        )
+      }
+      if (!(isTRUE(only_comparable) || isFALSE(only_comparable))) {
+        ino_stop(
+          "Argument 'only_comparable' must be `TRUE` or `FALSE`."
         )
       }
       run_ids <- private$.get_run_ids(which_runs)
@@ -1052,16 +1131,22 @@ Nop <- R6::R6Class(
       }
       columns <- c(columns, names(add_vars))
 
+      ### unlist single-valued records
+      for (i in 1:ncol(out)) {
+        if (all(sapply(out[,i], length) == 1 &
+                sapply(out[,i], class) %in% c("character", "numeric", "logical"))) {
+          out[,i] <- unlist(out[,i])
+        }
+      }
+
+      ### filter for comparable results
+      if (only_comparable) {
+        out <- out[which(out[, "comparable"]), ]
+      }
+
       ### filter columns
       if (!identical(columns, "all")) {
         out <- dplyr::select(out, dplyr::any_of(columns))
-      }
-
-      ### unlist single-valued records
-      for (i in 1:ncol(out)) {
-        if (all(sapply(out[,i], length) == 1 & sapply(out[,i], class) %in% c("character", "numeric"))) {
-          out[,i] <- unlist(out[,i])
-        }
       }
 
       ### round numeric records
@@ -1093,7 +1178,7 @@ Nop <- R6::R6Class(
     #' \code{"value"} to sort rows by value.
     optima = function(
       digits = getOption("ino_digits", default = 2), sort_by = "frequency",
-      which_runs = "all"
+      which_runs = "all", which_optimizer = "all"
     ) {
       if (!is.numeric(digits) && length(digits) == 1) {
         ino_stop(
@@ -1107,7 +1192,11 @@ Nop <- R6::R6Class(
       }
       optima <- as.data.frame(
         table(
-          self$summary(columns = "value", which_runs = which_runs, digits = digits)
+          self$summary(
+            columns = "value", which_runs = which_runs,
+            which_optimizer = which_optimizer, digits = digits
+          ),
+          useNA = "ifany"
         )
       )
       colnames(optima) <- c("value", "frequency")
@@ -1128,7 +1217,7 @@ Nop <- R6::R6Class(
     #' @param value
     #' A single \code{numeric}.
     which_parameter = function(
-      value, which_optimizer = "all"
+      value, which_runs = "all", which_optimizer = "all", only_comparable = FALSE
     ) {
       if (!(is.numeric(value) && is.vector(value) && length(value) == 1)) {
         ino_stop(
@@ -1136,41 +1225,75 @@ Nop <- R6::R6Class(
         )
       }
       results <- self$summary(
-        columns = c("value", "parameter"), which_optimizer = which_optimizer,
-        digits = Inf
+        columns = c("value", "parameter", "comparable"), which_runs = which_runs,
+        which_optimizer = which_optimizer, digits = Inf,
+        only_comparable = only_comparable
       )
       index <- which.min(abs(value - results$value))
+      if (length(index) == 0) {
+        ino_stop(
+          "No parameter vector found."
+        )
+      }
       results$parameter[[index]]
     },
 
     #' @description
     #' Visualization of optimization time.
     #' @param by
-    #' A character vector of variables to group by.
-    #' Can be \code{NULL} (default).
-    #' @param nrow
-    #' Passed to \code{\link[ggplot2]{facet_wrap}}.
-    #' By default, \code{nrow = 1}.
+    #' Either:
+    #' - \code{"label"} to group by optimization label
+    #' - \code{"optimizer"} to group by optimizer
+    #' - \code{NULL} to not group (default)
+    #' @param relative
+    #' Either \code{TRUE} (default) to plot relative time differences with
+    #' respect to the median of the top boxplot, or \code{FALSE} to plot
+    #' absolute computation time.
     #' @importFrom ggplot2 ggplot aes scale_y_continuous geom_boxplot facet_wrap
     #' theme element_blank ylab
-    plot = function(by = NULL, nrow = 1) {
-      self$summary(columns = "all") %>%
-        ggplot2::ggplot(aes(x = "", y = .data$seconds)) +
-        ggplot2::scale_y_continuous() +
-        ggplot2::geom_boxplot() +
-        {
-          if (!is.null(by)) {
-            ggplot2::facet_wrap(by, labeller = "label_both", nrow = nrow)
-          }
-        } +
+    #' @importFrom dplyr group_by %>% mutate
+    #' @importFrom rlang .data
+    plot = function(by = NULL, relative = TRUE) {
+      if (!(is.null(by) || identical(by, "label") || identical(by, "optimizer"))) {
+        ino_stop(
+          "Argument 'by' must be `NULL`, `\"label\"`, or `\"optimizer\"`."
+        )
+      }
+      if (!isTRUE(relative) && !isFALSE(relative)) {
+        ino_stop(
+          "Argument 'relative' must be `TRUE` or `FALSE`."
+        )
+      }
+      x <- self$summary(columns = c("seconds", by), digits = Inf)
+      if (!is.null(by)) {
+        x[[by]] <- reorder(x[[by]], x[["seconds"]], FUN = median, decreasing = TRUE)
+        x <- dplyr::group_by(x, .data[[by]])
+      }
+      if (relative) {
+        med <- dplyr::summarize(
+          x, "median" = median(.data$seconds, na.rm = TRUE), .groups = "drop"
+          ) %>%
+          dplyr::select(median) %>% min()
+        x <- x %>% dplyr::mutate("seconds" = (seconds - med) / med + 1)
+      }
+      base_plot <- if (is.null(by)) {
+        ggplot2::ggplot(x, aes(y = "")) +
+          ggplot2::theme(
+            axis.text.y = ggplot2::element_blank(),
+            axis.ticks.y = ggplot2::element_blank()
+          )
+      } else {
+        ggplot2::ggplot(x, aes(y = .data[[by]]))
+      }
+      base_plot <- base_plot +
+        ggplot2::scale_x_continuous(labels = scales::percent) +
+        ggplot2::geom_boxplot(aes(x = .data$seconds), na.rm = TRUE) +
+        ggplot2::xlab("optimization time in seconds") +
         ggplot2::theme(
-          axis.title.x = ggplot2::element_blank(),
-          axis.text.x = ggplot2::element_blank(),
-          axis.ticks.x = ggplot2::element_blank()
-        ) +
-        ggplot2::ylab("optimization time in seconds")
+          axis.title.y = ggplot2::element_blank()
+        )
+      base_plot
     }
-
   ),
   private = list(
 
@@ -1200,7 +1323,9 @@ Nop <- R6::R6Class(
       stopifnot(is.character(arg_name), length(arg_name) == 1)
       if (!(is.numeric(target_arg) && length(target_arg) == private$.npar)) {
         ino_stop(
-          glue::glue("Argument `{arg_name}` must be a numeric vector of length {private$.npar}.")
+          glue::glue(
+            "Argument `{arg_name}` must be a `numeric` of length {private$.npar}."
+          )
         )
       }
     },
@@ -1212,18 +1337,6 @@ Nop <- R6::R6Class(
         ino_stop(
           glue::glue("Argument `{argument_name}` does not exist for function `{private$.f_name}`."),
           glue::glue("Use `$set_argument(\"{argument_name}\" = ...)`.")
-        )
-      }
-    },
-
-    ### checks if argument is matrix or data.frame
-    .check_add_arg_matrix_df = function(argument_name, verbose = TRUE) {
-      private$.check_add_arg_exists(argument_name)
-      argument <- private$.arguments[[argument_name]]
-      if (!is.data.frame(argument) && !is.matrix(argument)) {
-        ino_stop(
-          glue::glue("Argument `{argument_name}` must be a `data.frame` or a `matrix`."),
-          verbose = verbose
         )
       }
     },
@@ -1306,7 +1419,7 @@ Nop <- R6::R6Class(
         ids <- integer(0)
       }
       if (length(ids) == 0) {
-        if (no_optimizer == "fatal") {
+        if (no_runs == "fatal") {
           ino_stop(
             "Please check argument `which_runs`, it fits to no recorded result."
           )
@@ -1335,7 +1448,7 @@ Nop <- R6::R6Class(
           "Input `hide_warnings` must be either `TRUE` or `FALSE`."
         )
       }
-      suppressWarnings(
+      out <- try(suppressWarnings(
         do.call(
           what = optimizeR::apply_optimizer,
           args = c(
@@ -1348,7 +1461,19 @@ Nop <- R6::R6Class(
           )
         ),
         classes = if (hide_warnings) "warning" else ""
-      )
+      ), silent = TRUE)
+      if (inherits(out, "try-error")) {
+        return(
+          list(
+            "value" = NA_real_,
+            "parameter" = NA_real_,
+            "seconds" = NA_real_,
+            "initial" = initial
+          )
+        )
+      } else {
+        return(out)
+      }
     },
 
     ### save optimization results inside `Nop` object
@@ -1357,6 +1482,7 @@ Nop <- R6::R6Class(
         for (j in seq_along(optimizer_ids)) {
           results[[i]][[j]][["optimizer"]] <- private$.optimizer_label[optimizer_ids[j]]
           results[[i]][[j]][["label"]] <- label
+          results[[i]][[j]][["comparable"]] <- length(private$.orig_arguments) == 0
         }
       }
       private$.records[run_ids] <- results
@@ -1424,17 +1550,6 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field noptimizer The number of specified optimizers.
-    noptimizer = function(value) {
-      if (missing(value)) {
-        length(private$.optimizer)
-      } else {
-        ino_stop(
-          "`$noptimizer` is read only."
-        )
-      }
-    },
-
     #' @field arguments A \code{list} of specified additional arguments for \code{f}.
     arguments = function(value) {
       if (missing(value)) {
@@ -1485,10 +1600,7 @@ Nop <- R6::R6Class(
     #' @field best_parameter The best found \code{numeric} parameter vector of length \code{npar} (if available).
     best_parameter = function(value) {
       if (missing(value)) {
-        best_value <- self$best_value
-        x <- self$summary(c("value", "parameter"))
-        ind <- which(x$value == best_value)[1]
-        x$parameter[[ind]]
+        self$which_parameter(self$best_value, only_comparable = TRUE)
       } else {
         ino_stop(
           "`$best_parameter` is read only."
@@ -1500,9 +1612,9 @@ Nop <- R6::R6Class(
     best_value = function(value) {
       if (missing(value)) {
         if (private$.show_minimum) {
-          min(self$summary("value")$value)
+          min(self$summary("value", only_comparable = TRUE)$value, na.rm = TRUE)
         } else {
-          max(self$summary("value")$value)
+          max(self$summary("value", only_comparable = TRUE)$value, na.rm = TRUE)
         }
       } else {
         ino_stop(

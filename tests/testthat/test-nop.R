@@ -6,7 +6,10 @@ test_that("ackley Nop object can be initialized", {
   expect_error(Nop$new(), "Please specify argument `f`.")
   expect_error(Nop$new(f = 1), "Argument `f` is not a function.")
   expect_error(Nop$new(f = f_ackley), "Please specify argument `npar`.")
-  expect_error(Nop$new(f = f_ackley, npar = 0), "Argument `npar` is not a positive integer.")
+  expect_error(
+    Nop$new(f = f_ackley, npar = 0),
+    "Argument `npar` is not a positive integer."
+  )
   expect_identical(ackley$f, f_ackley)
   expect_identical(ackley$npar, 2L)
   expect_error(
@@ -21,7 +24,10 @@ test_that("ackley Nop object can be initialized", {
     },
     "is read only."
   )
-  expect_error(Nop$new(f = function() 1, npar = 0), "should have at least one argument.")
+  expect_error(
+    Nop$new(f = function() 1, npar = 0),
+    "should have at least one argument."
+  )
   expect_snapshot(ackley)
   expect_snapshot(print(ackley))
   expect_snapshot(ackley$print())
@@ -43,7 +49,10 @@ test_that("hmm Nop object with parameters can be initialized", {
   expect_error(hmm$get_argument("does_not_exist"), "does not exist")
   expect_error(hmm$get_argument(1), "must be a single character")
   expect_error(hmm$remove_argument(), "Please specify `argument_name`.")
-  expect_error(hmm$remove_argument(argument_name = 1:2), "must be a `character`")
+  expect_error(
+    hmm$remove_argument(argument_name = 1:2),
+    "must be a `character`"
+  )
   hmm$remove_argument("data")
   expect_equal(hmm$arguments, list("test_arg1" = 1))
   expect_error(
@@ -56,7 +65,10 @@ test_that("hmm Nop object with parameters can be initialized", {
 
 test_that("ackley function can be evaluated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(ackley$evaluate(1), "Argument `at` must be a numeric vector of length 2.")
+  expect_error(
+    ackley$evaluate(1),
+    "Argument `at` must be a `numeric` of length 2."
+  )
   expect_type(ackley$evaluate(c(1, 2)), "double")
   expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
   hmm <- Nop$new(f = f_ll_hmm, npar = 6, "data" = earthquakes)
@@ -91,11 +103,14 @@ test_that("true parameter can be set", {
     {
       ackley$true_parameter <- 2
     },
-    "must be a numeric vector of length 2."
+    "must be a `numeric` of length 2."
   )
   ackley$true_parameter <- c(0, 0)
   expect_equal(ackley$true_parameter, c(0, 0))
-  expect_error(ackley$set_true_parameter(1:2, "not_a_logical"), "must be `TRUE` or `FALSE`.")
+  expect_error(
+    ackley$set_true_parameter(1:2, "not_a_logical"),
+    "must be `TRUE` or `FALSE`."
+  )
   expect_error(ackley$set_true_parameter(3))
   ackley$set_true_parameter(c(1, 0))
   expect_equal(ackley$true_parameter, c(1, 0))
@@ -108,9 +123,18 @@ test_that("true parameter can be set", {
 
 test_that("optimizer can be set", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(ackley$set_optimizer(), "Please specify argument `optimizer`.")
-  expect_error(ackley$set_optimizer("not_an_optimizer_object"), "must be an object of class `optimizer`.")
-  expect_error(ackley$set_optimizer(optimizer_nlm(), label = 1), "must be a `character` of length 1.")
+  expect_error(
+    ackley$set_optimizer(),
+    "Please specify argument `optimizer`."
+  )
+  expect_error(ackley$set_optimizer(
+    "not_an_optimizer_object"),
+    "must be an object of class `optimizer`."
+  )
+  expect_error(
+    ackley$set_optimizer(optimizer_nlm(), label = 1),
+    "must be a `character` of length 1."
+  )
   ackley$set_optimizer(optimizer_nlm(), label = "nlm")
   expect_snapshot(ackley)
   expect_error(ackley$set_optimizer(optimizer_nlm(), label = "nlm"))
@@ -139,7 +163,10 @@ test_that("function can be optimized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   ackley$set_optimizer(optimizer_nlm())
   ackley$set_optimizer(optimizer_optim())
-  expect_error(ackley$optimize(runs = -1), "must be a positive integer.")
+  expect_error(
+    ackley$optimize(runs = -1),
+    "must be a positive integer."
+  )
   expect_error(ackley$optimize(runs = "1"), "must be a positive integer.")
   expect_error(ackley$optimize(verbose = "yes"), "`verbose` must be either `TRUE` or `FALSE`.")
   ackley$optimize(runs = 5)
@@ -208,7 +235,10 @@ test_that("parallel optimization works", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   ackley$set_optimizer(optimizer_nlm())
   ackley$set_optimizer(optimizer_optim())
-  expect_error(ackley$optimize(ncores = "1"), "`ncores` must be a positive `integer`.")
+  expect_error(
+    ackley$optimize(ncores = "1"),
+    "`ncores` must be a positive `integer`."
+  )
   skip_on_cran()
   ackley$optimize(runs = 1000, ncores = 2, save_results = FALSE, reset_arguments_afterwards = TRUE)
 })
@@ -267,14 +297,26 @@ test_that("standardization works", {
   true <- attr(probit_data, "true")[-1]
   probit <- Nop$new(f = f_ll_mnp, npar = 5, data = probit_data, neg = TRUE)$
     set_true_parameter(true_par = true, set_true_value = TRUE)
-  expect_error(probit$standardize(), "specify `argument_name`")
-  expect_error(probit$standardize(1), "must be a `character`")
+  expect_error(
+    probit$standardize(),
+    "Please specify 'argument_name'."
+  )
+  expect_error(
+    probit$standardize(1),
+    "Input `argument_name` must be a single character."
+  )
   probit$standardize("data", ignore = 1:3)
   expect_identical(dim(probit_data), dim(probit$arguments$data))
   probit$reset_argument("data")
   expect_identical(probit_data, probit$arguments$data)
-  expect_error(probit$standardize("data", by_column = "TRUE"), "`by_column` must be `TRUE` or `FALSE`")
-  expect_error(probit$standardize("data", ignore = "not_an_integer"), "Argument 'ignore' must be a vector of indices.")
+  expect_error(
+    probit$standardize("data", by_column = "TRUE"),
+    "Argument 'by_column' must be `TRUE` or `FALSE`."
+  )
+  expect_error(
+    probit$standardize("data", ignore = "not_an_integer"),
+    "Argument 'ignore' must be a vector of indices."
+  )
   probit$standardize("data", by_column = FALSE)
   probit$reset_argument("data")
   expect_identical(probit_data, probit$arguments$data)
@@ -284,13 +326,34 @@ test_that("standardization works", {
 test_that("reducing works", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6)
   hmm$set_argument("data" = earthquakes, "N" = 2, "neg" = TRUE)
-  expect_error(hmm$reset_argument(), "Please specify `argument_name`.")
-  expect_error(hmm$reset_argument(1), "must be a `character`")
-  expect_error(hmm$reduce(), "Please specify argument `argument_name`.")
-  expect_error(hmm$reduce("data", how = "random", by_row = "TRUE"), "'by_row' must be `TRUE` or `FALSE`.")
-  expect_error(hmm$reduce("data", how = "bad_argument"), "'how' must be one of")
-  expect_error(hmm$reduce("data", proportion = 1), "'proportion' must be a numeric between 0 and 1.")
-  expect_error(hmm$reduce("N"), "must be a `data.frame` or a `matrix`.")
+  expect_error(
+    hmm$reset_argument(),
+    "Please specify `argument_name`."
+  )
+  expect_error(
+    hmm$reset_argument(1),
+    "must be a `character`."
+  )
+  expect_error(
+    hmm$reduce(),
+    "Please specify 'argument_name'."
+  )
+  expect_error(
+    hmm$reduce("data", how = "random", by_row = "TRUE"),
+    "'by_row' must be `TRUE` or `FALSE`."
+  )
+  expect_error(
+    hmm$reduce("data", how = "bad_argument"),
+    "Argument 'how' is misspecified."
+  )
+  expect_error(
+    hmm$reduce("data", proportion = 1),
+    "Argument 'proportion' is misspecified."
+  )
+  expect_error(
+    hmm$reduce("N"),
+    "Argument `N` is not suited for reduction."
+  )
   hmm$reduce("data", how = "random", proportion = 0.5)
   hmm$reset_argument("data")
   hmm$reduce("data", how = "first", proportion = 0.5)
@@ -299,15 +362,14 @@ test_that("reducing works", {
   hmm$reset_argument("data")
   hmm$reduce("data", how = "last", proportion = 0.9)
   hmm$reset_argument("data")
-  expect_error(hmm$reduce("data", how = "similar", ignore = "not_an_integer"), "Argument 'ignore' must be a vector of indices.")
+  expect_error(
+    hmm$reduce("data", how = "similar", ignore = "not_an_integer"),
+    "Argument 'ignore' must be a `vector` of indices."
+  )
   hmm$reduce("data", how = "similar", ignore = 1, seed = 1)
   hmm$reset_argument("data")
-  hmm$reduce("data", how = "similar", ignore = 1, seed = 1)
+  hmm$reduce("data", how = "dissimilar", ignore = 2)
   hmm$reset_argument("data")
-  hmm$reduce("data", how = "unsimilar", ignore = 2)
-  hmm$reset_argument("data")
-  hmm$set_optimizer(optimizer = optimizer_nlm(), label = "nlm")
-  hmm$reduce("data", how = "first", proportion = 0.5)
 })
 
 test_that("continue optimization works", {
@@ -331,7 +393,10 @@ test_that("summary works", {
   expect_error(ackley$summary(), "No optimization results saved.")
   ackley$optimize(runs = 10)
   out <- ackley$summary()
-  expect_named(ackley$summary(), c("value", "parameter", "seconds", "optimizer"))
+  expect_named(
+    ackley$summary(),
+    c("value", "parameter", "seconds", "optimizer", "label")
+  )
   expect_true(is.data.frame(ackley$summary("distance" = "true_value - value")))
   expect_true(is.character(ackley$summary_columns))
   expect_error(

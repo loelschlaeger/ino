@@ -62,8 +62,6 @@ Nop$new(f = f_ackley, npar = 2)$
 
 \item{\code{npar}}{The length of the first argument of \code{f}.}
 
-\item{\code{noptimizer}}{The number of specified optimizers.}
-
 \item{\code{arguments}}{A \code{list} of specified additional arguments for \code{f}.}
 
 \item{\code{true_parameter}}{The true optimum \code{numeric} parameter vector of length \code{npar} (if available).}
@@ -508,18 +506,24 @@ Standardize the optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be standardized.
-The argument must be either a \code{data.frame} or a \code{matrix}.}
+\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be
+standardized. The argument must be \code{numeric}.}
 
-\item{\code{by_column}}{Either \code{TRUE} to standardize column-wise (default) or \code{FALSE}
-to standardize row-wise.}
+\item{\code{by_column}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
+a \code{data.frame}.
+In that case, either \code{TRUE} to standardize column-wise (default) or
+\code{FALSE} to standardize row-wise.}
 
-\item{\code{center}}{Passed to \code{\link[base]{scale}}. Default is \code{TRUE}.}
+\item{\code{center}}{Passed to \code{\link[base]{scale}}.
+Default is \code{TRUE}.}
 
-\item{\code{scale}}{Passed to \code{\link[base]{scale}}. Default is \code{TRUE}.}
+\item{\code{scale}}{Passed to \code{\link[base]{scale}}.
+Default is \code{TRUE}.}
 
-\item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
-\code{by_column = FALSE}) to not standardize.}
+\item{\code{ignore}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
+a \code{data.frame}.
+In that case, a \code{integer} (vector) of column indices (or row indices
+if \code{by_column = FALSE}) to not standardize.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -549,30 +553,35 @@ Reduce the optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be subsetted.
-The argument must be either a \code{data.frame} or a \code{matrix}.}
+\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be reduced.}
 
-\item{\code{by_row}}{Either \code{TRUE} to subset row-wise (default) or \code{FALSE}
-to subset column-wise.}
+\item{\code{by_row}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
+a \code{data.frame}.
+In that case, either \code{TRUE} to reduce row-wise (default) or
+\code{FALSE} to reduce column-wise.}
 
-\item{\code{how}}{A \code{character}, specifying how to select the subset. Can be one of:
+\item{\code{how}}{A \code{character}, specifying how to reduce. Can be one of:
 \itemize{
-\item \code{"random"} (default)
-\item \code{"first"}
-\item \code{"last"}
-\item \code{"similar"}
-\item \code{"unsimilar"}
+\item \code{"random"} (default), reduce at random
+\item \code{"first"}, reduce to the first elements
+\item \code{"last"}, reduce to the last elements
+\item \code{"similar"}, reduce to similar elements
+\item \code{"dissimilar"}, reduce to dissimilar elements
+Note that \code{"similar"} and \code{"dissimilar"} are based on k-means
+clustering via \code{\link[stats]{kmeans}}. To apply these options,
+the argument \code{argument_name} must be \code{numeric}.
 }}
 
-\item{\code{proportion}}{A \code{numeric} between \code{0} and \code{1}, specifying the proportion
-of the subset.
+\item{\code{proportion}}{A \code{numeric} between \code{0} and \code{1}, specifying the
+reduction proportion.
 By default, \code{proportion = 0.5}.}
 
-\item{\code{centers}}{Only relevant if \code{how = "(un)similar"}.
+\item{\code{centers}}{Only relevant, if \code{how = "(dis)similar"}.
 In that case, passed to \code{\link[stats]{kmeans}}.
 By default, \code{centers = 2}.}
 
-\item{\code{ignore}}{Only relevant if \code{how = "(un)similar"}.
+\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"} and the argument
+\code{argument_name} is a \code{matrix} or a \code{data.frame}.
 In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 
@@ -619,10 +628,11 @@ By default, \code{return_results = FALSE}.}
 Overview of the optimization runs.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$summary(
-  columns = c("value", "parameter", "seconds", if (self$noptimizer > 1) "optimizer"),
+  columns = c("value", "parameter", "seconds", "optimizer", "label"),
   which_runs = "all",
   which_optimizer = "all",
   digits = getOption("ino_digits", default = 2),
+  only_comparable = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -632,16 +642,17 @@ Overview of the optimization runs.
 \describe{
 \item{\code{columns}}{A \code{character} (vector), the names of columns to include in the
 summary output.
-By default, \code{columns = c("value", "parameter", "seconds")},
-which returns the columns
+The following columns are included by default:
 \enumerate{
-\item \code{"value"}, the value of the estimated function optimum,
+\item \code{"value"}, the value of the estimated function optimum
 \item \code{"parameter"}, the parameter vector at which the optimum is
-obtained,
-\item \code{"seconds"}, the optimization time in seconds.
+obtained
+\item \code{"seconds"}, the optimization time in seconds
+\item \code{"optimizer"}, the optimizer name
+\item \code{"label"}, the optimization label
 See \code{$summary_columns()} for an overview of the available column
 names.
-Specify \code{columns = "all"} to include all of them in the output.
+Set \code{columns = "all"} to include all of them in the output.
 }}
 
 \item{\code{which_runs}}{Select recorded results of optimization runs. Either:
@@ -660,6 +671,10 @@ Specify \code{columns = "all"} to include all of them in the output.
 
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
 The default is \code{2}.}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} (default) to
+include all optimization results.}
 
 \item{\code{...}}{Optionally named expressions of variables from summary columns as
 \code{character}.
@@ -704,7 +719,8 @@ Overview of the identified optima.
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
   digits = getOption("ino_digits", default = 2),
   sort_by = "frequency",
-  which_runs = "all"
+  which_runs = "all",
+  which_optimizer = "all"
 )}\if{html}{\out{</div>}}
 }
 
@@ -723,24 +739,6 @@ The default is \code{2}.}
 \item \code{"last"} the records from the last optimization
 \item a \code{vector} of one or more labels specified in \code{$optimize()}.
 }}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-which_parameter"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-which_parameter}{}}}
-\subsection{Method \code{which_parameter()}}{
-From all saved optimization results, extract the parameter vector that
-led to a function value closest to \code{value}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$which_parameter(value, which_optimizer = "all")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A single \code{numeric}.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
@@ -753,22 +751,68 @@ led to a function value closest to \code{value}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-plot}{}}}
-\subsection{Method \code{plot()}}{
-Visualization of optimization time.
+\if{html}{\out{<a id="method-Nop-which_parameter"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-which_parameter}{}}}
+\subsection{Method \code{which_parameter()}}{
+From all saved optimization results, extract the parameter vector that
+led to a function value closest to \code{value}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, nrow = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$which_parameter(
+  value,
+  which_runs = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{by}}{A character vector of variables to group by.
-Can be \code{NULL} (default).}
+\item{\code{value}}{A single \code{numeric}.}
 
-\item{\code{nrow}}{Passed to \code{\link[ggplot2]{facet_wrap}}.
-By default, \code{nrow = 1}.}
+\item{\code{which_runs}}{Select recorded results of optimization runs. Either:
+\itemize{
+\item \code{"all"} for all records (default)
+\item \code{"last"} the records from the last optimization
+\item a \code{vector} of one or more labels specified in \code{$optimize()}.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
+\itemize{
+\item \code{"all"} for all specified optimizer (default)
+\item a \code{character} vector of specified optimizer labels
+\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+}}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} (default) to
+include all optimization results.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-plot}{}}}
+\subsection{Method \code{plot()}}{
+Visualization of optimization time.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, relative = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{by}}{Either:
+\itemize{
+\item \code{"label"} to group by optimization label
+\item \code{"optimizer"} to group by optimizer
+\item \code{NULL} to not group (default)
+}}
+
+\item{\code{relative}}{Either \code{TRUE} (default) to plot relative time differences with
+respect to the median of the top boxplot, or \code{FALSE} to plot
+absolute computation time.}
 }
 \if{html}{\out{</div>}}
 }
