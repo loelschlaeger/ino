@@ -371,14 +371,20 @@
     },
     "fHMM": {
       "Package": "fHMM",
-      "Version": "1.0.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0178b44dddd6f362b4f4ce6fbcfcf4ce",
+      "Version": "1.1.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "fHMM",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "012cb1f6814d73582415e9f6e8831e9104de97df",
+      "Hash": "90f8b3d69a70b4f7ed5f5aeee928fd09",
       "Requirements": [
         "MASS",
         "Rcpp",
         "RcppArmadillo",
+        "cli",
         "foreach",
         "progress"
       ]
