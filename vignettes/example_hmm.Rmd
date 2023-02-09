@@ -5,9 +5,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
   %\VignetteIndexEntry{Example: Hidden Markov Model}
   %\VignetteEngine{knitr::rmarkdown}
-bibliography: ref.bib
 editor_options: 
   chunk_output_type: console
+bibliography: ref.bib
+link-citations: true
 ---
 
 ```{r, include = FALSE}
@@ -29,49 +30,48 @@ This vignette^[The vignette was build using R `r paste(R.Version()[c("major","mi
 
 ## Data
 
-The example data set considered throughout this vignette covers a time series of share returns from the stock 'Deutsche Bank'. The data set is freely accessible via Yahoo Finance. 
+The example data set considered throughout this vignette covers a time series of share returns from the Deutsche Bank stock. The data set is freely accessible via Yahoo Finance and can be downloaded via the {fHMM} package [@Oelschläger:2023b]: 
 
-```{r message = FALSE, warning = FALSE, eval = TRUE}
+```{r, message = FALSE, warning = FALSE, eval = TRUE}
 library("dplyr")
-data <- fHMM::download_data(symbol = "DBK.DE", from = "2000-01-01", file = NULL)
-# data <- read.csv("D:/sciebo/lasso_select_N/DB.csv") %>% slice(788:nrow(.))
+data <- fHMM::download_data(symbol = "DBK.DE", from = "2000-01-01")
 db_data <- data %>%
   as_tibble() %>%
-  reframe(date = as.Date(Date, format = "%Y-%m-%d"),
-            obs = c(NA, diff(log(Close), lag=1) * 100)) %>%
-  filter(!is.na(obs)) %>%
+  summarize(
+    date = as.Date(Date, format = "%Y-%m-%d"),
+    logreturn = c(NA, diff(log(Close), lag = 1))
+  ) %>%
+  filter(!is.na(logreturn)) %>%
   print()
 ```
 
-```{r, eval = TRUE}
+The time series looks as follows:
+
+```{r, message = FALSE, warning = FALSE, eval = TRUE}
 library("ggplot2")
-ggplot(db_data, aes(x = date, y = obs)) +
+ggplot(db_data, aes(x = date, y = logreturn)) +
   geom_point() +
   geom_line() +
-  ylab("log-returns [%]")
+  scale_x_date() +
+  scale_y_continuous(labels = scales::label_percent()) +
+  ylab("log-returns")
 ```
 
-As the share returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions. The (log-)likelihood of a Gaussian-HMM is given by the function `f_ll_hmm()`.
+As the share returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions. The (log-) likelihood function of a Gaussian-HMM is provided by the {ino} package as the function `f_ll_hmm()`.
 
 ## Model fitting
 
 We consider a 2-state (`N = 2`) Gaussian-HMM with six parameters (`npar = 6`) to be estimated:
 
 - two for the transition probability matrix (t.p.m.)
-- two for the means of the state-dependent distribution
-- two for the standard deviations of the state-dependent distribution
+- two for the means of the state-dependent distributions
+- two for the standard deviations of the state-dependent distributions
 
-The likelihood for a Gaussian-HMM is given by the function `f_ll_hmm()` provided by the {ino} package. 
-The argument `neg =  TRUE` indicates that we minimize the negative log-likelihood, and `set_optimizer(optimizer_nlm())` selects the optimizer `nlm()`.
+The likelihood for a Gaussian-HMM is given by the function `f_ll_hmm()` provided by the {ino} package. The argument `neg =  TRUE` indicates that we minimize the negative log-likelihood, and `set_optimizer(optimizer_nlm())` selects the optimizer `nlm()` (see the introductory vignette).
 
 ```{r, eval = FALSE}
-hmm_ino <- Nop$new(
-  f = f_ll_hmm,
-  npar = 6,
-  data = db_data,
-  N = 2,
-  neg = TRUE
-)$set_optimizer(optimizer_nlm())
+hmm_ino <- Nop$new(f = f_ll_hmm, npar = 6, data = db_data, N = 2, neg = TRUE)$
+  set_optimizer(optimizer_nlm())
 ```
 
 ### Random initialization
