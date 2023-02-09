@@ -795,10 +795,15 @@
     },
     "optimizeR": {
       "Package": "optimizeR",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "46fd5c7b86760c03e839392f04f7882f",
+      "Version": "0.3.1",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "optimizeR",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "5a55601610ac1cf707c4fc1bb4bf1094ae842f5a",
+      "Hash": "637df48bb636a6f7c914cb7610737c9d",
       "Requirements": [
         "cli",
         "glue"
