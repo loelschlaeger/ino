@@ -17,40 +17,59 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.dim = c(8, 6), 
-  out.width = "75%"
+  out.width = "75%",
+  cache = TRUE
 )
-library("ino")
+# library("ino")
+devtools::load_all() # remove later
 options("ino_verbose" = FALSE)
 ```
 
-The probit model is a flexible and widely-used tool for the analysis of discrete choice behavior. Many scientific areas apply the probit model for studying the driving factors behind decision makers' choices, for example transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. Estimating the probit model's parameters traditionally is performed via maximizing the likelihood function numerically. With rising model complexity however, this approach becomes both computationally expensive and does not guarantee convergence to the global optimum. In this vignette, we apply the {ino} package to analyze the initialization effect on the probit likelihood maximization.
+The probit model is widely used to study discrete choice behavior in fields like transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. Typically, estimating the probit model's parameters involves numerically maximizing the likelihood function. However, this approach can be computationally expensive and may not converge to the global optimum, especially for complex models. In this vignette, we use the {ino} package to investigate the effect of initialization on probit likelihood maximization.
 
-## The probit model formulation
+## Model formulation
+
+We briefly formulate the probit model and its estimation. For more details, see @Train:2009 and @Bhat:2011. Assume that $N$ deciders choose among $J \geq 2$ alternatives at each of $T$ choice occasions. Let $y_{nt} \in \{1,\dots,J\}$ label the choice of decider $n$ at occasion $t$. Assume further that the choices are rational in the sense that $y_{nt}$ yields the highest utility $U_{nt}$ for $n$ at $t$. The probit model defines $$U_{nt} = X_{nt} \beta + \epsilon_{nt},$$ where $X_{nt}$ is a $J\times P$ matrix of $P$ characteristics for each alternative, $\beta$ is a coefficient vector of length $P$, and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normal distributed errors (i.e., unobserved influences on the utility). 
+
+The probit model (like any utility model) is invariant to the level and scale of the utilities $U_{nt}$. We ensure identifiability by considering utility differences, which reduces $\Sigma$ to $J-1$ dimensions, and fixing the first entry of $b$ to $1$.
+
+To account for preference heterogeneity across deciders, the mixed probit model includes decider-specific coefficient vectors as $\beta_n \sim N(b, \Omega)$. In the degenerate case $\Omega = 0$, we have $\beta_n = b$, i.e., all deciders share the same preferences.
 	
-We briefly formulate the probit model and its estimation and refer to @Train:2009 and @Bhat:2011 for further details. Assume that $N$ deciders choose among $J \geq 2$ alternatives at each of $T$ choice occasions. The values for $J$ and $T$ can be decider-specific, though we assume a balanced panel here. Let $y_{nt} \in \{1,\dots,J\}$ label the choice of decider $n$ at occasion $t$. Assume that the choice was rational in the sense that $y_{nt}$ yields the highest utility $U_{nt}$ for $n$ at $t$. The probit model defines $$U_{nt} = X_{nt} \beta + \epsilon_{nt},$$ where $X_{nt}$ is a $J\times P$-matrix of $P$ characteristics for each alternative, $\beta$ is a coefficient vector of length $P$, and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normal distributed errors (i.e., unobserved influences on the utility). We ensure identifiability by taking utility differences and fixing one error-term variance. This implies that instead of $\Sigma$, we estimate $J(J-1)/2-1$ parameters of a transformed covariance matrix. 
-	
-The researcher aims to estimate the values for $b$ and $\Sigma$, most commonly by the maximum likelihood method. Let $\theta$ denote the vector of the $P$ coefficients of $b$ and $J(J-1)/2-1$ identified parameters of $\Sigma$. Note that the length of $\theta$ rises quadratically with $J$. The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$
-where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the normal density. The integral part does not have a closed-form expression and hence must be approximated numerically.
+The researcher aims to estimate the values for $b$, $\Omega$, and $\Sigma$, most commonly by the maximum likelihood method. Let $\theta$ denote the vector of the identified parameters, i.e., $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. Note that the length of $\theta$ rises quadratically with both number of alternatives $J$ and choice characteristics $P$. 
 
-## Simulate data from a probit model
+The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$
+where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the normal density. The integral part of the equation does not have a closed-form expression, and therefore, it must be approximated numerically.
 
-The {ino} package provides the function `sim_mnp()` to simulate data from a probit model. We simulate 10 data sets.
+## Data simulation and likelihood computation
+
+To simulate data from a probit model, the {ino} package offers the `sim_mnp()` function. We first define a function `X` that samples the $J\times P$ matrix of choice characteristics of decider $n$ at choice occasion $t$. 
+
+```{r}
+J <- 3
+P <- 4
+scale <- c(1e-4, 1e-2, 1, 1e+4)
+X <- function(n, t) {
+  class <- sample(0:1, 1)
+  mean <- ifelse(class, 1, -1)
+  covariates <- stats::rnorm(J * P, mean = mean, sd = 1) / scale
+  matrix(covariates, nrow = J, ncol = P, byrow = TRUE)
+}
+X(1, 1)
+```
 
 ```{r}
 N <- 100
 T <- 10
-J <- 3
-P <- 3
-b <- c(1,-1,0.5)
+b <- c(1, -1, 2, 0.5)
+Omega <- diag(P)
 Sigma <- diag(J)
-X <- function() {
-  class <- sample(0:1, 1)
-  mean <- ifelse(class, 2, -2)
-  matrix(stats::rnorm(J*P, mean = mean), nrow = J, ncol = P)
-}
-probit_data <- sim_mnp(
-  N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X
-)
+probit_data <- sim_mnp(N, T, J, P, b, Omega, Sigma, X)
+```
+
+```{r}
+theta <- attr(probit_data, "true")[-1]
+f_ll_mnp(theta = theta, data = probit_data, neg = TRUE)
+# nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 ```
 
 ## Setup
@@ -58,14 +77,17 @@ probit_data <- sim_mnp(
 The following lines specify the `ino` object. The likelihood is computed via `f_ll_mnp()` which is provided via {ino}. Via the `global` argument, we can specify the true parameter vector that leads to the global optimum. The `mpvs = "data"` input specifies that we want to loop over the ten provided data sets.
 
 ```{r, eval = FALSE}
-true <- attr(probit_data, "true")
 probit_ino <- Nop$new(
   f = f_ll_mnp,
-  npar = 5,
-  # global = true,
+  npar = length(theta),
   data = probit_data,
-  neg = TRUE
-)$set_optimizer(optimizer_nlm(iterlim = 1000))
+  neg = TRUE)$
+  set_optimizer(optimizer_nlm(iterlim = 1000))$
+  set_true_parameter(theta, set_true_value = TRUE)
+```
+
+```{r}
+probit_ino$test(at = theta)
 ```
 
 ## Random initialization

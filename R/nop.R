@@ -740,19 +740,19 @@ Nop <- R6::R6Class(
               }
             }
           )
-          if (any(is.na(out$value))) {
-            ino_stop(
-              glue::glue("Optimization with optimizer `{private$.optimizer_label[i]}` failed.")
-            )
-          }
-          ino_success(
-            glue::glue("Calling optimizer `{private$.optimizer_label[i]}` did not throw an error."),
-            verbose = verbose
-          )
           if (identical(out, ".ino_time_limit_opt_reached")) {
             ino_warn(
               glue::glue("The time limit of {time_limit_opt}s was reached in the test optimization call with optimizer `{private$.optimizer_label[i]}`."),
               "To make sure that the optimization ends successful, consider increasing `time_limit_opt`."
+            )
+          } else if (any(is.na(out$value))) {
+            ino_stop(
+              glue::glue("Optimization with optimizer `{private$.optimizer_label[i]}` failed.")
+            )
+          } else {
+            ino_success(
+              glue::glue("Calling optimizer `{private$.optimizer_label[i]}` did not throw an error."),
+              verbose = verbose
             )
           }
         }

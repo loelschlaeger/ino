@@ -720,7 +720,8 @@ Overview of the identified optima.
   digits = getOption("ino_digits", default = 2),
   sort_by = "frequency",
   which_runs = "all",
-  which_optimizer = "all"
+  which_optimizer = "all",
+  only_comparable = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -746,6 +747,10 @@ The default is \code{2}.}
 \item a \code{character} vector of specified optimizer labels
 \item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
 }}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} (default) to
+include all optimization results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -797,7 +802,7 @@ include all optimization results.}
 \subsection{Method \code{plot()}}{
 Visualization of optimization time.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, relative = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, relative = TRUE, log = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -813,6 +818,9 @@ Visualization of optimization time.
 \item{\code{relative}}{Either \code{TRUE} (default) to plot relative time differences with
 respect to the median of the top boxplot, or \code{FALSE} to plot
 absolute computation time.}
+
+\item{\code{log}}{Either \code{TRUE} to plot a log10-x-axis, or \code{FALSE} (default)
+if not.}
 }
 \if{html}{\out{</div>}}
 }

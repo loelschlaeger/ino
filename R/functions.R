@@ -242,8 +242,10 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #' A \code{matrix}, the error term covariance matrix of dimension \code{J}
 #' times \code{J}.
 #' @param X
-#' A \code{function} that samples the covariates. It must return a
-#' \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
+#' A \code{function} that samples the covariates of decider \code{n} at choice
+#' occasion \code{t}. It must
+#' - have two arguments \code{n} and \code{t},
+#' - return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
 #'
 #' @return
 #' A \code{data.frame}. The first column (\code{N}) is the identifier for the
@@ -270,7 +272,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 
 sim_mnp <- function(
     N, T = 1, J, P, b = stats::rnorm(P), Omega = NULL, Sigma = diag(J),
-    X = function() matrix(stats::rnorm(J*P), nrow = J, ncol = P)
+    X = function(n, t) matrix(stats::rnorm(J*P), nrow = J, ncol = P)
 ) {
   stopifnot(b[1] == 1)
   b <- matrix(b)
@@ -292,7 +294,7 @@ sim_mnp <- function(
   beta <- lapply(1:N, function(x) if(mix) b + O %*% stats::rnorm(P) else b)
   data <- lapply(1:N, function(n) {
     out <- lapply(1:T, function(t) {
-      X_nt <- X()
+      X_nt <- X(n, t)
       U_nt <- X_nt %*% beta[[n]] + L %*% stats::rnorm(J)
       y_nt <- which.max(U_nt)
       list(X = X_nt, y = y_nt)

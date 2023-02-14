@@ -12,7 +12,7 @@ sim_mnp(
   b = stats::rnorm(P),
   Omega = NULL,
   Sigma = diag(J),
-  X = function() matrix(stats::rnorm(J * P), nrow = J, ncol = P)
+  X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P)
 )
 }
 \arguments{
@@ -35,8 +35,12 @@ Set to \code{NULL} (the default) for no mixing distribution.}
 \item{Sigma}{A \code{matrix}, the error term covariance matrix of dimension \code{J}
 times \code{J}.}
 
-\item{X}{A \code{function} that samples the covariates. It must return a
-\code{numeric} \code{matrix} of dimension \code{J} times \code{P}.}
+\item{X}{A \code{function} that samples the covariates of decider \code{n} at choice
+occasion \code{t}. It must
+\itemize{
+\item have two arguments \code{n} and \code{t},
+\item return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
+}}
 }
 \value{
 A \code{data.frame}. The first column (\code{N}) is the identifier for the
