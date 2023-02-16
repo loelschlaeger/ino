@@ -17,8 +17,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.dim = c(8, 6), 
-  out.width = "75%",
-  cache = TRUE
+  out.width = "75%"
 )
 # library("ino")
 devtools::load_all() # remove later
@@ -87,7 +86,7 @@ probit_ino <- Nop$new(
 ```
 
 ```{r}
-probit_ino$test(at = theta)
+# probit_ino$test(at = theta)
 ```
 
 ## Random initialization
