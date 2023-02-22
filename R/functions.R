@@ -203,7 +203,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
   if (inherits(delta, "try-error")) delta <- rep(1, N) / N
   allprobs <- matrix(1, T, N)
   for(n in 1:N){
-    allprobs[, n] <- stats::dnorm(data$obs, mean = mu[n], sd = sigma[n])
+    allprobs[, n] <- stats::dnorm(data$logreturn, mean = mu[n], sd = sigma[n])
   }
   foo <- delta %*% diag(allprobs[1,])
   llk <- log(sum(foo))

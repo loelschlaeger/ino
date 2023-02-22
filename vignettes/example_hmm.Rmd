@@ -37,7 +37,7 @@ library("dplyr")
 data <- fHMM::download_data(symbol = "DBK.DE", from = "2000-01-01")
 db_data <- data %>%
   as_tibble() %>%
-  summarize(
+  reframe(
     date = as.Date(Date, format = "%Y-%m-%d"),
     logreturn = c(NA, diff(log(Close), lag = 1))
   ) %>%
@@ -93,17 +93,17 @@ hmm_ino$optimize(initial = sampler, runs = 50, label = "random",
 For selecting fixed starting values, we consider three sets of starting values that fall in the ranges considered above. These can be considered as "educated guesses" and are likely to be close to the global optimum:
 
 ```{r, eval = FALSE}
-tpm_entry_1 <- tpm_entry_2 <- c(-2, -1.5)
-mu_1 <- c(0, -0.1)
-mu_2 <- c(0, 0.1)
-sd_1 <- c(log(2), log(1))
-sd_2 <- c(log(3), log(1.5))
+tpm_entry_1 <- tpm_entry_2 <- c(-2, -2.5)
+mu_1 <- c(0, -0.05)
+mu_2 <- c(0, 0.05)
+sd_1 <- c(log(0.1), log(0.5))
+sd_2 <- c(log(0.75), log(1))
 
 starting_values <- asplit(expand.grid(tpm_entry_1, tpm_entry_2, 
                                       mu_1, mu_2, sd_1, sd_2), MARGIN = 1)
 
-for(val in starting_values)
-  hmm_ino$optimize(initial = val, save_results = TRUE, label = "educated_guess")
+hmm_ino$optimize(initial = starting_values, 
+                 save_results = TRUE, label = "educated_guess")
 ```
 
 ### Subset initialization
@@ -139,7 +139,7 @@ Selecting the starting values for HMMs is a well-known issue, as poor starting v
 hmm_ino$optima()
 ```
 
-The frequency table indicates that `r hmm_ino$optima() %>% slice(1) %>% pull(frequency)` out of `r sum(hmm_ino$optima()$frequency)` runs converged to the same likelihood value, which appears to be the global optimum (note these are the negative log-likelihood values).  
+The frequency table indicates that `r hmm_ino$optima() %>% arrange(value) %>% slice(1) %>% pull(frequency)` out of `r sum(hmm_ino$optima()$frequency)` runs converged to the smallest negative likelihood value, which appears to be the global optimum (note these are the negative log-likelihood values). However, in `r hmm_ino$optima() %>% arrange(value) %>% slice(2:nrow(.)) %>% pull(frequency)` runs we gut stuck in a local optimum.
 
 Using `summary()`, we can investigate the computation time ("seconds"), the resulting optimum ("value") and the corresponding initialization strategy ("label") of all runs (here, only the first 10 are shown): 
 
@@ -164,36 +164,36 @@ hmm_ino$best_value
 
 ### Optimization time
 
-We use the `plot()` function to investigate the computation time. Intuitively, optimization runs our educated guesses be faster than with random starting values, since we have carefully chosen these starting values by investigating the data. The boxplots confirm this intuition: 
+We use the `plot()` function to investigate the computation time. Intuitively, optimization runs based on our educated guesses should be faster than runs with random starting values, since we have carefully chosen these starting values by investigating the data:
 
 ```{r eval=TRUE}
-plot(hmm_ino, by = "label", nrow = 1)
+plot(hmm_ino, by = "label")
 ```
 
-Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute the average time per strategy:
+Here, relative computation times are shown --- setting `relative = FALSE` in `plot()` gives the absolute times. Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute the average time per strategy:
 
 ```{r warning = FALSE, message = FALSE, eval=TRUE}
 summary(hmm_ino, c("label", "seconds")) %>% 
   group_by(label) %>% 
-  summarise(avg_time = mean(seconds))
+  summarise(avg_time = mean(seconds, na.rm = TRUE))
 ```
 
 This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r hmm_ino$best_value`. For that, we will again use functions from {dplyr}.
 
 ```{r eval=TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  mutate(global_optimum = ifelse(value < 13152, 1, 0)) %>% 
+  mutate(global_optimum = ifelse(value < -14157, 1, 0)) %>% 
   group_by(label) %>% 
-  summarise(proportion_global_optimum = mean(global_optimum))
+  summarise(proportion_global_optimum = mean(global_optimum, na.rm = TRUE))
 ```
 
-While for the educated guesses starting values all runs converge to the global optimum, the random initialization and subset initialization strategies do sometimes get stuck in local maxima.
+While for the educated guesses, most of the runs converge to the global optimum, the random initialization and subset initialization strategy with 5% of the data get stuck more often in local maxima.
 
 Let's again compare the average computation time, but only for those runs that lead to the global optimum:
 
 ```{r eval=TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  filter(value < 13152) %>% 
+  filter(value < -14157) %>% 
   group_by(label) %>% 
   summarise(mean_time = mean(seconds))
 ```
@@ -202,7 +202,7 @@ For those runs that converged to the global optimum, we can again compare the co
 
 ```{r eval=TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  filter(value < 13152) %>% 
+  filter(value < -14157) %>% 
   ggplot(aes(x = "", y = seconds)) +
     scale_y_continuous() +
     geom_boxplot() +
@@ -215,6 +215,6 @@ summary(hmm_ino, c("label", "value", "seconds")) %>%
     ylab("seconds")
 ```
 
-While computation time is lowest for the fixed initialization strategy, subset initialization appears to be a very promising approach. In particular, when considering the first 5% of the data in a first step, the computation time is most likely to be lower compared to the random initialization approach.
+While computation is fastest for the educated guesses, subset initialization appears to be a promising approach.
 
 ## References
