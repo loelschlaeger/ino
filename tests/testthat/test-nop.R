@@ -369,11 +369,13 @@ test_that("Nop object can be tested", {
     character_f$test(),
     "Test function call returned"
   )
-  expect_warning({
-    slow_f <- Nop$new(f = function(x) {
-      Sys.sleep(2)
-      1
-    }, 1)},
+  expect_warning(
+    {
+      slow_f <- Nop$new(f = function(x) {
+        Sys.sleep(2)
+        1
+      }, 1)
+    },
     "Function `f` is unnamed."
   )
   expect_warning(
