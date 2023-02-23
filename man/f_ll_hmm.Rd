@@ -17,7 +17,7 @@ normal distributions.
 the state-dependent normal distributions.
 }}
 
-\item{data}{A \code{data.frame} with a column \code{obs} that includes a time series.}
+\item{data}{A \code{numeric} vector, the time series data.}
 
 \item{N}{An \code{integer}, the number of states.}
 

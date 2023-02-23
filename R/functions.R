@@ -105,7 +105,7 @@ f_easom <- function(x) {
   -cos(x[1]) * cos(x[2]) * exp(-((x[1] - pi)^2 + (x[2] - pi)^2))
 }
 
-#' Simulate data from a Gaussian-hidden Markov model
+#' Simulate a time series from a Gaussian-hidden Markov model
 #'
 #' @seealso
 #' [f_ll_hmm()] for computing the log-likelihood of a Gaussian-hidden Markov
@@ -125,16 +125,15 @@ f_easom <- function(x) {
 #'   the state-dependent normal distributions.
 #'
 #' @return
-#' A \code{data.frame}. The first column (\code{T}) is the identifier for the
-#' time point. The second column (\code{obs}) contains the observations for each
-#' time point.
+#' A \code{numeric} vector, the simulated time series.
 #'
 #' @examples
 #' tpm <- matrix(c(0.8,0.1,0.2,0.9), nrow = 2)
 #' mu <- c(-2,2)
 #' sigma <- c(0.5,1)
 #' theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-#' sim_hmm(T = 100, N = 2, theta = theta)
+#' data <- sim_hmm(T = 100, N = 2, theta = theta)
+#' plot(data, type = "l")
 #'
 #' @importFrom stats rnorm
 #'
@@ -159,7 +158,7 @@ sim_hmm <- function(T, N, theta) {
     s[t] <- sample(1:N, size = 1, prob = tpm[s[t-1],])
     x[t] <- stats::rnorm(1, mean = mu[s[t-1]], sd = sigma[s[t-1]])
   }
-  data.frame(T = 1:T, obs = x)
+  return(x)
 }
 
 #' Log-likelihood function of a Gaussian-hidden Markov model
@@ -169,7 +168,7 @@ sim_hmm <- function(T, N, theta) {
 #'
 #' @inheritParams sim_hmm
 #' @param data
-#' A \code{data.frame} with a column \code{obs} that includes a time series.
+#' A \code{numeric} vector, the time series data.
 #' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #'
@@ -191,9 +190,9 @@ sim_hmm <- function(T, N, theta) {
 #' @export
 
 f_ll_hmm <- function(theta, data, N, neg = FALSE) {
-  stopifnot(is.numeric(theta), is.data.frame(data), N%%1==0)
+  stopifnot(is.numeric(theta), is.vector(data), is.numeric(data), N%%1==0)
   stopifnot(length(theta) == N * (N - 1) + 2*N)
-  T <- nrow(data)
+  T <- length(data)
   tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
   tpm <- tpm / rowSums(tpm)
@@ -203,7 +202,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
   if (inherits(delta, "try-error")) delta <- rep(1, N) / N
   allprobs <- matrix(1, T, N)
   for(n in 1:N){
-    allprobs[, n] <- stats::dnorm(data$logreturn, mean = mu[n], sd = sigma[n])
+    allprobs[, n] <- stats::dnorm(data, mean = mu[n], sd = sigma[n])
   }
   foo <- delta %*% diag(allprobs[1,])
   llk <- log(sum(foo))
@@ -275,6 +274,7 @@ sim_mnp <- function(
     X = function(n, t) matrix(stats::rnorm(J*P), nrow = J, ncol = P)
 ) {
   stopifnot(b[1] == 1)
+  stopifnot(is.function(X), names(formals(X)) == c("n", "t"))
   b <- matrix(b)
   mix <- !(is.null(Omega) || all(Omega == 0))
   if(mix) {

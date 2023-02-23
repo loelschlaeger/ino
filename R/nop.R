@@ -6,16 +6,16 @@
 #' @param which_optimizer
 #' Select specified numerical optimizer. Either:
 #' - \code{"all"} for all specified optimizer (default)
-#' - a \code{character} vector of specified optimizer labels
-#' - a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+#' - a \code{character} (vector) of specified optimizer labels
+#' - a \code{numeric} (vector) of optimizer IDs (see the output of \code{$print()})
 #' @param which_runs
 #' Select recorded results of optimization runs. Either:
 #' - \code{"all"} for all records (default)
 #' - \code{"last"} the records from the last optimization
-#' - a \code{vector} of one or more labels specified in \code{$optimize()}.
+#' - a \code{character} (vector) of labels specified in \code{$optimize()}.
 #' @param only_comparable
 #' Either \code{TRUE} to show only comparable results (i.e., results obtained
-#' for the original optimization problem), or \code{FALSE} (default) to
+#' for the original optimization problem), or \code{FALSE} to
 #' include all optimization results.
 #' @param verbose
 #' A \code{logical}, which indicates whether progress/details should be printed.
@@ -41,8 +41,10 @@
 #' inside the \code{Nop} object.
 #' By default, \code{save_results = TRUE}.
 #' @param hide_warnings
-#' A \code{logical}. Set to \code{TRUE} (default) to hide warnings during
-#' optimization.
+#' A \code{logical}. Set to \code{TRUE} to hide any warnings.
+#' @param time_limit
+#' An \code{integer}, the time limit in seconds for computations.
+#' No time limit if \code{time_limit = NULL}.
 #'
 #' @details
 #' # Getting Started
@@ -54,11 +56,13 @@
 #' - and \code{...} are additional arguments for \code{f}.
 #'
 #' ## Step 2: Specify numerical optimizer:
-#' Call \code{object$set_optimizer(<optimizer object>)} where
+#' Call \code{object$set_optimizer(<optimizer object>)}, where
 #' \code{<optimizer object>} is an object of class \code{optimizer}, which can
-#' be created with the \code{\link[optimizeR]{define_optimizer}} function from the
-#' \{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm}}
-#' and \code{\link[optimizeR]{optimizer_optim}} are already available.
+#' be created with the \code{\link[optimizeR]{define_optimizer}} function from
+#' the \{optimizeR\} package.
+#' Two optimizer objects are already available:
+#' - \code{\link[optimizeR]{optimizer_nlm}}
+#' - \code{\link[optimizeR]{optimizer_optim}}
 #'
 #' ## Step 3: Test the configuration
 #' Call \code{object$test()} to validate your configuration.
@@ -69,11 +73,13 @@
 #' \code{object$continue()} for initialization strategies.
 #'
 #' # Analysis of the results
-#' - \code{object$summary()} returns a \code{data.frame} optimization details
-#' - \code{object$optima()} returns a frequency \code{table} of found optima
-#' - \code{object$print()} prints an overview of optimization times
+#' - \code{object$results()} returns a \code{list} of all optimization results
+#' - \code{object$summary()} returns a \code{data.frame} with a summary of the
+#'   optimization results
+#' - \code{object$optima()} returns a \code{table} of identified optima
+#' - \code{object$plot()} visualizes an overview of optimization times
 #' - \code{object$best_parameter()} and \code{object$best_value()} return the
-#' optimal parameter vector and optimal value over all optimization runs.
+#'   optimal parameter vector and optimal value over all optimization runs.
 #'
 #' @examples
 #' Nop$new(f = f_ackley, npar = 2)$
@@ -97,45 +103,48 @@ Nop <- R6::R6Class(
     #' An \code{integer}, the length of the first argument of \code{f} (the
     #' argument over which \code{f} is optimized).
     #' @param ...
-    #' Optionally additional arguments for \code{f}.
+    #' Optionally additional named arguments for \code{f}.
     #' @return
     #' A new \code{Nop} object.
     initialize = function(f, npar, ...) {
       if (missing(f)) {
         ino_stop(
-          "Please specify argument `f`.",
+          "Please specify argument {.var f}.",
           "It is the function to be optimized."
         )
       }
       if (!is.function(f)) {
         ino_stop(
-          "Argument `f` is not a function.",
-          "Please specify a function as argument `f`."
+          "Argument {.var f} is not a function.",
+          "Please specify a {.cls function} object as argument {.var f}."
         )
       }
       if (is.null(formals(f))) {
         ino_stop(
-          "The function `f` should have at least one argument.",
-          "Mind that `f` is optimized over its first argument.",
-          "It should be a numeric vector of length `npar`."
+          "The function {.var f} should have at least one argument.",
+          "Mind that {.var f} is optimized over its first argument.",
+          "It should be a {.cls numeric} vector of length {.var npar}."
         )
       }
       if (missing(npar)) {
         ino_stop(
-          "Please specify argument `npar`.",
-          "It is the length of the first argument of `f`."
+          "Please specify argument {.var npar}.",
+          "It is the length of the first argument of {.var f}."
         )
       }
       if (!(is.numeric(npar) && length(npar) == 1 && npar > 0 && npar %% 1 == 0)) {
         ino_stop(
-          "Argument `npar` is not a positive integer.",
-          "Please specify `npar` as the length of the first argument of `f`."
+          "Argument {.var npar} is not a positive {.cls integer}.",
+          "Please specify {.var npar} as the first argument length of {.var f}."
         )
       }
       private$.f <- f
       f_name <- deparse(substitute(f))
       if (!is.character(f_name) || length(f_name) != 1) {
         f_name <- "unnamed_function"
+        ino_warn(
+          "Function {.var f} is unnamed."
+        )
       }
       private$.f_name <- f_name
       private$.f_target <- names(formals(f))[1]
@@ -147,58 +156,58 @@ Nop <- R6::R6Class(
     #' Prints details of numerical optimization problem.
     #' @importFrom crayon underline
     #' @importFrom glue glue
+    #' @importFrom cli style_italic
     #' @param ...
     #' Currently not used.
     print = function(digits = getOption("ino_digits", default = 2), ...) {
-      cat(
-        crayon::underline("Optimization problem:"), "\n",
-        glue::glue(" Function: {private$.f_name}"), "\n",
-        glue::glue(" Optimize over: {private$.f_target} (length {private$.npar})"), "\n",
-        sep = ""
-      )
+      cat(glue::glue(
+        crayon::underline("Optimization problem:"),
+        "- Function: {private$.f_name}",
+        "- Optimize over: {private$.f_target} (length {private$.npar})",
+        .sep = "\n"
+      ), "\n")
       if (private$.narguments > 0) {
-        cat(" Additional arguments:", paste(names(private$.arguments), collapse = ", "), "\n")
-      }
-      if (!is.null(private$.true_parameter)) {
-        cat(
-          glue::glue(" True optimum at: {paste(round(private$.true_parameter, digits = digits), collapse = ' ')}"),
-          "\n", sep = ""
-        )
-      }
-      if (!is.null(private$.true_value)) {
-        cat(
-          glue::glue(" True optimum value: {round(private$.true_value, digits = digits)}"),
-          "\n", sep = ""
-        )
-      }
-      cat(
-        crayon::underline("Numerical optimizer:"), "\n", sep = ""
-      )
-      if (length(private$.optimizer) == 0) {
-        cat(
-          " No optimizer specified yet.\n"
-        )
-      } else {
-        for (i in seq_along(private$.optimizer)) {
-          cat(
-            glue::glue(" {i}: {private$.optimizer_label[i]}"), "\n", sep = ""
-          )
+        cat(glue::glue(
+          "- Additional arguments: ",
+          "{paste(names(private$.arguments), collapse = ', ')}"
+        ), "\n")
+        if (length(private$.orig_arguments) > 0) {
+          cat(glue::glue(
+            "- Currently transformed arguments: ",
+            "{paste(names(private$.orig_arguments), collapse = ', ')}"
+          ), "\n")
         }
       }
-      cat(
-        crayon::underline("Optimization results:"), "\n", sep = ""
-      )
-      if (length(private$.records) == 0) {
-        cat(
-          " No optimization results saved yet.\n"
-        )
+      if (!is.null(private$.true_parameter)) {
+        cat(glue::glue(
+          "- True optimum at: ",
+          "{paste(round(private$.true_parameter, digits = digits), collapse = ' ')}"
+        ), "\n")
+      }
+      if (!is.null(private$.true_value)) {
+        cat(glue::glue(
+          "- True optimum value: ",
+          "{round(private$.true_value, digits = digits)}"
+        ), "\n")
+      }
+      cat(crayon::underline("Numerical optimizer:\n"))
+      if (length(private$.optimizer) == 0) {
+        cat(cli::style_italic("No optimizer specified yet.\n"))
       } else {
-        cat(
-          glue::glue(" Optimization runs: {private$.nruns}"), "\n",
-          glue::glue(" Best parameter: {paste(round(self$best_parameter, digits = digits), collapse = ' ')}"), "\n",
-          glue::glue(" Best value: {round(self$best_value, digits = digits)}"), "\n",
-          sep = ""
-        )
+        for (i in seq_along(private$.optimizer)) {
+          cat(glue::glue("- {i}: {private$.optimizer_label[i]}"), "\n")
+        }
+      }
+      cat(crayon::underline("Optimization results:\n"))
+      if (private$.nruns == 0) {
+        cat(cli::style_italic("No optimization results saved yet.\n"))
+      } else {
+        cat(glue::glue(
+          "- Optimization runs: {private$.nruns}",
+          "- Best parameter: {paste(round(self$best_parameter, digits = digits), collapse = ' ')}",
+          "- Best value: {round(self$best_value, digits = digits)}",
+          .sep = "\n"
+        ), "\n")
       }
       invisible(self)
     },
@@ -207,25 +216,26 @@ Nop <- R6::R6Class(
     #' Set additional arguments for \code{f}.
     #' @param ...
     #' Optionally additional arguments for \code{f}.
+    #' @importFrom glue glue
     set_argument = function(...) {
       arguments <- list(...)
       if (length(arguments) == 0) {
-        ino_stop(
-          "Please specify an argument for `f`."
-        )
+        ino_stop("Please specify an argument for {.var f}.")
       }
       argument_names <- names(arguments)
       argument_names[which(is.null(argument_names))] <- ""
       for (i in seq_along(arguments)) {
         if (nchar(argument_names[i]) < 1) {
-          ino_stop(
-            glue::glue("Please name argument {i}.")
-          )
+          ino_stop(glue::glue("Please name argument {i}."))
         }
         if (argument_names[i] %in% names(private$.arguments)) {
           ino_stop(
-            glue::glue("Argument `{argument_names[i]}` already exists."),
-            glue::glue("Please call `$remove_argument('{argument_names[i]}')` first.")
+            glue::glue(
+              "Argument `{argument_names[i]}` already exists."
+            ),
+            glue::glue(
+              "Please call `$remove_argument('{argument_names[i]}')` first."
+            )
           )
         }
       }
@@ -242,14 +252,10 @@ Nop <- R6::R6Class(
     #' A \code{character}, the argument to extract.
     get_argument = function(argument_name) {
       if (missing(argument_name)) {
-        ino_stop(
-          "Please specify `argument_name`."
-        )
+        ino_stop("Please specify {.var argument_name}.")
       }
       if (!is.character(argument_name) || length(argument_name) != 1) {
-        ino_stop(
-          "Input `argument_name` must be a single character."
-        )
+        ino_stop("Input {.var argument_name} must be a single {.cls character}.")
       }
       private$.check_add_arg_exists(argument_name)
       private$.arguments[[argument_name]]
@@ -309,11 +315,31 @@ Nop <- R6::R6Class(
     #' @param at
     #' A \code{numeric} vector of length \code{npar}.
     #' @return
-    #' A \code{numeric} value.
-    evaluate = function(at) {
-      private$.check_add_args_complete()
+    #' Either:
+    #' - a \code{numeric} value, the function value at \code{at},
+    #' - \code{"time limit reached"} if the time limit was reached,
+    #' - the error message if the evaluation failed.
+    evaluate = function(at, time_limit = NULL, hide_warnings = FALSE) {
       private$.check_target_arg(at, arg_name = "at")
-      private$.evaluate(at)
+      if (!is.null(time_limit)) {
+        if (!(is.numeric(time_limit) && length(time_limit) == 1 &&
+              time_limit > 0 && time_limit %% 1 == 0)) {
+          ino_stop(
+            "Argument {.var time_limit} is not a positive {.cls integer}.",
+            "It should be a number of seconds.",
+            "Alternatively, it can be {.val NULL} for no time limit."
+          )
+        }
+      }
+      if (!isTRUE(hide_warnings) && !isFALSE(hide_warnings)) {
+        ino_stop(
+          "Input {.var hide_warnings} must be {.val TRUE} or {.val FALSE}."
+        )
+      }
+      private$.check_add_args_complete()
+      private$.evaluate(
+        at = at, time_limit = time_limit, hide_warnings = hide_warnings
+      )
     },
 
     #' @description
@@ -455,7 +481,7 @@ Nop <- R6::R6Class(
       return_results = FALSE, save_results = TRUE,
       label = "unlabeled", ncores = getOption("ino_ncores", default = 1),
       verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
-      reset_arguments_afterwards = TRUE, hide_warnings = TRUE
+      reset_arguments_afterwards = TRUE, time_limit = NULL, hide_warnings = TRUE
     ) {
 
       ### check `initial` and make it to function call `get_initial`
@@ -518,12 +544,12 @@ Nop <- R6::R6Class(
       }
       if (!isTRUE(save_results) && !isFALSE(save_results)) {
         ino_stop(
-          "Input `save_results` must be either `TRUE` or `FALSE`."
+          "Input `save_results` must be either {.val TRUE} or {.val FALSE}."
         )
       }
       if (!isTRUE(return_results) && !isFALSE(return_results)) {
         ino_stop(
-          "Input `return_results` must be either `TRUE` or `FALSE`."
+          "Input `return_results` must be either {.val TRUE} or {.val FALSE}."
         )
       }
       if (!(is.numeric(ncores) && length(ncores) == 1 && ncores > 0 && ncores %% 1 == 0)) {
@@ -533,12 +559,27 @@ Nop <- R6::R6Class(
       }
       if (!isTRUE(verbose) && !isFALSE(verbose)) {
         ino_stop(
-          "Input `verbose` must be either `TRUE` or `FALSE`."
+          "Input `verbose` must be either {.val TRUE} or {.val FALSE}."
         )
       }
       if (!isTRUE(reset_arguments_afterwards) && !isFALSE(reset_arguments_afterwards)) {
         ino_stop(
-          "Input `reset_arguments_afterwards` must be either `TRUE` or `FALSE`."
+          "Input `reset_arguments_afterwards` must be either {.val TRUE} or {.val FALSE}."
+        )
+      }
+      if (!is.null(time_limit)) {
+        if (!(is.numeric(time_limit) && length(time_limit) == 1 &&
+              time_limit > 0 && time_limit %% 1 == 0)) {
+          ino_stop(
+            "Argument {.var time_limit} is not a positive {.cls integer}.",
+            "It should be a number of seconds.",
+            "Alternatively, it can be {.val NULL} for no time limit."
+          )
+        }
+      }
+      if (!isTRUE(hide_warnings) && !isFALSE(hide_warnings)) {
+        ino_stop(
+          "Input {.var hide_warnings} must be {.val TRUE} or {.val FALSE}."
         )
       }
 
@@ -565,14 +606,16 @@ Nop <- R6::R6Class(
         on.exit(parallel::stopCluster(cluster))
         doSNOW::registerDoSNOW(cluster)
         results <- foreach::foreach(
-          run = 1:runs, .packages = "ino", .export = "private", .inorder = FALSE,
-          .options.snow = opts
+          run = 1:runs, .packages = "ino", .export = "private",
+          .inorder = FALSE, .options.snow = opts
         ) %dopar% {
           lapply(optimizer_ids, function(i) {
             private$.optimize(
               initial = get_initial(run),
               optimizer_id = i,
-              hide_warnings = hide_warnings)
+              time_limit = time_limit,
+              hide_warnings = hide_warnings
+            )
           })
         }
       } else {
@@ -582,7 +625,9 @@ Nop <- R6::R6Class(
             private$.optimize(
               initial = get_initial(run),
               optimizer_id = i,
-              hide_warnings = hide_warnings)
+              time_limit = time_limit,
+              hide_warnings = hide_warnings
+            )
           })
         }
       }
@@ -620,144 +665,153 @@ Nop <- R6::R6Class(
     #' A \code{numeric} of length \code{npar}, the point at which the
     #' function \code{f} and the specified optimizer are tested.
     #' Per default, \code{at = rnorm(self$npar)}, i.e., random values.
-    #' @param time_limit_fun
-    #' An \code{integer}, the time limit in seconds for testing the
-    #' function call.
-    #' If no error occurred after \code{time_limit_fun} seconds, the test is
-    #' considered to be successful.
-    #' By default, \code{time_limit_fun = 10}.
-    #' @param time_limit_opt
-    #' An \code{integer}, the time limit in seconds for testing the
-    #' optimization call.
-    #' If no error occurred after \code{time_limit_opt} seconds, the test is
-    #' considered to be successful.
-    #' By default, \code{time_limit_opt = 10}.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function(
-      at = rnorm(self$npar), which_optimizer = "all", time_limit_fun = 10,
-      time_limit_opt = time_limit_fun,
+      at = rnorm(self$npar), which_optimizer = "all", time_limit = 10,
       verbose = getOption("ino_verbose", default = TRUE),
       digits = getOption("ino_digits", default = 2)
       ) {
 
       ### input checks
       private$.check_target_arg(at, "at")
-      optimizer_ids <- private$.get_optimizer_ids(which_optimizer, no_optimizer = "ignored")
+      optimizer_ids <- private$.get_optimizer_ids(
+        which_optimizer, no_optimizer = "ignored"
+      )
       optimizer_selected <- length(optimizer_ids) > 0
-      if (!(is.numeric(time_limit_fun) && length(time_limit_fun) == 1 && time_limit_fun > 0 && time_limit_fun %% 1 == 0)) {
-        ino_stop(
-          "Argument `time_limit_fun` is not a positive `integer`.",
-          "Please specify `time_limit_fun` as the number of seconds for testing the function call."
-        )
-      }
-      if (!(is.numeric(time_limit_opt) && length(time_limit_opt) == 1 && time_limit_opt > 0 && time_limit_opt %% 1 == 0)) {
-        ino_stop(
-          "Argument `time_limit_opt` is not a positive `integer`.",
-          "Please specify `time_limit_opt` as the number of seconds for testing the function call."
-        )
-      }
       if (!isTRUE(verbose) && !isFALSE(verbose)) {
         ino_stop(
-          "Input `verbose` must be either `TRUE` or `FALSE`."
+          "Input {.var verbose} must be either {.val TRUE} or {.val FALSE}."
         )
       }
 
       ### test configurations
       ino_status("Test configuration", verbose = verbose)
-      ino_success(glue::glue("Function specified: {private$.f_name}") , verbose = verbose)
-      ino_success(glue::glue("Target argument specified: {private$.f_target} (length {private$.npar})") , verbose = verbose)
+      ino_success(
+        glue::glue("Function specified: {private$.f_name}"), verbose = verbose
+      )
+      ino_success(
+        glue::glue(
+          "Target argument specified: ",
+          "{private$.f_target} (length {private$.npar})"
+        ), verbose = verbose
+      )
       if (optimizer_selected) {
-        ino_success(glue::glue("Optimizer specified: {paste(private$.optimizer_label[optimizer_ids], collapse = ', ')}"), verbose = verbose)
+        ino_success(
+          glue::glue(
+            "Optimizer specified: ",
+            "{paste(private$.optimizer_label[optimizer_ids], collapse = ', ')}"
+          ), verbose = verbose
+        )
       }
       ino_success(
         glue::glue(
-          "Test values specified: ", {paste(round(at, digits = digits), collapse = ' ')}
+          "Test values specified: ",
+          {paste(round(at, digits = digits), collapse = ' ')}
         ), verbose = verbose
       )
 
       ### test function call
       ino_status("Test function call", verbose = verbose)
-      setTimeLimit(cpu = time_limit_fun, elapsed = time_limit_fun, transient = TRUE)
-      on.exit({
-        setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
-      })
-      out <- tryCatch(
-        {
-          self$evaluate(at)
-        },
-        error = function(e) {
-          if (grepl("reached elapsed time limit|reached CPU time limit", e$message)) {
-            return(".ino_time_limit_fun_reached")
-          } else {
-            ino_stop("Function call failed.")
-          }
-        }
+      out <- self$evaluate(
+        at = at, time_limit = time_limit, hide_warnings = TRUE
       )
-      ino_success("Calling the function did not throw an error.", verbose = verbose)
-      if (identical(out, ".ino_time_limit_fun_reached")) {
-        ino_warn(
-          glue::glue("The time limit of {time_limit_fun}s was reached in the test function call."),
-          "To make sure that the test function call returns a single numeric value, consider increasing `time_limit_fun`."
-        )
+      if (is.character(out)) {
+        if (identical(out, "time limit reached")) {
+          ino_warn(
+            glue::glue(
+              "Time limit of {time_limit}s was reached in the function call."
+            ),
+            "Consider increasing {.var time_limit}."
+          )
+        } else {
+          ino_stop(
+            "Test function call returned:",
+            out
+          )
+        }
       } else {
         if (!is.numeric(out)) {
           ino_stop(
-            glue::glue("Test function call returned an object of class `{class(out)[1]}`."),
-            "It should return a single `numeric` value."
+            "Test function call did not return a {.cls numeric} value."
           )
         } else {
-          ino_success("Test function call returned a `numeric`.", verbose = verbose)
+          ino_success(
+            "Test function call returned a {.cls numeric}.",
+            verbose = verbose
+          )
         }
         if (length(out) != 1) {
           ino_stop(
-            glue::glue("Test function call returned a `numeric` of length {length(out)}."),
-            "It should return a single `numeric` value."
+            glue::glue("Test function call is of length {length(out)}."),
+            "It should be a single {.cls numeric} value."
           )
         } else {
-          ino_success(glue::glue("Return value is {round(out, digits = digits)}."), verbose = verbose)
+          ino_success(
+            glue::glue("Return value: {round(out, digits = digits)}"),
+            verbose = verbose
+          )
         }
       }
 
       ### test optimization
       if (!optimizer_selected) {
-        ino_warn("No optimizer specified, testing optimizer is skipped.")
+        ino_warn(
+          "No optimizer specified, testing optimizer is skipped.",
+          "Please use {.fun $set_optimizer} to specify an optimizer."
+        )
       } else {
         ino_status("Test optimization", verbose = verbose)
         for (i in seq_along(optimizer_ids)) {
-          setTimeLimit(cpu = time_limit_opt, elapsed = time_limit_opt, transient = TRUE)
-          out <- tryCatch(
-            {
-              private$.optimize(initial = at, optimizer_id = i, hide_warnings = TRUE)
-            },
-            error = function(e) {
-              if (grepl("reached elapsed time limit|reached CPU time limit", e$message)) {
-                return(".ino_time_limit_opt_reached")
-              } else {
-                ino_stop(
-                  glue::glue("Optimization with optimizer `{private$.optimizer_label[i]}` failed.")
-                )
+          out <- self$optimize(
+            initial = at, runs = 1, which_optimizer = i, seed = NULL,
+            return_results = TRUE, save_results = FALSE, ncores = 1,
+            verbose = FALSE, simplify = TRUE, time_limit = time_limit,
+            hide_warnings = TRUE
+          )
+          if (!is.null(out$error)) {
+            if (identical(out$error, "time limit reached")) {
+              ino_warn(
+                glue::glue(
+                  "Time limit of {time_limit}s was reached in the optimization."
+                ),
+                "Consider increasing {.var time_limit}."
+              )
+            } else {
+              ino_stop(
+                "Optimization returned an error:",
+                out$error
+              )
+            }
+          } else {
+            if (!is.list(out)) {
+              ino_stop(
+                "Test optimization did not return a {.cls list}."
+              )
+            } else {
+              ino_success(
+                "Test optimization returned a {.cls list}.",
+                verbose = verbose
+              )
+              for (value in c("value", "parameter", "seconds")) {
+                if (!value %in% names(out)) {
+                  ino_stop(
+                    glue::glue("Output does not contain the element '{value}'.")
+                  )
+                } else {
+                  ino_success(
+                    glue::glue(
+                      "Return {value}: ",
+                      "{paste(round(out[[value]], digits = digits), collapse = ' ')}"
+                    ),
+                    verbose = verbose
+                  )
+                }
               }
             }
-          )
-          if (identical(out, ".ino_time_limit_opt_reached")) {
-            ino_warn(
-              glue::glue("The time limit of {time_limit_opt}s was reached in the test optimization call with optimizer `{private$.optimizer_label[i]}`."),
-              "To make sure that the optimization ends successful, consider increasing `time_limit_opt`."
-            )
-          } else if (any(is.na(out$value))) {
-            ino_stop(
-              glue::glue("Optimization with optimizer `{private$.optimizer_label[i]}` failed.")
-            )
-          } else {
-            ino_success(
-              glue::glue("Calling optimizer `{private$.optimizer_label[i]}` did not throw an error."),
-              verbose = verbose
-            )
           }
         }
       }
-
       invisible(TRUE)
     },
 
@@ -1033,8 +1087,18 @@ Nop <- R6::R6Class(
     #' @description
     #' Continue last optimization runs, e.g., with a transformed parameter.
     continue = function(
-      hide_warnings = TRUE, save_results = TRUE, return_results = FALSE
+      save_results = TRUE, return_results = FALSE,
+      time_limit = NULL, hide_warnings = TRUE
     ) {
+
+      ### input checks
+      if (!isTRUE(hide_warnings) && !isFALSE(hide_warnings)) {
+        ino_stop(
+          "Input {.var hide_warnings} must be {.val TRUE} or {.val FALSE}."
+        )
+      }
+
+      ### continue optimization
       records_old <- private$.records[private$.runs_last]
       results <- list()
       for (i in 1:length(records_old)) {
@@ -1044,7 +1108,10 @@ Nop <- R6::R6Class(
           record_old_o <- record_old[[o]]
           initial <- record_old_o$parameter
           record_new <- private$.optimize(
-            initial = initial, optimizer_id = o, hide_warnings = hide_warnings
+            initial = initial,
+            optimizer_id = o,
+            time_limit = time_limit,
+            hide_warnings = hide_warnings
           )
           record_new$label <- record_old_o$label
           record_new$optimizer <- record_old_o$optimizer
@@ -1194,7 +1261,7 @@ Nop <- R6::R6Class(
       }
       if (!(identical(sort_by, "frequency") | identical(sort_by, "value"))) {
         ino_stop(
-          "Input `sort_by` must be either \"frequency\" or \"value\"."
+          "Input `sort_by` must be either {.val frequency} or {.val value}."
         )
       }
       optima <- as.data.frame(
@@ -1410,7 +1477,7 @@ Nop <- R6::R6Class(
         if (no_optimizer == "fatal") {
           ino_stop(
             "No optimizer specified.",
-            "Please use `$set_optimizer()` to specify an optimizer."
+            "Please use {.fun $set_optimizer} to specify an optimizer."
           )
         }
         if (no_optimizer == "ignored") {
@@ -1482,48 +1549,78 @@ Nop <- R6::R6Class(
     },
 
     ### cheap function evaluation
-    .evaluate = function(at) {
+    .evaluate = function(at, time_limit, hide_warnings) {
       at <- list(at)
       names(at) <- private$.f_target
-      do.call(
-        what = private$.f,
-        args = c(at, private$.arguments)
+      if (!is.null(time_limit)) {
+        setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
+        on.exit({
+          setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+        })
+      }
+      tryCatch(
+        {
+          suppressWarnings(
+            do.call(
+              what = private$.f,
+              args = c(at, private$.arguments)
+            ),
+            classes = if (hide_warnings) "warning" else ""
+          )
+        },
+        error = function(e) {
+          msg <- e$message
+          if (grepl("reached elapsed time limit|reached CPU time limit", msg)) {
+            return("time limit reached")
+          } else {
+            msg
+          }
+        }
       )
     },
 
     ### cheap function optimization
-    .optimize = function(initial, optimizer_id, hide_warnings) {
-      if (!isTRUE(hide_warnings) && !isFALSE(hide_warnings)) {
-        ino_stop(
-          "Input `hide_warnings` must be either `TRUE` or `FALSE`."
-        )
+    .optimize = function(initial, optimizer_id, time_limit, hide_warnings) {
+      if (!is.null(time_limit)) {
+        setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
+        on.exit({
+          setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+        })
       }
-      out <- try(suppressWarnings(
-        do.call(
-          what = optimizeR::apply_optimizer,
-          args = c(
-            list(
-              "optimizer" = private$.optimizer[[optimizer_id]],
-              "objective" = private$.f,
-              "initial" = initial
+      tryCatch(
+        {
+          suppressWarnings(
+            do.call(
+              what = optimizeR::apply_optimizer,
+              args = c(
+                list(
+                  "optimizer" = private$.optimizer[[optimizer_id]],
+                  "objective" = private$.f,
+                  "initial" = initial
+                ),
+                private$.arguments
+              )
             ),
-            private$.arguments
+            classes = if (hide_warnings) "warning" else ""
           )
-        ),
-        classes = if (hide_warnings) "warning" else ""
-      ), silent = TRUE)
-      if (inherits(out, "try-error")) {
-        return(
-          list(
-            "value" = NA_real_,
-            "parameter" = NA_real_,
-            "seconds" = NA_real_,
-            "initial" = initial
+        },
+        error = function(e) {
+          msg <- e$message
+          return(
+            list(
+              "value" = NA_real_,
+              "parameter" = NA_real_,
+              "seconds" = NA_real_,
+              "initial" = initial,
+              "error" = if (grepl("reached elapsed time limit|reached CPU time limit", msg)) {
+                "time limit reached"
+              } else {
+                msg
+              }
+            )
           )
-        )
-      } else {
-        return(out)
-      }
+        }
+      )
     },
 
     ### save optimization results inside `Nop` object
@@ -1542,7 +1639,7 @@ Nop <- R6::R6Class(
     .return_results = function(results, simplify = TRUE) {
       if (!isTRUE(simplify) && !isFALSE(simplify)) {
         ino_stop(
-          "Input `simplify` must be either `TRUE` or `FALSE`."
+          "Input `simplify` must be either {.val TRUE} or {.val FALSE}."
         )
       }
       if (simplify) {

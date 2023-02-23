@@ -8,7 +8,7 @@ test_that("ackley Nop object can be initialized", {
   expect_error(Nop$new(f = f_ackley), "Please specify argument `npar`.")
   expect_error(
     Nop$new(f = f_ackley, npar = 0),
-    "Argument `npar` is not a positive integer."
+    "Argument `npar` is not a positive <integer>."
   )
   expect_identical(ackley$f, f_ackley)
   expect_identical(ackley$npar, 2L)
@@ -36,8 +36,14 @@ test_that("ackley Nop object can be initialized", {
 test_that("hmm Nop object with parameters can be initialized", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = earthquakes)
   expect_s3_class(hmm, c("Nop", "R6"), exact = TRUE)
-  expect_error(hmm$set_argument(earthquakes), "Please name argument 1.")
-  expect_error(hmm$set_argument("data" = earthquakes), "already exists")
+  expect_error(
+    hmm$set_argument(earthquakes),
+    "Please name argument 1."
+  )
+  expect_error(
+    hmm$set_argument("data" = earthquakes),
+    "already exists"
+  )
   expect_snapshot(print(hmm))
   hmm$set_argument("test_arg1" = 1, "test_arg2" = 2)
   expect_snapshot(print(hmm))
@@ -47,8 +53,11 @@ test_that("hmm Nop object with parameters can be initialized", {
   expect_error(hmm$get_argument(), "Please specify `argument_name`.")
   expect_equal(hmm$get_argument("test_arg1"), 1)
   expect_error(hmm$get_argument("does_not_exist"), "does not exist")
-  expect_error(hmm$get_argument(1), "must be a single character")
-  expect_error(hmm$remove_argument(), "Please specify `argument_name`.")
+  expect_error(hmm$get_argument(1), "must be a single")
+  expect_error(
+    hmm$remove_argument(),
+    "Please specify `argument_name`."
+  )
   expect_error(
     hmm$remove_argument(argument_name = 1:2),
     "must be a `character`"
@@ -71,7 +80,54 @@ test_that("ackley function can be evaluated", {
   )
   expect_type(ackley$evaluate(c(1, 2)), "double")
   expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, "data" = earthquakes)
+})
+
+test_that("long function evaluation can be interrupted", {
+  f <- function(x) {
+    Sys.sleep(1.5)
+    x
+  }
+  long_f <- Nop$new(f = f, npar = 1)
+  expect_equal(
+    long_f$evaluate(at = 1, time_limit = 1),
+    "time limit reached"
+  )
+  expect_equal(
+    long_f$evaluate(at = 1, time_limit = 2),
+    1
+  )
+})
+
+test_that("warnings in function evaluations can be hidden", {
+  f <- function(x) {
+    warning("this is a warning")
+    x
+  }
+  warning_f <- Nop$new(f = f, npar = 1)
+  expect_warning(
+    warning_f$evaluate(at = 1),
+    "this is a warning"
+  )
+  expect_warning(
+    warning_f$evaluate(at = 1, hide_warnings = TRUE),
+    regexp = NA
+  )
+})
+
+test_that("errors in function evaluations can be returned", {
+  f <- function(x) {
+    stop("this is an error")
+    x
+  }
+  error_f <- Nop$new(f = f, npar = 1)
+  expect_equal(
+    error_f$evaluate(at = 1),
+    "this is an error"
+  )
+})
+
+test_that("HMM likelihood function can be evaluated", {
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6, "data" = earthquakes$obs)
   hmm$set_argument("N" = 2, "neg" = TRUE)
   expect_type(hmm$evaluate(at = c(0, 2, 1, 4, 2, 3)), "double")
   hmm$remove_argument("neg")
@@ -118,7 +174,10 @@ test_that("true parameter can be set", {
   ackley$set_true_parameter(c(0, 0), set_true_value = TRUE)
   expect_equal(ackley$true_value, f_ackley(c(0, 0)))
   expect_snapshot(ackley)
-  expect_error(ackley$set_true_parameter(c(1, 1), set_true_value = FALSE), "also update the true optimum value.")
+  expect_error(
+    ackley$set_true_parameter(c(1, 1), set_true_value = FALSE),
+    "also update the true optimum value."
+  )
 })
 
 test_that("optimizer can be set", {
@@ -169,29 +228,60 @@ test_that("function can be optimized", {
     ackley$optimize(runs = -1),
     "must be a positive integer."
   )
-  expect_error(ackley$optimize(runs = "1"), "must be a positive integer.")
-  expect_error(ackley$optimize(verbose = "yes"), "`verbose` must be either `TRUE` or `FALSE`.")
+  expect_error(
+    ackley$optimize(runs = "1"),
+    "must be a positive integer."
+  )
+  expect_error(
+    ackley$optimize(verbose = "yes"),
+    "must be either"
+  )
   ackley$optimize(runs = 5)
   ackley$optimize(runs = 1, initial = runif(2))
   ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)
   ackley$optimize(initial = c(0, 0))
-  expect_error(ackley$optimize(initial = c(1:3)), "misspecified.")
+  expect_error(
+    ackley$optimize(initial = c(1:3)),
+    "misspecified."
+  )
   expect_snapshot(ackley)
-  expect_error(ackley$optimize(save_results = "TRUE"), "`save_results` must be either `TRUE` or `FALSE`.")
-  expect_error(ackley$optimize(return_results = "TRUE"), "`return_results` must be either `TRUE` or `FALSE`.")
-  expect_error(ackley$optimize(return_results = TRUE, simplify = "TRUE"), "`simplify` must be either `TRUE` or `FALSE`.")
+  expect_error(
+    ackley$optimize(save_results = "TRUE"),
+    "must be either"
+  )
+  expect_error(
+    ackley$optimize(return_results = "TRUE"),
+    "must be either"
+  )
+  expect_error(
+    ackley$optimize(return_results = TRUE, simplify = "TRUE"),
+    "must be either."
+  )
   out <- ackley$optimize(runs = 5, return_results = TRUE, save_results = FALSE)
   expect_type(out, "list")
   expect_length(out, 5)
   expect_length(out[[1]], 2)
   ackley$remove_optimizer(2)
-  out <- ackley$optimize(runs = 1, return_results = TRUE, save_results = FALSE)
+  out <- ackley$optimize(
+    runs = 1, return_results = TRUE, save_results = FALSE
+  )
   expect_type(out, "list")
-  out <- ackley$optimize(runs = 1, return_results = TRUE, save_results = FALSE, simplify = FALSE)
+  out <- ackley$optimize(
+    runs = 1, return_results = TRUE, save_results = FALSE, simplify = FALSE
+  )
   expect_type(out, "list")
-  expect_error(ackley$optimize(initial = function() "not_a_numeric"), "should return a `numeric`")
-  expect_error(ackley$optimize(initial = "initial_misspecified"), "`initial` is misspecified")
-  expect_error(ackley$optimize(reset_arguments_afterwards = "FALSE"), "must be either")
+  expect_error(
+    ackley$optimize(initial = function() "not_a_numeric"),
+    "should return a `numeric`"
+  )
+  expect_error(
+    ackley$optimize(initial = "initial_misspecified"),
+    "`initial` is misspecified"
+  )
+  expect_error(
+    ackley$optimize(reset_arguments_afterwards = "FALSE"),
+    "must be either"
+  )
   ackley$optimize()
   expect_length(ackley$best_parameter, 2)
   expect_error(
@@ -242,43 +332,60 @@ test_that("parallel optimization works", {
     "`ncores` must be a positive `integer`."
   )
   skip_on_cran()
-  ackley$optimize(runs = 1000, ncores = 2, save_results = FALSE, reset_arguments_afterwards = TRUE)
+  ackley$optimize(
+    runs = 1000, ncores = 2, save_results = FALSE,
+    reset_arguments_afterwards = TRUE
+  )
 })
 
 test_that("Nop object can be tested", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_warning(ackley$test(), "No optimizer specified, testing optimizer is skipped.")
+  expect_warning(
+    ackley$test(),
+    "No optimizer specified, testing optimizer is skipped."
+  )
   ackley$set_optimizer(optimizer_nlm())
   ackley$set_optimizer(optimizer_optim())
-  expect_error(ackley$test(time_limit_fun = -1), "`time_limit_fun` is not a positive `integer`.")
-  expect_error(ackley$test(time_limit_opt = -1), "`time_limit_opt` is not a positive `integer`.")
-  expect_error(ackley$test(verbose = "FALSE"), "`verbose` must be either `TRUE` or `FALSE`.")
+  expect_error(
+    ackley$test(time_limit = -1),
+    "is not a positive"
+  )
+  expect_error(
+    ackley$test(verbose = "FALSE"),
+    "must be either"
+  )
   expect_true(ackley$test())
-  bad_f <- Nop$new(f = function(x) stop(), 1)
-  expect_error(bad_f$test(), "Function call failed.")
+  bad_f <- Nop$new(f = function(x) stop("error message"), 1)
+  expect_error(
+    bad_f$test(), "Test function call returned"
+  )
   lengthy_f <- Nop$new(f = function(x) 1:2, 1)
-  expect_error(lengthy_f$test(), "Test function call returned a `numeric` of length 2.")
+  expect_error(
+    lengthy_f$test(),
+    "Test function call is of length 2."
+  )
   character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
-  expect_error(character_f$test(), "function call returned an object of class `character`.")
-  slow_f <- Nop$new(f = function(x) {
-    Sys.sleep(2)
-    1
-  }, 1)
+  expect_error(
+    character_f$test(),
+    "Test function call returned"
+  )
+  expect_warning({
+    slow_f <- Nop$new(f = function(x) {
+      Sys.sleep(2)
+      1
+    }, 1)},
+    "Function `f` is unnamed."
+  )
   expect_warning(
     expect_warning(
-      slow_f$test(time_limit_fun = 1),
-      "The time limit of 1s was reached"
+      slow_f$test(time_limit = 1),
+      "Time limit of 1s was reached"
     ),
     "No optimizer specified, testing optimizer is skipped."
   )
-  slow_f$set_optimizer(optimizer_nlm())
-  expect_warning(
-    slow_f$test(time_limit_fun = 1, time_limit_opt = 10),
-    "The time limit of 1s was reached"
-  )
   ackley$remove_optimizer(1:2)
   bad_optimizer_fun <- function(f, p) {
-    if (identical(p, 1:2)) stop()
+    if (identical(p, 1:2)) stop("error message")
     list(v = f(p), z = 1:2)
   }
   bad_optimizer <- optimizeR::define_optimizer(
@@ -289,7 +396,7 @@ test_that("Nop object can be tested", {
   ackley$set_optimizer(bad_optimizer)
   expect_error(
     ackley$test(at = 1:2),
-    "Optimization with optimizer `bad_optimizer_fun` failed."
+    "Optimization returned an error"
   )
 })
 
@@ -300,7 +407,7 @@ test_that("standardization works", {
   P <- 3
   b <- c(1, -1, 0.5)
   Sigma <- diag(J)
-  X <- function() {
+  X <- function(n, t) {
     class <- sample(0:1, 1)
     mean <- ifelse(class, 2, -2)
     matrix(stats::rnorm(J * P, mean = mean), nrow = J, ncol = P)
@@ -313,10 +420,7 @@ test_that("standardization works", {
     probit$standardize(),
     "Please specify 'argument_name'."
   )
-  expect_error(
-    probit$standardize(1),
-    "Input `argument_name` must be a single character."
-  )
+  expect_error(probit$standardize(1), "must be a single")
   probit$standardize("data", ignore = 1:3)
   expect_identical(dim(probit_data), dim(probit$arguments$data))
   probit$reset_argument("data")

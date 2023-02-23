@@ -39,7 +39,7 @@ ino_status <- function(msg, verbose = getOption("ino_verbose")) {
 #' @keywords internal
 
 ino_success <- function(msg, verbose = getOption("ino_verbose"), delay = 0.1) {
-  if (verbose) cli::cli_alert_success(glue::glue(msg))
+  if (verbose) cli::cli_alert_success(msg)
   Sys.sleep(delay)
 }
 
@@ -50,7 +50,7 @@ ino_success <- function(msg, verbose = getOption("ino_verbose"), delay = 0.1) {
 ino_stop <- function(msg, ...) {
   msg <- c(msg, ...)
   names(msg)[1] <- "x"
-  names(msg)[-1] <- ">"
+  names(msg)[-1] <- "*"
   cli::cli_abort(msg, call = NULL)
 }
 
@@ -61,6 +61,6 @@ ino_stop <- function(msg, ...) {
 ino_warn <- function(msg, ...) {
   msg <- c(msg, ...)
   names(msg)[1] <- "!"
-  names(msg)[-1] <- ">"
+  names(msg)[-1] <- "*"
   cli::cli_warn(unlist(msg))
 }

@@ -17,8 +17,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.dim = c(8, 6), 
-  out.width = "75%",
-  eval = FALSE
+  out.width = "75%"
 )
 # library("ino")
 devtools::load_all() # remove later
@@ -32,7 +31,7 @@ This vignette^[The vignette was build using R `r paste(R.Version()[c("major","mi
 
 The example data set considered throughout this vignette covers a time series of share returns from the Deutsche Bank stock. The data set is freely accessible via Yahoo Finance and can be downloaded via the {fHMM} package [@Oelschläger:2023b]: 
 
-```{r, message = FALSE, warning = FALSE, eval = TRUE}
+```{r, message = FALSE, warning = FALSE}
 library("dplyr")
 data <- fHMM::download_data(symbol = "DBK.DE", from = "2000-01-01")
 db_data <- data %>%
@@ -47,17 +46,16 @@ db_data <- data %>%
 
 The time series looks as follows:
 
-```{r, message = FALSE, warning = FALSE, eval = TRUE}
+```{r, message = FALSE, warning = FALSE}
 library("ggplot2")
 ggplot(db_data, aes(x = date, y = logreturn)) +
   geom_point() +
   geom_line() +
   scale_x_date() +
-  scale_y_continuous(labels = scales::label_percent()) +
-  ylab("log-returns")
+  scale_y_continuous(labels = scales::label_percent())
 ```
 
-As the share returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions. The (log-) likelihood function of a Gaussian-HMM is provided by the {ino} package as the function `f_ll_hmm()`.
+As the share returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions.
 
 ## Model fitting
 
@@ -70,22 +68,27 @@ We consider a 2-state (`N = 2`) Gaussian-HMM with six parameters (`npar = 6`) to
 The likelihood for a Gaussian-HMM is given by the function `f_ll_hmm()` provided by the {ino} package. The argument `neg =  TRUE` indicates that we minimize the negative log-likelihood, and `set_optimizer(optimizer_nlm())` selects the optimizer `nlm()` (see the introductory vignette).
 
 ```{r, eval = FALSE}
-hmm_ino <- Nop$new(f = f_ll_hmm, npar = 6, data = db_data, N = 2, neg = TRUE)$
+hmm_ino <- Nop$new(
+    f = f_ll_hmm, 
+    npar = 6, 
+    data = db_data$logreturn, 
+    N = 2, 
+    neg = TRUE
+  )$
   set_optimizer(optimizer_nlm())
 ```
 
 ### Random initialization
 
-We first use randomly chosen starting values. As the first two starting values belong to the t.p.m., we draw starting values from a $\mathcal{U}(-2,-1)$ distribution --- as we use the multinomial logit link to ensure that the probabilities are between 0 and 1, a value of -1.5 correspond to probabilities of staying in state 1 and 2 of about 0.81. For the two means, we draw two random numbers from the standard normal distribution, as the time series above indicates that the most of the returns are fairly close to zero. The starting values for the standard deviations are drawn from a $\mathcal{U}(0.5,2)$ distribution (note that we exponentiate the standard deviations in the likelihood as they are constrained to be positive, and hence we log transform the starting values).
+We first use randomly chosen starting values. As the first two starting values belong to the t.p.m., we draw starting values from a $\mathcal{U}(-2,-1)$ distribution --- as we use the multinomial logit link to ensure that the probabilities are between 0 and 1, a value of -1.5 correspond to probabilities of staying in state 1 and 2 of about 0.81. For the two means, we draw two random numbers from the standard normal distribution, as the time series above indicates that the most of the returns are fairly close to zero. The starting values for the standard deviations are drawn from a $\mathcal{U}(0.5,2)$ distribution (note that we exponentiate the standard deviations in the likelihood as they are constrained to be positive, and hence we log-transform the starting values).
 
-The function `optimize` with argument `initial = sampler` then performs `runs = 50` optimization runs with starting values drawn from the selected distributions. Setting `save_results` to `TRUE` stores the results of the optimisation runs in `hmm_ino` so that we can access and compare them afterwards. For such comparisons with other optimization strategies (which will be carried out below), it's useful to set a label.
+The `$optimize()` method with argument `initial = sampler` then performs `runs = 50` optimization runs with starting values drawn from the selected distributions. For comparisons with other optimization strategies (which will be carried out below), it's useful to set a label.
 
 ```{r, eval = FALSE}
-sampler <- function() c(stats::runif(2, -2, -1),
-                        stats::rnorm(2),
-                        log(stats::runif(2, 0.5, 2)))
-hmm_ino$optimize(initial = sampler, runs = 50, label = "random",
-                 save_results = TRUE)
+sampler <- function() {
+  c(stats::runif(2, -2, -1), stats::rnorm(2), log(stats::runif(2, 0.5, 2)))
+}
+hmm_ino$optimize(initial = sampler, runs = 50, label = "random")
 ```
 
 ### Educated guesses
@@ -99,35 +102,26 @@ mu_2 <- c(0, 0.05)
 sd_1 <- c(log(0.1), log(0.5))
 sd_2 <- c(log(0.75), log(1))
 
-starting_values <- asplit(expand.grid(tpm_entry_1, tpm_entry_2, 
-                                      mu_1, mu_2, sd_1, sd_2), MARGIN = 1)
+starting_values <- asplit(expand.grid(
+  tpm_entry_1, tpm_entry_2, mu_1, mu_2, sd_1, sd_2), MARGIN = 1)
 
-hmm_ino$optimize(initial = starting_values, 
-                 save_results = TRUE, label = "educated_guess")
+hmm_ino$optimize(initial = starting_values, label = "educated_guess")
 ```
 
 ### Subset initialization
 
-To illustrate the subset initialization strategy, we consider the first 50\% of the observation using `reduce()`. The starting values for this subset are chosen randomly from the same distributions as considered above. We again use the function `optimize()` to fit the HMM, but now to a subset containing the first 50\% of the observations. With `continue()`, we then use the estimates obtained from the subsets as initial values to fit the model to the entire data set.
+The time series of share returns consists of `r nrow(db_data)` observations, so it 
+To illustrate the subset initialization strategy, we consider the first 20\% of the observation using `$reduce()`. The starting values for this subset are chosen randomly from the same distributions `sampler` as considered above. We again use the function `$optimize()` to fit the HMM, but now to the subset containing the first 20\% of the observations. With `$continue()`, we then use the estimates obtained from the subsets as initial values to fit the model to the entire data set.
 
 ```{r, eval = FALSE}
-hmm_ino$reduce("data", how = "first", prop = 0.5)
-hmm_ino$optimize(initial = sampler, runs = 50, label = "subset_50")
-hmm_ino$continue()
-hmm_ino$reset_argument("data")
+hmm_ino$
+  reduce("data", how = "first", prop = 0.2)$
+  optimize(initial = sampler, runs = 50, label = "subset")$
+  continue()$
+  reset_argument("data")
 ```
 
 As a final step in the previous code snippet, we use `reset_argument()` to obtain our actual data set consisting of *all* observations. If we were to skip this step, all future optimization runs would be made on the subset.
-
-
-As the time series of share returns consists of `r nrow(db_data)` observations, we can even try to use fewer observations to obtain initial starting values. In the next step, we consider only the first 5\% of the observations.
-
-```{r, eval = FALSE}
-hmm_ino$reduce("data", how = "first", prop = 0.05)
-hmm_ino$optimize(initial = sampler, runs = 50, label = "subset_5")
-hmm_ino$continue()
-hmm_ino$reset_argument("data")
-```
 
 ## Evaluating the optimization runs
 

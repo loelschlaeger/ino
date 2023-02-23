@@ -15,7 +15,8 @@ test_that("easom function works", {
 })
 
 test_that("HMM likelihood works", {
-  ll <- f_ll_hmm(theta = c(-1, -1, 1, 2, 2, 2), data = ino::earthquakes, N = 2)
+  data <- ino::earthquakes$obs
+  ll <- f_ll_hmm(theta = c(-1, -1, 1, 2, 2, 2), data = data, N = 2)
   expect_type(ll, "double")
 })
 

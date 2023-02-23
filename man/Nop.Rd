@@ -19,11 +19,15 @@ Call \code{object <- Nop$new(f, npar, ...)} where
 
 \subsection{Step 2: Specify numerical optimizer:}{
 
-Call \code{object$set_optimizer(<optimizer object>)} where
+Call \code{object$set_optimizer(<optimizer object>)}, where
 \code{<optimizer object>} is an object of class \code{optimizer}, which can
-be created with the \code{\link[optimizeR]{define_optimizer}} function from the
-\{optimizeR\} package. The optimizer \code{\link[optimizeR]{optimizer_nlm}}
-and \code{\link[optimizeR]{optimizer_optim}} are already available.
+be created with the \code{\link[optimizeR]{define_optimizer}} function from
+the \{optimizeR\} package.
+Two optimizer objects are already available:
+\itemize{
+\item \code{\link[optimizeR]{optimizer_nlm}}
+\item \code{\link[optimizeR]{optimizer_optim}}
+}
 }
 
 \subsection{Step 3: Test the configuration}{
@@ -40,9 +44,11 @@ Call \code{object$optimize()} for optimization. See also the methods
 
 \section{Analysis of the results}{
 \itemize{
-\item \code{object$summary()} returns a \code{data.frame} optimization details
-\item \code{object$optima()} returns a frequency \code{table} of found optima
-\item \code{object$print()} prints an overview of optimization times
+\item \code{object$results()} returns a \code{list} of all optimization results
+\item \code{object$summary()} returns a \code{data.frame} with a summary of the
+optimization results
+\item \code{object$optima()} returns a \code{table} of identified optima
+\item \code{object$plot()} visualizes an overview of optimization times
 \item \code{object$best_parameter()} and \code{object$best_value()} return the
 optimal parameter vector and optimal value over all optimization runs.
 }
@@ -125,7 +131,7 @@ vector of length \code{npar}.}
 \item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (the
 argument over which \code{f} is optimized).}
 
-\item{\code{...}}{Optionally additional arguments for \code{f}.}
+\item{\code{...}}{Optionally additional named arguments for \code{f}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -235,18 +241,28 @@ The default is \code{TRUE}.}
 \subsection{Method \code{evaluate()}}{
 Evaluate the function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(at)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(at, time_limit = NULL, hide_warnings = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{at}}{A \code{numeric} vector of length \code{npar}.}
+
+\item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
+No time limit if \code{time_limit = NULL}.}
+
+\item{\code{hide_warnings}}{A \code{logical}. Set to \code{TRUE} to hide any warnings.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{numeric} value.
+Either:
+\itemize{
+\item a \code{numeric} value, the function value at \code{at},
+\item \code{"time limit reached"} if the time limit was reached,
+\item the error message if the evaluation failed.
+}
 }
 }
 \if{html}{\out{<hr>}}
@@ -326,8 +342,8 @@ Remove numerical optimizer.
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
-\item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+\item a \code{character} (vector) of specified optimizer labels
+\item a \code{numeric} (vector) of optimizer IDs (see the output of \code{$print()})
 }}
 }
 \if{html}{\out{</div>}}
@@ -351,6 +367,7 @@ Optimize the function.
   verbose = getOption("ino_verbose", default = TRUE),
   simplify = TRUE,
   reset_arguments_afterwards = TRUE,
+  time_limit = NULL,
   hide_warnings = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -377,8 +394,8 @@ By default, \code{runs = 1}.}
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
-\item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+\item a \code{character} (vector) of specified optimizer labels
+\item a \code{numeric} (vector) of optimizer IDs (see the output of \code{$print()})
 }}
 
 \item{\code{seed}}{Set a seed for reproducibility.
@@ -417,8 +434,10 @@ arguments after the optimization runs.
 By default, \code{reset_arguments_afterwards = FALSE}.
 Alternatively, reset arguments using \code{$reset_argument()}.}
 
-\item{\code{hide_warnings}}{A \code{logical}. Set to \code{TRUE} (default) to hide warnings during
-optimization.}
+\item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
+No time limit if \code{time_limit = NULL}.}
+
+\item{\code{hide_warnings}}{A \code{logical}. Set to \code{TRUE} to hide any warnings.}
 }
 \if{html}{\out{</div>}}
 }
@@ -441,8 +460,7 @@ Test the configuration of a \code{Nop} object.
 \if{html}{\out{<div class="r">}}\preformatted{Nop$test(
   at = rnorm(self$npar),
   which_optimizer = "all",
-  time_limit_fun = 10,
-  time_limit_opt = time_limit_fun,
+  time_limit = 10,
   verbose = getOption("ino_verbose", default = TRUE),
   digits = getOption("ino_digits", default = 2)
 )}\if{html}{\out{</div>}}
@@ -458,21 +476,12 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
-\item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+\item a \code{character} (vector) of specified optimizer labels
+\item a \code{numeric} (vector) of optimizer IDs (see the output of \code{$print()})
 }}
 
-\item{\code{time_limit_fun}}{An \code{integer}, the time limit in seconds for testing the
-function call.
-If no error occurred after \code{time_limit_fun} seconds, the test is
-considered to be successful.
-By default, \code{time_limit_fun = 10}.}
-
-\item{\code{time_limit_opt}}{An \code{integer}, the time limit in seconds for testing the
-optimization call.
-If no error occurred after \code{time_limit_opt} seconds, the test is
-considered to be successful.
-By default, \code{time_limit_opt = 10}.}
+\item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
+No time limit if \code{time_limit = NULL}.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -601,15 +610,17 @@ The default is \code{TRUE}.}
 \subsection{Method \code{continue()}}{
 Continue last optimization runs, e.g., with a transformed parameter.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$continue(hide_warnings = TRUE, save_results = TRUE, return_results = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$continue(
+  save_results = TRUE,
+  return_results = FALSE,
+  time_limit = NULL,
+  hide_warnings = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{hide_warnings}}{A \code{logical}. Set to \code{TRUE} (default) to hide warnings during
-optimization.}
-
 \item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
 inside the \code{Nop} object.
 By default, \code{save_results = TRUE}.}
@@ -617,6 +628,11 @@ By default, \code{save_results = TRUE}.}
 \item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned as
 a \code{list}.
 By default, \code{return_results = FALSE}.}
+
+\item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
+No time limit if \code{time_limit = NULL}.}
+
+\item{\code{hide_warnings}}{A \code{logical}. Set to \code{TRUE} to hide any warnings.}
 }
 \if{html}{\out{</div>}}
 }
@@ -659,21 +675,21 @@ Set \code{columns = "all"} to include all of them in the output.
 \itemize{
 \item \code{"all"} for all records (default)
 \item \code{"last"} the records from the last optimization
-\item a \code{vector} of one or more labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()}.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
-\item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+\item a \code{character} (vector) of specified optimizer labels
+\item a \code{numeric} (vector) of optimizer IDs (see the output of \code{$print()})
 }}
 
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
 The default is \code{2}.}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
-for the original optimization problem), or \code{FALSE} (default) to
+for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
 
 \item{\code{...}}{Optionally named expressions of variables from summary columns as
@@ -704,7 +720,7 @@ Delete optimization results.
 \itemize{
 \item \code{"all"} for all records (default)
 \item \code{"last"} the records from the last optimization
-\item a \code{vector} of one or more labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()}.
 }}
 }
 \if{html}{\out{</div>}}
@@ -738,18 +754,18 @@ The default is \code{2}.}
 \itemize{
 \item \code{"all"} for all records (default)
 \item \code{"last"} the records from the last optimization
-\item a \code{vector} of one or more labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()}.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
-\item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+\item a \code{character} (vector) of specified optimizer labels
+\item a \code{numeric} (vector) of optimizer IDs (see the output of \code{$print()})
 }}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
-for the original optimization problem), or \code{FALSE} (default) to
+for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
 }
 \if{html}{\out{</div>}}
@@ -779,18 +795,18 @@ led to a function value closest to \code{value}.
 \itemize{
 \item \code{"all"} for all records (default)
 \item \code{"last"} the records from the last optimization
-\item a \code{vector} of one or more labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()}.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizer. Either:
 \itemize{
 \item \code{"all"} for all specified optimizer (default)
-\item a \code{character} vector of specified optimizer labels
-\item a \code{numeric} vector of optimizer IDs (see the output of \code{$print()})
+\item a \code{character} (vector) of specified optimizer labels
+\item a \code{numeric} (vector) of optimizer IDs (see the output of \code{$print()})
 }}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
-for the original optimization problem), or \code{FALSE} (default) to
+for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
 }
 \if{html}{\out{</div>}}

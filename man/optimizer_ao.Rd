@@ -22,7 +22,7 @@ separately, see the output documentation of \code{\link[optimizeR]{apply_optimiz
 
 \item{validate}{A \code{logical}, set to \code{TRUE} (\code{FALSE}) to (not) validate the
 \code{optimizer} object.
-By default, \code{validate = TRUE}.}
+By default, \code{validate = FALSE}.}
 
 \item{validation_settings}{Ignored if \code{valdiate = FALSE}.
 Otherwise, a \code{list} of validation settings:
