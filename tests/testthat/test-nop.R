@@ -159,7 +159,9 @@ test_that("true parameter can be set", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_null(ackley$true_parameter)
   expect_error(
-    {ackley$true_parameter <- 2},
+    {
+      ackley$true_parameter <- 2
+    },
     "It must be of length 2."
   )
   ackley$true_parameter <- c(0, 0)
@@ -535,4 +537,3 @@ test_that("plotting works", {
   expect_s3_class(ackley$plot(), "ggplot")
   dev.off()
 })
-

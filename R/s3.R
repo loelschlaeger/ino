@@ -5,7 +5,6 @@
 #' @exportS3Method
 
 print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
-
   ### optimization problem
   cat(glue::glue(
     crayon::underline("Optimization problem:"),
@@ -83,9 +82,7 @@ summary.Nop <- function(
     object, columns = c("value", "parameter", "seconds", "optimizer", "label"),
     which_runs = "all", which_optimizer = "all",
     digits = getOption("ino_digits", default = 2),
-    only_comparable = FALSE, ...
-  ) {
-
+    only_comparable = FALSE, ...) {
   private <- object$.__enclos_env__$private # REMOVE
 
   ### input checks
@@ -130,9 +127,9 @@ summary.Nop <- function(
 
   ### unlist single-valued records
   for (i in 1:ncol(out)) {
-    if (all(sapply(out[,i], length) == 1 &
-            sapply(out[,i], class) %in% c("character", "numeric", "logical"))) {
-      out[,i] <- unlist(out[,i])
+    if (all(sapply(out[, i], length) == 1 &
+      sapply(out[, i], class) %in% c("character", "numeric", "logical"))) {
+      out[, i] <- unlist(out[, i])
     }
   }
 
@@ -148,11 +145,11 @@ summary.Nop <- function(
 
   ### round numeric records
   for (i in 1:ncol(out)) {
-    if (is.vector(out[,i]) && is.numeric(out[,i])) {
-      out[,i] <- round(out[,i], digits = digits)
+    if (is.vector(out[, i]) && is.numeric(out[, i])) {
+      out[, i] <- round(out[, i], digits = digits)
     }
-    if (is.list(out[,i]) && all(sapply(out[,i], is.numeric))) {
-      out[[i]] <- lapply(out[,i], round, digits = digits)
+    if (is.list(out[, i]) && all(sapply(out[, i], is.numeric))) {
+      out[[i]] <- lapply(out[, i], round, digits = digits)
     }
   }
 
@@ -169,7 +166,6 @@ summary.Nop <- function(
 #' @exportS3Method
 
 plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
-
   ### input checks
   if (is.null(by)) {
     relative <- FALSE
@@ -191,15 +187,18 @@ plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
   data <- x$summary(columns = c("seconds", by), digits = Inf)
   if (!is.null(by)) {
     data[[by]] <- reorder(
-      data[[by]], data[["seconds"]], FUN = median, decreasing = TRUE, na.rm = TRUE
+      data[[by]], data[["seconds"]],
+      FUN = median, decreasing = TRUE, na.rm = TRUE
     )
     data <- dplyr::group_by(data, .data[[by]])
   }
   if (relative) {
     med <- dplyr::summarize(
-      data, "median" = median(.data$seconds, na.rm = TRUE), .groups = "drop"
+      data,
+      "median" = median(.data$seconds, na.rm = TRUE), .groups = "drop"
     ) %>%
-      dplyr::select(median) %>% min()
+      dplyr::select(median) %>%
+      min()
     data <- data %>% dplyr::mutate("seconds" = (seconds - med) / med + 1)
   }
 
