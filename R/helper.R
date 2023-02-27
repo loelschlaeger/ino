@@ -77,94 +77,108 @@ build_initial <- function(initial, npar) {
   }
 }
 
-#' Checks if the optimizers with given ids are active (i.e., not removed)
+#' Transform optimization results
 #'
 #' @description
-#' This helper function ... TODO
-#'
-#' @param optimizer
-#' TODO
-#' @param ids
-#' TODO
-#'
-#' @return
-#' TODO
-#'
-#' @keywords internal
-#'
-#' @examples
-#' \dontrun{
-#' TODO
-#' }
-
-check_optimizer_active <- function(optimizer, ids) {
-  stopifnot(sapply(ids, is_number), ids <= length(optimizer))
-  sapply(names(optimizer)[ids], nchar) > 0
-}
-
-#' TODO
-#'
-#' @description
-#' This helper function ... TODO
+#' This helper function transforms optimization results:
+#' - filter the nested \code{list},
+#' - simplify by flattening the nested \code{list} (if possible).
 #'
 #' @param results
-#' TODO
+#' A nested \code{list} of optimization results.
+#' Each element corresponds to one optimization run and is a \code{list}
+#' of results for each optimizer.
+#' The results for each optimizer is a \code{list}, the output of
+#' \code{\link[optimizeR]{apply_optimizer}}.
+#' @param which_element
+#' See documentation of method \code{$results()} from \code{Nop} object.
+#' @param only_comparable
+#' See documentation of method \code{$results()} from \code{Nop} object.
 #' @param simplify
-#' TODO
+#' See documentation of method \code{$results()} from \code{Nop} object.
 #'
 #' @return
-#' TODO
+#' A \code{list}.
 #'
 #' @keywords internal
 #'
 #' @examples
 #' \dontrun{
-#' TODO
+#' transform_results(
+#'   results = list("run" = list(
+#'     "optimizer1" = list(
+#'       "value" = 1, "comparable" = FALSE
+#'     ),
+#'     "optimizer2" = list(
+#'       "value" = 2, "comparable" = TRUE
+#'      )
+#'   )),
+#'   which_element = "value",
+#'   only_comparable = TRUE,
+#'   simplify = TRUE
+#' )
 #' }
 
-simplify_results <- function(results, simplify) {
-  if (!isTRUE(simplify) && !isFALSE(simplify)) {
+transform_results <- function(
+    results, which_element, only_comparable, simplify
+  ) {
+
+  ### input checks
+  if (!all(sapply(which_element, is_name))) {
     ino_stop(
-      "Input {.var simplify} must be {.val TRUE} or {.val FALSE}."
+      "Input {.var which_element} is misspecified.",
+      "It can be {.val all}, {.val basic}, or a {.cls character} (vector)."
     )
   }
-  if (simplify) {
-    if (length(results) == 1) {
-      results <- unlist(results, recursive = FALSE)
-    }
-    if (length(results) == 1) {
-      results <- unlist(results, recursive = FALSE)
-    }
-    # TODO: also simplify if each optimization result is only single-elemented
+  if (identical(which_element, "basic")) {
+    which_element <- c("value", "parameter")
   }
-  return(results)
-}
-
-#' TODO
-#'
-#' @description
-#' This helper function ... TODO
-#'
-#' @param results
-#' TODO
-#' @param only_comparable
-#' TODO
-#'
-#' @return
-#' TODO
-#'
-#' @keywords internal
-#'
-#' @examples
-#' \dontrun{
-#' TODO
-#' }
-
-filter_comparable <- function(results, only_comparable) {
+  if (identical(which_element, "default")) {
+    which_element <- c(
+      "run", "optimizer", "value", "parameter", "seconds", "label", "error"
+    )
+  }
   if (!(isTRUE(only_comparable) || isFALSE(only_comparable))) {
     ino_stop(
       "Argument {.var only_comparable} must be {.val TRUE} or {.val FALSE}."
     )
   }
-  lapply(results, function(x) Filter(function(y) y["comparable"], x))
+  if (!isTRUE(simplify) && !isFALSE(simplify)) {
+    ino_stop(
+      "Input {.var simplify} must be {.val TRUE} or {.val FALSE}."
+    )
+  }
+  stopifnot(
+    ### expect that 'results' is a 'list'
+    is.list(results),
+    ### expect that each element of 'results' is a 'list' (runs)
+    sapply(results, is.list),
+    ### expect that each element of each element of 'results' is a 'list'
+    ### (optimizer)
+    sapply(results, function(x) sapply(x, is.list))
+  )
+
+  ### filter
+  results <- lapply(results, function(x) {
+    Filter(function(y) y["comparable"], x)
+  })
+  if (!identical(which_element, "all")) {
+    results <- lapply(results, function(x) {
+      lapply(x, function(y) y[intersect(which_element, names(y))]
+    )})
+  }
+
+  ### simplify
+  if (simplify) {
+    for (layer in 1:3) {
+      if (length(results) == 1) {
+        results <- unlist(results, recursive = FALSE, use.names = FALSE)
+      } else {
+        break
+      }
+    }
+  }
+
+  ### return
+  return(results)
 }

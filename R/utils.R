@@ -48,3 +48,4 @@ is_number <- function(x) {
 is_name <- function(x) {
   is.vector(x) && is.character(x) && length(x) == 1 && nchar(x) > 0
 }
+

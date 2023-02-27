@@ -90,12 +90,16 @@ obtains its optimum.}
 (if available).}
 
 \item{\code{show_minimum}}{A \code{logical}, set to \code{TRUE} (default) to
-show best minimum in \code{$best_value()} and \code{$best_parameter()}.}
+show best minimum in \code{$best_value()}, \code{$best_parameter()}, and
+\code{$optima()}.}
 
 \item{\code{optimizer}}{A \code{list} of specified optimizers.}
 
 \item{\code{new_label}}{A \code{character}, a new optimization label that has
 not been used yet.}
+
+\item{\code{elements_available}}{A \code{data.frame} which shows the available
+elements in the optimization results per optimizer.}
 }
 \if{html}{\out{</div>}}
 }
@@ -213,6 +217,9 @@ Get value of an argument for \code{f}.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The argument.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-remove_argument"></a>}}
@@ -229,6 +236,9 @@ Remove additional arguments for \code{f}.
 \item{\code{argument_name}}{A \code{character} (vector), the argument(s) to remove.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
@@ -254,6 +264,9 @@ Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
 The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
@@ -310,6 +323,9 @@ inside \code{optimizer} is used.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-remove_optimizer"></a>}}
@@ -334,6 +350,9 @@ Remove numerical optimizer.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optimize"></a>}}
@@ -352,7 +371,6 @@ Optimize the function.
   ncores = getOption("ino_ncores", default = 1),
   verbose = getOption("ino_verbose", default = TRUE),
   simplify = TRUE,
-  reset_arguments_afterwards = TRUE,
   time_limit = NULL,
   hide_warnings = TRUE
 )}\if{html}{\out{</div>}}
@@ -415,12 +433,7 @@ The default is \code{TRUE}.}
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
 In this case, if \code{simplify = TRUE} (default), the nested list output
-of optimization results is flattened.}
-
-\item{\code{reset_arguments_afterwards}}{A \code{logical}. Set to \code{TRUE} to reset all transformed
-arguments after the optimization runs.
-By default, \code{reset_arguments_afterwards = FALSE}.
-Alternatively, reset arguments using \code{$reset_argument()}.}
+of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
 No time limit if \code{time_limit = NULL}.}
@@ -434,8 +447,13 @@ Set to \code{TRUE} (\code{FALSE}) to hide (show) warnings.}
 The return value depends on the value of \code{return_results}:
 \itemize{
 \item if \code{return_results = FALSE}, invisibly the \code{Nop} object,
-\item if \code{return_results = TRUE}, the output of
+\item if \code{return_results = TRUE}, a nested \code{list} of optimization
+results.
+Each element corresponds to one optimization run and is a \code{list}
+of results for each optimizer.
+The results for each optimizer is a \code{list}, the output of
 \code{\link[optimizeR]{apply_optimizer}}.
+If \code{simplify = TRUE}, the output is flattened if possible.
 }
 }
 }
@@ -530,6 +548,9 @@ The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-reduce"></a>}}
@@ -593,16 +614,24 @@ The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-continue"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-continue}{}}}
 \subsection{Method \code{continue()}}{
-Continue last optimization runs, e.g., with a transformed parameter.
+Continue optimization runs, e.g., with a transformed parameter.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$continue(
-  save_results = TRUE,
+  which_optimizer = "active",
+  seed = NULL,
   return_results = FALSE,
+  save_results = TRUE,
+  ncores = getOption("ino_ncores", default = 1),
+  verbose = getOption("ino_verbose", default = TRUE),
+  simplify = TRUE,
   time_limit = NULL,
   hide_warnings = TRUE
 )}\if{html}{\out{</div>}}
@@ -611,13 +640,39 @@ Continue last optimization runs, e.g., with a transformed parameter.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
-inside the \code{Nop} object.
-By default, \code{save_results = TRUE}.}
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"}, all specified optimizers,
+\item \code{"removed"}, all removed optimizers,
+\item \code{"active"}, all active optimizers (i.e., not removed),
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
+}}
+
+\item{\code{seed}}{Set a seed for reproducibility.
+No seed by default.}
 
 \item{\code{return_results}}{A \code{logical}, which indicates whether the results should be returned as
 a \code{list}.
 By default, \code{return_results = FALSE}.}
+
+\item{\code{save_results}}{A \code{logical}, which indicates whether the results should be saved
+inside the \code{Nop} object.
+By default, \code{save_results = TRUE}.}
+
+\item{\code{ncores}}{An \code{integer}, the number of CPU cores for parallel computation.
+The default is \code{1}.
+You can use \code{parallel::detectCores()} to detect the number of available
+CPU cores.}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{TRUE}.}
+
+\item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
+only one optimizer is specified.
+In this case, if \code{simplify = TRUE} (default), the nested list output
+of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
 No time limit if \code{time_limit = NULL}.}
@@ -627,6 +682,9 @@ Set to \code{TRUE} (\code{FALSE}) to hide (show) warnings.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+The same as the return value of \code{$optimize()}.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-summary"></a>}}
@@ -635,7 +693,7 @@ Set to \code{TRUE} (\code{FALSE}) to hide (show) warnings.}
 Overview of the optimization runs.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$summary(
-  columns = c("value", "parameter", "seconds", "optimizer", "label"),
+  which_element = "default",
   which_run = "all",
   which_optimizer = "all",
   digits = getOption("ino_digits", default = 2),
@@ -647,20 +705,29 @@ Overview of the optimization runs.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{columns}}{A \code{character} (vector), the names of columns to include in the
-summary output.
-The following columns are included by default:
-\enumerate{
-\item \code{"value"}, the value of the estimated function optimum
-\item \code{"parameter"}, the parameter vector at which the optimum is
-obtained
-\item \code{"seconds"}, the optimization time in seconds
-\item \code{"optimizer"}, the optimizer name
-\item \code{"label"}, the optimization label
-See \code{$summary_columns()} for an overview of the available column
-names.
-TODO
-Set \code{columns = "all"} to include all of them in the output.
+\item{\code{which_element}}{Select elements of saved optimization results.
+See \code{$elements_available} for an overview of the available elements.
+Either:
+\itemize{
+\item \code{"all"}, all elements,
+\item \code{"basic"}, the elements
+\itemize{
+\item \code{"value"}, the value of the found optimum,
+\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+is obtained,
+}
+\item \code{"default"}, the elements that are saved for all optimization runs by
+default, i.e.
+\itemize{
+\item \code{"run}, the run id,
+\item \code{"optimizer"}, the label for the optimizer,
+\item \code{"value"} and \code{"parameter"} (see above),
+\item \code{"seconds"}, the optimization time in seconds,
+\item \code{"label"}, the label for the optimization run,
+\item \code{"error"}, an error message (if any),
+}
+\item a \code{character} (vector), names of specific elements in the optimization
+output.
 }}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
@@ -688,16 +755,18 @@ The default is \code{2}.}
 for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
 
-\item{\code{...}}{Optionally named expressions of variables from summary columns as
-\code{character}.
-See \code{$summary_columns()} for an overview of the available columns.
+\item{\code{...}}{Optionally named expressions of elements.
+For example,
+\code{distance = "sqrt(sum((parameter - true_parameter) ^ 2))"} for the
+euclidean distance between the estimated and true parameter vector.
+See \code{$elements_available} for an overview of the available elements.
 Also, \code{"true_value"} and \code{"true_parameter"} are available
 (if specified).}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{data.frame}.
+A \code{data.frame} with optimization results.
 }
 }
 \if{html}{\out{<hr>}}
@@ -730,16 +799,42 @@ Delete optimization results.
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
 
-\item{\code{which_element}}{TODO}
+\item{\code{which_element}}{Select elements of saved optimization results.
+See \code{$elements_available} for an overview of the available elements.
+Either:
+\itemize{
+\item \code{"all"}, all elements,
+\item \code{"basic"}, the elements
+\itemize{
+\item \code{"value"}, the value of the found optimum,
+\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+is obtained,
+}
+\item \code{"default"}, the elements that are saved for all optimization runs by
+default, i.e.
+\itemize{
+\item \code{"run}, the run id,
+\item \code{"optimizer"}, the label for the optimizer,
+\item \code{"value"} and \code{"parameter"} (see above),
+\item \code{"seconds"}, the optimization time in seconds,
+\item \code{"label"}, the label for the optimization run,
+\item \code{"error"}, an error message (if any),
+}
+\item a \code{character} (vector), names of specific elements in the optimization
+output.
+}}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optima"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
 \subsection{Method \code{optima()}}{
-Overview of the identified optima.
+Overview of the identified optimum values.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
   digits = getOption("ino_digits", default = 2),
@@ -756,8 +851,11 @@ Overview of the identified optima.
 \item{\code{digits}}{An \code{integer}, the number of shown decimal places.
 The default is \code{2}.}
 
-\item{\code{sort_by}}{Either \code{"frequency"} (default) to sort rows by frequency or
-\code{"value"} to sort rows by value.}
+\item{\code{sort_by}}{Either:
+\itemize{
+\item \code{"frequency"} (default) to sort rows by frequency,
+\item \code{"value"} to sort by value.
+}}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
@@ -782,6 +880,9 @@ for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{table}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -812,19 +913,23 @@ if not.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+TODO
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-closest_parameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-closest_parameter}{}}}
 \subsection{Method \code{closest_parameter()}}{
 From all saved optimization results, extract the parameter vector that
-led to a function value closest to \code{value}.
+led to a function value closest (in absolute value) to \code{value}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$closest_parameter(
   value,
   which_run = "all",
   which_optimizer = "all",
-  only_comparable = FALSE
+  only_comparable = TRUE,
+  digits = getOption("ino_digits", default = 2)
 )}\if{html}{\out{</div>}}
 }
 
@@ -854,15 +959,27 @@ led to a function value closest to \code{value}.
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
+
+\item{\code{digits}}{An \code{integer}, the number of shown decimal places.
+The default is \code{2}.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{numeric} vector of length \code{self$npar}.
+The output has two attributes:
+\itemize{
+\item \code{run}, the run id that led to this parameter vector,
+\item \code{optimizer}, the optimizer that led to this parameter vector.
+Note that this parameter vector is not necessarily unique.
+}
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-results"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-results}{}}}
 \subsection{Method \code{results()}}{
-TODO
+Returns saved optimization results.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$results(
   which_run = "all",
@@ -894,7 +1011,30 @@ TODO
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
 
-\item{\code{which_element}}{TODO}
+\item{\code{which_element}}{Select elements of saved optimization results.
+See \code{$elements_available} for an overview of the available elements.
+Either:
+\itemize{
+\item \code{"all"}, all elements,
+\item \code{"basic"}, the elements
+\itemize{
+\item \code{"value"}, the value of the found optimum,
+\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+is obtained,
+}
+\item \code{"default"}, the elements that are saved for all optimization runs by
+default, i.e.
+\itemize{
+\item \code{"run}, the run id,
+\item \code{"optimizer"}, the label for the optimizer,
+\item \code{"value"} and \code{"parameter"} (see above),
+\item \code{"seconds"}, the optimization time in seconds,
+\item \code{"label"}, the label for the optimization run,
+\item \code{"error"}, an error message (if any),
+}
+\item a \code{character} (vector), names of specific elements in the optimization
+output.
+}}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -903,25 +1043,28 @@ include all optimization results.}
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
 In this case, if \code{simplify = TRUE} (default), the nested list output
-of optimization results is flattened.}
+of optimization results is flattened if possible.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-TODO
+A nested \code{list} of optimization results.
+Each element corresponds to one optimization run and is a \code{list}
+of results for each optimizer.
+If \code{simplify = TRUE}, the output is flattened if possible.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-best_parameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-best_parameter}{}}}
 \subsection{Method \code{best_parameter()}}{
-Returns the best found \code{numeric} parameter vector (if available).
-TODO
+Returns the best found \code{numeric} parameter vector.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$best_parameter(
   which_run = "all",
   which_optimizer = "all",
-  only_comparable = TRUE
+  only_comparable = TRUE,
+  digits = getOption("ino_digits", default = 2)
 )}\if{html}{\out{</div>}}
 }
 
@@ -949,21 +1092,33 @@ TODO
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
+
+\item{\code{digits}}{An \code{integer}, the number of shown decimal places.
+The default is \code{2}.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{numeric} of length \code{self$npar}.
+The output has two attributes:
+\itemize{
+\item \code{run}, the run id that led to the best parameter vector,
+\item \code{optimizer}, the optimizer that led to the best parameter vector.
+Note that this parameter vector is not necessarily unique.
+}
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-best_value"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-best_value}{}}}
 \subsection{Method \code{best_value()}}{
-Returns the best found \code{numeric} value of \code{f} (if available).
-TODO
+Returns the best found \code{numeric} value of \code{f}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$best_value(
   which_run = "all",
   which_optimizer = "all",
-  only_comparable = TRUE
+  only_comparable = TRUE,
+  digits = getOption("ino_digits", default = 2)
 )}\if{html}{\out{</div>}}
 }
 
@@ -991,8 +1146,21 @@ TODO
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
+
+\item{\code{digits}}{An \code{integer}, the number of shown decimal places.
+The default is \code{2}.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{numeric}, the best found \code{numeric} value of \code{f}.
+The output has two attributes:
+\itemize{
+\item \code{run}, the run id that led to the best value,
+\item \code{optimizer}, the optimizer that led to the best value.
+In the case that multiple optimization runs led to the best value, the
+first one of them is returned.
+}
 }
 }
 \if{html}{\out{<hr>}}

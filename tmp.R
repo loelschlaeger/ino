@@ -50,3 +50,9 @@ probit_ino
 
 probit_ino$remove_optimizer(1)
 
+
+which_element = "default", which_run = "all", which_optimizer = "all",
+digits = getOption("ino_digits", default = 2), only_comparable = FALSE
+
+
+

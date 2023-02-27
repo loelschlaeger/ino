@@ -18,7 +18,24 @@
 #' - a \code{character} (vector) of labels specified in \code{$optimize()},
 #' - a \code{numeric} (vector) of run ids.
 #' @param which_element
-#' TODO
+#' Select elements of saved optimization results.
+#' See \code{$elements_available} for an overview of the available elements.
+#' Either:
+#' - \code{"all"}, all elements,
+#' - \code{"basic"}, the elements
+#'   - \code{"value"}, the value of the found optimum,
+#'   - \code{"parameter}, the parameter \code{vector} at which the optimum value
+#'     is obtained,
+#' - \code{"default"}, the elements that are saved for all optimization runs by
+#'   default, i.e.
+#'   - \code{"run}, the run id,
+#'   - \code{"optimizer"}, the label for the optimizer,
+#'   - \code{"value"} and \code{"parameter"} (see above),
+#'   - \code{"seconds"}, the optimization time in seconds,
+#'   - \code{"label"}, the label for the optimization run,
+#'   - \code{"error"}, an error message (if any),
+#' - a \code{character} (vector), names of specific elements in the optimization
+#'   output.
 #' @param only_comparable
 #' Either \code{TRUE} to show only comparable results (i.e., results obtained
 #' for the original optimization problem), or \code{FALSE} to
@@ -46,7 +63,7 @@
 #' Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 #' only one optimizer is specified.
 #' In this case, if \code{simplify = TRUE} (default), the nested list output
-#' of optimization results is flattened.
+#' of optimization results is flattened if possible.
 #' @param save_results
 #' A \code{logical}, which indicates whether the results should be saved
 #' inside the \code{Nop} object.
@@ -219,6 +236,8 @@ Nop <- R6::R6Class(
     #' Get value of an argument for \code{f}.
     #' @param argument_name
     #' A \code{character}, the argument to extract.
+    #' @return
+    #' The argument.
     get_argument = function(argument_name) {
       if (missing(argument_name)) {
         ino_stop("Please specify {.var argument_name}.")
@@ -236,6 +255,8 @@ Nop <- R6::R6Class(
     #' Remove additional arguments for \code{f}.
     #' @param argument_name
     #' A \code{character} (vector), the argument(s) to remove.
+    #' @return
+    #' Invisibly the \code{Nop} object.
     remove_argument = function(argument_name) {
       if (missing(argument_name)) {
         ino_stop("Please specify {.var argument_name}.")
@@ -258,6 +279,8 @@ Nop <- R6::R6Class(
     #' \code{$standardize()} or \code{$reduce()}.
     #' @param argument_name
     #' A \code{character} (vector), the argument(s) to reset.
+    #' @return
+    #' Invisibly the \code{Nop} object.
     reset_argument = function(
       argument_name, verbose = getOption("ino_verbose", default = TRUE)
     ) {
@@ -324,6 +347,8 @@ Nop <- R6::R6Class(
     #' A \code{character}, a unique label for the optimizer.
     #' By default \code{label = NULL}, in which case the default label saved
     #' inside \code{optimizer} is used.
+    #' @return
+    #' Invisibly the \code{Nop} object.
     set_optimizer = function(optimizer, label = NULL) {
       if (missing(optimizer)) {
         ino_stop("Please specify argument {.var optimizer}.")
@@ -355,16 +380,23 @@ Nop <- R6::R6Class(
 
     #' @description
     #' Remove numerical optimizer.
+    #' @return
+    #' Invisibly the \code{Nop} object.
     remove_optimizer = function(which_optimizer) {
-      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      for (id in optimizer_ids) {
-        if (!check_optimizer_active(private$.optimizer, id)) {
+      if (missing(which_optimizer)) {
+        ino_stop(
+          "Please specify {.var which_optimizer}."
+        )
+      }
+      ids <- private$.get_optimizer_ids(which_optimizer)
+      for (id in ids) {
+        if (nchar(names(private$.optimizer)[id]) == 0) {
           ino_warn(
             glue::glue("Optimizer {id} already has been removed.")
           )
         } else {
           private$.optimizer[[id]] <- glue::glue(
-            "Optimizer {names(private$.optimizer)[id]} has been removed."
+            "{names(private$.optimizer)[id]} has been removed."
           )
           names(private$.optimizer)[id] <- ""
           ino_status(glue::glue("Removed optimizer {id}."))
@@ -395,16 +427,16 @@ Nop <- R6::R6Class(
     #' optimization.
     #' By default, \code{label = self$new_label} creates a new label.
     #' Labels can be useful to distinguish optimization runs later.
-    #' @param reset_arguments_afterwards
-    #' A \code{logical}. Set to \code{TRUE} to reset all transformed
-    #' arguments after the optimization runs.
-    #' By default, \code{reset_arguments_afterwards = FALSE}.
-    #' Alternatively, reset arguments using \code{$reset_argument()}.
     #' @return
     #' The return value depends on the value of \code{return_results}:
     #' - if \code{return_results = FALSE}, invisibly the \code{Nop} object,
-    #' - if \code{return_results = TRUE}, the output of
+    #' - if \code{return_results = TRUE}, a nested \code{list} of optimization
+    #'   results.
+    #'   Each element corresponds to one optimization run and is a \code{list}
+    #'   of results for each optimizer.
+    #'   The results for each optimizer is a \code{list}, the output of
     #'   \code{\link[optimizeR]{apply_optimizer}}.
+    #'   If \code{simplify = TRUE}, the output is flattened if possible.
     #' @importFrom parallel makeCluster stopCluster
     #' @importFrom doSNOW registerDoSNOW
     #' @importFrom foreach foreach %dopar% %do%
@@ -413,7 +445,7 @@ Nop <- R6::R6Class(
       return_results = FALSE, save_results = TRUE,
       label = self$new_label, ncores = getOption("ino_ncores", default = 1),
       verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
-      reset_arguments_afterwards = TRUE, time_limit = NULL, hide_warnings = TRUE
+      time_limit = NULL, hide_warnings = TRUE
     ) {
 
       ### input checks
@@ -438,11 +470,6 @@ Nop <- R6::R6Class(
       if (!isTRUE(verbose) && !isFALSE(verbose)) {
         ino_stop(
           "Input {.var verbose} must be {.val TRUE} or {.val FALSE}."
-        )
-      }
-      if (!isTRUE(reset_arguments_afterwards) && !isFALSE(reset_arguments_afterwards)) {
-        ino_stop(
-          "Input {.var reset_arguments_afterwards} must be {.val TRUE} or {.val FALSE}."
         )
       }
       if (!is.null(time_limit)) {
@@ -519,18 +546,12 @@ Nop <- R6::R6Class(
         )
       }
 
-      ### reset transformed arguments
-      if (reset_arguments_afterwards) {
-        lapply(
-          names(private$.original_arguments),
-          private$.reset_original_argument,
-          verbose = verbose
-        )
-      }
-
       ### return results
       if (return_results) {
-        simplify_results(results = results, simplify = simplify)
+        transform_results(
+          results = results, which_element = "all",
+          only_comparable = FALSE, simplify = simplify
+        )
       } else {
         invisible(self)
       }
@@ -712,6 +733,8 @@ Nop <- R6::R6Class(
     #' a \code{data.frame}.
     #' In that case, a \code{integer} (vector) of column indices (or row indices
     #' if \code{by_column = FALSE}) to not standardize.
+    #' @return
+    #' Invisibly the \code{Nop} object.
     standardize = function(
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
       ignore = integer(), verbose = getOption("ino_verbose", default = TRUE)
@@ -821,6 +844,8 @@ Nop <- R6::R6Class(
     #' \code{argument_name} is a \code{matrix} or a \code{data.frame}.
     #' In that case a \code{integer} (vector) of row indices (or column indices
     #' if \code{by_row = FALSE}) to ignore for clustering.
+    #' @return
+    #' Invisibly the \code{Nop} object.
     reduce = function(
       argument_name, by_row = TRUE, how = "random", proportion = 0.5,
       centers = 2, ignore = integer(), seed = NULL,
@@ -968,11 +993,17 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Continue last optimization runs, e.g., with a transformed parameter.
+    #' Continue optimization runs, e.g., with a transformed parameter.
+    #' @return
+    #' The same as the return value of \code{$optimize()}.
     continue = function(
-      save_results = TRUE, return_results = FALSE,
+      which_optimizer = "active", seed = NULL, return_results = FALSE,
+      save_results = TRUE, ncores = getOption("ino_ncores", default = 1),
+      verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
       time_limit = NULL, hide_warnings = TRUE
     ) {
+
+      # TODO: new options!
 
       ### input checks
       if (!isTRUE(hide_warnings) && !isFALSE(hide_warnings)) {
@@ -1012,7 +1043,10 @@ Nop <- R6::R6Class(
 
       ### return results
       if (return_results) {
-        simplify_results(results = results, simplify = TRUE)
+        transform_results(
+          results = results, which_element = "all",
+          only_comparable = FALSE, simplify = simplify
+        )
       } else {
         invisible(self)
       }
@@ -1020,62 +1054,112 @@ Nop <- R6::R6Class(
 
     #' @description
     #' Overview of the optimization runs.
-    #' @param columns
-    #' A \code{character} (vector), the names of columns to include in the
-    #' summary output.
-    #' The following columns are included by default:
-    #' 1. \code{"value"}, the value of the estimated function optimum
-    #' 2. \code{"parameter"}, the parameter vector at which the optimum is
-    #'    obtained
-    #' 3. \code{"seconds"}, the optimization time in seconds
-    #' 4. \code{"optimizer"}, the optimizer name
-    #' 5. \code{"label"}, the optimization label
-    #' See \code{$summary_columns()} for an overview of the available column
-    #' names.
-    #' TODO
-    #' Set \code{columns = "all"} to include all of them in the output.
     #' @param ...
-    #' Optionally named expressions of variables from summary columns as
-    #' \code{character}.
-    #' See \code{$summary_columns()} for an overview of the available columns.
+    #' Optionally named expressions of elements.
+    #' For example,
+    #' \code{distance = "sqrt(sum((parameter - true_parameter) ^ 2))"} for the
+    #' euclidean distance between the estimated and true parameter vector.
+    #' See \code{$elements_available} for an overview of the available elements.
     #' Also, \code{"true_value"} and \code{"true_parameter"} are available
     #' (if specified).
     #' @return
-    #' A \code{data.frame}.
+    #' A \code{data.frame} with optimization results.
+    #' @importFrom dplyr bind_rows
     summary = function(
-      columns = c("value", "parameter", "seconds", "optimizer", "label"),
-      which_run = "all", which_optimizer = "all",
-      digits = getOption("ino_digits", default = 2),
-      only_comparable = FALSE, ...
+      which_element = "default", which_run = "all", which_optimizer = "all",
+      digits = getOption("ino_digits", default = 2), only_comparable = FALSE,
+      ...
     ) {
-      summary.Nop(
-        object = self, columns = columns, which_run = which_run,
-        which_optimizer = which_optimizer, digits = digits,
-        only_comparable = only_comparable, ...
+
+      ### extract results and combine in data.frame
+      results <- self$results(
+        which_run = which_run, which_optimizer = which_optimizer,
+        which_element = which_element, only_comparable = only_comparable,
+        simplify = FALSE
       )
+      out <- data.frame()
+      for (run_id in seq_along(results)) {
+        for (optimizer_id in seq_along(results[[run_id]])) {
+          out <- dplyr::bind_rows(out,
+            as.data.frame(
+              t(cbind(results[[run_id]][[optimizer_id]]))
+            )
+          )
+        }
+      }
+
+      ### add elements
+      add_vars <- list(...)
+      if (length(add_vars) > 0) {
+        results_all <- self$results(
+          which_run = which_run, which_optimizer = which_optimizer,
+          which_element = "all", only_comparable = only_comparable
+        )
+        true_value <- suppressWarnings(self$true_value)
+        true_parameter <- suppressWarnings(self$true_parameter)
+        for (i in seq_along(add_vars)) {
+          out[[names(add_vars)[i]]] <- sapply(
+            unlist(results_all, recursive = FALSE),
+            function(r) {
+              env <- new.env()
+              list2env(r, env)
+              tryCatch(
+                eval(parse(text = add_vars[[i]]), env),
+                error = function(e) NA
+              )
+            }
+          )
+        }
+      }
+
+      ### unlist single-valued records
+      for (i in 1:ncol(out)) {
+        unlist_try <- unlist(out[, i], recursive = FALSE)
+        if (length(unlist_try) == nrow(out)) {
+          out[, i] <- unlist(out[, i], recursive = FALSE)
+        }
+      }
+
+      ### round numeric records
+      for (i in 1:ncol(out)) {
+        if (is.vector(out[, i]) && is.numeric(out[, i])) {
+          out[, i] <- round(out[, i], digits = digits)
+        }
+        if (is.list(out[, i]) && all(sapply(out[, i], is.numeric))) {
+          out[[i]] <- lapply(out[, i], round, digits = digits)
+        }
+      }
+
+      ### return data.frame
+      return(out)
     },
 
     #' @description
     #' Delete optimization results.
+    #' @return
+    #' Invisibly the \code{Nop} object.
     clear = function(which_run, which_optimizer, which_element) {
-      run_ids <- self$find_runs(which_run) # TODO
+      run_ids <- private$.get_run_ids(which_run)
+      # TODO
       private$.results[run_ids] <- NULL
+      invisible(self)
     },
 
     #' @description
-    #' Overview of the identified optima.
+    #' Overview of the identified optimum values.
     #' @param sort_by
-    #' Either \code{"frequency"} (default) to sort rows by frequency or
-    #' \code{"value"} to sort rows by value.
+    #' Either:
+    #' - \code{"frequency"} (default) to sort rows by frequency,
+    #' - \code{"value"} to sort by value.
+    #' @return
+    #' A \code{table}.
     optima = function(
       digits = getOption("ino_digits", default = 2), sort_by = "frequency",
       which_run = "all", which_optimizer = "all",
       only_comparable = TRUE
     ) {
       if (!is_number(digits)) {
-        ino_stop(
-          "Input {.var digits} must be an {.cls integer}."
-        )
+        ino_stop("Input {.var digits} must be an {.cls integer}.")
       }
       if (!(identical(sort_by, "frequency") | identical(sort_by, "value"))) {
         ino_stop(
@@ -1085,7 +1169,7 @@ Nop <- R6::R6Class(
       optima <- as.data.frame(
         table(
           self$summary(
-            columns = "value", which_run = which_run,
+            which_element = "value", which_run = which_run,
             which_optimizer = which_optimizer, digits = digits,
             only_comparable = only_comparable
           ),
@@ -1095,12 +1179,11 @@ Nop <- R6::R6Class(
       colnames(optima) <- c("value", "frequency")
 
       ### sort rows
-      optima <- optima[order(
-        optima[[sort_by]],
-        decreasing = ifelse(sort_by == "value" && private$.show_minimum, FALSE, TRUE)
-        ), ]
+      decreasing <- ifelse(sort_by == "value" && self$show_minimum, FALSE, TRUE)
+      optima <- optima[order(optima[[sort_by]], decreasing = decreasing), ]
       rownames(optima) <- NULL
 
+      ### return optima
       return(optima)
     },
 
@@ -1118,95 +1201,131 @@ Nop <- R6::R6Class(
     #' @param log
     #' Either \code{TRUE} to plot a log10-x-axis, or \code{FALSE} (default)
     #' if not.
+    #' @return
+    #' TODO
     plot = function(by = NULL, relative = TRUE, log = FALSE) {
       plot.Nop(x = self, by = by, relative = relative, log = log)
     },
 
     #' @description
     #' From all saved optimization results, extract the parameter vector that
-    #' led to a function value closest to \code{value}.
+    #' led to a function value closest (in absolute value) to \code{value}.
     #' @param value
     #' A single \code{numeric}.
+    #' @return
+    #' A \code{numeric} vector of length \code{self$npar}.
+    #' The output has two attributes:
+    #' - \code{run}, the run id that led to this parameter vector,
+    #' - \code{optimizer}, the optimizer that led to this parameter vector.
+    #' Note that this parameter vector is not necessarily unique.
     closest_parameter = function(
-      value, which_run = "all", which_optimizer = "all", only_comparable = FALSE
+      value, which_run = "all", which_optimizer = "all",
+      only_comparable = TRUE, digits = getOption("ino_digits", default = 2)
     ) {
       if (!is_number(value)) {
         ino_stop("Input {.var value} must be a single {.cls numeric}.")
       }
-      results <- self$summary(
-        columns = c("value", "parameter", "comparable"), which_run = which_run,
+      summary <- self$summary(
+        which_element = "default", which_run = which_run,
         which_optimizer = which_optimizer, digits = Inf,
         only_comparable = only_comparable
       )
-      index <- which.min(abs(value - results$value))
+      index <- which.min(abs(value - summary$value))
       if (length(index) == 0) {
         ino_stop(
           "No parameter vector found."
         )
       }
-      results$parameter[[index]]
+      parameter <- unlist(summary[index, "parameter"], use.names = FALSE)
+      structure(
+        round(parameter, digits = digits),
+        "run" = summary[index, "run"],
+        "optimizer" = summary[index, "optimizer"]
+      )
     },
 
     #' @description
-    #' TODO
+    #' Returns saved optimization results.
     #' @return
-    #' TODO
+    #' A nested \code{list} of optimization results.
+    #' Each element corresponds to one optimization run and is a \code{list}
+    #' of results for each optimizer.
+    #' If \code{simplify = TRUE}, the output is flattened if possible.
     results = function(
       which_run = "all", which_optimizer = "all", which_element = "all",
       only_comparable = FALSE, simplify = TRUE
     ) {
-
-      ### input checks
-      if (!is.character(which_element)) {
-        ino_stop(
-          "Argument {.var which_element} must be a {.cls character} (vector)."
-        )
-      }
-
-      ### get results
       run_ids <- private$.get_run_ids(which_run)
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
       private$.results |>
         {function(x) x[run_ids]}() |>
         lapply(`[`, optimizer_ids) |>
-        filter_comparable(only_comparable) |>
-        simplify_results(simplify)
-
-      # TODO: also filter for 'which_element'. document the standard elements.
+        transform_results(
+          which_element = which_element,
+          only_comparable = only_comparable,
+          simplify = simplify
+        )
     },
 
     #' @description
-    #' Returns the best found \code{numeric} parameter vector (if available).
-    #' TODO
+    #' Returns the best found \code{numeric} parameter vector.
+    #' @return
+    #' A \code{numeric} of length \code{self$npar}.
+    #' The output has two attributes:
+    #' - \code{run}, the run id that led to the best parameter vector,
+    #' - \code{optimizer}, the optimizer that led to the best parameter vector.
+    #' Note that this parameter vector is not necessarily unique.
     best_parameter = function(
-      which_run = "all", which_optimizer = "all", only_comparable = TRUE
+      which_run = "all", which_optimizer = "all", only_comparable = TRUE,
+      digits = getOption("ino_digits", default = 2)
     ) {
-      if (missing(value)) {
-        self$which_parameter(self$best_value, only_comparable = TRUE)
-      } else {
-        ino_stop("{.var $best_parameter} is read only.")
-      }
-      # TODO: attributes with run and optimizer id
+      best_value <- self$best_value(
+        which_run = which_run, which_optimizer = which_optimizer,
+        only_comparable = only_comparable
+      )
+      run_id <- attr(best_value, "run")
+      optimizer <- attr(best_value, "optimizer")
+      structure(
+        round(
+          self$results(
+            which_run = run_id, which_optimizer = optimizer,
+            which_element = "parameter", only_comparable = only_comparable,
+            simplify = TRUE
+          ),
+          digits = digits
+        ),
+        "run" = attr(best_value, "run"),
+        "optimizer" = attr(best_value, "optimizer")
+      )
     },
 
     #' @description
-    #' Returns the best found \code{numeric} value of \code{f} (if available).
-    #' TODO
+    #' Returns the best found \code{numeric} value of \code{f}.
+    #' @return
+    #' A \code{numeric}, the best found \code{numeric} value of \code{f}.
+    #' The output has two attributes:
+    #' - \code{run}, the run id that led to the best value,
+    #' - \code{optimizer}, the optimizer that led to the best value.
+    #' In the case that multiple optimization runs led to the best value, the
+    #' first one of them is returned.
     best_value = function(
-      which_run = "all", which_optimizer = "all", only_comparable = TRUE
+      which_run = "all", which_optimizer = "all", only_comparable = TRUE,
+      digits = getOption("ino_digits", default = 2)
     ) {
-      value <- self$results(
+      summary <- self$summary(
         which_run = which_run, which_optimizer = which_optimizer,
-        which_element = "value", only_comparable = only_comparable,
-        simplify = TRUE
+        which_element = c("value", "optimizer", "run"),
+        only_comparable = only_comparable, digits = Inf
       )
-
-      if (private$.show_minimum) {
-        # min(self$summary("value", only_comparable = TRUE)$value, na.rm = TRUE)
-      } else {
-        # max(self$summary("value", only_comparable = TRUE)$value, na.rm = TRUE)
-      }
-      # TODO: attributes with run and optimizer id
+      best <- do.call(
+        what = ifelse(self$show_minimum, which.min, which.max),
+        args = list(summary$value)
+      )
+      structure(
+        round(summary[best, "value"], digits = digits),
+        "run" = summary[best, "run"],
+        "optimizer" = summary[best, "optimizer"]
+      )
     }
 
   ),
@@ -1221,11 +1340,11 @@ Nop <- R6::R6Class(
     .original_arguments = list(),
     .true_parameter = NULL,
     .true_value = NULL,
+    .show_minimum = TRUE,
     .optimizer = list(),
     .results = list(),
     .runs_last = integer(),
     .optimization_labels = character(),
-    .show_minimum = TRUE,
 
     ### checks supplied value for target argument
     .check_target_argument = function(target_arg, arg_name) {
@@ -1349,6 +1468,7 @@ Nop <- R6::R6Class(
     .save_results = function(results, run_ids, optimizer_ids, label) {
       for (i in seq_along(results)) {
         for (j in seq_along(optimizer_ids)) {
+          results[[i]][[j]][["run"]] <- run_ids[i]
           results[[i]][[j]][["optimizer"]] <- names(private$.optimizer)[optimizer_ids[j]]
           results[[i]][[j]][["label"]] <- label
           results[[i]][[j]][["comparable"]] <- length(private$.original_arguments) == 0
@@ -1422,7 +1542,7 @@ Nop <- R6::R6Class(
       } else if (identical(which_optimizer, "all")) {
         return(ids)
       }
-      optimizer_active <- which(check_optimizer_active(optimizer, ids))
+      optimizer_active <- which(sapply(names(optimizer)[ids], nchar) > 0)
       if (identical(which_optimizer, "active")) {
         ids <- optimizer_active
       } else if (identical(which_optimizer, "removed")) {
@@ -1497,7 +1617,7 @@ Nop <- R6::R6Class(
     arguments = function(value) {
       if (missing(value)) {
         out <- private$.arguments
-        if (is.null(out)) {
+        if (length(out) == 0) {
           ino_warn("No function arguments have been specified yet.")
         }
         return(out)
@@ -1585,7 +1705,8 @@ Nop <- R6::R6Class(
     },
 
     #' @field show_minimum A \code{logical}, set to \code{TRUE} (default) to
-    #' show best minimum in \code{$best_value()} and \code{$best_parameter()}.
+    #' show best minimum in \code{$best_value()}, \code{$best_parameter()}, and
+    #' \code{$optima()}.
     show_minimum = function(value) {
       if (missing(value)) {
         private$.show_minimum
@@ -1634,6 +1755,16 @@ Nop <- R6::R6Class(
         }
       } else {
         ino_stop("{.var $new_label} is read only.")
+      }
+    },
+
+    #' @field elements_available A \code{data.frame} which shows the available
+    #' elements in the optimization results per optimizer.
+    elements_available = function(value) {
+      if (missing(value)) {
+        # TODO
+      } else {
+        ino_stop("{.var $elements_available} is read only.")
       }
     }
 
