@@ -22,11 +22,15 @@ test_that("Nop object can be initialized", {
   expect_identical(ackley$f, f_ackley)
   expect_identical(ackley$npar, 2L)
   expect_error(
-    {ackley$f <- function(x) x},
+    {
+      ackley$f <- function(x) x
+    },
     "is read only."
   )
   expect_error(
-    {ackley$npar <- 1},
+    {
+      ackley$npar <- 1
+    },
     "is read only."
   )
   expect_error(

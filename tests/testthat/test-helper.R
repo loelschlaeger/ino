@@ -188,8 +188,10 @@ test_that("results can be filtered by element", {
   )
   expect_identical(
     out, list(
-      list(list(value = 11), list(value = 12)), list(list(value = 21),
-      list(value = 22))
+      list(list(value = 11), list(value = 12)), list(
+        list(value = 21),
+        list(value = 22)
+      )
     )
   )
 })
