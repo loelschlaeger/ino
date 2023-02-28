@@ -7,17 +7,15 @@
 build_initial(initial, npar)
 }
 \arguments{
-\item{initial}{See documentation of method \code{$optimize()} from \code{Nop} object.}
-
-\item{npar}{See documentation of method \code{$initialize()} from \code{Nop} object.}
+\item{initial, npar}{See documentation of method \code{$optimize()} from \code{Nop} object.}
 }
 \value{
 A \code{function} without any arguments that returns a \code{numeric}
 of length \code{npar}.
 }
 \description{
-This helper function turns various formats of initial parameter specification
-into a unified function call.
+This helper function turns various formats of initial parameter
+specifications into a unified function call.
 }
 \examples{
 \dontrun{

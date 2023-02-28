@@ -12,7 +12,11 @@ private <- self$.__enclos_env__$private
 
 ackley$optimize(runs = 10)
 ackley$results()
-
+ackley$clear(
+  which_run = c(2, 3),
+  which_optimizer = 2,
+  which_element = c("value", "seconds", "bad")
+)
 
 rm(list=ls())
 devtools::load_all()
@@ -51,8 +55,11 @@ probit_ino
 probit_ino$remove_optimizer(1)
 
 
-which_element = "default", which_run = "all", which_optimizer = "all",
-digits = getOption("ino_digits", default = 2), only_comparable = FALSE
+
+private$.save_optimization_run(
+  run = run, optimizer_ids = optimizer_ids, label = label
+)
+
 
 
 

@@ -1,13 +1,11 @@
 #' Unified function call for initial parameter specifications
 #'
 #' @description
-#' This helper function turns various formats of initial parameter specification
-#' into a unified function call.
+#' This helper function turns various formats of initial parameter
+#' specifications into a unified function call.
 #'
-#' @param initial
+#' @param initial,npar
 #' See documentation of method \code{$optimize()} from \code{Nop} object.
-#' @param npar
-#' See documentation of method \code{$initialize()} from \code{Nop} object.
 #'
 #' @return
 #' A \code{function} without any arguments that returns a \code{numeric}
@@ -77,12 +75,10 @@ build_initial <- function(initial, npar) {
   }
 }
 
-#' Transform optimization results
+#' Filter optimization results
 #'
 #' @description
-#' This helper function transforms optimization results:
-#' - filter the nested \code{list},
-#' - simplify by flattening the nested \code{list} (if possible).
+#' This helper function filters optimization results.
 #'
 #' @param results
 #' A nested \code{list} of optimization results.
@@ -90,10 +86,81 @@ build_initial <- function(initial, npar) {
 #' of results for each optimizer.
 #' The results for each optimizer is a \code{list}, the output of
 #' \code{\link[optimizeR]{apply_optimizer}}.
+#' @param run_ids
+#' A \code{vector} of indices. Selects the first layer of \code{results}.
+#' @param optimizer_ids
+#' A \code{vector} of indices. Selects the second layer of \code{results}.
 #' @param which_element
-#' See documentation of method \code{$results()} from \code{Nop} object.
+#' A \code{character} (vector). Selects the third layer of \code{results}.
 #' @param only_comparable
 #' See documentation of method \code{$results()} from \code{Nop} object.
+#'
+#' @return
+#' A \code{list}.
+#'
+#' @keywords internal
+#'
+#' @examples
+#' \dontrun{
+#' filter_results(
+#'   results = list("run" = list(
+#'     "optimizer1" = list(
+#'       "value" = 1, "comparable" = FALSE
+#'     ),
+#'     "optimizer2" = list(
+#'       "value" = 2, "comparable" = TRUE
+#'      )
+#'   )),
+#'   run_ids = 1,
+#'   optimizer_id = 2,
+#'   which_element = "value",
+#'   only_comparable = TRUE
+#' )
+#' }
+
+filter_results <- function(
+    results, run_ids, optimizer_ids, which_element, only_comparable
+  ) {
+
+  ### input checks
+  stopifnot(
+    is.list(results), sapply(run_ids, is_number),
+    sapply(optimizer_ids, is_number), sapply(which_element, is_name)
+  )
+  if (!(isTRUE(only_comparable) || isFALSE(only_comparable))) {
+    ino_stop(
+      "Argument {.var only_comparable} must be {.val TRUE} or {.val FALSE}."
+    )
+  }
+
+  ### filter runs
+  results <- results[run_ids]
+
+  ### filter optimizers
+  results <- lapply(results, `[`, optimizer_ids)
+
+  ### filter comparable
+  if (only_comparable) {
+    results <- lapply(results, function(x) {
+      Filter(function(y) y["comparable"], x)
+    })
+  }
+
+  ### filter elements
+  results <- lapply(results, function(x) {
+    lapply(x, function(y) y[intersect(which_element, names(y))]
+  )})
+
+  ### return
+  return(results)
+}
+
+#' Simplify optimization results
+#'
+#' @description
+#' This helper function simplifies optimization results (if possible).
+#'
+#' @inheritParams filter_results
 #' @param simplify
 #' See documentation of method \code{$results()} from \code{Nop} object.
 #'
@@ -104,7 +171,7 @@ build_initial <- function(initial, npar) {
 #'
 #' @examples
 #' \dontrun{
-#' transform_results(
+#' simplify_results(
 #'   results = list("run" = list(
 #'     "optimizer1" = list(
 #'       "value" = 1, "comparable" = FALSE
@@ -113,68 +180,44 @@ build_initial <- function(initial, npar) {
 #'       "value" = 2, "comparable" = TRUE
 #'      )
 #'   )),
-#'   which_element = "value",
-#'   only_comparable = TRUE,
 #'   simplify = TRUE
 #' )
 #' }
 
-transform_results <- function(
-    results, which_element, only_comparable, simplify
-  ) {
+simplify_results <- function(results, simplify) {
 
   ### input checks
-  if (!all(sapply(which_element, is_name))) {
-    ino_stop(
-      "Input {.var which_element} is misspecified.",
-      "It can be {.val all}, {.val basic}, or a {.cls character} (vector)."
-    )
-  }
-  if (identical(which_element, "basic")) {
-    which_element <- c("value", "parameter")
-  }
-  if (identical(which_element, "default")) {
-    which_element <- c(
-      "run", "optimizer", "value", "parameter", "seconds", "label", "error"
-    )
-  }
-  if (!(isTRUE(only_comparable) || isFALSE(only_comparable))) {
-    ino_stop(
-      "Argument {.var only_comparable} must be {.val TRUE} or {.val FALSE}."
-    )
-  }
+  stopifnot(is.list(results))
   if (!isTRUE(simplify) && !isFALSE(simplify)) {
     ino_stop(
       "Input {.var simplify} must be {.val TRUE} or {.val FALSE}."
     )
   }
-  stopifnot(
-    ### expect that 'results' is a 'list'
-    is.list(results),
-    ### expect that each element of 'results' is a 'list' (runs)
-    sapply(results, is.list),
-    ### expect that each element of each element of 'results' is a 'list'
-    ### (optimizer)
-    sapply(results, function(x) sapply(x, is.list))
-  )
-
-  ### filter
-  results <- lapply(results, function(x) {
-    Filter(function(y) y["comparable"], x)
-  })
-  if (!identical(which_element, "all")) {
-    results <- lapply(results, function(x) {
-      lapply(x, function(y) y[intersect(which_element, names(y))]
-    )})
-  }
 
   ### simplify
   if (simplify) {
-    for (layer in 1:3) {
+    if (length(results) == 1) {
+      results <- unlist(results, recursive = FALSE, use.names = TRUE)
+      if (length(results) == 1) {
+        results <- unlist(results, recursive = FALSE, use.names = TRUE)
+      }
       if (length(results) == 1) {
         results <- unlist(results, recursive = FALSE, use.names = FALSE)
+      }
+    } else {
+      if (all(sapply(results, length) == 1)) {
+        results <- lapply(results, unlist, recursive = FALSE, use.names = TRUE)
+        if (all(sapply(results, length) == 1)) {
+          results <- lapply(
+            results, unlist, recursive = FALSE, use.names = TRUE
+          )
+        }
       } else {
-        break
+        if (all(sapply(results, function(x) sapply(x, length)) == 1)) {
+          results <- lapply(results, function(x) {
+            lapply(x, unlist, recursive = FALSE, use.names = TRUE)
+          })
+        }
       }
     }
   }
@@ -182,3 +225,158 @@ transform_results <- function(
   ### return
   return(results)
 }
+
+#' Test \code{Nop} object
+#'
+#' @description
+#' This helper function validates the configuration of a \code{Nop} object.
+#'
+#' @param x
+#' A \code{Nop} object.
+#' @param optimizer_ids
+#' A \code{vector} of indices.
+#' @param at,time_limit,verbose,digits
+#' See documentation of method \code{$test()} from \code{Nop} object.
+#'
+#' @return
+#' Invisibly \code{TRUE} if the tests are successful.
+#'
+#' @keywords internal
+#'
+#' @examples
+#' \dontrun{
+#' TODO
+#' }
+
+test_nop <- function(
+    x, at, optimizer_ids, time_limit, verbose, digits
+  ) {
+
+  ### test configurations
+  ino_status("Test configuration", verbose = verbose)
+  ino_success(
+    glue::glue("Function specified: {x$f_name}"), verbose = verbose
+  )
+  ino_success(
+    glue::glue(
+      "Target argument specified: {x$f_target} (length {x$npar})"
+    ), verbose = verbose
+  )
+  ino_success(
+    glue::glue(
+      "Test initial values specified: ",
+      {paste(round(at, digits = digits), collapse = ' ')}
+    ), verbose = verbose
+  )
+
+  ### test function call
+  ino_status("Test function call", verbose = verbose)
+  out <- x$evaluate(
+    at = at, time_limit = time_limit, hide_warnings = TRUE
+  )
+  if (is.character(out)) {
+    if (identical(out, "time limit reached")) {
+      ino_warn(
+        glue::glue(
+          "Time limit of {time_limit}s was reached in the function call."
+        ),
+        "Consider increasing {.var time_limit}."
+      )
+    } else {
+      ino_stop(
+        "Function call threw an error.",
+        glue::glue("Message: {out}")
+      )
+    }
+  } else {
+    if (!is.numeric(out)) {
+      ino_stop(
+        "Test function call did not return a {.cls numeric} value."
+      )
+    } else {
+      ino_success(
+        "Test function call returned a {.cls numeric}.",
+        verbose = verbose
+      )
+    }
+    if (length(out) != 1) {
+      ino_stop(
+        glue::glue("Test function call is of length {length(out)}."),
+        "It should be a single {.cls numeric} value."
+      )
+    } else {
+      ino_success(
+        glue::glue("Return value: {round(out, digits = digits)}"),
+        verbose = verbose
+      )
+    }
+  }
+
+  ### test optimization
+  if (length(optimizer_ids) == 0) {
+    ino_warn(
+      "No optimizer specified, testing optimizer is skipped.",
+      "Please use {.fun $set_optimizer} to specify an optimizer."
+    )
+  } else {
+    for (i in optimizer_ids) {
+      ino_status(
+        glue::glue(
+          "Test optimization with ",
+          "`{paste(names(x$optimizer)[i], collapse = ', ')}`"
+        ),
+        verbose = verbose
+      )
+      out <- x$optimize(
+        initial = at, runs = 1, which_optimizer = i, seed = NULL,
+        return_results = TRUE, save_results = FALSE, ncores = 1,
+        verbose = FALSE, simplify = TRUE, time_limit = time_limit,
+        hide_warnings = TRUE
+      )
+      if (!is.null(out$error)) {
+        if (identical(out$error, "time limit reached")) {
+          ino_warn(
+            glue::glue(
+              "Time limit of {time_limit}s was reached in the optimization."
+            ),
+            "Consider increasing {.var time_limit}."
+          )
+        } else {
+          ino_stop(
+            "Optimization threw an error.",
+            glue::glue("Message: {out$error}")
+          )
+        }
+      } else {
+        if (!is.list(out)) {
+          ino_stop(
+            "Test optimization did not return a {.cls list}."
+          )
+        } else {
+          ino_success(
+            "Test optimization returned a {.cls list}.",
+            verbose = verbose
+          )
+          for (value in c("value", "parameter", "seconds")) {
+            if (!value %in% names(out)) {
+              ino_stop(
+                glue::glue("Output does not contain the element '{value}'.")
+              )
+            } else {
+              ino_success(glue::glue(
+                "Return {value}: ",
+                "{paste(round(out[[value]], digits = digits), collapse = ' ')}"
+              ),
+              verbose = verbose
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+  invisible(TRUE)
+}
+
+
+

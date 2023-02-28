@@ -5,6 +5,7 @@
 #' @exportS3Method
 
 print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
+
   ### optimization problem
   cat(glue::glue(
     crayon::underline("Optimization problem:"),
@@ -42,15 +43,18 @@ print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
   ### optimizers
   optimizer <- suppressWarnings(x$optimizer)
   cat(crayon::underline("Numerical optimizer:\n"))
-  if (length(x$optimizer) == 0) {
+  if (length(optimizer) == 0) {
     cat(cli::style_italic("No optimizer specified yet.\n"))
   } else {
-    for (id in seq_along(x$optimizer)) {
-      if (nchar(names(private$.optimizer)[id]) > 0) {
-        cat(glue::glue("- {id}: {names(x$optimizer)[id]}"), "\n")
+    for (id in seq_along(optimizer)) {
+      optimizer_label <- names(optimizer)[id]
+      if (attr(optimizer[[id]], "active")) {
+        cat(glue::glue("- {id}: {optimizer_label}"), "\n")
       } else {
         cat(
-          glue::glue("- {id}: {cli::style_italic(x$optimizer[[id]])}"), "\n"
+          glue::glue("- {id}:"),
+          cli::style_italic(glue::glue("{optimizer_label} has been removed.")),
+          "\n"
         )
       }
     }
@@ -60,12 +64,14 @@ print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
   cat(crayon::underline("Optimization results:\n"))
   results <- suppressWarnings(x$results())
   if (length(results) == 0) {
-    cat(cli::style_italic("No optimization results saved yet.\n"))
+    cat(cli::style_italic("No results saved yet.\n"))
   } else {
+    best_parameter <- round(x$best_parameter(), digits = digits)
+    best_value <- round(x$best_value(), digits = digits)
     cat(glue::glue(
       "- Optimization runs: {length(results)}",
-      "- Best parameter: {paste(round(x$best_parameter(), digits = digits), collapse = ' ')}",
-      "- Best value: {round(x$best_value(), digits = digits)}",
+      "- Best parameter: {paste(best_parameter, collapse = ' ')}",
+      "- Best value: {best_value}",
       .sep = "\n"
     ), "\n")
   }

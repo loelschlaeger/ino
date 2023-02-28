@@ -1,11 +1,20 @@
 options("ino_verbose" = FALSE)
 
-test_that("ackley Nop object can be initialized", {
+test_that("Nop object can be initialized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_s3_class(ackley, c("Nop", "R6"), exact = TRUE)
-  expect_error(Nop$new(), "Please specify argument `f`.")
-  expect_error(Nop$new(f = 1), "Argument `f` is not a function.")
-  expect_error(Nop$new(f = f_ackley), "Please specify argument `npar`.")
+  expect_error(
+    Nop$new(),
+    "Please specify argument `f`."
+  )
+  expect_error(
+    Nop$new(f = 1),
+    "Argument `f` is not a function."
+  )
+  expect_error(
+    Nop$new(f = f_ackley),
+    "Please specify argument `npar`."
+  )
   expect_error(
     Nop$new(f = f_ackley, npar = 0),
     "Argument `npar` is not a positive <integer>."
@@ -13,27 +22,26 @@ test_that("ackley Nop object can be initialized", {
   expect_identical(ackley$f, f_ackley)
   expect_identical(ackley$npar, 2L)
   expect_error(
-    {
-      ackley$f <- function(x) x
-    },
+    {ackley$f <- function(x) x},
     "is read only."
   )
   expect_error(
-    {
-      ackley$npar <- 1
-    },
+    {ackley$npar <- 1},
     "is read only."
   )
   expect_error(
     Nop$new(f = function() 1, npar = 0),
     "should have at least one argument."
   )
-  expect_snapshot(ackley)
+})
+
+test_that("Nop object can be printed", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_snapshot(print(ackley))
   expect_snapshot(ackley$print())
 })
 
-test_that("hmm Nop object with parameters can be initialized", {
+test_that("Parameters for Nop object can be set, get, and removed", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = earthquakes)
   expect_s3_class(hmm, c("Nop", "R6"), exact = TRUE)
   expect_error(
@@ -47,12 +55,24 @@ test_that("hmm Nop object with parameters can be initialized", {
   expect_snapshot(print(hmm))
   hmm$set_argument("test_arg1" = 1, "test_arg2" = 2)
   expect_snapshot(print(hmm))
-  expect_error(hmm$remove_argument("test_arg3"), "does not exist.")
+  expect_error(
+    hmm$remove_argument("test_arg3"),
+    "is not yet specified"
+  )
   expect_s3_class(hmm$remove_argument("test_arg2"), "Nop")
-  expect_error(hmm$set_argument(), "Please specify an argument.")
-  expect_error(hmm$get_argument(), "Please specify `argument_name`.")
+  expect_error(
+    hmm$set_argument(),
+    "Please specify an argument."
+  )
+  expect_error(
+    hmm$get_argument(),
+    "Please specify `argument_name`."
+  )
   expect_equal(hmm$get_argument("test_arg1"), 1)
-  expect_error(hmm$get_argument("does_not_exist"), "does not exist")
+  expect_error(
+    hmm$get_argument("does_not_exist"),
+    "is not yet specified"
+  )
   expect_error(
     hmm$get_argument(1),
     "must be a single"
@@ -72,6 +92,52 @@ test_that("hmm Nop object with parameters can be initialized", {
       hmm$arguments <- list()
     },
     "is read only."
+  )
+})
+
+test_that("optimizer can be set", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_error(
+    ackley$set_optimizer(),
+    "Please specify argument `optimizer`."
+  )
+  expect_error(
+    ackley$set_optimizer(
+      "not_an_optimizer_object"
+    ),
+    "must be an"
+  )
+  expect_error(
+    ackley$set_optimizer(optimizer_nlm(), label = 1),
+    "must be a"
+  )
+  ackley$set_optimizer(optimizer_nlm(), label = "nlm")
+  expect_snapshot(ackley)
+  expect_error(
+    ackley$set_optimizer(optimizer_nlm(), label = "nlm"),
+    "already exists, choose another one"
+  )
+  ackley$set_optimizer(optimizer_optim())
+  expect_snapshot(ackley)
+})
+
+test_that("optimizer can be removed", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  ackley$set_optimizer(optimizer_nlm(), label = "A")
+  ackley$set_optimizer(optimizer_nlm(), label = "B")
+  ackley$set_optimizer(optimizer_nlm(), label = "C")
+  ackley$set_optimizer(optimizer_nlm())
+  expect_snapshot(ackley)
+  ackley2 <- ackley$clone()
+  ackley2$remove_optimizer("all")
+  expect_snapshot(ackley2)
+  ackley$remove_optimizer(2)
+  expect_snapshot(ackley)
+  ackley$remove_optimizer(c("stats::nlm", "A"))
+  expect_snapshot(ackley)
+  expect_warning(
+    ackley$remove_optimizer("does_not_exist"),
+    "No optimizer selected."
   )
 })
 
@@ -135,92 +201,6 @@ test_that("HMM likelihood function can be evaluated", {
   expect_type(hmm$evaluate(at = c(0, 2, 1, 4, 2, 3)), "double")
   hmm$remove_argument("neg")
   expect_type(hmm$evaluate(at = c(0, 2, 1, 4, 2, 3)), "double")
-  hmm$remove_argument("N")
-  expect_error(hmm$evaluate(at = c(0, 2, 1, 4, 2, 3)), "does not exist")
-})
-
-test_that("true value can be set", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_null(ackley$true_value)
-  ackley$true_value <- 2
-  expect_equal(ackley$true_value, 2)
-  ackley$set_true_value(3)
-  expect_equal(ackley$true_value, 3)
-  expect_snapshot(ackley)
-  expect_error(
-    {
-      ackley$true_value <- "1"
-    },
-    "must be a"
-  )
-})
-
-test_that("true parameter can be set", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_null(ackley$true_parameter)
-  expect_error(
-    {
-      ackley$true_parameter <- 2
-    },
-    "It must be of length 2."
-  )
-  ackley$true_parameter <- c(0, 0)
-  expect_equal(ackley$true_parameter, c(0, 0))
-  expect_error(
-    ackley$set_true_parameter(1:2, "not_a_logical"),
-    "must be"
-  )
-  expect_error(ackley$set_true_parameter(3))
-  ackley$set_true_parameter(c(1, 0))
-  expect_equal(ackley$true_parameter, c(1, 0))
-  expect_null(ackley$true_value)
-  ackley$set_true_parameter(c(0, 0), set_true_value = TRUE)
-  expect_equal(ackley$true_value, f_ackley(c(0, 0)))
-  expect_snapshot(ackley)
-  expect_error(
-    ackley$set_true_parameter(c(1, 1), set_true_value = FALSE),
-    "Please also update it via"
-  )
-})
-
-test_that("optimizer can be set", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(
-    ackley$set_optimizer(),
-    "Please specify argument `optimizer`."
-  )
-  expect_error(
-    ackley$set_optimizer(
-      "not_an_optimizer_object"
-    ),
-    "must be an."
-  )
-  expect_error(
-    ackley$set_optimizer(optimizer_nlm(), label = 1),
-    "must be a"
-  )
-  ackley$set_optimizer(optimizer_nlm(), label = "nlm")
-  expect_snapshot(ackley)
-  expect_error(ackley$set_optimizer(optimizer_nlm(), label = "nlm"))
-  ackley$set_optimizer(optimizer_optim())
-  expect_snapshot(ackley)
-})
-
-test_that("optimizer can be removed", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm(), label = "A")
-  ackley$set_optimizer(optimizer_nlm(), label = "B")
-  ackley$set_optimizer(optimizer_nlm(), label = "C")
-  ackley$set_optimizer(optimizer_nlm())
-  expect_snapshot(ackley)
-  ackley2 <- ackley$clone()
-  ackley2$remove_optimizer("all")
-  expect_snapshot(ackley2)
-  ackley$remove_optimizer(2)
-  expect_snapshot(ackley)
-  ackley$remove_optimizer(c("stats::nlm", "A"))
-  expect_snapshot(ackley)
-  expect_error(ackley$remove_optimizer("does_not_exist"))
 })
 
 test_that("function can be optimized", {
@@ -269,48 +249,7 @@ test_that("function can be optimized", {
     runs = 1, return_results = TRUE, save_results = FALSE, simplify = FALSE
   )
   expect_type(out, "list")
-  expect_error(
-    ackley$optimize(reset_arguments_afterwards = "FALSE"),
-    "must be"
-  )
   ackley$optimize()
-  expect_length(ackley$best_parameter, 2)
-  expect_error(
-    {
-      ackley$best_parameter <- "bad"
-    },
-    "read only"
-  )
-  expect_length(ackley$best_value, 1)
-  expect_error(
-    {
-      ackley$best_value <- "bad"
-    },
-    "read only"
-  )
-  expect_true(ackley$show_minimum)
-  ackley$show_minimum <- FALSE
-  expect_error(
-    {
-      ackley$show_minimum <- "bad"
-    },
-    "must be"
-  )
-  expect_false(ackley$show_minimum)
-  expect_length(ackley$best_parameter, 2)
-  expect_error(
-    {
-      ackley$best_parameter <- "bad"
-    },
-    "read only"
-  )
-  expect_length(ackley$best_value, 1)
-  expect_error(
-    {
-      ackley$best_value <- "bad"
-    },
-    "read only"
-  )
   expect_error(
     ackley$optimize(hide_warnings = "bad"),
     "must be"
@@ -327,8 +266,7 @@ test_that("parallel optimization works", {
   )
   skip_on_cran()
   ackley$optimize(
-    runs = 1000, ncores = 2, save_results = FALSE,
-    reset_arguments_afterwards = TRUE
+    runs = 100, ncores = 2, save_results = FALSE
   )
 })
 
@@ -351,7 +289,8 @@ test_that("Nop object can be tested", {
   expect_true(ackley$test())
   bad_f <- Nop$new(f = function(x) stop("error message"), 1)
   expect_error(
-    bad_f$test(), "Test function call returned"
+    bad_f$test(),
+    "Function call threw an error"
   )
   lengthy_f <- Nop$new(f = function(x) 1:2, 1)
   expect_error(
@@ -361,7 +300,7 @@ test_that("Nop object can be tested", {
   character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
   expect_error(
     character_f$test(),
-    "Test function call returned"
+    "Function call threw an error"
   )
   expect_warning(
     {
@@ -392,7 +331,7 @@ test_that("Nop object can be tested", {
   ackley$set_optimizer(bad_optimizer)
   expect_error(
     ackley$test(at = 1:2),
-    "Optimization returned an error"
+    "Optimization threw an error"
   )
 })
 
@@ -536,4 +475,88 @@ test_that("plotting works", {
   pdf(file = tempfile())
   expect_s3_class(ackley$plot(), "ggplot")
   dev.off()
+})
+
+test_that("true value and parameter can be extracted", {
+  expect_length(ackley$best_parameter, 2)
+  expect_error(
+    {
+      ackley$best_parameter <- "bad"
+    },
+    "read only"
+  )
+  expect_length(ackley$best_value, 1)
+  expect_error(
+    {
+      ackley$best_value <- "bad"
+    },
+    "read only"
+  )
+  expect_true(ackley$show_minimum)
+  ackley$show_minimum <- FALSE
+  expect_error(
+    {
+      ackley$show_minimum <- "bad"
+    },
+    "must be"
+  )
+  expect_false(ackley$show_minimum)
+  expect_length(ackley$best_parameter, 2)
+  expect_error(
+    {
+      ackley$best_parameter <- "bad"
+    },
+    "read only"
+  )
+  expect_length(ackley$best_value, 1)
+  expect_error(
+    {
+      ackley$best_value <- "bad"
+    },
+    "read only"
+  )
+})
+
+test_that("true value can be set", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_null(ackley$true_value)
+  ackley$true_value <- 2
+  expect_equal(ackley$true_value, 2)
+  ackley$set_true_value(3)
+  expect_equal(ackley$true_value, 3)
+  expect_snapshot(ackley)
+  expect_error(
+    {
+      ackley$true_value <- "1"
+    },
+    "must be a"
+  )
+})
+
+test_that("true parameter can be set", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_null(ackley$true_parameter)
+  expect_error(
+    {
+      ackley$true_parameter <- 2
+    },
+    "It must be of length 2."
+  )
+  ackley$true_parameter <- c(0, 0)
+  expect_equal(ackley$true_parameter, c(0, 0))
+  expect_error(
+    ackley$set_true_parameter(1:2, "not_a_logical"),
+    "must be"
+  )
+  expect_error(ackley$set_true_parameter(3))
+  ackley$set_true_parameter(c(1, 0))
+  expect_equal(ackley$true_parameter, c(1, 0))
+  expect_null(ackley$true_value)
+  ackley$set_true_parameter(c(0, 0), set_true_value = TRUE)
+  expect_equal(ackley$true_value, f_ackley(c(0, 0)))
+  expect_snapshot(ackley)
+  expect_error(
+    ackley$set_true_parameter(c(1, 1), set_true_value = FALSE),
+    "Please also update it via"
+  )
 })
