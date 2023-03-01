@@ -5,7 +5,6 @@
 #' @exportS3Method
 
 print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
-
   ### optimization problem
   cat(glue::glue(
     crayon::underline("Optimization problem:"),
@@ -96,7 +95,6 @@ summary.Nop <- function(object, ...) {
 #' @exportS3Method
 
 plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
-
   ### input checks
   if (is.null(by)) {
     relative <- FALSE
@@ -171,5 +169,4 @@ plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
 
   ### return plot
   return(plot)
-
 }

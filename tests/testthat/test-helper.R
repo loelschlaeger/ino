@@ -385,9 +385,9 @@ test_that("standardization of vector works", {
   argument <- rnorm(10)
   combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
   for (i in 1:nrow(combinations)) {
-    by_column <- combinations[i,1]
-    center <- combinations[i,2]
-    scale <- combinations[i,3]
+    by_column <- combinations[i, 1]
+    center <- combinations[i, 2]
+    scale <- combinations[i, 3]
     expect_equal(
       standardize_argument(
         argument = argument, by_column = by_column, center = center,
@@ -414,9 +414,9 @@ test_that("standardization of data.frame works", {
   argument <- data.frame("a" = rnorm(10), "b" = rnorm(10))
   combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
   for (i in 1:nrow(combinations)) {
-    by_column <- combinations[i,1]
-    center <- combinations[i,2]
-    scale <- combinations[i,3]
+    by_column <- combinations[i, 1]
+    center <- combinations[i, 2]
+    scale <- combinations[i, 3]
     if (by_column) {
       expected <- as.data.frame(
         scale(argument, center = center, scale = scale)
@@ -443,8 +443,10 @@ test_that("standardization of data.frame works", {
       ignore <- 1:5
       expected <- as.data.frame(rbind(
         argument[ignore, , drop = FALSE],
-        t(scale(t(argument[-ignore, , drop = FALSE]), center = center,
-                scale = scale))
+        t(scale(t(argument[-ignore, , drop = FALSE]),
+          center = center,
+          scale = scale
+        ))
       ))
     }
     expect_equal(
@@ -462,9 +464,9 @@ test_that("standardization of matrix works", {
   argument <- matrix(rnorm(9), 3, 3)
   combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
   for (i in 1:nrow(combinations)) {
-    by_column <- combinations[i,1]
-    center <- combinations[i,2]
-    scale <- combinations[i,3]
+    by_column <- combinations[i, 1]
+    center <- combinations[i, 2]
+    scale <- combinations[i, 3]
     if (by_column) {
       expected <- scale(argument, center = center, scale = scale)
     } else {
@@ -488,8 +490,10 @@ test_that("standardization of matrix works", {
       ignore <- 1:2
       expected <- rbind(
         argument[ignore, , drop = FALSE],
-        t(scale(t(argument[-ignore, , drop = FALSE]), center = center,
-                scale = scale))
+        t(scale(t(argument[-ignore, , drop = FALSE]),
+          center = center,
+          scale = scale
+        ))
       )
     }
     expect_equal(
