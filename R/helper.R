@@ -8,28 +8,35 @@
 #' See documentation of method \code{$optimize()} from \code{Nop} object.
 #'
 #' @return
-#' A \code{function} without any arguments that returns a \code{numeric}
-#' of length \code{npar}.
+#' A \code{function} that returns a \code{numeric} of length \code{npar}.
+#' The \code{function} has two \code{integer} arguments:
+#' 1. \code{run_id}, which selects the run,
+#' 2. \code{optimizer_id}, which selects the optimizer.
 #'
 #' @keywords internal
 #'
 #' @examples
 #' \dontrun{
-#' build_initial("random", 2)(1)
-#' build_initial(1:3, 3)(1)
-#' build_initial(list(1:3, 2:4), 3)(2)
-#' build_initial(function(run) rep(run, 4), 4)(3)
+#' build_initial("random", 2)(1, 1)
+#' build_initial(1:3, 3)(1, 2)
+#' build_initial(list(1:3, 2:4), 3)(2, 1)
+#' build_initial(function() stats::rnorm(4), 4)(3, 1)
+#' build_initial(function(run, optimizer) c(run, optimizer), 2)(2, 3)
 #' }
 #'
 #' @importFrom glue glue
 
 build_initial <- function(initial, npar) {
   if (identical(initial, "random")) {
-    function(run) rnorm(npar)
+    function(run_id, optimizer_id) {
+      set.seed(run_id)
+      rnorm(npar)
+    }
   } else if (is.list(initial)) {
     if (all(sapply(initial, is.numeric) & sapply(initial, length) == npar)) {
-      runs <- length(initial)
-      function(run) initial[[run]]
+      function(run_id, optimizer_id) {
+        initial[[run_id]]
+      }
     } else {
       ino_stop(
         "You specified a {.cls list} as input {.var initial}.",
@@ -39,7 +46,9 @@ build_initial <- function(initial, npar) {
     }
   } else if (is.numeric(initial) && is.vector(initial)) {
     if (length(initial) == npar) {
-      function(run) initial
+      function(run_id, optimizer_id) {
+        initial
+      }
     } else {
       ino_stop(
         "The {.cls numeric} input {.var initial} is misspecified.",
@@ -50,16 +59,22 @@ build_initial <- function(initial, npar) {
   } else if (is.function(initial)) {
     nargs <- length(formals(initial))
     initial_tmp <- if (nargs == 0) {
-      function(run) initial()
-    } else if (nargs == 1) {
-      initial
+      function(run_id, optimizer_id) {
+        set.seed(run_id)
+        initial()
+      }
+    } else if (nargs == 2) {
+      function(run_id, optimizer_id) {
+        initial(run_id, optimizer_id)
+      }
     } else {
       ino_stop(
         "The {.cls function} input {.var initial} is misspecified.",
-        glue::glue("It can have 0 or 1 arguments, but not {nargs}.")
+        glue::glue("It can have 0 or 2 arguments, but not {nargs}."),
+        "Please see the documentation."
       )
     }
-    try_initial <- try(initial_tmp(1), silent = TRUE)
+    try_initial <- try(initial_tmp(1, 1), silent = TRUE)
     if (!(is.numeric(try_initial) && length(try_initial) == npar)) {
       ino_stop(
         "The {.cls function} input {.var initial} is misspecified.",
@@ -376,6 +391,236 @@ test_nop <- function(
     }
   }
   invisible(TRUE)
+}
+
+#' Standardize argument
+#'
+#' @description
+#' This helper function standardizes a \code{numeric} argument.
+#'
+#' @param argument
+#' A \code{numeric} \code{vector}, \code{matrix}, or \code{data.frame}.
+#' @param by_column,center,scale,ignore
+#' See documentation of method \code{$standardize()} from \code{Nop} object.
+#'
+#' @return
+#' The standardized \code{argument}.
+#'
+#' @keywords internal
+#'
+#' @examples
+#' \dontrun{
+#' standardize_argument(
+#'   argument = diag(3), by_column = TRUE, center = TRUE, scale = TRUE,
+#'   ignore = 1:2
+#' )
+#' }
+
+standardize_argument <- function(argument, by_column, center, scale, ignore) {
+
+  ### input checks
+  attr_argument <- attributes(argument)
+  vector_flag <- FALSE
+  df_flag <- is.data.frame(argument)
+  if (is.vector(argument) && is.numeric(argument)) {
+    argument <- as.data.frame(argument)
+    vector_flag <- TRUE
+    by_column <- TRUE
+  } else if (is.data.frame(argument) || is.matrix(argument)) {
+    if (!isTRUE(by_column) && !isFALSE(by_column)) {
+      ino_stop(
+        "Argument {.var by_column} must be {.val TRUE} or {.val FALSE}."
+      )
+    }
+    if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
+      ino_stop(
+        "Argument {.var ignore} must be an index vector."
+      )
+    }
+  } else {
+    ino_stop(
+      "Argument is not suited for standardization.",
+      "Please see the function documentation."
+    )
+  }
+
+  ### standardizing
+  if (!by_column) {
+    argument <- t(argument)
+  }
+  if (length(ignore) > 0) {
+    if (vector_flag) {
+      argument[-ignore, ] <- scale(
+        argument[-ignore, ], center = center, scale = scale
+      )
+    } else {
+      argument[, -ignore] <- scale(
+        argument[, -ignore], center = center, scale = scale
+      )
+    }
+  } else {
+    argument <- scale(argument, center = center, scale = scale)
+  }
+  if (vector_flag) {
+    argument <- argument[, 1]
+  } else {
+    if (!by_column) {
+      argument <- t(argument)
+    }
+    if (df_flag) {
+      argument <- as.data.frame(argument)
+    }
+  }
+
+  ### check for NAs
+  if (anyNA(argument)) {
+    ino_warn(
+      "Standardization produced NAs."
+    )
+  }
+
+  ### return argument
+  attributes(argument) <- attr_argument
+  return(argument)
+}
+
+#' Subset argument
+#'
+#' @description
+#' This helper function subsets an argument.
+#'
+#' @param argument
+#' A \code{numeric} \code{vector}, \code{matrix}, or \code{data.frame}.
+#' @param by_row,how,proportion,centers,ignore,seed
+#' See documentation of method \code{$reduce()} from \code{Nop} object.
+#'
+#' @return
+#' The standardized \code{argument}.
+#'
+#' @keywords internal
+#'
+#' @examples
+#' \dontrun{
+#' subset_argument(
+#'   argument = diag(1:6), by_row = TRUE, how = "similar", proportion = 0.5,
+#'   centers = 2, ignore = 1:2, seed = 1
+#' )
+#' }
+
+subset_argument <- function(
+    argument, by_row, how, proportion, centers, ignore, seed
+  ) {
+
+  ### input checks
+  if (!is_name(how)) {
+    ino_stop(
+      "Input {.var how} must be a single {.cls character}."
+    )
+  }
+  if (!how %in% c("random", "first", "last", "similar", "dissimilar")) {
+    ino_stop(
+      "Argument {.var how} is misspecified.",
+      paste(
+        "It must be one of {.val random}, {.val first}, {.val last},",
+        "{.val similar} or {.val dissimilar}."
+      )
+    )
+  }
+  if (!(is.numeric(proportion) && length(proportion) == 1 &&
+        proportion > 0 && proportion < 1)) {
+    ino_stop(
+      "Argument {.var proportion} is misspecified.",
+      "It must be a {.cls numeric} between 0 and 1."
+    )
+  }
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+  if (is.vector(argument) && length(argument) > 1) {
+    argument <- as.data.frame(argument)
+    vector_flag <- TRUE
+    by_row <- TRUE
+    ignore <- integer()
+  } else if (is.data.frame(argument) || is.matrix(argument)) {
+    if (!isTRUE(by_row) && !isFALSE(by_row)) {
+      ino_stop(
+        "Argument {.var by_row} must be {.val TRUE} or {.val FALSE}."
+      )
+    }
+    if (how %in% c("similar", "dissimilar")) {
+      if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
+        ino_stop(
+          "Argument {.var ignore} must be an index vector."
+        )
+      }
+    }
+    vector_flag <- FALSE
+  } else {
+    ino_stop(
+      glue::glue(
+        "Argument is not suited for reduction."
+      )
+    )
+  }
+
+  ### subsetting
+  if (!by_row) {
+    argument <- t(argument)
+  }
+  n <- nrow(argument)
+  m <- ceiling(n * proportion)
+  if (how == "random") {
+    ind <- sort(sample.int(n, m))
+  } else if (how == "first") {
+    ind <- seq_len(m)
+  } else if (how == "last") {
+    ind <- tail(seq_len(n), m)
+  } else {
+    stopifnot(how == "similar" || how == "dissimilar")
+    argument_ign <- argument
+    if (length(ignore) > 0) {
+      argument_ign <- argument_ign[, -ignore, drop = FALSE]
+    }
+    cluster <- stats::kmeans(argument_ign, centers = centers)$cluster
+    ind <- integer(0)
+    if (how == "similar") {
+      i <- 1
+      while (length(ind) < m && i <= centers) {
+        ind_i <- which(cluster == i)
+        ind <- c(ind, ind_i[seq_len(min(m - length(ind), length(ind_i)))])
+        i <- i + 1
+      }
+    } else if (how == "dissimilar") {
+      ind_cluster <- split(1:n, cluster)
+      i <- 0
+      while (length(ind) < m) {
+        i_mod <- i %% centers + 1
+        if (length(ind_cluster[[i_mod]]) == 0) next
+        ind <- c(ind, ind_cluster[[i_mod]][1])
+        ind_cluster[[i_mod]] <- ind_cluster[[i_mod]][-1]
+        i <- i + 1
+      }
+    }
+    ind <- sort(ind)
+  }
+  argument <- argument[ind, , drop = FALSE]
+  if (vector_flag) {
+    argument <- argument[, 1]
+  } else {
+    if (!by_row) {
+      argument <- t(argument)
+    }
+  }
+
+  ### check for NAs
+  if (anyNA(argument)) {
+    ino_warn(
+      "Reduction produced NAs."
+    )
+  }
+
+  ### return argument
+  return(argument)
 }
 
 

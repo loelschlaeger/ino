@@ -1,9 +1,9 @@
-test_that("initial parameter as random", {
-  expect_length(build_initial("random", 2)(1), 2)
+test_that("initial random parameter", {
+  expect_length(build_initial("random", 2)(1, 1), 2)
 })
 
 test_that("initial parameter as numeric", {
-  expect_equal(build_initial(1:3, 3)(1), 1:3)
+  expect_equal(build_initial(1:3, 3)(1, 2), 1:3)
   expect_error(
     build_initial(1:4, 3),
     "It should be of length 3."
@@ -11,7 +11,7 @@ test_that("initial parameter as numeric", {
 })
 
 test_that("initial parameter as list", {
-  expect_equal(build_initial(list(1:3, 2:4), 3)(2), 2:4)
+  expect_equal(build_initial(list(1:3, 2:4), 3)(2, 1), 2:4)
   expect_error(
     build_initial(list(1:3, 2:4), 2),
     "Each of them should be of length 2."
@@ -23,14 +23,14 @@ test_that("initial parameter as list", {
 })
 
 test_that("initial parameter as function", {
-  expect_equal(build_initial(function(run) rep(run, 4), 4)(3), rep(3, 4))
-  expect_equal(build_initial(function() rep(3, 4), 4)(3), rep(3, 4))
+  expect_equal(build_initial(function(a, b) c(a, b), 2)(1, 2), 1:2)
+  expect_equal(build_initial(function() rep(3, 4), 4)(3, 4), rep(3, 4))
   expect_error(
-    build_initial(function(run, bad_arg) rep(run, 4), 4),
-    "It can have 0 or 1 arguments, but not 2."
+    build_initial(function(run) rep(run, 4), 4),
+    "It can have 0 or 2 arguments, but not 1."
   )
   expect_error(
-    build_initial(function(run) 1:3, 4),
+    build_initial(function() 1:3, 4),
     "It should return initial values of length 4."
   )
 })
@@ -348,4 +348,157 @@ test_that("results with one element can be simplified", {
       list(c(value = 21), c(value = 22))
     )
   )
+})
+
+test_that("input checks for standardization work", {
+  expect_error(
+    standardize_argument(
+      argument = diag(3), by_column = "not_a_boolean",
+      center = TRUE, scale = TRUE, ignore = integer()
+    ),
+    "must be"
+  )
+  expect_error(
+    standardize_argument(
+      argument = diag(3), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = pi
+    ),
+    "must be an index vector"
+  )
+  expect_error(
+    standardize_argument(
+      argument = list(), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer()
+    ),
+    "Argument is not suited for standardization."
+  )
+  expect_warning(
+    standardize_argument(
+      argument = 1, by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer()
+    ),
+    "Standardization produced NAs."
+  )
+})
+
+test_that("standardization of vector works", {
+  argument <- rnorm(10)
+  combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
+  for (i in 1:nrow(combinations)) {
+    by_column <- combinations[i,1]
+    center <- combinations[i,2]
+    scale <- combinations[i,3]
+    expect_equal(
+      standardize_argument(
+        argument = argument, by_column = by_column, center = center,
+        scale = scale, ignore = integer()
+      ),
+      as.numeric(
+        scale(argument, center = center, scale = scale)
+      )
+    )
+    ignore <- 1:5
+    expect_equal(
+      standardize_argument(
+        argument = argument, by_column = by_column, center = center,
+        scale = scale, ignore = ignore
+      ),
+      c(argument[ignore], as.numeric(
+        scale(argument[-ignore], center = center, scale = scale)
+      ))
+    )
+  }
+})
+
+test_that("standardization of data.frame works", {
+  argument <- data.frame("a" = rnorm(10), "b" = rnorm(10))
+  combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
+  for (i in 1:nrow(combinations)) {
+    by_column <- combinations[i,1]
+    center <- combinations[i,2]
+    scale <- combinations[i,3]
+    if (by_column) {
+      expected <- as.data.frame(
+        scale(argument, center = center, scale = scale)
+      )
+    } else {
+      expected <- as.data.frame(
+        t(scale(t(argument), center = center, scale = scale))
+      )
+    }
+    expect_equal(
+      standardize_argument(
+        argument = argument, by_column = by_column, center = center,
+        scale = scale, ignore = integer()
+      ),
+      expected
+    )
+    if (by_column) {
+      ignore <- 1
+      expected <- as.data.frame(cbind(
+        argument[, ignore, drop = FALSE],
+        scale(argument[, -ignore, drop = FALSE], center = center, scale = scale)
+      ))
+    } else {
+      ignore <- 1:5
+      expected <- as.data.frame(rbind(
+        argument[ignore, , drop = FALSE],
+        t(scale(t(argument[-ignore, , drop = FALSE]), center = center,
+                scale = scale))
+      ))
+    }
+    expect_equal(
+      standardize_argument(
+        argument = argument, by_column = by_column, center = center,
+        scale = scale, ignore = ignore
+      ),
+      expected,
+      ignore_attr = TRUE
+    )
+  }
+})
+
+test_that("standardization of matrix works", {
+  argument <- matrix(rnorm(9), 3, 3)
+  combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
+  for (i in 1:nrow(combinations)) {
+    by_column <- combinations[i,1]
+    center <- combinations[i,2]
+    scale <- combinations[i,3]
+    if (by_column) {
+      expected <- scale(argument, center = center, scale = scale)
+    } else {
+      expected <- t(scale(t(argument), center = center, scale = scale))
+    }
+    expect_equal(
+      standardize_argument(
+        argument = argument, by_column = by_column, center = center,
+        scale = scale, ignore = integer()
+      ),
+      expected,
+      ignore_attr = TRUE
+    )
+    if (by_column) {
+      ignore <- 1
+      expected <- cbind(
+        argument[, ignore, drop = FALSE],
+        scale(argument[, -ignore, drop = FALSE], center = center, scale = scale)
+      )
+    } else {
+      ignore <- 1:2
+      expected <- rbind(
+        argument[ignore, , drop = FALSE],
+        t(scale(t(argument[-ignore, , drop = FALSE]), center = center,
+                scale = scale))
+      )
+    }
+    expect_equal(
+      standardize_argument(
+        argument = argument, by_column = by_column, center = center,
+        scale = scale, ignore = ignore
+      ),
+      expected,
+      ignore_attr = TRUE
+    )
+  }
 })

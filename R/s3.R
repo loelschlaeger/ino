@@ -5,6 +5,7 @@
 #' @exportS3Method
 
 print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
+
   ### optimization problem
   cat(glue::glue(
     crayon::underline("Optimization problem:"),
@@ -68,7 +69,7 @@ print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
     best_parameter <- round(x$best_parameter(), digits = digits)
     best_value <- round(x$best_value(), digits = digits)
     cat(glue::glue(
-      "- Optimization runs: {length(results)}",
+      "- Total runs: {length(results)}",
       "- Best parameter: {paste(best_parameter, collapse = ' ')}",
       "- Best value: {best_value}",
       .sep = "\n"
@@ -95,6 +96,7 @@ summary.Nop <- function(object, ...) {
 #' @exportS3Method
 
 plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
+
   ### input checks
   if (is.null(by)) {
     relative <- FALSE
@@ -113,7 +115,7 @@ plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
   }
 
   ### prepare optimization times
-  data <- x$summary(columns = c("seconds", by), digits = Inf)
+  data <- x$summary(which_element = c("seconds", by), digits = Inf)
   if (!is.null(by)) {
     data[[by]] <- reorder(
       data[[by]], data[["seconds"]],
@@ -166,5 +168,8 @@ plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
   }
   plot <- base_plot +
     ggplot2::theme(axis.title.y = ggplot2::element_blank())
+
+  ### return plot
   return(plot)
+
 }

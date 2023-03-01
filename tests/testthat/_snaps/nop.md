@@ -1,17 +1,4 @@
-# ackley Nop object can be initialized
-
-    Code
-      ackley
-    Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      No optimizer specified yet.
-      Optimization results:
-      No optimization results saved yet.
-
----
+# Nop object can be printed
 
     Code
       print(ackley)
@@ -22,7 +9,7 @@
       Numerical optimizer:
       No optimizer specified yet.
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 ---
 
@@ -35,9 +22,9 @@
       Numerical optimizer:
       No optimizer specified yet.
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
-# hmm Nop object with parameters can be initialized
+# Parameters for Nop object can be set, get, and removed
 
     Code
       print(hmm)
@@ -49,7 +36,7 @@
       Numerical optimizer:
       No optimizer specified yet.
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 ---
 
@@ -63,36 +50,7 @@
       Numerical optimizer:
       No optimizer specified yet.
       Optimization results:
-      No optimization results saved yet.
-
-# true value can be set
-
-    Code
-      ackley
-    Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      - True optimum value: 3 
-      Numerical optimizer:
-      No optimizer specified yet.
-      Optimization results:
-      No optimization results saved yet.
-
-# true parameter can be set
-
-    Code
-      ackley
-    Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      - True optimum at: 0 0 
-      - True optimum value: 0 
-      Numerical optimizer:
-      No optimizer specified yet.
-      Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 # optimizer can be set
 
@@ -105,7 +63,7 @@
       Numerical optimizer:
       - 1: nlm 
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 ---
 
@@ -119,7 +77,7 @@
       - 1: nlm 
       - 2: stats::optim 
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 # optimizer can be removed
 
@@ -135,7 +93,7 @@
       - 3: C 
       - 4: stats::nlm 
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 ---
 
@@ -146,9 +104,12 @@
       - Function: f_ackley
       - Optimize over: x (length 2) 
       Numerical optimizer:
-      No optimizer specified yet.
+      - 1: A has been removed. 
+      - 2: B has been removed. 
+      - 3: C has been removed. 
+      - 4: stats::nlm has been removed. 
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 ---
 
@@ -160,10 +121,11 @@
       - Optimize over: x (length 2) 
       Numerical optimizer:
       - 1: A 
-      - 2: C 
-      - 3: stats::nlm 
+      - 2: B has been removed. 
+      - 3: C 
+      - 4: stats::nlm 
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 ---
 
@@ -174,9 +136,12 @@
       - Function: f_ackley
       - Optimize over: x (length 2) 
       Numerical optimizer:
-      - 1: C 
+      - 1: A has been removed. 
+      - 2: B has been removed. 
+      - 3: C 
+      - 4: stats::nlm has been removed. 
       Optimization results:
-      No optimization results saved yet.
+      No results saved yet.
 
 # function can be optimized
 
@@ -190,7 +155,7 @@
       - 1: stats::nlm 
       - 2: stats::optim 
       Optimization results:
-      - Optimization runs: 10
+      - Number of runs: 10
       - Best parameter: 0 0
       - Best value: 0 
 

@@ -32,8 +32,7 @@
 #'   - \code{"optimizer"}, the label for the optimizer,
 #'   - \code{"value"} and \code{"parameter"} (see above),
 #'   - \code{"seconds"}, the optimization time in seconds,
-#'   - \code{"label"}, the label for the optimization run,
-#'   - \code{"error"}, an error message (if any),
+#'   - \code{"label"}, the label for the optimization run
 #' - a \code{character} (vector), names of specific elements in the optimization
 #'   output.
 #' @param only_comparable
@@ -384,9 +383,12 @@ Nop <- R6::R6Class(
     #'   optimization,
     #' - a \code{list} of such vectors (in this case, \code{runs} is set to the
     #'   length of the \code{list}),
-    #' - or a \code{function} that returns a \code{numeric} vector of length
-    #'   \code{npar} (the function can but not has to have a single integer
-    #'   argument that specifies the optimization run).
+    #' - or a \code{function} without any arguments that returns a
+    #'   \code{numeric} vector of length \code{npar}.
+    #' In all these cases, the same initial values are used for each optimizer.
+    #' For more flexibility, a \code{funtion} for \code{initial} can have two
+    #' arguments, where the first argument specifies the optimization run,
+    #' and the second argument specifies the optimizer.
     #' @param runs
     #' An \code{integer}, the number of optimization runs.
     #' By default, \code{runs = 1}.
@@ -419,6 +421,9 @@ Nop <- R6::R6Class(
 
       ### input checks
       private$.check_additional_arguments_complete()
+      if (is.list(initial)) {
+        runs <- length(initial)
+      }
       initial <- build_initial(initial = initial, npar = private$.npar)
       if (!is_number(runs)) {
         ino_stop("Input {.var runs} must be a positive {.cls integer}.")
@@ -475,6 +480,9 @@ Nop <- R6::R6Class(
       optimizer_ids <- private$.get_optimizer_ids(
         which_optimizer = which_optimizer, only_active = TRUE
       )
+      if (length(optimizer_ids) == 0) {
+        return(invisible(self))
+      }
       if (!is.null(seed)) {
         set.seed(seed)
       }
@@ -484,38 +492,40 @@ Nop <- R6::R6Class(
         on.exit(parallel::stopCluster(cluster))
         doSNOW::registerDoSNOW(cluster)
         results <- foreach::foreach(
-          run = 1:runs, .packages = "ino", .export = "private",
+          run_id = 1:runs, .packages = "ino", .export = "private",
           .inorder = TRUE, .options.snow = opts
         ) %dopar% {
-          run <- lapply(optimizer_ids, function(i) {
+          run <- lapply(optimizer_ids, function(optimizer_id) {
             private$.optimize(
-              initial = initial(run),
-              optimizer_id = i,
+              initial = initial(run_id = run_id, optimizer_id = optimizer_id),
+              optimizer_id = optimizer_id,
               time_limit = time_limit,
               hide_warnings = hide_warnings
             )
           })
           if (save_results) {
+            run <- private$.label_run(run = run, label = label)
             private$.save_optimization_run(
-              run = run, optimizer_ids = optimizer_ids, label = label
+              run = run, optimizer_ids = optimizer_ids
             )
           }
           return(run)
         }
       } else {
-        results <- foreach::foreach(run = 1:runs) %do% {
+        results <- foreach::foreach(run_id = 1:runs) %do% {
           pb$tick()
-          run <- lapply(optimizer_ids, function(i) {
+          run <- lapply(optimizer_ids, function(optimizer_id) {
             private$.optimize(
-              initial = initial(run),
-              optimizer_id = i,
+              initial = initial(run_id = run_id, optimizer_id = optimizer_id),
+              optimizer_id = optimizer_id,
               time_limit = time_limit,
               hide_warnings = hide_warnings
             )
           })
           if (save_results) {
+            run <- private$.label_run(run = run, label = label)
             private$.save_optimization_run(
-              run = run, optimizer_ids = optimizer_ids, label = label
+              run = run, optimizer_ids = optimizer_ids
             )
           }
           return(run)
@@ -524,7 +534,8 @@ Nop <- R6::R6Class(
 
       ### save results
       if (save_results) {
-        private$.runs_last <- length(private$.results) + 1:runs
+        run_ids <- length(private$.results) - length(results) + 1:runs
+        private$.runs_last <- run_ids
         if (!label %in% private$.optimization_labels) {
           private$.optimization_labels <- c(private$.optimization_labels, label)
         }
@@ -570,7 +581,8 @@ Nop <- R6::R6Class(
     #' Standardizes the optimization problem.
     #' @param argument_name
     #' A \code{character}, the name of the argument of \code{f} to be
-    #' standardized. The argument must be \code{numeric}.
+    #' standardized. The argument must a \code{numeric} \code{vector},
+    #' \code{matrix}, or \code{data.frame}.
     #' @param by_column
     #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
     #' a \code{data.frame}.
@@ -583,86 +595,25 @@ Nop <- R6::R6Class(
     #' Passed to \code{\link[base]{scale}}.
     #' Default is \code{TRUE}.
     #' @param ignore
-    #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
-    #' a \code{data.frame}.
-    #' In that case, a \code{integer} (vector) of column indices (or row indices
-    #' if \code{by_column = FALSE}) to not standardize.
+    #' A \code{integer} (vector) of column indices (or row indices if
+    #' \code{by_column = FALSE}) to not standardize.
     #' @return
     #' Invisibly the \code{Nop} object.
     standardize = function(
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
       ignore = integer(), verbose = getOption("ino_verbose", default = TRUE)
     ) {
-
-      ### input checks
-      if (missing(argument_name)) {
-        ino_stop(
-          "Please specify {.var argument_name}.",
-          "It is the name of the argument to be standardized."
-        )
-      }
-      argument <- self$get_argument(argument_name)
-      original_argument <- argument
-      attr_argument <- attributes(argument)
-      if (is.vector(argument) && length(argument) > 1) {
-        argument <- as.data.frame(argument)
-        vector_flag <- TRUE
-        by_column <- TRUE
-        ignore <- integer()
-      } else if (is.data.frame(argument) || is.matrix(argument)) {
-        if (!isTRUE(by_column) && !isFALSE(by_column)) {
-          ino_stop(
-            "Argument {.var by_column} must be {.val TRUE} or {.val FALSE}."
-          )
-        }
-        if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
-          ino_stop(
-            "Argument {.var ignore} must be an index vector."
-          )
-        }
-        vector_flag <- FALSE
-      } else {
-        ino_stop(
-          glue::glue(
-            "Argument `{argument_name}` is not suited for standardization."
-          )
-        )
-      }
-
-      ### standardizing
-      if (!by_column) {
-        argument <- t(argument)
-      }
-      if (length(ignore) > 0) {
-        argument[, -ignore] <- scale(argument[, -ignore], center = center, scale = scale)
-      } else {
-        argument <- scale(argument, center = center, scale = scale)
-      }
-      if (vector_flag) {
-        argument <- argument[, 1]
-      } else {
-        if (!by_column) {
-          argument <- t(argument)
-        }
-        if (is.data.frame(original_argument)) {
-          argument <- as.data.frame(argument)
-        }
-      }
-      attributes(argument) <- attr_argument
-
-      ### report standardization
+      original_argument <- self$get_argument(argument_name)
+      standardized_argument <- standardize_argument(
+        argument = original_argument, by_column = by_column, center = center,
+        scale = scale, ignore = ignore
+      )
       ino_status(
-        glue::glue("Standardized {class(argument)[1]} `{argument_name}`."),
+        glue::glue("Standardized `{argument_name}`."),
         verbose = verbose
       )
-
-      ### save standardized argument
-      private$.arguments[[argument_name]] <- argument
-
-      ### temporally save original argument
+      private$.arguments[[argument_name]] <- standardized_argument
       private$.save_original_argument(original_argument, argument_name)
-
-      ### return object
       invisible(self)
     },
 
@@ -705,144 +656,39 @@ Nop <- R6::R6Class(
       centers = 2, ignore = integer(), seed = NULL,
       verbose = getOption("ino_verbose", default = TRUE)
     ) {
-
-      ### input checks
-      if (missing(argument_name)) {
-        ino_stop(
-          "Please specify {.var argument_name}.",
-          "It is the name of the argument to be reduced."
-        )
-      }
-      argument <- self$get_argument(argument_name)
-      original_argument <- argument
-      if (!is_name(how)) {
-        ino_stop(
-          "Input {.var how} must be a single {.cls character}."
-        )
-      }
-      if (!how %in% c("random", "first", "last", "similar", "dissimilar")) {
-        ino_stop(
-          "Argument {.var how} is misspecified.",
-          paste(
-            "It must be one of {.val random}, {.val first}, {.val last},",
-            "{.val similar} or {.val dissimilar}."
-          )
-        )
-      }
-      if (!(is.numeric(proportion) && length(proportion) == 1 &&
-            proportion > 0 && proportion < 1)) {
-        ino_stop(
-          "Argument {.var proportion} is misspecified.",
-          "It must be a {.cls numeric} between 0 and 1."
-        )
-      }
-      if (!is.null(seed)) {
-        set.seed(seed)
-      }
-      if (is.vector(argument) && length(argument) > 1) {
-        argument <- as.data.frame(argument)
-        vector_flag <- TRUE
-        by_row <- TRUE
-        ignore <- integer()
-      } else if (is.data.frame(argument) || is.matrix(argument)) {
-        if (!isTRUE(by_row) && !isFALSE(by_row)) {
-          ino_stop(
-            "Argument {.var by_row} must be {.val TRUE} or {.val FALSE}."
-          )
-        }
-        if (how %in% c("similar", "dissimilar")) {
-          if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
-            ino_stop(
-              "Argument {.var ignore} must be an index vector."
-            )
-          }
-        }
-        vector_flag <- FALSE
-      } else {
-        ino_stop(
-          glue::glue(
-            "Argument `{argument_name}` is not suited for reduction."
-          )
-        )
-      }
-
-      ### subsetting
-      if (!by_row) {
-        argument <- t(argument)
-      }
-      n <- nrow(argument)
-      m <- ceiling(n * proportion)
-      if (how == "random") {
-        ind <- sort(sample.int(n, m))
-      } else if (how == "first") {
-        ind <- seq_len(m)
-      } else if (how == "last") {
-        ind <- tail(seq_len(n), m)
-      } else {
-        stopifnot(how == "similar" || how == "dissimilar")
-        argument_ign <- argument
-        if (length(ignore) > 0) {
-          argument_ign <- argument_ign[, -ignore, drop = FALSE]
-        }
-        cluster <- stats::kmeans(argument_ign, centers = centers)$cluster
-        ind <- integer(0)
-        if (how == "similar") {
-          i <- 1
-          while (length(ind) < m && i <= centers) {
-            ind_i <- which(cluster == i)
-            ind <- c(ind, ind_i[seq_len(min(m - length(ind), length(ind_i)))])
-            i <- i + 1
-          }
-        } else if (how == "dissimilar") {
-          ind_cluster <- split(1:n, cluster)
-          i <- 0
-          while (length(ind) < m) {
-            i_mod <- i %% centers + 1
-            if (length(ind_cluster[[i_mod]]) == 0) next
-            ind <- c(ind, ind_cluster[[i_mod]][1])
-            ind_cluster[[i_mod]] <- ind_cluster[[i_mod]][-1]
-            i <- i + 1
-          }
-        }
-        ind <- sort(ind)
-      }
-      argument <- argument[ind, , drop = FALSE]
-      if (vector_flag) {
-        argument <- argument[, 1]
-      } else {
-        if (!by_row) {
-          argument <- t(argument)
-        }
-      }
-
-      ### report reduction
+      original_argument <- self$get_argument(argument_name)
+      reduced_argument <- subset_argument(
+        argument = original_argument, by_row = by_row, how = how,
+        proportion = proportion, centers = centers, ignore = ignore,
+        seed = seed
+      )
       ino_status(
         glue::glue(
-          "Reduced `{class(argument)[1]}` '{argument_name}' from ",
-          if (is.vector(argument)) {
-            "length {length(original_argument)} to {length(argument)} {how} element(s)."
+          "Reduced '{argument_name}' from ",
+          if (is.vector(original_argument)) {
+            length_old <- length(original_argument)
+            length_new <- length(reduced_argument)
+            "{length_old} to {length_new} {how} element(s)."
           } else {
             if (by_row) {
+              nrow_old <- nrow(original_argument)
+              nrow_new <- nrow(reduced_argument)
               glue::glue(
-                "{nrow(original_argument)} to {nrow(argument)} {how} row(s).",
+                "{nrow_old} to {nrow_new} {how} row(s).",
               )
             } else {
+              ncol_old <- ncol(original_argument)
+              ncol_new <- ncol(reduced_argument)
               glue::glue(
-                "{ncol(original_argument)} to {ncol(argument)} {how} column(s).",
+                "{ncol_old} to {ncol_new} {how} column(s).",
               )
             }
           }
         ),
         verbose = verbose
       )
-
-      ### save reduced argument
-      private$.arguments[[argument_name]] <- argument
-
-      ### temporally save original argument
+      private$.arguments[[argument_name]] <- reduced_argument
       private$.save_original_argument(original_argument, argument_name)
-
-      ### return object
       invisible(self)
     },
 
@@ -850,24 +696,14 @@ Nop <- R6::R6Class(
     #' Resets an additional argument for \code{f} after transformation with
     #' \code{$standardize()} or \code{$reduce()}.
     #' @param argument_name
-    #' A \code{character} (vector), the argument(s) to reset.
+    #' A \code{character}, the name of the argument to reset.
     #' @return
     #' Invisibly the \code{Nop} object.
     reset_argument = function(
       argument_name, verbose = getOption("ino_verbose", default = TRUE)
     ) {
-      if (missing(argument_name)) {
-        ino_stop("Please specify {.var argument_name}.")
-      }
-      if (!is.character(argument_name)) {
-        ino_stop(
-          "Input {.var argument_name} must be a {.cls character} (vector)."
-        )
-      }
-      for (arg in argument_name) {
-        private$.check_additional_argument_exists(argument_name)
-        private$.reset_original_argument(arg, verbose = verbose)
-      }
+      private$.check_additional_argument_exists(argument_name)
+      private$.reset_original_argument(argument_name, verbose = verbose)
       invisible(self)
     },
 
@@ -876,53 +712,49 @@ Nop <- R6::R6Class(
     #' @return
     #' The same as the return value of \code{$optimize()}.
     continue = function(
-      which_optimizer = "active", seed = NULL, return_results = FALSE,
-      save_results = TRUE, ncores = getOption("ino_ncores", default = 1),
+      which_run = "last", which_optimizer = "active", seed = NULL,
+      return_results = FALSE, save_results = TRUE,
+      ncores = getOption("ino_ncores", default = 1),
       verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
       time_limit = NULL, hide_warnings = TRUE
     ) {
-
-      # TODO: new options!
-
-      ### input checks
-      if (!isTRUE(hide_warnings) && !isFALSE(hide_warnings)) {
-        ino_stop(
-          "Input {.var hide_warnings} must be {.val TRUE} or {.val FALSE}."
-        )
+      run_ids <- private$.get_run_ids(which_run = which_run)
+      optimizer_ids <- private$.get_optimizer_ids(
+        which_optimizer = which_optimizer
+      )
+      ino_status(
+        glue::glue("Continue {length(run_ids)} optimization runs."),
+        verbose = verbose
+      )
+      previous_results <- self$results(
+        which_run = run_ids, which_optimizer = optimizer_ids,
+        which_element = "all", simplify = FALSE
+      )
+      initial <- function(run_id, optimizer_id) {
+        previous_results[[run_id]][[optimizer_id]][["parameter"]]
       }
-
-      ### continue optimization
-      results_old <- private$.results[private$.runs_last]
-      results <- list()
-      for (i in 1:length(results_old)) {
-        results[[i]] <- list()
-        results_old <- results_old[[i]]
-        for (o in 1:length(results_old)) {
-          results_old_o <- results_old[[o]]
-          initial <- results_old_o$parameter
-          results_new <- private$.optimize(
-            initial = initial,
-            optimizer_id = o,
-            time_limit = time_limit,
-            hide_warnings = hide_warnings
+      continued_results <- self$optimize(
+        initial = initial, runs = length(run_ids),
+        which_optimizer = optimizer_ids, seed = seed, return_results = TRUE,
+        save_results = FALSE, label = "continued", ncores = ncores,
+        verbose = verbose, simplify = FALSE, time_limit = time_limit,
+        hide_warnings = hide_warnings
+      )
+      # TODO
+      results <- private$.merge_continued_previous_results(
+        continued_results = continued_results,
+        previous_results = previous_results
+      )
+      if (save_results) {
+        for (i in seq_along(run_ids)) {
+          private$.save_optimization_run(
+            run = results[[i]], optimizer_ids = optimizer_ids,
+            run_id = run_ids[i]
           )
-          results_new$label <- results_old_o$label
-          results_new$optimizer <- results_old_o$optimizer
-          results_new$seconds <- results_new$seconds + results_old_o$seconds
-          results_new$comparable <- length(private$.original_arguments) == 0
-          results_new$sub_run <- results_o
-          results[[i]][[o]] <- results
         }
       }
-
-      ### save results
-      if (save_results) {
-        private$.results[private$.runs_last] <- results
-      }
-
-      ### return results
       if (return_results) {
-        # TODO
+        simplify_results(results = results, simplify = simplify)
       } else {
         invisible(self)
       }
@@ -949,7 +781,7 @@ Nop <- R6::R6Class(
       )
       private$.results |> filter_results(
         run_ids = run_ids, optimizer_ids = optimizer_ids,
-        which_element = which_element, only_comparable = FALSE
+        which_element = which_element, only_comparable = only_comparable
       ) |> simplify_results(simplify = simplify)
     },
 
@@ -981,10 +813,12 @@ Nop <- R6::R6Class(
     #' Deletes optimization results.
     #' @return
     #' Invisibly the \code{Nop} object.
-    clear = function(which_run, which_optimizer, which_element) {
+    clear = function(
+      which_run, which_optimizer = "all", which_element = "all"
+    ) {
       run_ids <- private$.get_run_ids(which_run)
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      which_element <- check_which_element(
+      which_element <- private$.check_which_element(
         which_element = which_element, optimizer_ids = optimizer_ids,
         protected_elements = c("run", "optimizer", "label")
       )
@@ -1010,25 +844,27 @@ Nop <- R6::R6Class(
     #' A \code{data.frame} with optimization results.
     #' @importFrom dplyr bind_rows
     summary = function(
-      which_element = "default", which_run = "all", which_optimizer = "all",
+      which_element = "basic", which_run = "all", which_optimizer = "all",
       digits = getOption("ino_digits", default = 2), only_comparable = FALSE,
       ...
     ) {
 
       ### extract results and combine in data.frame
+      out <- data.frame()
       results <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
         which_element = which_element, only_comparable = only_comparable,
         simplify = FALSE
       )
-      out <- data.frame()
+      if (length(results) == 0) {
+        return(invisible(out))
+      }
       for (run_id in seq_along(results)) {
         for (optimizer_id in seq_along(results[[run_id]])) {
-          out <- dplyr::bind_rows(out,
-            as.data.frame(
-              t(cbind(results[[run_id]][[optimizer_id]]))
-            )
-          )
+          append <- results[[run_id]][[optimizer_id]]
+          if (length(append) > 0) {
+            out <- dplyr::bind_rows(out, as.data.frame(t(cbind(append))))
+          }
         }
       }
 
@@ -1085,13 +921,13 @@ Nop <- R6::R6Class(
     #' - \code{"frequency"} (default) to sort rows by frequency,
     #' - \code{"value"} to sort by value.
     #' @return
-    #' A \code{table}.
+    #' A \code{data.frame}.
     optima = function(
       digits = getOption("ino_digits", default = 2), sort_by = "frequency",
       which_run = "all", which_optimizer = "all",
       only_comparable = TRUE
     ) {
-      if (!is_number(digits)) {
+      if (!(is.numeric(digits) && length(digits) == 1)) {
         ino_stop("Input {.var digits} must be an {.cls integer}.")
       }
       if (!(identical(sort_by, "frequency") | identical(sort_by, "value"))) {
@@ -1099,15 +935,16 @@ Nop <- R6::R6Class(
           "Input {.var sort_by} must be {.val frequency} or {.val value}."
         )
       }
+      values <- self$summary(
+        which_element = "value", which_run = which_run,
+        which_optimizer = which_optimizer, digits = digits,
+        only_comparable = only_comparable
+      )
+      if (length(values) == 0) {
+        return(invisible(data.frame()))
+      }
       optima <- as.data.frame(
-        table(
-          self$summary(
-            which_element = "value", which_run = which_run,
-            which_optimizer = which_optimizer, digits = digits,
-            only_comparable = only_comparable
-          ),
-          useNA = "ifany"
-        )
+        table(values, useNA = "ifany")
       )
       colnames(optima) <- c("value", "frequency")
 
@@ -1128,46 +965,14 @@ Nop <- R6::R6Class(
     #' - \code{"optimizer"} to group by optimizer
     #' - \code{NULL} to not group (default)
     #' @param relative
-    #' Either \code{TRUE} (default) to plot relative time differences with
-    #' respect to the median of the top boxplot, or \code{FALSE} to plot
-    #' absolute computation time.
+    #' Set to \code{TRUE} to plot relative time differences with
+    #' respect to the median of the top boxplot.
     #' @param log
-    #' Either \code{TRUE} to plot a log10-x-axis, or \code{FALSE} (default)
-    #' if not.
+    #' Set to \code{TRUE} to plot a log10-x-axis.
     #' @return
     #' NO return value. Draws a plot to the current device.
-    plot = function(by = NULL, relative = TRUE, log = FALSE) {
+    plot = function(by = NULL, relative = FALSE, log = FALSE) {
       plot.Nop(x = self, by = by, relative = relative, log = log)
-    },
-
-    #' @description
-    #' Returns the best found \code{numeric} parameter vector.
-    #' @return
-    #' A \code{numeric} of length \code{self$npar}.
-    #' The output has two attributes:
-    #' - \code{run}, the run id that led to the best parameter vector,
-    #' - \code{optimizer}, the optimizer that led to the best parameter vector.
-    #' Note that this parameter vector is not necessarily unique.
-    best_parameter = function(
-      which_run = "all", which_optimizer = "all", only_comparable = TRUE,
-      digits = getOption("ino_digits", default = 2)
-    ) {
-      best_value <- self$best_value(
-        which_run = which_run, which_optimizer = which_optimizer,
-        only_comparable = only_comparable
-      )
-      run_id <- attr(best_value, "run")
-      optimizer <- attr(best_value, "optimizer")
-      best_parameter <- self$results(
-        which_run = run_id, which_optimizer = optimizer,
-        which_element = "parameter", only_comparable = only_comparable,
-        simplify = TRUE
-      )
-      structure(
-        round(best_parameter, digits = digits),
-        "run" = attr(best_value, "run"),
-        "optimizer" = attr(best_value, "optimizer")
-      )
     },
 
     #' @description
@@ -1196,6 +1001,36 @@ Nop <- R6::R6Class(
         round(summary[best, "value"], digits = digits),
         "run" = summary[best, "run"],
         "optimizer" = summary[best, "optimizer"]
+      )
+    },
+
+    #' @description
+    #' Returns the best found \code{numeric} parameter vector.
+    #' @return
+    #' A \code{numeric} of length \code{self$npar}.
+    #' The output has two attributes:
+    #' - \code{run}, the run id that led to the best parameter vector,
+    #' - \code{optimizer}, the optimizer that led to the best parameter vector.
+    #' Note that this parameter vector is not necessarily unique.
+    best_parameter = function(
+    which_run = "all", which_optimizer = "all", only_comparable = TRUE,
+    digits = getOption("ino_digits", default = 2)
+    ) {
+      best_value <- self$best_value(
+        which_run = which_run, which_optimizer = which_optimizer,
+        only_comparable = only_comparable
+      )
+      run_id <- attr(best_value, "run")
+      optimizer <- attr(best_value, "optimizer")
+      best_parameter <- self$results(
+        which_run = run_id, which_optimizer = optimizer,
+        which_element = "parameter", only_comparable = only_comparable,
+        simplify = TRUE
+      )
+      structure(
+        round(best_parameter, digits = digits),
+        "run" = attr(best_value, "run"),
+        "optimizer" = attr(best_value, "optimizer")
       )
     },
 
@@ -1315,7 +1150,7 @@ Nop <- R6::R6Class(
       }
       if (identical(which_element, "default")) {
         which_element <- c(
-          "run", "optimizer", "value", "parameter", "seconds", "label", "error"
+          "run", "optimizer", "value", "parameter", "seconds", "label"
         )
       }
       if (!all(sapply(which_element, is_name))) {
@@ -1419,16 +1254,21 @@ Nop <- R6::R6Class(
       )
     },
 
+    ### label one optimization run
+    .label_run <- function() {
+      # TODO
+    }
+
     ### save results of one optimization run inside `Nop` object
-    .save_optimization_run = function(run, optimizer_ids, label) {
-      run_id <- length(private$.results) + 1
+    .save_optimization_run = function(
+      run, optimizer_ids, run_id = length(private$.results) + 1
+    ) {
       comparable <- length(private$.original_arguments) == 0
       optimizer <- private$.optimizer
       optimizer_labels <- names(optimizer)
       for (i in seq_along(optimizer_ids)) {
         run[[i]][["run"]] <- run_id
         run[[i]][["optimizer"]] <- optimizer_labels[optimizer_ids[i]]
-        run[[i]][["label"]] <- label
         run[[i]][["comparable"]] <- comparable
       }
       full_run <- replicate(length(optimizer), list())
@@ -1438,7 +1278,34 @@ Nop <- R6::R6Class(
       private$.results[[run_id]] <- full_run
     },
 
-    ### save original arguments before standardization / reducing
+    ### save continued optimization runs for one optimizer inside `Nop` object
+    .merge_continued_previous_results = function(
+    continued_runs, previous_runs, run_ids, optimizer_id
+    ) {
+      stopifnot(
+        is.list(continued_runs), is.list(previous_runs),
+        length(continued_runs) == length(previous_runs),
+        sapply(run_ids, is_number),
+        length(continued_runs) == length(run_ids),
+        is_number(optimizer_id)
+      )
+      # TODO
+      # for (i in seq_along(continued_runs)) {
+      #   continued_run <- continued_runs[[i]]
+      #   previous_run <- previous_runs[[i]]
+      #   continued_run[[1]][["seconds"]] <- sum(
+      #     continued_run[[1]][["seconds"]], previous_run[["seconds"]]
+      #   )
+      #   continued_run[[1]][["pre_run"]] <- previous_run
+      #   label <- previous_run[["label"]]
+      #   private$.save_optimization_run(
+      #     run = continued_run, optimizer_ids = optimizer_id, label = label,
+      #     run_id = run_ids[i]
+      #   )
+      # }
+    },
+
+    ### save original arguments before transformation
     .save_original_argument = function(original_argument, argument_name) {
       if (is.null(private$.original_arguments[[argument_name]])) {
         private$.original_arguments[[argument_name]] <- original_argument
@@ -1471,7 +1338,7 @@ Nop <- R6::R6Class(
         if (identical(which_run, "all")) {
           ids <- seq_along(private$.results)
         } else if (identical(which_run, "last")) {
-          ids <- seq_along(private$.runs_last)
+          ids <- private$.runs_last
         } else {
           ids <- which(sapply(lapply(private$.results, `[[`, 1), `[[`, "label") %in% which_run)
         }
@@ -1598,40 +1465,6 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field true_parameter The true optimum \code{numeric} parameter vector
-    #' of length \code{npar} (if available), i.e., the point where \code{f}
-    #' obtains its optimum.
-    true_parameter = function(value) {
-      if (missing(value)) {
-        out <- private$.true_parameter
-        if (is.null(out)) {
-          ino_warn(
-            "The true optimum parameter vector has not been specified yet."
-          )
-        }
-        return(out)
-      } else {
-        if (is.null(value)) {
-          private$.true_parameter <- NULL
-          ino_status(
-            "Removed {.var true_parameter}."
-          )
-        } else {
-          private$.check_target_argument(value, "true_parameter")
-          private$.true_value <- self$evaluate(at = value)
-          digits <- getOption('ino_digits', default = 2)
-          ino_status(
-            glue::glue(
-              "Set true optimum value to",
-              "{round(private$.true_value, digits = digits)}.",
-              .sep = " "
-            )
-          )
-          private$.true_parameter <- value
-        }
-      }
-    },
-
     #' @field true_value The true \code{numeric} optimum value of \code{f}
     #' (if available).
     true_value = function(value) {
@@ -1666,6 +1499,40 @@ Nop <- R6::R6Class(
             }
           }
           private$.true_value <- value
+        }
+      }
+    },
+
+    #' @field true_parameter The true optimum \code{numeric} parameter vector
+    #' of length \code{npar} (if available), i.e., the point where \code{f}
+    #' obtains its optimum.
+    true_parameter = function(value) {
+      if (missing(value)) {
+        out <- private$.true_parameter
+        if (is.null(out)) {
+          ino_warn(
+            "The true optimum parameter vector has not been specified yet."
+          )
+        }
+        return(out)
+      } else {
+        if (is.null(value)) {
+          private$.true_parameter <- NULL
+          ino_status(
+            "Removed {.var true_parameter}."
+          )
+        } else {
+          private$.check_target_argument(value, "true_parameter")
+          private$.true_value <- self$evaluate(at = value)
+          digits <- getOption('ino_digits', default = 2)
+          ino_status(
+            glue::glue(
+              "Set true optimum value to",
+              "{round(private$.true_value, digits = digits)}.",
+              .sep = " "
+            )
+          )
+          private$.true_parameter <- value
         }
       }
     },

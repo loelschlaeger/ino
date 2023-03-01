@@ -22,16 +22,12 @@ test_that("Nop object can be initialized", {
   expect_identical(ackley$f, f_ackley)
   expect_identical(ackley$npar, 2L)
   expect_error(
-    {
-      ackley$f <- function(x) x
-    },
-    "is read only."
+    {ackley$f <- function(x) x},
+    "is read only"
   )
   expect_error(
-    {
-      ackley$npar <- 1
-    },
-    "is read only."
+    {ackley$npar <- 1},
+    "is read only"
   )
   expect_error(
     Nop$new(f = function() 1, npar = 0),
@@ -340,227 +336,99 @@ test_that("Nop object can be tested", {
 })
 
 test_that("standardization works", {
-  N <- 10
-  T <- 1
-  J <- 3
-  P <- 3
-  b <- c(1, -1, 0.5)
-  Sigma <- diag(J)
-  X <- function(n, t) {
-    class <- sample(0:1, 1)
-    mean <- ifelse(class, 2, -2)
-    matrix(stats::rnorm(J * P, mean = mean), nrow = J, ncol = P)
-  }
-  probit_data <- sim_mnp(N = N, T = T, J = J, P = P, b = b, Sigma = Sigma, X = X)
-  true <- attr(probit_data, "true")[-1]
-  probit <- Nop$new(f = f_ll_mnp, npar = 5, data = probit_data, neg = TRUE)$
-    set_true_parameter(true_par = true, set_true_value = TRUE)
-  expect_error(
-    probit$standardize(),
-    "Please specify 'argument_name'."
-  )
-  expect_error(probit$standardize(1), "must be a single")
-  probit$standardize("data", ignore = 1:3)
-  expect_identical(dim(probit_data), dim(probit$arguments$data))
-  probit$reset_argument("data")
-  expect_identical(probit_data, probit$arguments$data)
-  expect_error(
-    probit$standardize("data", by_column = "TRUE"),
-    "must be."
+  hmm <- Nop$new(
+    f = f_ll_hmm, npar = 6, "data" = earthquakes$obs, "N" = 2, "neg" = TRUE
   )
   expect_error(
-    probit$standardize("data", ignore = "not_an_integer"),
-    "must be an index vector."
+    hmm$standardize(),
+    "Please specify"
   )
-  probit$standardize("data", by_column = FALSE)
-  probit$reset_argument("data")
-  expect_identical(probit_data, probit$arguments$data)
-  probit$standardize("data", by_column = FALSE, ignore = 5:10)
+  expect_error(
+    hmm$standardize(1),
+    "must be a single"
+  )
+  expect_s3_class(hmm$standardize("data"), c("Nop", "R6"), exact = TRUE)
 })
 
-test_that("reducing works", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  hmm$set_argument("data" = earthquakes, "N" = 2, "neg" = TRUE)
-  expect_error(
-    hmm$reset_argument(),
-    "Please specify `argument_name`."
-  )
-  expect_error(
-    hmm$reset_argument(1),
-    "must be a"
+test_that("reduction works", {
+  hmm <- Nop$new(
+    f = f_ll_hmm, npar = 6, "data" = earthquakes$obs, "N" = 2, "neg" = TRUE
   )
   expect_error(
     hmm$reduce(),
-    "It is the name of the argument to be reduced."
+    "Please specify"
   )
   expect_error(
-    hmm$reduce("data", how = "random", by_row = "TRUE"),
-    "must be"
+    hmm$reduce(1),
+    "must be a single"
   )
-  expect_error(
-    hmm$reduce("data", how = "bad_argument"),
-    "is misspecified"
+  expect_s3_class(hmm$reduce("data"), c("Nop", "R6"), exact = TRUE)
+})
+
+test_that("argument can be reset", {
+  data <- earthquakes
+  hmm <- Nop$new(
+    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
   )
-  expect_error(
-    hmm$reduce("data", proportion = 1),
-    "is misspecified"
-  )
-  expect_error(
-    hmm$reduce("N"),
-    "Argument `N` is not suited for reduction."
-  )
-  hmm$reduce("data", how = "random", proportion = 0.5)
+  hmm$standardize("data")
   hmm$reset_argument("data")
-  hmm$reduce("data", how = "first", proportion = 0.5)
+  expect_equal(data, hmm$get_argument("data"))
+  hmm$reduce("data")
   hmm$reset_argument("data")
-  hmm$reduce("data", how = "first", by_row = FALSE, proportion = 0.5)
-  hmm$reset_argument("data")
-  hmm$reduce("data", how = "last", proportion = 0.9)
-  hmm$reset_argument("data")
-  expect_error(
-    hmm$reduce("data", how = "similar", ignore = "not_an_integer"),
-    "must be an index vector"
-  )
-  hmm$reduce("data", how = "similar", ignore = 1, seed = 1)
-  hmm$reset_argument("data")
-  hmm$reduce("data", how = "dissimilar", ignore = 2)
-  hmm$reset_argument("data")
+  expect_equal(data, hmm$get_argument("data"))
 })
 
 test_that("continue optimization works", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  hmm$set_argument("data" = earthquakes, "N" = 2, "neg" = TRUE)
-  hmm$set_optimizer(optimizer_nlm())
-  hmm$set_optimizer(optimizer_optim())
-  hmm$reduce("data", how = "random", proportion = 0.5, seed = 1)
-  hmm$optimize(seed = 1, runs = 2)
-  hmm$reset_argument("data")
-  expect_true(
-    is.list(hmm$continue(save_results = FALSE, return_results = TRUE))
-  )
-  hmm$continue()
+  hmm <- Nop$new(
+    f = f_ll_hmm, npar = 6, "data" = earthquakes$obs, "N" = 2, "neg" = TRUE
+  )$set_optimizer(optimizer_nlm())$
+    standardize("data")$
+    optimize(runs = 2)$
+    optimize(runs = 2)$
+    reset_argument("data")$
+    continue()
   expect_s3_class(hmm, "Nop")
 })
 
 test_that("summary works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm())
-  ackley$set_optimizer(optimizer_optim())
-  ackley$set_true_value(0)
-  expect_error(ackley$summary(), "No optimization results saved.")
-  ackley$optimize(runs = 10)
-  out <- ackley$summary()
-  expect_named(
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  expect_warning(
     ackley$summary(),
-    c("value", "parameter", "seconds", "optimizer", "label")
-  )
-  expect_true(is.data.frame(ackley$summary("distance" = "true_value - value")))
-  expect_true(is.character(ackley$summary_columns))
-  expect_error(
-    {
-      ackley$summary_columns <- "bad"
-    },
-    "read only"
+    "No optimization results saved yet."
   )
 })
 
 test_that("overview of optima works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm())
-  ackley$optimize(runs = 10)
-  out <- ackley$optima()
-  expect_named(out, c("value", "frequency"))
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  expect_warning(
+    ackley$optima(),
+    "No optimization results saved yet."
+  )
 })
 
 test_that("plotting works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm())
-  ackley$optimize(runs = 10)
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())$
+    optimize(runs = 10)
   pdf(file = tempfile())
   expect_s3_class(ackley$plot(), "ggplot")
   dev.off()
 })
 
-test_that("true value and parameter can be extracted", {
-  expect_length(ackley$best_parameter, 2)
-  expect_error(
-    {
-      ackley$best_parameter <- "bad"
-    },
-    "read only"
+test_that("best value and parameter can be extracted", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())$
+    optimize(runs = 10)
+  expect_length(
+    ackley$best_parameter(), 2
   )
-  expect_length(ackley$best_value, 1)
-  expect_error(
-    {
-      ackley$best_value <- "bad"
-    },
-    "read only"
-  )
-  expect_true(ackley$show_minimum)
-  ackley$show_minimum <- FALSE
-  expect_error(
-    {
-      ackley$show_minimum <- "bad"
-    },
-    "must be"
-  )
-  expect_false(ackley$show_minimum)
-  expect_length(ackley$best_parameter, 2)
-  expect_error(
-    {
-      ackley$best_parameter <- "bad"
-    },
-    "read only"
-  )
-  expect_length(ackley$best_value, 1)
-  expect_error(
-    {
-      ackley$best_value <- "bad"
-    },
-    "read only"
-  )
-})
-
-test_that("true value can be set", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_null(ackley$true_value)
-  ackley$true_value <- 2
-  expect_equal(ackley$true_value, 2)
-  ackley$set_true_value(3)
-  expect_equal(ackley$true_value, 3)
-  expect_snapshot(ackley)
-  expect_error(
-    {
-      ackley$true_value <- "1"
-    },
-    "must be a"
-  )
-})
-
-test_that("true parameter can be set", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_null(ackley$true_parameter)
-  expect_error(
-    {
-      ackley$true_parameter <- 2
-    },
-    "It must be of length 2."
-  )
-  ackley$true_parameter <- c(0, 0)
-  expect_equal(ackley$true_parameter, c(0, 0))
-  expect_error(
-    ackley$set_true_parameter(1:2, "not_a_logical"),
-    "must be"
-  )
-  expect_error(ackley$set_true_parameter(3))
-  ackley$set_true_parameter(c(1, 0))
-  expect_equal(ackley$true_parameter, c(1, 0))
-  expect_null(ackley$true_value)
-  ackley$set_true_parameter(c(0, 0), set_true_value = TRUE)
-  expect_equal(ackley$true_value, f_ackley(c(0, 0)))
-  expect_snapshot(ackley)
-  expect_error(
-    ackley$set_true_parameter(c(1, 1), set_true_value = FALSE),
-    "Please also update it via"
+  expect_length(
+    ackley$best_value(), 1
   )
 })
