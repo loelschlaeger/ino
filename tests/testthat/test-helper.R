@@ -506,3 +506,97 @@ test_that("standardization of matrix works", {
     )
   }
 })
+
+test_that("input checks for subsetting work", {
+
+})
+
+test_that("subsetting of vector works", {
+  argument <- rnorm(10)
+  combinations <- expand.grid(
+    how = c("random", "first", "last"),
+    proportion = round(runif(2), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    expected_length <- ceiling(length(argument) * proportion)
+    out <- subset_argument(
+      argument = argument, how = how, proportion = proportion, seed = NULL
+    )
+    expect_length(out, expected_length)
+    expect_true(all(out %in% argument))
+  }
+  argument <- rep(1:2, each = 5)
+  combinations <- expand.grid(
+    how = c("similar", "dissimilar"),
+    proportion = round(runif(2), 2),
+    centers = 1:2,
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    centers <- combinations[i, "centers"]
+    expected_length <- ceiling(length(argument) * proportion)
+    out <- subset_argument(
+      argument = argument, how = how, proportion = proportion,
+      centers = centers, ignore = 2, seed = NULL
+    )
+    expect_length(out, expected_length)
+    expect_true(all(out %in% argument))
+  }
+})
+
+test_that("subsetting of data.frame works", {
+  argument <- data.frame("a" = rnorm(10), "b" = rnorm(10), "c" = LETTERS[1:10])
+  combinations <- expand.grid(
+    by_row = c(TRUE, FALSE),
+    how = c("random", "first", "last"),
+    proportion = round(runif(2), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    by_row <- combinations[i, "by_row"]
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    out <- subset_argument(
+      argument = argument, by_row = by_row, how = how, proportion = proportion,
+      seed = NULL
+    )
+    if (by_row) {
+      expected_nrow <- ceiling(nrow(argument) * proportion)
+      expect_equal(nrow(out), expected_nrow)
+    } else {
+
+    }
+    expected_length <- ceiling(length(argument) * proportion)
+    out <- subset_argument(
+      argument = argument, how = how, proportion = proportion, seed = NULL
+    )
+    expect_length(out, expected_length)
+    expect_true(all(out %in% argument))
+  }
+  argument <- rep(1:2, each = 5)
+  combinations <- expand.grid(
+    how = c("similar", "dissimilar"),
+    proportion = round(runif(2), 2),
+    centers = 1:2,
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    centers <- combinations[i, "centers"]
+    expected_length <- ceiling(length(argument) * proportion)
+    out <- subset_argument(
+      argument = argument, how = how, proportion = proportion,
+      centers = centers, ignore = 2, seed = NULL
+    )
+    expect_length(out, expected_length)
+    expect_true(all(out %in% argument))
+  }
+})
+
+

@@ -490,20 +490,21 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #' This helper function subsets an argument.
 #'
 #' @param argument
-#' A \code{numeric} \code{vector}, \code{matrix}, or \code{data.frame}.
+#' A \code{vector}, \code{matrix}, or \code{data.frame}.
+#' In case of \code{how = "(dis)similar"}, it must be \code{numeric}.
 #' @param by_row,how,proportion,centers,ignore,seed
 #' See documentation of method \code{$reduce()} from \code{Nop} object.
 #'
 #' @return
-#' The standardized \code{argument}.
+#' The subsetted \code{argument}.
 #'
 #' @keywords internal
 #'
 #' @examples
 #' \dontrun{
 #' subset_argument(
-#'   argument = diag(1:6), by_row = TRUE, how = "similar", proportion = 0.5,
-#'   centers = 2, ignore = 1:2, seed = 1
+#'   argument = 1:6, by_row = TRUE, how = "dissimilar", proportion = 0.5,
+#'   centers = 3, ignore = integer(), seed = 1
 #' )
 #' }
 
@@ -557,9 +558,7 @@ subset_argument <- function(
     vector_flag <- FALSE
   } else {
     ino_stop(
-      glue::glue(
-        "Argument is not suited for reduction."
-      )
+      glue::glue("Argument is not suited for reduction.")
     )
   }
 
@@ -581,7 +580,21 @@ subset_argument <- function(
     if (length(ignore) > 0) {
       argument_ign <- argument_ign[, -ignore, drop = FALSE]
     }
-    cluster <- stats::kmeans(argument_ign, centers = centers)$cluster
+    cluster <- tryCatch(
+      stats::kmeans(argument_ign, centers = centers)$cluster,
+      error = function(e) {
+        ino_stop(
+          "CLustering with {.fun stats::kmeans} failed:",
+          e$message
+        )
+      },
+      warning = function(w) {
+        ino_stop(
+          "CLustering with {.fun stats::kmeans} failed:",
+          w$message
+        )
+      }
+    )
     ind <- integer(0)
     if (how == "similar") {
       i <- 1
@@ -614,14 +627,11 @@ subset_argument <- function(
 
   ### check for NAs
   if (anyNA(argument)) {
-    ino_warn(
-      "Reduction produced NAs."
-    )
+    ino_warn("Reduction produced NAs.")
   }
 
   ### return argument
   return(argument)
 }
-
 
 

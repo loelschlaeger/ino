@@ -1255,9 +1255,9 @@ Nop <- R6::R6Class(
     },
 
     ### label one optimization run
-    .label_run <- function() {
+    .label_run = function() {
       # TODO
-    }
+    },
 
     ### save results of one optimization run inside `Nop` object
     .save_optimization_run = function(
