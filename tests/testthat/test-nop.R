@@ -150,7 +150,10 @@ test_that("ackley function can be evaluated", {
 
 test_that("long function evaluations can be interrupted", {
   expect_warning(
-    long_f <- Nop$new(f = function(x) { Sys.sleep(0.5); x}, npar = 1),
+    long_f <- Nop$new(f = function(x) {
+      Sys.sleep(0.5)
+      x
+    }, npar = 1),
     "is unnamed"
   )
   expect_equal(
@@ -165,7 +168,10 @@ test_that("long function evaluations can be interrupted", {
 
 test_that("warnings in function evaluation can be hidden", {
   expect_warning(
-    warning_f <- Nop$new(f = function(x) { warning("huhu"); x}, npar = 1),
+    warning_f <- Nop$new(f = function(x) {
+      warning("huhu")
+      x
+    }, npar = 1),
     "is unnamed"
   )
   expect_warning(
@@ -180,7 +186,10 @@ test_that("warnings in function evaluation can be hidden", {
 
 test_that("errors in function evaluation can be returned", {
   expect_warning(
-    error_f <- Nop$new(f = function(x) { stop("shit"); x}, npar = 1),
+    error_f <- Nop$new(f = function(x) {
+      stop("shit")
+      x
+    }, npar = 1),
     "is unnamed"
   )
   expect_equal(
@@ -435,7 +444,7 @@ test_that("existence of additional argument can be checked", {
 })
 
 test_that("completeness of additional arguments can be checked", {
- # TODO
+  # TODO
 })
 
 test_that("target argument can be checked", {

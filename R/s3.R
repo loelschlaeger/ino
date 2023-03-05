@@ -103,9 +103,7 @@ print_optimization_results <- function(x, digits) {
 
 summary.Nop <- function(
     object, which_element = "basic", which_run = "all", which_optimizer = "all",
-    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...
-  ) {
-
+    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...) {
   ### extract results and combine in data.frame
   out <- data.frame()
   results <- object$results(
@@ -182,7 +180,6 @@ summary.Nop <- function(
 #' @exportS3Method
 
 plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
-
   ### input checks
   if (is.null(by)) {
     relative <- FALSE
@@ -254,5 +251,4 @@ plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
 
   ### return plot
   return(plot)
-
 }
