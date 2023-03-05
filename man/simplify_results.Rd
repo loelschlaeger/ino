@@ -8,7 +8,8 @@ simplify_results(results, simplify)
 }
 \arguments{
 \item{results}{A nested \code{list} of optimization results.
-Each element corresponds to one optimization run and is a \code{list}
+Each element corresponds to one optimization run.
+It is either \code{list()} if the run has been removed or a \code{list}
 of results for each optimizer.
 The results for each optimizer is a \code{list}, the output of
 \code{\link[optimizeR]{apply_optimizer}}.}

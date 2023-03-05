@@ -97,7 +97,8 @@ build_initial <- function(initial, npar) {
 #'
 #' @param results
 #' A nested \code{list} of optimization results.
-#' Each element corresponds to one optimization run and is a \code{list}
+#' Each element corresponds to one optimization run.
+#' It is either \code{list()} if the run has been removed or a \code{list}
 #' of results for each optimizer.
 #' The results for each optimizer is a \code{list}, the output of
 #' \code{\link[optimizeR]{apply_optimizer}}.
@@ -109,6 +110,9 @@ build_initial <- function(initial, npar) {
 #' A \code{character} (vector). Selects the third layer of \code{results}.
 #' @param only_comparable
 #' See documentation of method \code{$results()} from \code{Nop} object.
+#' @param keep_empty
+#' Set to \code{TRUE} (\code{FALSE}, the default) to keep (discard) empty
+#' entries.
 #'
 #' @return
 #' A \code{list}.
@@ -134,19 +138,16 @@ build_initial <- function(initial, npar) {
 #' }
 
 filter_results <- function(
-    results, run_ids, optimizer_ids, which_element, only_comparable
+    results, run_ids, optimizer_ids, which_element, only_comparable,
+    keep_empty = FALSE
   ) {
 
   ### input checks
   stopifnot(
-    is.list(results), sapply(run_ids, is_number),
-    sapply(optimizer_ids, is_number), sapply(which_element, is_name)
+    is.list(results), is_index_vector(run_ids), is_index_vector(optimizer_ids),
+    is_name_vector(which_element), is_TRUE_FALSE(only_comparable),
+    is_TRUE_FALSE(keep_empty)
   )
-  if (!(isTRUE(only_comparable) || isFALSE(only_comparable))) {
-    ino_stop(
-      "Argument {.var only_comparable} must be {.val TRUE} or {.val FALSE}."
-    )
-  }
 
   ### filter runs
   results <- results[run_ids]
@@ -165,6 +166,9 @@ filter_results <- function(
   results <- lapply(results, function(x) {
     lapply(x, function(y) y[intersect(which_element, names(y))]
   )})
+
+  ### discard empty entries
+  results <- results[sapply(results, length) > 0]
 
   ### return
   return(results)
@@ -200,16 +204,8 @@ filter_results <- function(
 #' }
 
 simplify_results <- function(results, simplify) {
-
-  ### input checks
   stopifnot(is.list(results))
-  if (!isTRUE(simplify) && !isFALSE(simplify)) {
-    ino_stop(
-      "Input {.var simplify} must be {.val TRUE} or {.val FALSE}."
-    )
-  }
-
-  ### simplify
+  is_TRUE_FALSE(simplify)
   if (simplify) {
     if (length(results) == 1) {
       results <- unlist(results, recursive = FALSE, use.names = TRUE)
@@ -236,8 +232,6 @@ simplify_results <- function(results, simplify) {
       }
     }
   }
-
-  ### return
   return(results)
 }
 
@@ -266,6 +260,9 @@ simplify_results <- function(results, simplify) {
 test_nop <- function(
     x, at, optimizer_ids, time_limit, verbose, digits
   ) {
+
+  ### input checks
+  is_TRUE_FALSE(verbose)
 
   ### test configurations
   ino_status("Test configuration", verbose = verbose)
@@ -427,16 +424,8 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
     vector_flag <- TRUE
     by_column <- TRUE
   } else if (is.data.frame(argument) || is.matrix(argument)) {
-    if (!isTRUE(by_column) && !isFALSE(by_column)) {
-      ino_stop(
-        "Argument {.var by_column} must be {.val TRUE} or {.val FALSE}."
-      )
-    }
-    if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
-      ino_stop(
-        "Argument {.var ignore} must be an index vector."
-      )
-    }
+    is_TRUE_FALSE(by_column)
+    is_index_vector(ignore)
   } else {
     ino_stop(
       "Argument is not suited for standardization.",
@@ -499,6 +488,8 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #'
 #' @keywords internal
 #'
+#' @importFrom utils tail
+#'
 #' @examples
 #' \dontrun{
 #' subset_argument(
@@ -512,11 +503,7 @@ subset_argument <- function(
   ) {
 
   ### input checks
-  if (!is_name(how)) {
-    ino_stop(
-      "Input {.var how} must be a single {.cls character}."
-    )
-  }
+  is_name(how)
   if (!how %in% c("random", "first", "last", "similar", "dissimilar")) {
     ino_stop(
       "Argument {.var how} is misspecified.",
@@ -526,13 +513,7 @@ subset_argument <- function(
       )
     )
   }
-  if (!(is.numeric(proportion) && length(proportion) == 1 &&
-        proportion > 0 && proportion < 1)) {
-    ino_stop(
-      "Argument {.var proportion} is misspecified.",
-      "It must be a {.cls numeric} between 0 and 1."
-    )
-  }
+  is_proportion(proportion)
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -542,17 +523,9 @@ subset_argument <- function(
     by_row <- TRUE
     ignore <- integer()
   } else if (is.data.frame(argument) || is.matrix(argument)) {
-    if (!isTRUE(by_row) && !isFALSE(by_row)) {
-      ino_stop(
-        "Argument {.var by_row} must be {.val TRUE} or {.val FALSE}."
-      )
-    }
+    is_TRUE_FALSE(by_row)
     if (how %in% c("similar", "dissimilar")) {
-      if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
-        ino_stop(
-          "Argument {.var ignore} must be an index vector."
-        )
-      }
+      is_index_vector(ignore)
     }
     vector_flag <- FALSE
   } else {
@@ -574,7 +547,7 @@ subset_argument <- function(
   } else if (how == "first") {
     ind <- seq_len(m)
   } else if (how == "last") {
-    ind <- tail(seq_len(n), m)
+    ind <- utils::tail(seq_len(n), m)
   } else {
     stopifnot(how == "similar" || how == "dissimilar")
     argument_ign <- argument

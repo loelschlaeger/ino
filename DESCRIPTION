@@ -30,7 +30,9 @@ Imports:
     foreach,
     doSNOW,
     ao (>= 0.2.3),
-    glue
+    glue,
+    rlang,
+    scales
 Suggests: 
     knitr,
     rmarkdown,

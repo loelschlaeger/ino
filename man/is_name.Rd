@@ -4,13 +4,17 @@
 \alias{is_name}
 \title{Check for proper name}
 \usage{
-is_name(x)
+is_name(x, error = TRUE)
 }
 \arguments{
 \item{x}{Any object.}
+
+\item{error}{In the case that \code{x} is not a proper name, either \code{TRUE} (default)
+to throw an error or \code{FALSE} to return invisibly \code{FALSE}.}
 }
 \value{
-Either \code{TRUE} or \code{FALSE}.
+If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
+If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 }
 \description{
 This function checks whether the input is a proper name, i.e., a single

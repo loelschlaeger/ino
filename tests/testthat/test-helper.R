@@ -42,7 +42,7 @@ test_that("initial parameter as anything else", {
   )
 })
 
-test_that("input checks for result transformation work", {
+test_that("input checks for result filtering work", {
   expect_error(
     filter_results(
       results = "not_a_list",
@@ -350,6 +350,31 @@ test_that("results with one element can be simplified", {
   )
 })
 
+test_that("Nop object can be tested", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_warning(
+    ackley$test(),
+    "No optimizer specified, testing optimizer is skipped."
+  )
+  ackley$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  expect_error(
+    ackley$test(time_limit = -1),
+    "is not a positive"
+  )
+  expect_error(
+    ackley$test(verbose = "FALSE"),
+    "must be"
+  )
+  expect_true(ackley$test())
+  bad_f <- Nop$new(f = function(x) stop("shit"), 1)
+  expect_error(
+    bad_f$test(),
+    "Function call threw an error"
+  )
+})
+
 test_that("input checks for standardization work", {
   expect_error(
     standardize_argument(
@@ -363,7 +388,7 @@ test_that("input checks for standardization work", {
       argument = diag(3), by_column = TRUE,
       center = TRUE, scale = TRUE, ignore = pi
     ),
-    "must be an index vector"
+    "must be an"
   )
   expect_error(
     standardize_argument(

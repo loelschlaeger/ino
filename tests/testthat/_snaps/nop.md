@@ -24,7 +24,7 @@
       Optimization results:
       No results saved yet.
 
-# Parameters for Nop object can be set, get, and removed
+# Parameters for Nop object can be set
 
     Code
       print(hmm)
@@ -33,20 +33,6 @@
       - Function: f_ll_hmm
       - Optimize over: theta (length 6) 
       - Additional arguments: data 
-      Numerical optimizer:
-      No optimizer specified yet.
-      Optimization results:
-      No results saved yet.
-
----
-
-    Code
-      print(hmm)
-    Output
-      Optimization problem:
-      - Function: f_ll_hmm
-      - Optimize over: theta (length 6) 
-      - Additional arguments: data, test_arg1, test_arg2 
       Numerical optimizer:
       No optimizer specified yet.
       Optimization results:
@@ -143,7 +129,7 @@
       Optimization results:
       No results saved yet.
 
-# function can be optimized
+# ackley function can be optimized
 
     Code
       ackley
@@ -155,7 +141,7 @@
       - 1: stats::nlm 
       - 2: stats::optim 
       Optimization results:
-      - Number of runs: 10
+      - Total runs (comparable): 10 (10)
       - Best parameter: 0 0
       - Best value: 0 
 
