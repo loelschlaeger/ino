@@ -1,3 +1,5 @@
+options("ino_verbose" = FALSE)
+
 test_that("initial random parameter", {
   expect_length(build_initial("random", 2)(1, 1), 2)
 })
