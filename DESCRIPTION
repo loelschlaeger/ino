@@ -1,7 +1,6 @@
 Package: ino
 Title: Initialization of Numerical Optimization
 Version: 0.2.0.9000
-Date: 2022-09-28
 Authors@R: c(
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
@@ -47,4 +46,4 @@ BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR (>= 0.2.0)
+    optimizeR (>= 0.3.1)
