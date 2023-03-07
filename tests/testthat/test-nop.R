@@ -151,17 +151,17 @@ test_that("ackley function can be evaluated", {
 test_that("long function evaluations can be interrupted", {
   expect_warning(
     long_f <- Nop$new(f = function(x) {
-      for (i in 1:5) Sys.sleep(0.1)
+      for (i in 1:7) Sys.sleep(0.1)
       x
     }, npar = 1),
     "is unnamed"
   )
   expect_equal(
-    long_f$evaluate(at = 1, time_limit = 0.2),
+    long_f$evaluate(at = 1, time_limit = 0.5),
     "time limit reached"
   )
   expect_equal(
-    long_f$evaluate(at = 1, time_limit = 0.8),
+    long_f$evaluate(at = 1, time_limit = 1),
     1
   )
 })
