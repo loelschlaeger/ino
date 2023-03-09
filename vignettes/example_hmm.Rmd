@@ -11,30 +11,30 @@ bibliography: ref.bib
 link-citations: true
 ---
 
-```{r, include = FALSE}
+```{r, setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
   fig.dim = c(8, 6), 
-  out.width = "75%"
+  out.width = "75%",
+  eval = FALSE
 )
-# library("ino")
-devtools::load_all() # remove later
+library("ino")
 set.seed(1)
 hmm_ino <- ino::hmm_ino
 ```
 
-This vignette^[The vignette was build using R `r paste(R.Version()[c("major","minor")], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of an hidden Markov model (HMM). For more technical details about HMMs see, e.g., @zucchini2016.
+This vignette^[The vignette was build using R `r paste(R.Version()[c("major","minor")], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of an hidden Markov model (HMM). For more technical details about HMMs see, e.g., @Zucchini:2016.
 
 ## Data
 
-The example data set considered throughout this vignette covers a time series of share returns from the Deutsche Bank stock. The data set is freely accessible via Yahoo Finance and can be downloaded via the {fHMM} package [@Oelschläger:2023b]: 
+The example data set considered throughout this vignette covers a time series of log returns from the Deutscher Aktienindex DAX over 30 years. The data set is freely accessible via Yahoo Finance and can be downloaded via the `download_data()` function from the {fHMM} package [@Oelschläger:2023b]: 
 
-```{r, message = FALSE, warning = FALSE}
+```{r, download dax data, message = FALSE, warning = FALSE, eval = TRUE}
+library("fHMM")
 library("dplyr")
-data <- fHMM::download_data(symbol = "DBK.DE", from = "2000-01-01")
-db_data <- data %>%
+dax <- download_data(symbol = "^GDAXI", from = "1990-01-01", to = "2020-01-01") %>%
   as_tibble() %>%
   reframe(
     date = as.Date(Date, format = "%Y-%m-%d"),
@@ -46,113 +46,139 @@ db_data <- data %>%
 
 The time series looks as follows:
 
-```{r, message = FALSE, warning = FALSE}
+```{r, plot dax data, message = FALSE, warning = FALSE, eval = TRUE}
 library("ggplot2")
-ggplot(db_data, aes(x = date, y = logreturn)) +
+ggplot(dax, aes(x = date, y = logreturn)) +
   geom_point() +
   geom_line() +
   scale_x_date() +
   scale_y_continuous(labels = scales::label_percent())
 ```
 
-As the share returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions.
+As the log returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions. We note that some applications instead use t- or symmetric lambda distributions to also model the kurtosis [@Oelschläger:2021; @Lihn:2017].
 
-## Model fitting
+## Likelihood optimization
 
-We consider a 2-state (`N = 2`) Gaussian-HMM with six parameters (`npar = 6`) to be estimated:
+We consider a 2-state (`N = 2`) Gaussian-HMM here to model bearish and bullish market periods. This results in six parameters (`npar = 6`) to be estimated:
 
-- two for the transition probability matrix (t.p.m.)
-- two for the means of the state-dependent distributions
-- two for the standard deviations of the state-dependent distributions
+- two for the transition probability matrix (t.p.m.),
+- two for the means of the state-dependent distributions,
+- two for the standard deviations of the state-dependent distributions.
 
-The likelihood for a Gaussian-HMM is given by the function `f_ll_hmm()` provided by the {ino} package. The argument `neg =  TRUE` indicates that we minimize the negative log-likelihood, and `set_optimizer(optimizer_nlm())` selects the optimizer `nlm()` (see the introductory vignette).
+The likelihood for a Gaussian-HMM is given by the function `f_ll_hmm()` provided by the {ino} package. The argument `neg =  TRUE` indicates that we minimize the negative log-likelihood, and `set_optimizer(optimizer_nlm())` selects the optimizer `stats::nlm()` (see the introductory vignette).
 
-```{r, eval = FALSE}
+```{r, define ino object}
 hmm_ino <- Nop$new(
-    f = f_ll_hmm, 
-    npar = 6, 
-    data = db_data$logreturn, 
-    N = 2, 
-    neg = TRUE
-  )$
-  set_optimizer(optimizer_nlm())
+  f = f_ll_hmm, 
+  npar = 6, 
+  data = dax$logreturn, 
+  N = 2, 
+  neg = TRUE
+)$
+set_optimizer(optimizer_nlm())
 ```
 
 ### Random initialization
 
 We first use randomly chosen starting values. As the first two starting values belong to the t.p.m., we draw starting values from a $\mathcal{U}(-2,-1)$ distribution --- as we use the multinomial logit link to ensure that the probabilities are between 0 and 1, a value of -1.5 correspond to probabilities of staying in state 1 and 2 of about 0.81. For the two means, we draw two random numbers from the standard normal distribution, as the time series above indicates that the most of the returns are fairly close to zero. The starting values for the standard deviations are drawn from a $\mathcal{U}(0.5,2)$ distribution (note that we exponentiate the standard deviations in the likelihood as they are constrained to be positive, and hence we log-transform the starting values).
 
-The `$optimize()` method with argument `initial = sampler` then performs `runs = 50` optimization runs with starting values drawn from the selected distributions. For comparisons with other optimization strategies (which will be carried out below), it's useful to set a label.
+The `$optimize()` method with argument `initial = sampler` then performs `runs = 100` optimization runs with starting values drawn from the selected distributions:
 
-```{r, eval = FALSE}
+```{r, random initialization}
 sampler <- function() {
   c(stats::runif(2, -2, -1), stats::rnorm(2), log(stats::runif(2, 0.5, 2)))
 }
-hmm_ino$optimize(initial = sampler, runs = 50, label = "random")
+hmm_ino$optimize(initial = sampler, runs = 100, label = "random")
 ```
 
 ### Educated guesses
 
-For selecting fixed starting values, we consider three sets of starting values that fall in the ranges considered above. These can be considered as "educated guesses" and are likely to be close to the global optimum:
+For selecting fixed starting values, we consider sets of starting values that fall in the ranges considered above. These can be considered as "educated guesses" and are likely to be close to the global optimum:
 
-```{r, eval = FALSE}
+```{r, grid of educated guesses, eval = TRUE}
 tpm_entry_1 <- tpm_entry_2 <- c(-2, -2.5)
 mu_1 <- c(0, -0.05)
 mu_2 <- c(0, 0.05)
 sd_1 <- c(log(0.1), log(0.5))
 sd_2 <- c(log(0.75), log(1))
-
 starting_values <- asplit(expand.grid(
-  tpm_entry_1, tpm_entry_2, mu_1, mu_2, sd_1, sd_2), MARGIN = 1)
+  tpm_entry_1, tpm_entry_2, mu_1, mu_2, sd_1, sd_2), 
+  MARGIN = 1
+)
+```
 
+This grid results in a total of `r length(starting_values)` starting values, which can be specified as the `initial` argument:
+
+```{r, optimization of educated guesses}
 hmm_ino$optimize(initial = starting_values, label = "educated_guess")
 ```
 
 ### Subset initialization
 
-The time series of share returns consists of `r nrow(db_data)` observations, so it 
-To illustrate the subset initialization strategy, we consider the first 20\% of the observation using `$reduce()`. The starting values for this subset are chosen randomly from the same distributions `sampler` as considered above. We again use the function `$optimize()` to fit the HMM, but now to the subset containing the first 20\% of the observations. With `$continue()`, we then use the estimates obtained from the subsets as initial values to fit the model to the entire data set.
+The time series of share returns is large, consisting of `r nrow(dax)` observations. Therefore, it might be beneficial to obtain initial values as model estimates on a data subset. If the data subset is chosen small enough, estimation with the subset will be much faster. On the other hand, if the data subset is chosen large enough to still contain enough information, the estimates on the subset will already lie close to the estimates for the full model.
 
-```{r, eval = FALSE}
+To illustrate the subset initialization strategy, we consider the first third of the observation (i.e., 10 years of data) using `$reduce()`. The starting values for this subset are drawn from the `sampler()` function as considered above. We again use the function `$optimize()` to fit the HMM, but now on the subset only. With `$continue()`, we then use the estimates obtained from the subsets as initial values to fit the model to the entire data set.
+
+```{r, subset initialization first}
 hmm_ino$
-  reduce("data", how = "first", prop = 0.2)$
-  optimize(initial = sampler, runs = 50, label = "subset")$
-  continue()$
-  reset_argument("data")
+  reduce("data", how = "first", prop = 1/3)$
+  optimize(initial = sampler, runs = 100, label = "subset_first")$
+  reset_argument("data")$
+  continue()
 ```
 
-As a final step in the previous code snippet, we use `reset_argument()` to obtain our actual data set consisting of *all* observations. If we were to skip this step, all future optimization runs would be made on the subset.
+As a final step in the previous code snippet, we use `$reset_argument()` to obtain our actual data set consisting of *all* observations. If we were to skip this step, all future optimization runs would be made on the subset.
+
+For comparison, we also consider the subset obtained from the last 10 years of observations:
+
+```{r, subset initialization last}
+hmm_ino$
+  reduce("data", how = "last", prop = 1/3)$
+  optimize(initial = sampler, runs = 100, label = "subset_last")$
+  reset_argument("data")$
+  continue()
+```
+
+## Standardize initialization
+
+The considered log returns range from `r round(min(dax$logreturn), 2)` to `r round(min(dax$logreturn), 2)`. Optimization might be facilitated by standardizing the data first via the `$standardize()` method:
+
+```{r, standardize initialization}
+hmm_ino$
+  standardize("data")$
+  optimize(initial = sampler, runs = 100, label = "standardize")$
+  reset_argument("data")
+```
 
 ## Evaluating the optimization runs
 
 ### Local optima
 
-Selecting the starting values for HMMs is a well-known issue, as poor starting values may likely result in local optima. Other R packages designed to fit HMMs discuss this topic in more detail (see, e.g., https://cran.r-project.org/package=moveHMM). We thus first evaluate the optimizations by comparing the likelihood values at convergence, which can be displayed using `optima()`:
+Selecting the starting values for HMMs is a well-known issue, as poor starting values may likely result in local optima. Other R packages designed to fit HMMs discuss this topic in more detail (see, e.g., @Michelot:2016). We thus first evaluate the optimizations by comparing the likelihood values at convergence, which can be displayed using the `$optima()` method:
 
-```{r eval=TRUE}
-hmm_ino$optima()
+```{r, overview of optima, eval = TRUE}
+hmm_ino$optima(sort_by = "value", only_comparable = TRUE, digits = 0)
 ```
 
 The frequency table indicates that `r hmm_ino$optima() %>% arrange(value) %>% slice(1) %>% pull(frequency)` out of `r sum(hmm_ino$optima()$frequency)` runs converged to the smallest negative likelihood value, which appears to be the global optimum (note these are the negative log-likelihood values). However, in `r hmm_ino$optima() %>% arrange(value) %>% slice(2:nrow(.)) %>% pull(frequency)` runs we gut stuck in a local optimum.
 
-Using `summary()`, we can investigate the computation time ("seconds"), the resulting optimum ("value") and the corresponding initialization strategy ("label") of all runs (here, only the first 10 are shown): 
+Using `summary()`, we can investigate the computation time (`"seconds"`), the resulting optimum (`"value"`) and the corresponding initialization strategy (`"label"`) of all runs (here, only the first 10 are shown): 
 
-```{r eval=TRUE}
-hmm_ino$summary(c("value", "seconds", "label")) %>% 
+```{r, summary of results, eval = TRUE}
+hmm_ino$summary(which_element = c("value", "seconds", "label")) %>% 
   head(n = 10)
 ```
 
-
 The final parameter estimates, i.e., the parameters associated with the global optimum, are stored as `best_parameter`:
 
-```{r eval=TRUE}
-hmm_ino$best_parameter
+```{r, best parameter, eval = TRUE}
+hmm_ino$best_parameter()
 ```
 
 and the corresponding likelihood value can be obtained as
 
-```{r eval=TRUE}
-hmm_ino$best_value
+```{r, best value, eval = TRUE}
+hmm_ino$best_value()
 ```
 
 
@@ -160,43 +186,43 @@ hmm_ino$best_value
 
 We use the `plot()` function to investigate the computation time. Intuitively, optimization runs based on our educated guesses should be faster than runs with random starting values, since we have carefully chosen these starting values by investigating the data:
 
-```{r eval=TRUE}
+```{r, optimization time, eval = TRUE}
 plot(hmm_ino, by = "label")
 ```
 
-Here, relative computation times are shown --- setting `relative = FALSE` in `plot()` gives the absolute times. Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute the average time per strategy:
+Here, relative computation times are shown --- setting `relative = FALSE` in `plot()` gives the absolute times. Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute the median time per strategy:
 
-```{r warning = FALSE, message = FALSE, eval=TRUE}
+```{r, warning = FALSE, message = FALSE, eval = TRUE}
 summary(hmm_ino, c("label", "seconds")) %>% 
   group_by(label) %>% 
-  summarise(avg_time = mean(seconds, na.rm = TRUE))
+  summarise(avg_time = median(seconds, na.rm = TRUE))
 ```
 
-This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r hmm_ino$best_value`. For that, we will again use functions from {dplyr}.
+This comparison can however be considered somehow 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may then have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r as.numeric(hmm_ino$best_value())`. For that, we will again use functions from {dplyr}.
 
-```{r eval=TRUE}
+```{r, eval = TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  mutate(global_optimum = ifelse(value < -14157, 1, 0)) %>% 
+  mutate(global_optimum = ifelse(value < -22445, 1, 0)) %>% 
   group_by(label) %>% 
   summarise(proportion_global_optimum = mean(global_optimum, na.rm = TRUE))
 ```
 
-While for the educated guesses, most of the runs converge to the global optimum, the random initialization and subset initialization strategy with 5% of the data get stuck more often in local maxima.
+While for the educated guesses, most of the runs converge to the global optimum, the random initialization and subset initialization strategy with 5% of the data get stuck more often in local optima.
 
-Let's again compare the average computation time, but only for those runs that lead to the global optimum:
+Let's again compare the median computation time, but only for those runs that lead to the global optimum:
 
-```{r eval=TRUE}
+```{r, eval = TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  filter(value < -14157) %>% 
+  filter(value < -22445) %>% 
   group_by(label) %>% 
   summarise(mean_time = mean(seconds))
 ```
 
 For those runs that converged to the global optimum, we can again compare the computation time via boxplots:
 
-```{r eval=TRUE}
+```{r, eval = TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  filter(value < -14157) %>% 
+  filter(value < -22445) %>% 
   ggplot(aes(x = "", y = seconds)) +
     scale_y_continuous() +
     geom_boxplot() +

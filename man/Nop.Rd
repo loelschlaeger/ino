@@ -61,7 +61,7 @@ different filter options for optimization runs, optimizers, and elements:
 \examples{
 Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer_nlm())$
-  optimize(runs = 100)$
+  optimize(runs = 100, verbose = FALSE)$
   optima()
 
 }
