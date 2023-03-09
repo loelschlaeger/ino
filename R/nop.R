@@ -116,7 +116,7 @@
 #' @examples
 #' Nop$new(f = f_ackley, npar = 2)$
 #'   set_optimizer(optimizer_nlm())$
-#'   optimize(runs = 100)$
+#'   optimize(runs = 100, verbose = FALSE)$
 #'   optima()
 #'
 #' @export
@@ -399,9 +399,9 @@ Nop <- R6::R6Class(
       is_TRUE_FALSE(hide_warnings)
 
       ### build progress bar
+      format <- "Finished run :current of :total [elapsed :elapsed, to go :eta]"
       pb <- progress::progress_bar$new(
-        format = ":current of :total, ETA :eta", total = runs,
-        clear = FALSE
+        format = format, total = runs, clear = FALSE, show_after = 0
       )
       opts <- structure(
         list(function(n) {
@@ -425,11 +425,12 @@ Nop <- R6::R6Class(
         cluster <- parallel::makeCluster(ncores)
         on.exit(parallel::stopCluster(cluster))
         doSNOW::registerDoSNOW(cluster)
+        if (verbose) pb$tick(0)
         results <- foreach::foreach(
           run_id = 1:runs, .packages = "ino", .export = "private",
           .inorder = TRUE, .options.snow = opts
         ) %dopar% {
-          run <- lapply(optimizer_ids, function(optimizer_id) {
+          lapply(optimizer_ids, function(optimizer_id) {
             private$.optimize(
               initial = initial(run_id = run_id, optimizer_id = optimizer_id),
               optimizer_id = optimizer_id,
@@ -437,17 +438,19 @@ Nop <- R6::R6Class(
               hide_warnings = hide_warnings
             )
           })
-          if (save_results) {
+        }
+        ### results must be saved outside the loop when parallelized
+        if (save_results) {
+          for (run in results) {
             run <- private$.label_run(run = run, label = label)
             private$.save_optimization_run(
               run = run, optimizer_ids = optimizer_ids
             )
           }
-          return(run)
         }
       } else {
+        if (verbose) pb$tick(0)
         results <- foreach::foreach(run_id = 1:runs) %do% {
-          pb$tick()
           run <- lapply(optimizer_ids, function(optimizer_id) {
             private$.optimize(
               initial = initial(run_id = run_id, optimizer_id = optimizer_id),
@@ -456,12 +459,14 @@ Nop <- R6::R6Class(
               hide_warnings = hide_warnings
             )
           })
+          ### results are saved inside the loop
           if (save_results) {
             run <- private$.label_run(run = run, label = label)
             private$.save_optimization_run(
               run = run, optimizer_ids = optimizer_ids
             )
           }
+          if (verbose) pb$tick()
           return(run)
         }
       }

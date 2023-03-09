@@ -9,7 +9,7 @@
 #' @usage data(earthquakes)
 #'
 #' @format
-#' The data set is a \code{data.frame} with two integer columns, \code{year} for
+#' A \code{data.frame} with two integer columns, \code{year} for
 #' the year and \code{obs} for the number of measured earthquakes.
 #'
 #' @source
@@ -32,7 +32,7 @@
 #' @usage data("hmm_ino")
 #'
 #' @format
-#' An object of class `ino`.
+#' A \code{\link{Nop}} object.
 #'
 #' @keywords
 #' dataset
@@ -49,7 +49,7 @@
 #' @usage data(probit_ino)
 #'
 #' @format
-#' An object of class \code{ino}.
+#' A \code{\link{Nop}} object.
 #'
 #' @keywords
 #' dataset

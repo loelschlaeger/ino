@@ -5,7 +5,7 @@
 \alias{hmm_ino}
 \title{Example application of \{ino\} to HMM likelihood}
 \format{
-An object of class \code{ino}.
+A \code{\link{Nop}} object.
 }
 \usage{
 data("hmm_ino")
