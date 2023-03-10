@@ -741,13 +741,13 @@ Either:
 \item \code{"basic"}, the elements
 \itemize{
 \item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
 is obtained,
 }
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"run}, the run id,
+\item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
 \item \code{"value"} and \code{"parameter"} (see above),
 \item \code{"seconds"}, the optimization time in seconds,
@@ -884,13 +884,13 @@ Either:
 \item \code{"basic"}, the elements
 \itemize{
 \item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
 is obtained,
 }
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"run}, the run id,
+\item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
 \item \code{"value"} and \code{"parameter"} (see above),
 \item \code{"seconds"}, the optimization time in seconds,
@@ -933,13 +933,13 @@ Either:
 \item \code{"basic"}, the elements
 \itemize{
 \item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
 is obtained,
 }
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"run}, the run id,
+\item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
 \item \code{"value"} and \code{"parameter"} (see above),
 \item \code{"seconds"}, the optimization time in seconds,

@@ -24,11 +24,11 @@
 #' - \code{"all"}, all elements,
 #' - \code{"basic"}, the elements
 #'   - \code{"value"}, the \code{numeric} value of the found optimum,
-#'   - \code{"parameter}, the parameter \code{vector} at which the optimum value
+#'   - \code{"parameter"}, the parameter \code{vector} at which the optimum value
 #'     is obtained,
 #' - \code{"default"}, the elements that are saved for all optimization runs by
 #'   default, i.e.
-#'   - \code{"run}, the run id,
+#'   - \code{"run"}, the run id,
 #'   - \code{"optimizer"}, the label for the optimizer,
 #'   - \code{"value"} and \code{"parameter"} (see above),
 #'   - \code{"seconds"}, the optimization time in seconds,
