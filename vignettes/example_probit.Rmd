@@ -17,7 +17,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.dim = c(8, 6), 
-  out.width = "75%"
+  out.width = "75%",
+  eval = FALSE
 )
 # library("ino")
 devtools::load_all() # remove later
@@ -37,7 +38,7 @@ To account for preference heterogeneity across deciders, the mixed probit model 
 The researcher aims to estimate the values for $b$, $\Omega$, and $\Sigma$, most commonly by the maximum likelihood method. Let $\theta$ denote the vector of the identified parameters, i.e., $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. Note that the length of $\theta$ rises quadratically with both number of alternatives $J$ and choice characteristics $P$. 
 
 The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$
-where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the normal density. The integral part of the equation does not have a closed-form expression, and therefore, it must be approximated numerically.
+where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the normal density. The integral part of the equation does not have a closed-form expression, and therefore, it must be approximated numerically. Here, we apply the `mvtnorm::GenzBretz` algorithm [@Genz:2009].
 
 ## Data simulation and likelihood computation
 
@@ -45,8 +46,8 @@ To simulate data from a probit model, the {ino} package offers the `sim_mnp()` f
 
 ```{r}
 J <- 3
-P <- 4
-scale <- c(1e-4, 1e-2, 1, 1e+4)
+P <- 3
+scale <- c(1, 1e-2, 1e+2)
 X <- function(n, t) {
   class <- sample(0:1, 1)
   mean <- ifelse(class, 1, -1)
@@ -59,7 +60,7 @@ X(1, 1)
 ```{r}
 N <- 100
 T <- 10
-b <- c(1, -1, 2, 0.5)
+b <- c(1, -1, 2) * scale
 Omega <- diag(P)
 Sigma <- diag(J)
 probit_data <- sim_mnp(N, T, J, P, b, Omega, Sigma, X)
@@ -75,25 +76,32 @@ f_ll_mnp(theta = theta, data = probit_data, neg = TRUE)
 
 The following lines specify the `ino` object. The likelihood is computed via `f_ll_mnp()` which is provided via {ino}. Via the `global` argument, we can specify the true parameter vector that leads to the global optimum. The `mpvs = "data"` input specifies that we want to loop over the ten provided data sets.
 
-```{r, eval = FALSE}
+```{r}
 probit_ino <- Nop$new(
   f = f_ll_mnp,
   npar = length(theta),
   data = probit_data,
-  neg = TRUE)$
-  set_optimizer(optimizer_nlm(iterlim = 1000))$
-  set_true_parameter(theta, set_true_value = TRUE)
+  neg = TRUE
+)
 ```
 
 ```{r}
-# probit_ino$test(at = theta)
+probit_ino$set_optimizer(optimizer_nlm(iterlim = 1000))
+```
+
+```{r}
+probit_ino$true_parameter <- theta
+```
+
+```{r}
+probit_ino$test(at = theta)
 ```
 
 ## Random initialization
 
 We initialize `runs = 100` times randomly.
 
-```{r, eval = FALSE}
+```{r}
 probit_ino$optimize(initial = "random", runs = 100)
 ```
 
@@ -101,7 +109,7 @@ probit_ino$optimize(initial = "random", runs = 100)
 
 We initialize on a subset of proportion 20\% and 50\%, which was selected randomly and using kmeans, respectively.
 
-```{r, eval = FALSE}
+```{r}
 for(how in c("random", "kmeans")) for(prop in c(0.2,0.5)) {
   probit_ino <- subset_initialization(
     probit_ino, arg = "data", how = how, prop = prop,

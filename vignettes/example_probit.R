@@ -1,20 +1,21 @@
-## ---- include = FALSE---------------------------------------------------------------------------------
+## ---- include = FALSE----------------------------------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
   fig.dim = c(8, 6),
-  out.width = "75%"
+  out.width = "75%",
+  eval = FALSE
 )
 # library("ino")
 devtools::load_all() # remove later
 options("ino_verbose" = TRUE)
 
 
-## -----------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------
 J <- 3
-P <- 2
-scale <- c(1, 1e+2)
+P <- 3
+scale <- c(1, 1e-2, 1e+2)
 X <- function(n, t) {
   class <- sample(0:1, 1)
   mean <- ifelse(class, 1, -1)
@@ -24,54 +25,47 @@ X <- function(n, t) {
 X(1, 1)
 
 
-## -----------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------
 N <- 100
 T <- 10
-b <- c(1, -1) * scale
+b <- c(1, -1, 2) * scale
 Omega <- diag(P)
 Sigma <- diag(J)
 probit_data <- sim_mnp(N, T, J, P, b, Omega, Sigma, X)
 
 
-## -----------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------
 theta <- attr(probit_data, "true")[-1]
 f_ll_mnp(theta = theta, data = probit_data, neg = TRUE)
-nlm(f_ll_mnp, p = theta, data = probit_data, neg = TRUE, print.level = 2)$estimate
+# nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 
 
-## ---- eval = FALSE------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------
 probit_ino <- Nop$new(
   f = f_ll_mnp,
   npar = length(theta),
   data = probit_data,
-  neg = TRUE)$
-  set_optimizer(optimizer_nlm(iterlim = 1000))$
-  set_true_parameter(theta, set_true_value = TRUE)
+  neg = TRUE
+)
 
 
-## -----------------------------------------------------------------------------------------------------
-probit_ino$test(at = theta, verbose = TRUE)
+## ---- eval = FALSE-------------------------------------------------------------------------------------------
+probit_ino$set_optimizer(optimizer_nlm(iterlim = 1000))
 
 
-## ---- eval = FALSE------------------------------------------------------------------------------------
-options("ino_verbose" = TRUE)
-options("ino_ncores" = 7)
-
-probit_ino$optimize(initial = "random", runs = 100, label = "random")
-
-probit_ino$
-  standardize("data", ignore = 1:3)$
-  optimize(initial = "random", runs = 100, label = "standardize")$
-  reset_argument("data")
-
-probit_ino$
-  reduce("data", how = "dissimilar", proportion = 0.5)$
-  optimize(initial = "random", runs = 100, label = "subset")$
-  reset_argument("data")$
-  continue()
+## ------------------------------------------------------------------------------------------------------------
+probit_ino$true_parameter <- theta
 
 
-## ---- eval = FALSE------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------
+probit_ino$test(at = theta)
+
+
+## ------------------------------------------------------------------------------------------------------------
+probit_ino$optimize(initial = "random", runs = 100)
+
+
+## ------------------------------------------------------------------------------------------------------------
 for(how in c("random", "kmeans")) for(prop in c(0.2,0.5)) {
   probit_ino <- subset_initialization(
     probit_ino, arg = "data", how = how, prop = prop,
@@ -80,16 +74,16 @@ for(how in c("random", "kmeans")) for(prop in c(0.2,0.5)) {
 }
 
 
-## ---- eval = FALSE------------------------------------------------------------------------------------
+## ---- eval = FALSE-------------------------------------------------------------------------------------------
 ## library("dplyr", warn.conflicts = FALSE)
 ## summary(probit_ino, "iterations" = "iterations") %>% filter(iterations >= 1000)
 
 
-## ---- eval = FALSE------------------------------------------------------------------------------------
+## ---- eval = FALSE-------------------------------------------------------------------------------------------
 ## ind <- which(summary(probit_ino, "iterations" = "iterations")$iterations >= 1000)
 ## probit_ino <- clear_ino(probit_ino, which = ind)
 
 
-## ---- out.width = "100%", fig.dim = c(10, 6), eval = FALSE--------------------------------------------
+## ---- out.width = "100%", fig.dim = c(10, 6), eval = FALSE---------------------------------------------------
 ## plot(probit_ino, by = ".strategy", time_unit = "mins", nrow = 1)
 
