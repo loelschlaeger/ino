@@ -52,8 +52,8 @@
 #' An \code{integer}, the number of shown decimal places.
 #' The default is \code{2}.
 #' @param seed
-#' Set a seed for reproducibility.
-#' No seed by default.
+#' An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+#' Can be \code{NULL} for no seed, which is the default.
 #' @param return_results
 #' A \code{logical}, which indicates whether the optimization results should be
 #' returned as a \code{list}.
@@ -417,9 +417,7 @@ Nop <- R6::R6Class(
       if (length(optimizer_ids) == 0) {
         return(invisible(self))
       }
-      if (!is.null(seed)) {
-        set.seed(seed)
-      }
+      ino_seed(seed)
       parallel <- ncores > 1 && runs >= 2 * ncores
       if (parallel) {
         cluster <- parallel::makeCluster(ncores)
