@@ -29,6 +29,7 @@
 build_initial <- function(initial, npar) {
   if (identical(initial, "random")) {
     function(run_id, optimizer_id) {
+      ### same initial values across optimizers in given optimization run
       set.seed(run_id)
       rnorm(npar)
     }
@@ -60,6 +61,7 @@ build_initial <- function(initial, npar) {
     nargs <- length(formals(initial))
     initial_tmp <- if (nargs == 0) {
       function(run_id, optimizer_id) {
+        ### same initial values across optimizers in given optimization run
         set.seed(run_id)
         initial()
       }
@@ -514,9 +516,7 @@ subset_argument <- function(
     )
   }
   is_proportion(proportion)
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
+  ino_seed(seed)
   if (is.vector(argument) && length(argument) > 1) {
     argument <- as.data.frame(argument)
     vector_flag <- TRUE

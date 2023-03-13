@@ -378,8 +378,8 @@ By default, \code{runs = 1}.}
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
 
-\item{\code{seed}}{Set a seed for reproducibility.
-No seed by default.}
+\item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{A \code{logical}, which indicates whether the optimization results should be
 returned as a \code{list}.
@@ -578,8 +578,8 @@ By default, \code{centers = 2}.}
 In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 
-\item{\code{seed}}{Set a seed for reproducibility.
-No seed by default.}
+\item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -660,8 +660,8 @@ Continues optimization runs, e.g., with a transformed parameter.
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
 
-\item{\code{seed}}{Set a seed for reproducibility.
-No seed by default.}
+\item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{A \code{logical}, which indicates whether the optimization results should be
 returned as a \code{list}.
