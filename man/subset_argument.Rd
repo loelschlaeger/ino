@@ -4,7 +4,15 @@
 \alias{subset_argument}
 \title{Subset argument}
 \usage{
-subset_argument(argument, by_row, how, proportion, centers, ignore, seed)
+subset_argument(
+  argument,
+  by_row,
+  how,
+  proportion,
+  centers,
+  ignore,
+  seed = NULL
+)
 }
 \arguments{
 \item{argument}{A \code{vector}, \code{matrix}, or \code{data.frame}.

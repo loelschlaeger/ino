@@ -571,8 +571,7 @@ By default, \code{proportion = 0.5}.}
 In that case, passed to \code{\link[stats]{kmeans}}.
 By default, \code{centers = 2}.}
 
-\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"} and the argument
-\code{argument_name} is a \code{matrix} or a \code{data.frame}.
+\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"}.
 In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 

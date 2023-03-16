@@ -509,7 +509,7 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #' }
 
 subset_argument <- function(
-    argument, by_row, how, proportion, centers, ignore, seed
+    argument, by_row, how, proportion, centers, ignore, seed = NULL
   ) {
 
   ### input checks

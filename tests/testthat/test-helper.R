@@ -350,6 +350,71 @@ test_that("results with one element can be simplified", {
   )
 })
 
+test_that("Nop object can be tested", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_warning(
+    ackley$test(),
+    "No optimizer specified, testing optimizer is skipped."
+  )
+  ackley$set_optimizer(optimizer_nlm())
+  ackley$set_optimizer(optimizer_optim())
+  expect_error(
+    ackley$test(time_limit = -1),
+    "is not a positive"
+  )
+  expect_error(
+    ackley$test(verbose = "FALSE"),
+    "must be"
+  )
+  expect_true(ackley$test())
+  bad_f <- Nop$new(f = function(x) stop("error message"), 1)
+  expect_error(
+    bad_f$test(),
+    "Function call threw an error"
+  )
+  lengthy_f <- Nop$new(f = function(x) 1:2, 1)
+  expect_error(
+    lengthy_f$test(),
+    "Test function call is of length 2."
+  )
+  character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
+  expect_error(
+    character_f$test(),
+    "Function call threw an error"
+  )
+  expect_warning(
+    {
+      slow_f <- Nop$new(f = function(x) {
+        Sys.sleep(2)
+        1
+      }, 1)
+    },
+    "Function `f` is unnamed."
+  )
+  expect_warning(
+    expect_warning(
+      slow_f$test(time_limit = 1),
+      "Time limit of 1s was reached"
+    ),
+    "No optimizer specified, testing optimizer is skipped."
+  )
+  ackley$remove_optimizer(1:2)
+  bad_optimizer_fun <- function(f, p) {
+    if (identical(p, 1:2)) stop("error message")
+    list(v = f(p), z = 1:2)
+  }
+  bad_optimizer <- optimizeR::define_optimizer(
+    bad_optimizer_fun,
+    objective = "f", initial = "p", value = "v",
+    parameter = "z"
+  )
+  ackley$set_optimizer(bad_optimizer)
+  expect_error(
+    ackley$test(at = 1:2),
+    "Optimization threw an error"
+  )
+})
+
 test_that("input checks for standardization work", {
   expect_error(
     standardize_argument(
@@ -383,32 +448,37 @@ test_that("input checks for standardization work", {
 
 test_that("standardization of vector works", {
   argument <- rnorm(10)
-  combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
+  combinations <- expand.grid(
+    by_column = c(TRUE, FALSE),
+    center = c(TRUE, FALSE),
+    scale = c(TRUE, FALSE),
+    ignore = list(numeric(), 2:3),
+    stringsAsFactors = FALSE
+  )
   for (i in 1:nrow(combinations)) {
-    by_column <- combinations[i, 1]
-    center <- combinations[i, 2]
-    scale <- combinations[i, 3]
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = integer()
-      ),
-      as.numeric(
+    by_column <- combinations[i, "by_column"]
+    center <- combinations[i, "center"]
+    scale <- combinations[i, "scale"]
+    ignore <- combinations[[i, "ignore"]]
+    if (length(ignore) == 0) {
+      expected <- as.vector(
         scale(argument, center = center, scale = scale)
       )
-    )
-    ignore <- 1:5
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = ignore
-      ),
-      c(argument[ignore], as.numeric(
+    } else {
+      expected <- argument
+      expected[-ignore] <- as.numeric(
         scale(argument[-ignore], center = center, scale = scale)
-      ))
+      )
+    }
+    out <- standardize_argument(
+      argument = argument, by_column = by_column, center = center,
+      scale = scale, ignore = ignore
     )
+    expect_equal(out, expected)
   }
 })
+
+### TODO: continue here
 
 test_that("standardization of data.frame works", {
   argument <- data.frame("a" = rnorm(10), "b" = rnorm(10))
@@ -508,14 +578,14 @@ test_that("standardization of matrix works", {
 })
 
 test_that("input checks for subsetting work", {
-
+  # TODO
 })
 
-test_that("subsetting of vector works", {
+test_that("subsetting of vector works (without clusters)", {
   argument <- rnorm(10)
   combinations <- expand.grid(
     how = c("random", "first", "last"),
-    proportion = round(runif(2), 2),
+    proportion = round(runif(2, min = 0.1), 2),
     stringsAsFactors = FALSE
   )
   for (i in 1:nrow(combinations)) {
@@ -523,38 +593,45 @@ test_that("subsetting of vector works", {
     proportion <- combinations[i, "proportion"]
     expected_length <- ceiling(length(argument) * proportion)
     out <- subset_argument(
-      argument = argument, how = how, proportion = proportion, seed = NULL
+      argument = argument, how = how, proportion = proportion, ignore = ignore
     )
+    expect_true(is.vector(out))
     expect_length(out, expected_length)
     expect_true(all(out %in% argument))
   }
-  argument <- rep(1:2, each = 5)
+})
+
+test_that("subsetting of vector works (with clusters)", {
+  argument <- rep(1:4, each = 5)
   combinations <- expand.grid(
     how = c("similar", "dissimilar"),
-    proportion = round(runif(2), 2),
-    centers = 1:2,
+    proportion = round(runif(2, min = 0.1), 2),
+    centers = 2:3,
+    ignore = list(integer(), 1:2),
     stringsAsFactors = FALSE
   )
   for (i in 1:nrow(combinations)) {
     how <- combinations[i, "how"]
     proportion <- combinations[i, "proportion"]
     centers <- combinations[i, "centers"]
+    ignore <- combinations[[i, "ignore"]]
     expected_length <- ceiling(length(argument) * proportion)
     out <- subset_argument(
       argument = argument, how = how, proportion = proportion,
-      centers = centers, ignore = 2, seed = NULL
+      centers = centers, ignore = ignore
     )
+    expect_true(is.vector(out))
     expect_length(out, expected_length)
     expect_true(all(out %in% argument))
   }
 })
 
-test_that("subsetting of data.frame works", {
+test_that("subsetting of data.frame works (without clusters)", {
   argument <- data.frame("a" = rnorm(10), "b" = rnorm(10), "c" = LETTERS[1:10])
   combinations <- expand.grid(
     by_row = c(TRUE, FALSE),
     how = c("random", "first", "last"),
-    proportion = round(runif(2), 2),
+    proportion = round(runif(2, min = 0.1), 2),
     stringsAsFactors = FALSE
   )
   for (i in 1:nrow(combinations)) {
@@ -562,26 +639,24 @@ test_that("subsetting of data.frame works", {
     how <- combinations[i, "how"]
     proportion <- combinations[i, "proportion"]
     out <- subset_argument(
-      argument = argument, by_row = by_row, how = how, proportion = proportion,
-      seed = NULL
+      argument = argument, by_row = by_row, how = how, proportion = proportion
     )
-    if (by_row) {
-      expected_nrow <- ceiling(nrow(argument) * proportion)
-      expect_equal(nrow(out), expected_nrow)
+    expected_dim <- if (by_row) {
+      c(ceiling(nrow(argument) * proportion), ncol(argument))
     } else {
-
+      c(nrow(argument), ceiling(ncol(argument) * proportion))
     }
-    expected_length <- ceiling(length(argument) * proportion)
-    out <- subset_argument(
-      argument = argument, how = how, proportion = proportion, seed = NULL
-    )
-    expect_length(out, expected_length)
+    expect_true(is.data.frame(out))
+    expect_equal(dim(out), expected_dim)
     expect_true(all(out %in% argument))
   }
+})
+
+test_that("subsetting of data.frame works (with clusters)", {
   argument <- rep(1:2, each = 5)
   combinations <- expand.grid(
     how = c("similar", "dissimilar"),
-    proportion = round(runif(2), 2),
+    proportion = round(runif(2, min = 0.1), 2),
     centers = 1:2,
     stringsAsFactors = FALSE
   )
@@ -597,6 +672,10 @@ test_that("subsetting of data.frame works", {
     expect_length(out, expected_length)
     expect_true(all(out %in% argument))
   }
+})
+
+test_that("subsetting of matrix works", {
+ # TODO
 })
 
 
