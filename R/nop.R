@@ -72,7 +72,7 @@
 #' Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.
 #' @param time_limit
 #' An \code{integer}, the time limit in seconds for computations.
-#' No time limit if \code{time_limit = NULL}.
+#' No time limit if \code{time_limit = NULL} (the default).
 #'
 #' @details
 #' # Getting Started
@@ -109,8 +109,8 @@
 #' - \code{$summary()} summarizes the results,
 #' - \code{$optima()} returns a frequency table of identified optima,
 #' - \code{$plot()} visualizes the optimization times,
-#' - \code{$best_parameter()} returns the optimal found parameter vector,
-#' - \code{$best_value()} returns the optimal found function value,
+#' - \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
+#' - \code{$best_value()} returns the found optimum value of \code{f},
 #' - \code{$closest_parameter()} returns parameter closest to a specified value.
 #'
 #' @examples
@@ -322,7 +322,7 @@ Nop <- R6::R6Class(
     #' @param at
     #' A \code{numeric} vector of length \code{npar}, the point where the
     #' function is evaluated.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values.
+    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.
     #' @return
     #' Either:
     #' - a \code{numeric} value, the function value at \code{at},
@@ -361,8 +361,7 @@ Nop <- R6::R6Class(
     #' By default, \code{runs = 1}.
     #' @param label
     #' Only relevant if \code{save_results = TRUE}.
-    #' In this case, optionally a \code{character} for a custom label of the
-    #' optimization.
+    #' In this case, an optional \code{character} to specify a custom label of the optimization.
     #' By default, \code{label = self$new_label} creates a new label.
     #' Labels can be useful to distinguish optimization runs later.
     #' @return
@@ -491,7 +490,7 @@ Nop <- R6::R6Class(
     #' @param at
     #' A \code{numeric} of length \code{npar}, the point at which the
     #' function \code{f} and the specified optimizer are tested.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values.
+    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function(
