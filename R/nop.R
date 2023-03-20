@@ -521,6 +521,7 @@ Nop <- R6::R6Class(
     #' a \code{data.frame}.
     #' In that case, either \code{TRUE} to standardize column-wise (default) or
     #' \code{FALSE} to standardize row-wise.
+    #' Currently, only \code{by_column = TRUE} is implemented.
     #' @param center
     #' Passed to \code{\link[base]{scale}}.
     #' Default is \code{TRUE}.
@@ -559,6 +560,7 @@ Nop <- R6::R6Class(
     #' a \code{data.frame}.
     #' In that case, either \code{TRUE} to reduce row-wise (default) or
     #' \code{FALSE} to reduce column-wise.
+    #' Currently, only \code{by_row = TRUE} is implemented.
     #' @param how
     #' A \code{character}, specifying how to reduce. Can be one of:
     #' - \code{"random"} (default), reduce at random
@@ -578,8 +580,7 @@ Nop <- R6::R6Class(
     #' In that case, passed to \code{\link[stats]{kmeans}}.
     #' By default, \code{centers = 2}.
     #' @param ignore
-    #' Only relevant, if \code{how = "(dis)similar"} and the argument
-    #' \code{argument_name} is a \code{matrix} or a \code{data.frame}.
+    #' Only relevant, if \code{how = "(dis)similar"}.
     #' In that case a \code{integer} (vector) of row indices (or column indices
     #' if \code{by_row = FALSE}) to ignore for clustering.
     #' @return

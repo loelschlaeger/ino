@@ -504,7 +504,8 @@ standardized. The argument must a \code{numeric} \code{vector},
 \item{\code{by_column}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
 a \code{data.frame}.
 In that case, either \code{TRUE} to standardize column-wise (default) or
-\code{FALSE} to standardize row-wise.}
+\code{FALSE} to standardize row-wise.
+Currently, only \code{by_column = TRUE} is implemented.}
 
 \item{\code{center}}{Passed to \code{\link[base]{scale}}.
 Default is \code{TRUE}.}
@@ -551,7 +552,8 @@ Reduces the optimization problem.
 \item{\code{by_row}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
 a \code{data.frame}.
 In that case, either \code{TRUE} to reduce row-wise (default) or
-\code{FALSE} to reduce column-wise.}
+\code{FALSE} to reduce column-wise.
+Currently, only \code{by_row = TRUE} is implemented.}
 
 \item{\code{how}}{A \code{character}, specifying how to reduce. Can be one of:
 \itemize{
@@ -573,8 +575,7 @@ By default, \code{proportion = 0.5}.}
 In that case, passed to \code{\link[stats]{kmeans}}.
 By default, \code{centers = 2}.}
 
-\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"} and the argument
-\code{argument_name} is a \code{matrix} or a \code{data.frame}.
+\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"}.
 In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 

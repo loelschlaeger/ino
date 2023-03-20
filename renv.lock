@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.0",
+    "Version": "4.2.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -9,6 +9,22 @@
     ]
   },
   "Packages": {
+    "DT": {
+      "Package": "DT",
+      "Version": "0.27",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "3444e6ed78763f9f13aaa39f2481eb34",
+      "Requirements": [
+        "crosstalk",
+        "htmltools",
+        "htmlwidgets",
+        "jquerylib",
+        "jsonlite",
+        "magrittr",
+        "promises"
+      ]
+    },
     "MASS": {
       "Package": "MASS",
       "Version": "7.3-54",
@@ -231,6 +247,19 @@
         "jsonlite",
         "openssl",
         "sys"
+      ]
+    },
+    "crosstalk": {
+      "Package": "crosstalk",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6aa54f69598c32177e920eb3402e8293",
+      "Requirements": [
+        "R6",
+        "htmltools",
+        "jsonlite",
+        "lazyeval"
       ]
     },
     "curl": {
