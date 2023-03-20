@@ -523,7 +523,9 @@ test_that("f can be extracted", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6)
   expect_equal(hmm$f, f_ll_hmm)
   expect_error(
-    {hmm$f <- "function"},
+    {
+      hmm$f <- "function"
+    },
     "read only"
   )
 })
@@ -534,7 +536,9 @@ test_that("f_name can be extracted and set", {
   hmm$f_name <- "name"
   expect_equal(hmm$f_name, "name")
   expect_error(
-    {hmm$f_name <- 1},
+    {
+      hmm$f_name <- 1
+    },
     "must be a single"
   )
 })
@@ -543,7 +547,9 @@ test_that("f_target can be extracted", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6)
   expect_equal(hmm$f_target, "theta")
   expect_error(
-    {hmm$f_target <- "par"},
+    {
+      hmm$f_target <- "par"
+    },
     "read only"
   )
 })
@@ -552,7 +558,9 @@ test_that("npar can be extracted", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6)
   expect_equal(hmm$npar, 6)
   expect_error(
-    {hmm$npar <- 5},
+    {
+      hmm$npar <- 5
+    },
     "read only"
   )
 })
@@ -569,7 +577,9 @@ test_that("arguments can be extracted", {
     list(data = earthquakes)
   )
   expect_error(
-    {hmm$arguments <- "argument"},
+    {
+      hmm$arguments <- "argument"
+    },
     "read only"
   )
 })
@@ -581,7 +591,9 @@ test_that("true value can be extracted and modified", {
     "has not been specified yet"
   )
   expect_error(
-    {ackley$true_value <- 1:2},
+    {
+      ackley$true_value <- 1:2
+    },
     "must be a single"
   )
   ackley$true_value <- 0
@@ -600,14 +612,18 @@ test_that("true parameter can be extracted and modified", {
     "has not been specified yet"
   )
   expect_error(
-    {ackley$true_parameter <- 1:4},
+    {
+      ackley$true_parameter <- 1:4
+    },
     "must be of length 2"
   )
   ackley$true_parameter <- c(0, 0)
   expect_equal(ackley$true_value, 0)
   expect_equal(ackley$true_value, 0)
   expect_error(
-    {ackley$true_value <- 2},
+    {
+      ackley$true_value <- 2
+    },
     "Please update"
   )
   ackley$true_parameter <- NULL
@@ -623,7 +639,9 @@ test_that("show minimum can be extracted and modified", {
   ackley$show_minimum <- FALSE
   expect_false(ackley$show_minimum)
   expect_error(
-    {ackley$show_minimum <- "TRUE"},
+    {
+      ackley$show_minimum <- "TRUE"
+    },
     "must be"
   )
 })
@@ -640,7 +658,9 @@ test_that("optimizer can be extracted", {
   expect_type(ackley$optimizer, "list")
   expect_length(ackley$optimizer, 2)
   expect_error(
-    {ackley$optimizer <- "optimizer"},
+    {
+      ackley$optimizer <- "optimizer"
+    },
     "read only"
   )
 })
@@ -654,7 +674,9 @@ test_that("new label can be generated", {
   label_new <- ackley$new_label
   expect_false(identical(label, label_new))
   expect_error(
-    {ackley$new_label <- "label"},
+    {
+      ackley$new_label <- "label"
+    },
     "read only"
   )
 })
