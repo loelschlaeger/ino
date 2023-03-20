@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 library("ino")
 set.seed(1)
-hmm_ino <- ino::hmm_ino
+data("hmm_ino")
 ```
 
 This vignette^[The vignette was build using R `r paste(R.Version()[c("major","minor")], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] describes the workflow of the {ino} package for the likelihood optimization of a hidden Markov model (HMM). For more technical details about HMMs see, e.g., @Zucchini:2016.
@@ -200,7 +200,7 @@ summary(hmm_ino, c("label", "seconds")) %>%
   summarise(avg_time = median(seconds, na.rm = TRUE))
 ```
 
-This comparison can however be considered somewhat 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r format(as.numeric(ino::hmm_ino$best_value()), scientific = FALSE)`. For that, we will again use functions from {dplyr}.
+This comparison can however be considered somewhat 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r format(as.numeric(hmm_ino$best_value()), scientific = FALSE)`. For that, we will again use functions from {dplyr}.
 
 ```{r, eval = TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 

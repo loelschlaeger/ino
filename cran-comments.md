@@ -1,0 +1,1 @@
+* CRAN test NOTE: Uses the superseded package: 'doSNOW'. Comment: We use 'doSNOW' because we want to print computation progress via the 'progress' package in a parallelized for-loop and there seems to be no alternative at the moment.

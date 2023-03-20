@@ -1,5 +1,3 @@
-options("ino_verbose" = FALSE)
-
 test_that("Nop object can be initialized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_s3_class(ackley, c("Nop", "R6"), exact = TRUE)
