@@ -141,7 +141,7 @@
       - 1: stats::nlm 
       - 2: stats::optim 
       Optimization results:
-      - Total runs (comparable): 10 (10)
+      - Total runs (comparable): 13 (13)
       - Best parameter: 0 0
       - Best value: 0 
 

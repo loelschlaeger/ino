@@ -770,6 +770,9 @@ Nop <- R6::R6Class(
       which_run, which_optimizer = "all", which_element = "all"
     ) {
       run_ids <- private$.get_run_ids(which_run)
+      if (length(run_ids) == 0) {
+        return(invisible(self))
+      }
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
       which_element <- private$.check_which_element(
         which_element = which_element, optimizer_ids = optimizer_ids,
@@ -1007,6 +1010,8 @@ Nop <- R6::R6Class(
             .close = ">"
           )
         )
+      } else {
+        invisible(TRUE)
       }
     },
 
@@ -1329,7 +1334,7 @@ Nop <- R6::R6Class(
       if (missing(value)) {
         private$.f_name
       } else {
-        if (!is_name(value)) {
+        if (!is_name(value, error = FALSE)) {
           ino_stop("{.var $f_name} must be a single {.cls character}.")
         } else {
           private$.f_name <- value
@@ -1389,7 +1394,7 @@ Nop <- R6::R6Class(
         }
         return(out)
       } else {
-        if (is.null(true_value)) {
+        if (is.null(value)) {
           private$.true_value <- NULL
           private$.true_parameter <- NULL
           ino_status(
@@ -1403,7 +1408,7 @@ Nop <- R6::R6Class(
           }
           if (!is.null(private$.true_parameter)) {
             true_value_old <- self$evaluate(at = private$.true_parameter)
-            if (true_value != true_value_old) {
+            if (value != true_value_old) {
               ino_stop(
                 "Please update {.var true_parameter} first.",
                 "Alternatively, remove it via {.val true_parameter <- NULL}."
@@ -1499,7 +1504,7 @@ Nop <- R6::R6Class(
         while (TRUE) {
           label <- glue::glue("{default_label}_{n}")
           if (!label %in% private$.optimization_labels) {
-            return(label)
+            return(as.character(label))
           } else {
             n <- n + 1
           }

@@ -126,10 +126,18 @@ test_that("optimizer can be removed", {
   ackley$set_optimizer(optimizer_nlm(), label = "C")
   ackley$set_optimizer(optimizer_nlm())
   expect_snapshot(ackley)
+  expect_error(
+    ackley$remove_optimizer(),
+    "Please specify"
+  )
   ackley2 <- ackley$clone()
   ackley2$remove_optimizer("all")
   expect_snapshot(ackley2)
   ackley$remove_optimizer(2)
+  expect_warning(
+    ackley$remove_optimizer(2),
+    "has already been removed"
+  )
   expect_snapshot(ackley)
   ackley$remove_optimizer(c("stats::nlm", "A"))
   expect_snapshot(ackley)
@@ -238,6 +246,7 @@ test_that("ackley function can be optimized", {
   ackley$optimize(runs = 1, initial = runif(2))
   ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)
   ackley$optimize(initial = c(0, 0))
+  ackley$optimize(initial = list(1:2, 2:3, 3:4))
   expect_snapshot(ackley)
   expect_error(
     ackley$optimize(save_results = "TRUE"),
@@ -264,6 +273,7 @@ test_that("ackley function can be optimized", {
     runs = 1, return_results = TRUE, save_results = FALSE, simplify = FALSE
   )
   expect_type(out, "list")
+  ackley
 })
 
 test_that("parallel optimization works", {
@@ -330,6 +340,10 @@ test_that("argument can be reset", {
     f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
   )
   hmm$standardize("data")
+  expect_error(
+    hmm$reset_argument(),
+    "Please specify"
+  )
   hmm$reset_argument("data")
   expect_equal(data, hmm$get_argument("data"))
   hmm$reduce("data")
@@ -346,16 +360,6 @@ test_that("continue optimization works", {
     reset_argument("data")$
     continue()
   expect_s3_class(hmm, "Nop")
-})
-
-test_that("summary works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_warning(
-    ackley$summary(),
-    "No optimization results saved yet."
-  )
 })
 
 test_that("results can be accessed", {
@@ -379,15 +383,41 @@ test_that("number of results can be accessed", {
 })
 
 test_that("overview of available elements can be created", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())
+  expect_warning(
+    ackley$elements_available(),
+    "No optimization results saved yet"
+  )
+  ackley$optimize(runs = 10)
+  expect_equal(
+    ackley$elements_available(),
+    list("stats::nlm" = c(
+      "value", "parameter", "seconds", "initial", "gradient", "code",
+      "iterations", "label", "run", "optimizer", "comparable"
+    ))
+  )
 })
 
 test_that("results can be cleared", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())
+  expect_warning(
+    ackley$clear(which_run = 1),
+    "No optimization results saved yet"
+  )
+  ackley$optimize(runs = 10)
+  ackley$clear(which_run = 1)
 })
 
 test_that("results can be summarized", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  expect_warning(
+    ackley$summary(),
+    "No optimization results saved yet."
+  )
 })
 
 test_that("overview of optima works", {
@@ -397,6 +427,12 @@ test_that("overview of optima works", {
   expect_warning(
     ackley$optima(),
     "No optimization results saved yet."
+  )
+  ackley$optimize(runs = 10)
+  expect_true(is.data.frame(ackley$optima()))
+  expect_error(
+    ackley$optima(sort_by = "bad_input"),
+    "must be"
   )
 })
 
@@ -413,8 +449,12 @@ test_that("optimization times can be plotted", {
 test_that("best value can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = 10)
+    set_optimizer(optimizer_optim())
+  expect_warning(
+    expect_null(ackley$best_value()),
+    "No optimization results saved yet."
+  )
+  ackley$optimize(runs = 10)
   expect_length(
     ackley$best_value(), 1
   )
@@ -423,14 +463,18 @@ test_that("best value can be extracted", {
 test_that("best parameter can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = 10)
+    set_optimizer(optimizer_optim())
+  expect_warning(
+    expect_null(ackley$best_parameter()),
+    "No optimization results saved yet."
+  )
+  ackley$optimize(runs = 10)
   expect_length(
     ackley$best_parameter(), 2
   )
 })
 
-test_that("best parameter can be extracted", {
+test_that("closest parameter can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())$
@@ -441,97 +485,176 @@ test_that("best parameter can be extracted", {
 })
 
 test_that("existence of additional argument can be checked", {
-  # TODO
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  private <- hmm$.__enclos_env__$private
+  expect_error(
+    private$.check_additional_argument_exists("data"),
+    "is not yet specified"
+  )
+  hmm$set_argument("data" = earthquakes)
 })
 
-test_that("completeness of additional arguments can be checked", {
-  # TODO
+test_that("run ids can be extracted", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm(), "nlm")$
+    optimize(runs = 10, label = "label")
+  private <- ackley$.__enclos_env__$private
+  expect_equal(private$.get_run_ids(which_run = "label"), 1:10)
+  expect_warning(
+    private$.get_run_ids(which_run = "label_does_not_exist"),
+    "Please check argument"
+  )
 })
 
-test_that("target argument can be checked", {
-  # TODO
-})
-
-test_that("selection of element can be checked", {
-  # TODO
-})
-
-test_that("cheap function evaluation works", {
-  # TODO
-})
-
-test_that("check function optimization works", {
-  # TODO
-})
-
-test_that("optimization run can be labeled", {
-  # TODO
-})
-
-test_that("optimization run can be saved", {
-  # TODO
-})
-
-test_that("results of continued and previous runs can be merged", {
-  # TODO
-})
-
-test_that("existence of additional argument can be checked", {
-  # TODO
-})
-
-test_that("original argument can be saved", {
-  # TODO
-})
-
-test_that("original argument can be reset", {
-  # TODO
-})
-
-test_that("run ids can be get", {
-  # TODO
-})
-
-test_that("optimizer ids can be get", {
-  # TODO
+test_that("optimizer ids can be extracted", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  ackley$set_optimizer(optimizer_nlm(), "nlm")
+  ackley$set_optimizer(optimizer_optim(), "optim")
+  ackley$remove_optimizer("optim")
+  private <- ackley$.__enclos_env__$private
+  expect_equal(private$.get_optimizer_ids(which_optimizer = "removed"), 2)
+  expect_error(
+    private$.get_optimizer_ids(which_optimizer = list()),
+    "is misspecified"
+  )
 })
 
 test_that("f can be extracted", {
-  # TODO
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  expect_equal(hmm$f, f_ll_hmm)
+  expect_error(
+    {hmm$f <- "function"},
+    "read only"
+  )
 })
 
-test_that("f_name can be extracted", {
-  # TODO
+test_that("f_name can be extracted and set", {
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  expect_equal(hmm$f_name, "f_ll_hmm")
+  hmm$f_name <- "name"
+  expect_equal(hmm$f_name, "name")
+  expect_error(
+    {hmm$f_name <- 1},
+    "must be a single"
+  )
 })
 
 test_that("f_target can be extracted", {
-  # TODO
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  expect_equal(hmm$f_target, "theta")
+  expect_error(
+    {hmm$f_target <- "par"},
+    "read only"
+  )
 })
 
 test_that("npar can be extracted", {
-  # TODO
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  expect_equal(hmm$npar, 6)
+  expect_error(
+    {hmm$npar <- 5},
+    "read only"
+  )
 })
 
 test_that("arguments can be extracted", {
-  # TODO
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
+  expect_warning(
+    hmm$arguments,
+    "No function arguments have been specified yet"
+  )
+  hmm$set_argument("data" = earthquakes)
+  expect_equal(
+    hmm$arguments,
+    list(data = earthquakes)
+  )
+  expect_error(
+    {hmm$arguments <- "argument"},
+    "read only"
+  )
 })
 
-test_that("true value can be extracted", {
-  # TODO
+test_that("true value can be extracted and modified", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_warning(
+    ackley$true_value,
+    "has not been specified yet"
+  )
+  expect_error(
+    {ackley$true_value <- 1:2},
+    "must be a single"
+  )
+  ackley$true_value <- 0
+  expect_equal(ackley$true_value, 0)
+  ackley$true_value <- NULL
+  expect_warning(
+    expect_null(ackley$true_value),
+    "has not been specified yet"
+  )
 })
 
-test_that("true parameter can be extracted", {
-  # TODO
+test_that("true parameter can be extracted and modified", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_warning(
+    ackley$true_parameter,
+    "has not been specified yet"
+  )
+  expect_error(
+    {ackley$true_parameter <- 1:4},
+    "must be of length 2"
+  )
+  ackley$true_parameter <- c(0, 0)
+  expect_equal(ackley$true_value, 0)
+  expect_equal(ackley$true_value, 0)
+  expect_error(
+    {ackley$true_value <- 2},
+    "Please update"
+  )
+  ackley$true_parameter <- NULL
+  expect_warning(
+    expect_null(ackley$true_parameter),
+    "has not been specified yet"
+  )
 })
 
-test_that("show minimum can be extracted", {
-  # TODO
+test_that("show minimum can be extracted and modified", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_true(ackley$show_minimum)
+  ackley$show_minimum <- FALSE
+  expect_false(ackley$show_minimum)
+  expect_error(
+    {ackley$show_minimum <- "TRUE"},
+    "must be"
+  )
 })
 
 test_that("optimizer can be extracted", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_warning(
+    ackley$optimizer,
+    "No optimizer specified yet"
+  )
+  ackley$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  expect_type(ackley$optimizer, "list")
+  expect_length(ackley$optimizer, 2)
+  expect_error(
+    {ackley$optimizer <- "optimizer"},
+    "read only"
+  )
 })
 
 test_that("new label can be generated", {
-  # TODO
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())
+  label <- ackley$new_label
+  expect_true(is_name(label))
+  ackley$optimize()
+  label_new <- ackley$new_label
+  expect_false(identical(label, label_new))
+  expect_error(
+    {ackley$new_label <- "label"},
+    "read only"
+  )
 })
