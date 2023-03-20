@@ -583,7 +583,7 @@ test_that("input checks for subsetting work", {
   )
   expect_error(
     subset_argument(
-      argument = diag(3), by_row = TRUE,how = "bad_specification",
+      argument = diag(3), by_row = TRUE, how = "bad_specification",
       proportion = 0.5, centers = 2, ignore = integer()
     ),
     "is misspecified"
@@ -775,5 +775,3 @@ test_that("subsetting of matrix works (with clusters)", {
     }
   }
 })
-
-
