@@ -588,6 +588,7 @@ Nop <- R6::R6Class(
     #' a \code{data.frame}.
     #' In that case, either \code{TRUE} to standardize column-wise (default) or
     #' \code{FALSE} to standardize row-wise.
+    #' Currently, only \code{by_column = TRUE} is implemented.
     #' @param center
     #' Passed to \code{\link[base]{scale}}.
     #' Default is \code{TRUE}.
@@ -626,6 +627,7 @@ Nop <- R6::R6Class(
     #' a \code{data.frame}.
     #' In that case, either \code{TRUE} to reduce row-wise (default) or
     #' \code{FALSE} to reduce column-wise.
+    #' Currently, only \code{by_row = TRUE} is implemented.
     #' @param how
     #' A \code{character}, specifying how to reduce. Can be one of:
     #' - \code{"random"} (default), reduce at random

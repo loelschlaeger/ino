@@ -280,7 +280,7 @@ test_nop <- function(
   ino_success(
     glue::glue(
       "Test initial values specified: ",
-      {paste(round(at, digits = digits), collapse = ' ')}
+      paste(round(at, digits = digits), collapse = ' ')
     ), verbose = verbose
   )
 
@@ -432,6 +432,11 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
         "Argument {.var by_column} must be {.val TRUE} or {.val FALSE}."
       )
     }
+    if (isFALSE(by_column)) {
+      ino_stop(
+        "Currently, only {.var by_column = TRUE} is implemented."
+      )
+    }
     if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
       ino_stop(
         "Argument {.var ignore} must be an index vector."
@@ -445,9 +450,6 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
   }
 
   ### standardizing
-  if (!by_column) {
-    argument <- t(argument)
-  }
   if (length(ignore) > 0) {
     if (vector_flag) {
       argument[-ignore, ] <- scale(
@@ -464,9 +466,6 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
   if (vector_flag) {
     argument <- argument[, 1]
   } else {
-    if (!by_column) {
-      argument <- t(argument)
-    }
     if (df_flag) {
       argument <- as.data.frame(argument)
     }
@@ -548,6 +547,11 @@ subset_argument <- function(
         "Argument {.var by_row} must be {.val TRUE} or {.val FALSE}."
       )
     }
+    if (isFALSE(by_row)) {
+      ino_stop(
+        "Currently, only {.var by_row = TRUE} is implemented."
+      )
+    }
     if (how %in% c("similar", "dissimilar")) {
       if (!is.numeric(ignore) || !all(sapply(ignore, is_number))) {
         ino_stop(
@@ -563,9 +567,6 @@ subset_argument <- function(
   }
 
   ### subsetting
-  if (!by_row) {
-    argument <- t(argument)
-  }
   n <- nrow(argument)
   m <- ceiling(n * proportion)
   if (how == "random") {
@@ -619,10 +620,6 @@ subset_argument <- function(
   argument <- argument[ind, , drop = FALSE]
   if (vector_flag) {
     argument <- argument[, 1]
-  } else {
-    if (!by_row) {
-      argument <- t(argument)
-    }
   }
 
   ### check for NAs
