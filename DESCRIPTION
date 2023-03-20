@@ -27,7 +27,7 @@ Imports:
     cli,
     dplyr,
     foreach,
-    doParallel,
+    doSNOW,
     ao (>= 0.2.3),
     glue,
     rlang,

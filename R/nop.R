@@ -376,7 +376,7 @@ Nop <- R6::R6Class(
     #'   \code{\link[optimizeR]{apply_optimizer}}.
     #'   If \code{simplify = TRUE}, the output is flattened if possible.
     #' @importFrom parallel makeCluster stopCluster
-    #' @importFrom doParallel registerDoParallel
+    #' @importFrom doSNOW registerDoSNOW
     #' @importFrom foreach foreach %dopar% %do%
     optimize = function(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
@@ -422,7 +422,7 @@ Nop <- R6::R6Class(
       if (parallel) {
         cluster <- parallel::makeCluster(ncores)
         on.exit(parallel::stopCluster(cluster))
-        doParallel::registerDoParallel(cluster)
+        doSNOW::registerDoSNOW(cluster)
         if (verbose) pb$tick(0)
         results <- foreach::foreach(
           run_id = 1:runs, .packages = "ino", .export = "private",

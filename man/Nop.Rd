@@ -309,7 +309,8 @@ function is evaluated.
 Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL} (the default).}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
@@ -409,7 +410,8 @@ In this case, if \code{simplify = TRUE}, the nested list output
 of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL} (the default).}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
@@ -462,7 +464,8 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a stan
 }}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL} (the default).}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -686,7 +689,8 @@ In this case, if \code{simplify = TRUE}, the nested list output
 of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL} (the default).}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
