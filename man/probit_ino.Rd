@@ -5,7 +5,7 @@
 \alias{probit_ino}
 \title{Example application of \{ino\} to probit likelihood}
 \format{
-An object of class \code{ino}.
+A \code{\link{Nop}} object.
 }
 \usage{
 data(probit_ino)

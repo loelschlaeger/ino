@@ -1,3 +1,5 @@
+options("ino_verbose" = FALSE)
+
 test_that("initial random parameter", {
   expect_length(build_initial("random", 2)(1, 1), 2)
 })
@@ -42,7 +44,7 @@ test_that("initial parameter as anything else", {
   )
 })
 
-test_that("input checks for result transformation work", {
+test_that("input checks for result filtering work", {
   expect_error(
     filter_results(
       results = "not_a_list",
@@ -357,8 +359,9 @@ test_that("Nop object can be tested", {
     ackley$test(),
     "No optimizer specified, testing optimizer is skipped."
   )
-  ackley$set_optimizer(optimizer_nlm())
-  ackley$set_optimizer(optimizer_optim())
+  ackley$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
   expect_error(
     ackley$test(time_limit = -1),
     "is not a positive"
@@ -456,7 +459,7 @@ test_that("input checks for standardization work", {
       argument = diag(3), by_column = TRUE,
       center = TRUE, scale = TRUE, ignore = pi
     ),
-    "must be an index vector"
+    "must be an"
   )
   expect_error(
     standardize_argument(
