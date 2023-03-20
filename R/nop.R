@@ -73,6 +73,7 @@
 #' @param time_limit
 #' An \code{integer}, the time limit in seconds for computations.
 #' No time limit if \code{time_limit = NULL} (the default).
+#' This currently only works reliably under Windows.
 #'
 #' @details
 #' # Getting Started
