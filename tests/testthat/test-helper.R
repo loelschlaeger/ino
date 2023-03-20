@@ -394,18 +394,6 @@ test_that("Bad function specifications can be detected in tests", {
     list_f$test(),
     "Test function call did not return a"
   )
-  slow_f <- function(x) {
-    Sys.sleep(2)
-    1
-  }
-  slow_f <- Nop$new(slow_f, 1)
-  expect_warning(
-    expect_warning(
-      slow_f$test(time_limit = 1),
-      "Time limit of 1s was reached"
-    ),
-    "No optimizer specified, testing optimizer is skipped."
-  )
 })
 
 test_that("Bad optimizer specifications can be detected in tests", {
@@ -423,16 +411,32 @@ test_that("Bad optimizer specifications can be detected in tests", {
     ackley$test(at = 1:2),
     "Optimization threw an error"
   )
-  lengthy_optimizer_fun <- function(f, p) {
+})
+
+test_that("Nop tests can be interrupted", {
+  skip_if_not(.Platform$OS.type == "windows")
+  slow_f <- function(x) {
+    Sys.sleep(2)
+    1
+  }
+  slow_f <- Nop$new(slow_f, 1)
+  expect_warning(
+    expect_warning(
+      slow_f$test(time_limit = 1),
+      "Time limit of 1s was reached"
+    ),
+    "No optimizer specified, testing optimizer is skipped."
+  )
+  slow_optimizer_fun <- function(f, p) {
     Sys.sleep(2)
     stats::nlm(f = f, p = p)
   }
-  lengthy_optimizer <- optimizeR::define_optimizer(
-    lengthy_optimizer_fun,
+  slow_optimizer <- optimizeR::define_optimizer(
+    slow_optimizer_fun,
     objective = "f", initial = "p", value = "minimum",
     parameter = "estimate"
   )
-  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(lengthy_optimizer)
+  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(slow_optimizer)
   expect_warning(
     ackley$test(at = 1:2, time_limit = 1),
     "Time limit of 1s was reached in the optimization"
