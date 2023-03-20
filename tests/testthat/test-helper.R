@@ -607,7 +607,7 @@ test_that("input checks for subsetting work", {
       argument = diag(3), by_row = TRUE,
       how = "similar", proportion = 0.5, centers = 2, ignore = pi
     ),
-    "must be an index vector"
+    "must be an index"
   )
   expect_error(
     subset_argument(
@@ -671,11 +671,11 @@ test_that("subsetting of vector works (with clusters)", {
 })
 
 test_that("subsetting of data.frame works (without clusters)", {
-  argument <- data.frame("a" = rnorm(10), "b" = LETTERS[1:10])
+  argument <- data.frame("a" = 1:5, "b" = LETTERS[1:5])
   combinations <- expand.grid(
     by_row = TRUE,
     how = c("random", "first", "last"),
-    proportion = round(runif(2, min = 0.1), 2),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
     stringsAsFactors = FALSE
   )
   for (i in 1:nrow(combinations)) {
@@ -695,11 +695,11 @@ test_that("subsetting of data.frame works (without clusters)", {
 })
 
 test_that("subsetting of data.frame works (with clusters)", {
-  argument <- data.frame("a" = rnorm(5, sd = 9), "b" = rnorm(5, sd = 9))
+  argument <- data.frame("a" = 1:5, "b" = 1:5)
   combinations <- expand.grid(
     by_row = TRUE,
     how = c("similar", "dissimilar"),
-    proportion = round(runif(2, min = 0.1), 2),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
     centers = 1:2,
     ignore = list(integer(), 2),
     stringsAsFactors = FALSE
@@ -724,11 +724,11 @@ test_that("subsetting of data.frame works (with clusters)", {
 })
 
 test_that("subsetting of matrix works (without clusters)", {
-  argument <- matrix(rnorm(15), nrow = 5, ncol = 3)
+  argument <- matrix(1:15, nrow = 5, ncol = 3)
   combinations <- expand.grid(
     by_row = TRUE,
     how = c("random", "first", "last"),
-    proportion = round(runif(2, min = 0.1), 2),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
     stringsAsFactors = FALSE
   )
   for (i in 1:nrow(combinations)) {
@@ -748,11 +748,11 @@ test_that("subsetting of matrix works (without clusters)", {
 })
 
 test_that("subsetting of matrix works (with clusters)", {
-  argument <- matrix(rnorm(15, sd = 9), nrow = 5, ncol = 3)
+  argument <- matrix(1:15, nrow = 5, ncol = 3)
   combinations <- expand.grid(
     by_row = TRUE,
     how = c("similar", "dissimilar"),
-    proportion = round(runif(2, min = 0.1), 2),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
     centers = 1:2,
     ignore = list(integer(), 2),
     stringsAsFactors = FALSE

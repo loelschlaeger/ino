@@ -52,8 +52,8 @@ different filter options for optimization runs, optimizers, and elements:
 \item \code{$summary()} summarizes the results,
 \item \code{$optima()} returns a frequency table of identified optima,
 \item \code{$plot()} visualizes the optimization times,
-\item \code{$best_parameter()} returns the optimal found parameter vector,
-\item \code{$best_value()} returns the optimal found function value,
+\item \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
+\item \code{$best_value()} returns the found optimum value of \code{f},
 \item \code{$closest_parameter()} returns parameter closest to a specified value.
 }
 }
@@ -306,10 +306,10 @@ Evaluates the function.
 \describe{
 \item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
 function is evaluated.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
@@ -390,8 +390,7 @@ saved inside the \code{Nop} object.
 By default, \code{save_results = TRUE}.}
 
 \item{\code{label}}{Only relevant if \code{save_results = TRUE}.
-In this case, optionally a \code{character} for a custom label of the
-optimization.
+In this case, an optional \code{character} to specify a custom label of the optimization.
 By default, \code{label = self$new_label} creates a new label.
 Labels can be useful to distinguish optimization runs later.}
 
@@ -410,7 +409,7 @@ In this case, if \code{simplify = TRUE}, the nested list output
 of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
@@ -451,7 +450,7 @@ Validates the configuration of a \code{Nop} object.
 \describe{
 \item{\code{at}}{A \code{numeric} of length \code{npar}, the point at which the
 function \code{f} and the specified optimizer are tested.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
@@ -463,7 +462,7 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
 }}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -687,7 +686,7 @@ In this case, if \code{simplify = TRUE}, the nested list output
 of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
