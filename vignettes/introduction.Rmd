@@ -442,7 +442,7 @@ See the other two vignettes for demonstrations of these options.
 The `$plot()` method provides an overview of the optimization times. Setting `by = "label"` allows for comparison across initialization strategies, setting `relative = TRUE` plots relative differences to the median of the top boxplot:
 
 ```{r, plot by label}
-geyser$plot(by = "label", relative = TRUE, log = TRUE)
+geyser$plot(by = "label", relative = TRUE)
 ```
 
 Setting `by = "optimizer"` allows comparison across optimizers:

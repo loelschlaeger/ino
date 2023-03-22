@@ -24,11 +24,11 @@
 #' - \code{"all"}, all elements,
 #' - \code{"basic"}, the elements
 #'   - \code{"value"}, the \code{numeric} value of the found optimum,
-#'   - \code{"parameter}, the parameter \code{vector} at which the optimum value
+#'   - \code{"parameter"}, the parameter \code{vector} at which the optimum value
 #'     is obtained,
 #' - \code{"default"}, the elements that are saved for all optimization runs by
 #'   default, i.e.
-#'   - \code{"run}, the run id,
+#'   - \code{"run"}, the run id,
 #'   - \code{"optimizer"}, the label for the optimizer,
 #'   - \code{"value"} and \code{"parameter"} (see above),
 #'   - \code{"seconds"}, the optimization time in seconds,
@@ -52,8 +52,8 @@
 #' An \code{integer}, the number of shown decimal places.
 #' The default is \code{2}.
 #' @param seed
-#' Set a seed for reproducibility.
-#' No seed by default.
+#' An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+#' Can be \code{NULL} for no seed, which is the default.
 #' @param return_results
 #' A \code{logical}, which indicates whether the optimization results should be
 #' returned as a \code{list}.
@@ -72,7 +72,8 @@
 #' Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.
 #' @param time_limit
 #' An \code{integer}, the time limit in seconds for computations.
-#' No time limit if \code{time_limit = NULL}.
+#' No time limit if \code{time_limit = NULL} (the default).
+#' This currently only works reliably under Windows.
 #'
 #' @details
 #' # Getting Started
@@ -109,14 +110,14 @@
 #' - \code{$summary()} summarizes the results,
 #' - \code{$optima()} returns a frequency table of identified optima,
 #' - \code{$plot()} visualizes the optimization times,
-#' - \code{$best_parameter()} returns the optimal found parameter vector,
-#' - \code{$best_value()} returns the optimal found function value,
+#' - \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
+#' - \code{$best_value()} returns the found optimum value of \code{f},
 #' - \code{$closest_parameter()} returns parameter closest to a specified value.
 #'
 #' @examples
 #' Nop$new(f = f_ackley, npar = 2)$
 #'   set_optimizer(optimizer_nlm())$
-#'   optimize(runs = 100)$
+#'   optimize(runs = 100, verbose = FALSE)$
 #'   optima()
 #'
 #' @export
@@ -322,7 +323,7 @@ Nop <- R6::R6Class(
     #' @param at
     #' A \code{numeric} vector of length \code{npar}, the point where the
     #' function is evaluated.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values.
+    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.
     #' @return
     #' Either:
     #' - a \code{numeric} value, the function value at \code{at},
@@ -361,8 +362,7 @@ Nop <- R6::R6Class(
     #' By default, \code{runs = 1}.
     #' @param label
     #' Only relevant if \code{save_results = TRUE}.
-    #' In this case, optionally a \code{character} for a custom label of the
-    #' optimization.
+    #' In this case, an optional \code{character} to specify a custom label of the optimization.
     #' By default, \code{label = self$new_label} creates a new label.
     #' Labels can be useful to distinguish optimization runs later.
     #' @return
@@ -399,9 +399,9 @@ Nop <- R6::R6Class(
       is_TRUE_FALSE(hide_warnings)
 
       ### build progress bar
+      format <- "Finished run :current of :total [elapsed :elapsed, to go :eta]"
       pb <- progress::progress_bar$new(
-        format = ":current of :total, ETA :eta", total = runs,
-        clear = FALSE
+        format = format, total = runs, clear = FALSE, show_after = 0
       )
       opts <- structure(
         list(function(n) {
@@ -417,19 +417,18 @@ Nop <- R6::R6Class(
       if (length(optimizer_ids) == 0) {
         return(invisible(self))
       }
-      if (!is.null(seed)) {
-        set.seed(seed)
-      }
+      ino_seed(seed)
       parallel <- ncores > 1 && runs >= 2 * ncores
       if (parallel) {
         cluster <- parallel::makeCluster(ncores)
         on.exit(parallel::stopCluster(cluster))
         doSNOW::registerDoSNOW(cluster)
+        if (verbose) pb$tick(0)
         results <- foreach::foreach(
           run_id = 1:runs, .packages = "ino", .export = "private",
           .inorder = TRUE, .options.snow = opts
         ) %dopar% {
-          run <- lapply(optimizer_ids, function(optimizer_id) {
+          lapply(optimizer_ids, function(optimizer_id) {
             private$.optimize(
               initial = initial(run_id = run_id, optimizer_id = optimizer_id),
               optimizer_id = optimizer_id,
@@ -437,17 +436,19 @@ Nop <- R6::R6Class(
               hide_warnings = hide_warnings
             )
           })
-          if (save_results) {
+        }
+        ### results must be saved outside the loop when parallelized
+        if (save_results) {
+          for (run in results) {
             run <- private$.label_run(run = run, label = label)
             private$.save_optimization_run(
               run = run, optimizer_ids = optimizer_ids
             )
           }
-          return(run)
         }
       } else {
+        if (verbose) pb$tick(0)
         results <- foreach::foreach(run_id = 1:runs) %do% {
-          pb$tick()
           run <- lapply(optimizer_ids, function(optimizer_id) {
             private$.optimize(
               initial = initial(run_id = run_id, optimizer_id = optimizer_id),
@@ -456,12 +457,14 @@ Nop <- R6::R6Class(
               hide_warnings = hide_warnings
             )
           })
+          ### results are saved inside the loop
           if (save_results) {
             run <- private$.label_run(run = run, label = label)
             private$.save_optimization_run(
               run = run, optimizer_ids = optimizer_ids
             )
           }
+          if (verbose) pb$tick()
           return(run)
         }
       }
@@ -488,7 +491,7 @@ Nop <- R6::R6Class(
     #' @param at
     #' A \code{numeric} of length \code{npar}, the point at which the
     #' function \code{f} and the specified optimizer are tested.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values.
+    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function(
@@ -519,6 +522,7 @@ Nop <- R6::R6Class(
     #' a \code{data.frame}.
     #' In that case, either \code{TRUE} to standardize column-wise (default) or
     #' \code{FALSE} to standardize row-wise.
+    #' Currently, only \code{by_column = TRUE} is implemented.
     #' @param center
     #' Passed to \code{\link[base]{scale}}.
     #' Default is \code{TRUE}.
@@ -557,6 +561,7 @@ Nop <- R6::R6Class(
     #' a \code{data.frame}.
     #' In that case, either \code{TRUE} to reduce row-wise (default) or
     #' \code{FALSE} to reduce column-wise.
+    #' Currently, only \code{by_row = TRUE} is implemented.
     #' @param how
     #' A \code{character}, specifying how to reduce. Can be one of:
     #' - \code{"random"} (default), reduce at random
@@ -576,8 +581,7 @@ Nop <- R6::R6Class(
     #' In that case, passed to \code{\link[stats]{kmeans}}.
     #' By default, \code{centers = 2}.
     #' @param ignore
-    #' Only relevant, if \code{how = "(dis)similar"} and the argument
-    #' \code{argument_name} is a \code{matrix} or a \code{data.frame}.
+    #' Only relevant, if \code{how = "(dis)similar"}.
     #' In that case a \code{integer} (vector) of row indices (or column indices
     #' if \code{by_row = FALSE}) to ignore for clustering.
     #' @return
@@ -766,6 +770,9 @@ Nop <- R6::R6Class(
       which_run, which_optimizer = "all", which_element = "all"
     ) {
       run_ids <- private$.get_run_ids(which_run)
+      if (length(run_ids) == 0) {
+        return(invisible(self))
+      }
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
       which_element <- private$.check_which_element(
         which_element = which_element, optimizer_ids = optimizer_ids,
@@ -1003,6 +1010,8 @@ Nop <- R6::R6Class(
             .close = ">"
           )
         )
+      } else {
+        invisible(TRUE)
       }
     },
 
@@ -1325,7 +1334,7 @@ Nop <- R6::R6Class(
       if (missing(value)) {
         private$.f_name
       } else {
-        if (!is_name(value)) {
+        if (!is_name(value, error = FALSE)) {
           ino_stop("{.var $f_name} must be a single {.cls character}.")
         } else {
           private$.f_name <- value
@@ -1385,7 +1394,7 @@ Nop <- R6::R6Class(
         }
         return(out)
       } else {
-        if (is.null(true_value)) {
+        if (is.null(value)) {
           private$.true_value <- NULL
           private$.true_parameter <- NULL
           ino_status(
@@ -1399,7 +1408,7 @@ Nop <- R6::R6Class(
           }
           if (!is.null(private$.true_parameter)) {
             true_value_old <- self$evaluate(at = private$.true_parameter)
-            if (true_value != true_value_old) {
+            if (value != true_value_old) {
               ino_stop(
                 "Please update {.var true_parameter} first.",
                 "Alternatively, remove it via {.val true_parameter <- NULL}."
@@ -1495,7 +1504,7 @@ Nop <- R6::R6Class(
         while (TRUE) {
           label <- glue::glue("{default_label}_{n}")
           if (!label %in% private$.optimization_labels) {
-            return(label)
+            return(as.character(label))
           } else {
             n <- n + 1
           }
