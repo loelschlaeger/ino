@@ -1,3 +1,5 @@
+options("ino_verbose" = FALSE)
+
 test_that("initial random parameter", {
   expect_length(build_initial("random", 2)(1, 1), 2)
 })
@@ -351,6 +353,7 @@ test_that("results with one element can be simplified", {
 })
 
 test_that("Nop object can be tested", {
+  options("ino_verbose" = FALSE)
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_warning(
     ackley$test(),
@@ -368,10 +371,75 @@ test_that("Nop object can be tested", {
     "must be"
   )
   expect_true(ackley$test())
-  bad_f <- Nop$new(f = function(x) stop("shit"), 1)
+})
+
+test_that("Bad function specifications can be detected in tests", {
+  error_f <- Nop$new(f = function(x) stop("error message"), 1)
   expect_error(
-    bad_f$test(),
+    error_f$test(),
     "Function call threw an error"
+  )
+  lengthy_f <- Nop$new(f = function(x) 1:2, 1)
+  expect_error(
+    lengthy_f$test(),
+    "Test function call is of length 2."
+  )
+  character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
+  expect_error(
+    character_f$test(),
+    "Function call threw an error"
+  )
+  list_f <- Nop$new(f = function(x) list(), 1)
+  expect_error(
+    list_f$test(),
+    "Test function call did not return a"
+  )
+})
+
+test_that("Bad optimizer specifications can be detected in tests", {
+  error_optimizer_fun <- function(f, p) {
+    if (identical(p, 1:2)) stop("error message")
+    list(v = f(p), z = 1:2)
+  }
+  error_optimizer <- optimizeR::define_optimizer(
+    error_optimizer_fun,
+    objective = "f", initial = "p", value = "v",
+    parameter = "z"
+  )
+  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(error_optimizer)
+  expect_error(
+    ackley$test(at = 1:2),
+    "Optimization threw an error"
+  )
+})
+
+test_that("Nop tests can be interrupted", {
+  skip_if_not(.Platform$OS.type == "windows")
+  slow_f <- function(x) {
+    Sys.sleep(2)
+    1
+  }
+  slow_f <- Nop$new(slow_f, 1)
+  expect_warning(
+    expect_warning(
+      slow_f$test(time_limit = 1),
+      "Time limit of 1s was reached"
+    ),
+    "No optimizer specified, testing optimizer is skipped."
+  )
+  slow_optimizer_fun <- function(f, p) {
+    Sys.sleep(2)
+    stats::nlm(f = f, p = p)
+  }
+  slow_optimizer <- optimizeR::define_optimizer(
+    slow_optimizer_fun,
+    objective = "f", initial = "p", value = "minimum",
+    parameter = "estimate"
+  )
+  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(slow_optimizer)
+  expect_warning(
+    ackley$test(at = 1:2, time_limit = 1),
+    "Time limit of 1s was reached in the optimization"
   )
 })
 
@@ -382,6 +450,13 @@ test_that("input checks for standardization work", {
       center = TRUE, scale = TRUE, ignore = integer()
     ),
     "must be"
+  )
+  expect_error(
+    standardize_argument(
+      argument = diag(3), by_column = FALSE,
+      center = TRUE, scale = TRUE, ignore = integer()
+    ),
+    "Currently, only"
   )
   expect_error(
     standardize_argument(
@@ -408,126 +483,299 @@ test_that("input checks for standardization work", {
 
 test_that("standardization of vector works", {
   argument <- rnorm(10)
-  combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
+  combinations <- expand.grid(
+    by_column = TRUE,
+    center = c(TRUE, FALSE),
+    scale = c(TRUE, FALSE),
+    ignore = list(numeric(), 2:3),
+    stringsAsFactors = FALSE
+  )
   for (i in 1:nrow(combinations)) {
-    by_column <- combinations[i, 1]
-    center <- combinations[i, 2]
-    scale <- combinations[i, 3]
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = integer()
-      ),
-      as.numeric(
+    by_column <- combinations[i, "by_column"]
+    center <- combinations[i, "center"]
+    scale <- combinations[i, "scale"]
+    ignore <- combinations[[i, "ignore"]]
+    if (length(ignore) == 0) {
+      expected <- as.vector(
         scale(argument, center = center, scale = scale)
       )
-    )
-    ignore <- 1:5
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = ignore
-      ),
-      c(argument[ignore], as.numeric(
+    } else {
+      expected <- argument
+      expected[-ignore] <- as.numeric(
         scale(argument[-ignore], center = center, scale = scale)
-      ))
+      )
+    }
+    out <- standardize_argument(
+      argument = argument, by_column = by_column, center = center,
+      scale = scale, ignore = ignore
     )
+    expect_equal(out, expected)
   }
 })
 
 test_that("standardization of data.frame works", {
   argument <- data.frame("a" = rnorm(10), "b" = rnorm(10))
-  combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
+  combinations <- expand.grid(
+    by_column = TRUE,
+    center = c(TRUE, FALSE),
+    scale = c(TRUE, FALSE),
+    ignore = list(numeric(), 1),
+    stringsAsFactors = FALSE
+  )
   for (i in 1:nrow(combinations)) {
-    by_column <- combinations[i, 1]
-    center <- combinations[i, 2]
-    scale <- combinations[i, 3]
-    if (by_column) {
+    by_column <- combinations[i, "by_column"]
+    center <- combinations[i, "center"]
+    scale <- combinations[i, "scale"]
+    ignore <- combinations[[i, "ignore"]]
+    if (length(ignore) == 0) {
       expected <- as.data.frame(
         scale(argument, center = center, scale = scale)
       )
     } else {
-      expected <- as.data.frame(
-        t(scale(t(argument), center = center, scale = scale))
+      expected <- argument
+      expected[, -ignore] <- as.data.frame(
+        scale(argument[, -ignore, drop = FALSE], center = center, scale = scale)
       )
     }
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = integer()
-      ),
-      expected
+    out <- standardize_argument(
+      argument = argument, by_column = by_column, center = center,
+      scale = scale, ignore = ignore
     )
-    if (by_column) {
-      ignore <- 1
-      expected <- as.data.frame(cbind(
-        argument[, ignore, drop = FALSE],
-        scale(argument[, -ignore, drop = FALSE], center = center, scale = scale)
-      ))
-    } else {
-      ignore <- 1:5
-      expected <- as.data.frame(rbind(
-        argument[ignore, , drop = FALSE],
-        t(scale(t(argument[-ignore, , drop = FALSE]),
-          center = center,
-          scale = scale
-        ))
-      ))
-    }
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = ignore
-      ),
-      expected,
-      ignore_attr = TRUE
-    )
+    expect_equal(out, expected, ignore_attr = TRUE)
   }
 })
 
 test_that("standardization of matrix works", {
   argument <- matrix(rnorm(9), 3, 3)
-  combinations <- expand.grid(c(TRUE, FALSE), c(TRUE, FALSE), c(TRUE, FALSE))
+  combinations <- expand.grid(
+    by_column = TRUE,
+    center = c(TRUE, FALSE),
+    scale = c(TRUE, FALSE),
+    ignore = list(numeric(), 2:3),
+    stringsAsFactors = FALSE
+  )
   for (i in 1:nrow(combinations)) {
-    by_column <- combinations[i, 1]
-    center <- combinations[i, 2]
-    scale <- combinations[i, 3]
-    if (by_column) {
-      expected <- scale(argument, center = center, scale = scale)
+    by_column <- combinations[i, "by_column"]
+    center <- combinations[i, "center"]
+    scale <- combinations[i, "scale"]
+    ignore <- combinations[[i, "ignore"]]
+    if (length(ignore) == 0) {
+      expected <- as.matrix(
+        scale(argument, center = center, scale = scale)
+      )
     } else {
-      expected <- t(scale(t(argument), center = center, scale = scale))
-    }
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = integer()
-      ),
-      expected,
-      ignore_attr = TRUE
-    )
-    if (by_column) {
-      ignore <- 1
-      expected <- cbind(
-        argument[, ignore, drop = FALSE],
+      expected <- argument
+      expected[, -ignore] <- as.matrix(
         scale(argument[, -ignore, drop = FALSE], center = center, scale = scale)
       )
-    } else {
-      ignore <- 1:2
-      expected <- rbind(
-        argument[ignore, , drop = FALSE],
-        t(scale(t(argument[-ignore, , drop = FALSE]),
-          center = center,
-          scale = scale
-        ))
-      )
     }
-    expect_equal(
-      standardize_argument(
-        argument = argument, by_column = by_column, center = center,
-        scale = scale, ignore = ignore
-      ),
-      expected,
-      ignore_attr = TRUE
+    out <- standardize_argument(
+      argument = argument, by_column = by_column, center = center,
+      scale = scale, ignore = ignore
     )
+    expect_equal(out, expected, ignore_attr = TRUE)
+  }
+})
+
+test_that("input checks for subsetting work", {
+  expect_error(
+    subset_argument(
+      argument = diag(3), by_row = TRUE,
+      how = TRUE, proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "must be a single"
+  )
+  expect_error(
+    subset_argument(
+      argument = diag(3), by_row = TRUE, how = "bad_specification",
+      proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "is misspecified"
+  )
+  expect_error(
+    subset_argument(
+      argument = diag(3), by_row = "not_a_boolean",
+      how = "random", proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "must be"
+  )
+  expect_error(
+    subset_argument(
+      argument = diag(3), by_row = FALSE,
+      how = "random", proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "Currently, only"
+  )
+  expect_error(
+    subset_argument(
+      argument = diag(3), by_row = TRUE,
+      how = "similar", proportion = 0.5, centers = 2, ignore = pi
+    ),
+    "must be an index"
+  )
+  expect_error(
+    subset_argument(
+      argument = list(), by_row = TRUE,
+      how = "similar", proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "Argument is not suited for reduction."
+  )
+  expect_error(
+    subset_argument(
+      argument = diag(3), by_row = TRUE,
+      how = "similar", proportion = -1, centers = 2, ignore = integer()
+    ),
+    "between 0 and 1"
+  )
+})
+
+test_that("subsetting of vector works (without clusters)", {
+  argument <- rnorm(10)
+  combinations <- expand.grid(
+    how = c("random", "first", "last"),
+    proportion = round(runif(2, min = 0.1), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    expected_length <- ceiling(length(argument) * proportion)
+    out <- subset_argument(
+      argument = argument, how = how, proportion = proportion, ignore = ignore
+    )
+    expect_true(is.vector(out))
+    expect_length(out, expected_length)
+    expect_true(all(out %in% argument))
+  }
+})
+
+test_that("subsetting of vector works (with clusters)", {
+  argument <- rep(1:4, each = 5)
+  combinations <- expand.grid(
+    how = c("similar", "dissimilar"),
+    proportion = round(runif(2, min = 0.1), 2),
+    centers = 2,
+    ignore = list(integer(), 1:2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    centers <- combinations[i, "centers"]
+    ignore <- combinations[[i, "ignore"]]
+    expected_length <- ceiling(length(argument) * proportion)
+    out <- subset_argument(
+      argument = argument, how = how, proportion = proportion,
+      centers = centers, ignore = ignore
+    )
+    expect_true(is.vector(out))
+    expect_length(out, expected_length)
+    expect_true(all(out %in% argument))
+  }
+})
+
+test_that("subsetting of data.frame works (without clusters)", {
+  argument <- data.frame("a" = 1:5, "b" = LETTERS[1:5])
+  combinations <- expand.grid(
+    by_row = TRUE,
+    how = c("random", "first", "last"),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    by_row <- combinations[i, "by_row"]
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    out <- subset_argument(
+      argument = argument, by_row = by_row, how = how, proportion = proportion
+    )
+    expected_dim <- c(ceiling(nrow(argument) * proportion), ncol(argument))
+    expect_true(is.data.frame(out))
+    expect_equal(dim(out), expected_dim)
+    for (j in seq_len(ncol(argument))) {
+      expect_true(all(out[, j] %in% argument[, j]))
+    }
+  }
+})
+
+test_that("subsetting of data.frame works (with clusters)", {
+  argument <- data.frame("a" = 1:5, "b" = 1:5)
+  combinations <- expand.grid(
+    by_row = TRUE,
+    how = c("similar", "dissimilar"),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
+    centers = 1:2,
+    ignore = list(integer(), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    by_row <- combinations[i, "by_row"]
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    centers <- combinations[i, "centers"]
+    ignore <- combinations[[i, "ignore"]]
+    out <- subset_argument(
+      argument = argument, by_row = by_row, how = how, proportion = proportion,
+      centers = centers, ignore = ignore
+    )
+    expected_dim <- c(ceiling(nrow(argument) * proportion), ncol(argument))
+    expect_true(is.data.frame(out))
+    expect_equal(dim(out), expected_dim)
+    for (j in seq_len(ncol(argument))) {
+      expect_true(all(out[, j] %in% argument[, j]))
+    }
+  }
+})
+
+test_that("subsetting of matrix works (without clusters)", {
+  argument <- matrix(1:15, nrow = 5, ncol = 3)
+  combinations <- expand.grid(
+    by_row = TRUE,
+    how = c("random", "first", "last"),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    by_row <- combinations[i, "by_row"]
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    out <- subset_argument(
+      argument = argument, by_row = by_row, how = how, proportion = proportion
+    )
+    expected_dim <- c(ceiling(nrow(argument) * proportion), ncol(argument))
+    expect_true(is.matrix(out))
+    expect_equal(dim(out), expected_dim)
+    for (j in seq_len(ncol(argument))) {
+      expect_true(all(out[, j] %in% argument[, j]))
+    }
+  }
+})
+
+test_that("subsetting of matrix works (with clusters)", {
+  argument <- matrix(1:15, nrow = 5, ncol = 3)
+  combinations <- expand.grid(
+    by_row = TRUE,
+    how = c("similar", "dissimilar"),
+    proportion = round(runif(2, min = 0.1, max = 0.9), 2),
+    centers = 1:2,
+    ignore = list(integer(), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    by_row <- combinations[i, "by_row"]
+    how <- combinations[i, "how"]
+    proportion <- combinations[i, "proportion"]
+    centers <- combinations[i, "centers"]
+    ignore <- combinations[[i, "ignore"]]
+    out <- subset_argument(
+      argument = argument, by_row = by_row, how = how, proportion = proportion,
+      centers = centers, ignore = ignore
+    )
+    expected_dim <- c(ceiling(nrow(argument) * proportion), ncol(argument))
+    expect_true(is.matrix(out))
+    expect_equal(dim(out), expected_dim)
+    for (j in seq_len(ncol(argument))) {
+      expect_true(all(out[, j] %in% argument[, j]))
+    }
   }
 })

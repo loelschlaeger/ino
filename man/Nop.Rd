@@ -52,8 +52,8 @@ different filter options for optimization runs, optimizers, and elements:
 \item \code{$summary()} summarizes the results,
 \item \code{$optima()} returns a frequency table of identified optima,
 \item \code{$plot()} visualizes the optimization times,
-\item \code{$best_parameter()} returns the optimal found parameter vector,
-\item \code{$best_value()} returns the optimal found function value,
+\item \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
+\item \code{$best_value()} returns the found optimum value of \code{f},
 \item \code{$closest_parameter()} returns parameter closest to a specified value.
 }
 }
@@ -306,10 +306,11 @@ Evaluates the function.
 \describe{
 \item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
 function is evaluated.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
@@ -378,8 +379,8 @@ By default, \code{runs = 1}.}
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
 
-\item{\code{seed}}{Set a seed for reproducibility.
-No seed by default.}
+\item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{A \code{logical}, which indicates whether the optimization results should be
 returned as a \code{list}.
@@ -390,8 +391,7 @@ saved inside the \code{Nop} object.
 By default, \code{save_results = TRUE}.}
 
 \item{\code{label}}{Only relevant if \code{save_results = TRUE}.
-In this case, optionally a \code{character} for a custom label of the
-optimization.
+In this case, an optional \code{character} to specify a custom label of the optimization.
 By default, \code{label = self$new_label} creates a new label.
 Labels can be useful to distinguish optimization runs later.}
 
@@ -410,7 +410,8 @@ In this case, if \code{simplify = TRUE}, the nested list output
 of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
@@ -451,7 +452,7 @@ Validates the configuration of a \code{Nop} object.
 \describe{
 \item{\code{at}}{A \code{numeric} of length \code{npar}, the point at which the
 function \code{f} and the specified optimizer are tested.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
@@ -463,7 +464,8 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values.}
 }}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -504,7 +506,8 @@ standardized. The argument must a \code{numeric} \code{vector},
 \item{\code{by_column}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
 a \code{data.frame}.
 In that case, either \code{TRUE} to standardize column-wise (default) or
-\code{FALSE} to standardize row-wise.}
+\code{FALSE} to standardize row-wise.
+Currently, only \code{by_column = TRUE} is implemented.}
 
 \item{\code{center}}{Passed to \code{\link[base]{scale}}.
 Default is \code{TRUE}.}
@@ -551,7 +554,8 @@ Reduces the optimization problem.
 \item{\code{by_row}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
 a \code{data.frame}.
 In that case, either \code{TRUE} to reduce row-wise (default) or
-\code{FALSE} to reduce column-wise.}
+\code{FALSE} to reduce column-wise.
+Currently, only \code{by_row = TRUE} is implemented.}
 
 \item{\code{how}}{A \code{character}, specifying how to reduce. Can be one of:
 \itemize{
@@ -573,13 +577,12 @@ By default, \code{proportion = 0.5}.}
 In that case, passed to \code{\link[stats]{kmeans}}.
 By default, \code{centers = 2}.}
 
-\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"} and the argument
-\code{argument_name} is a \code{matrix} or a \code{data.frame}.
+\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"}.
 In that case a \code{integer} (vector) of row indices (or column indices
 if \code{by_row = FALSE}) to ignore for clustering.}
 
-\item{\code{seed}}{Set a seed for reproducibility.
-No seed by default.}
+\item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
 Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
@@ -660,8 +663,8 @@ Continues optimization runs, e.g., with a transformed parameter.
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
 
-\item{\code{seed}}{Set a seed for reproducibility.
-No seed by default.}
+\item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{A \code{logical}, which indicates whether the optimization results should be
 returned as a \code{list}.
@@ -686,7 +689,8 @@ In this case, if \code{simplify = TRUE}, the nested list output
 of optimization results is flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
-No time limit if \code{time_limit = NULL}.}
+No time limit if \code{time_limit = NULL} (the default).
+This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
@@ -741,13 +745,13 @@ Either:
 \item \code{"basic"}, the elements
 \itemize{
 \item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
 is obtained,
 }
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"run}, the run id,
+\item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
 \item \code{"value"} and \code{"parameter"} (see above),
 \item \code{"seconds"}, the optimization time in seconds,
@@ -884,13 +888,13 @@ Either:
 \item \code{"basic"}, the elements
 \itemize{
 \item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
 is obtained,
 }
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"run}, the run id,
+\item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
 \item \code{"value"} and \code{"parameter"} (see above),
 \item \code{"seconds"}, the optimization time in seconds,
@@ -933,13 +937,13 @@ Either:
 \item \code{"basic"}, the elements
 \itemize{
 \item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter}, the parameter \code{vector} at which the optimum value
+\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
 is obtained,
 }
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"run}, the run id,
+\item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
 \item \code{"value"} and \code{"parameter"} (see above),
 \item \code{"seconds"}, the optimization time in seconds,

@@ -29,6 +29,7 @@
 build_initial <- function(initial, npar) {
   if (identical(initial, "random")) {
     function(run_id, optimizer_id) {
+      ### same initial values across optimizers in given optimization run
       set.seed(run_id)
       rnorm(npar)
     }
@@ -60,6 +61,7 @@ build_initial <- function(initial, npar) {
     nargs <- length(formals(initial))
     initial_tmp <- if (nargs == 0) {
       function(run_id, optimizer_id) {
+        ### same initial values across optimizers in given optimization run
         set.seed(run_id)
         initial()
       }
@@ -277,7 +279,7 @@ test_nop <- function(
   ino_success(
     glue::glue(
       "Test initial values specified: ",
-      {paste(round(at, digits = digits), collapse = ' ')}
+      paste(round(at, digits = digits), collapse = ' ')
     ), verbose = verbose
   )
 
@@ -425,6 +427,11 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
     by_column <- TRUE
   } else if (is.data.frame(argument) || is.matrix(argument)) {
     is_TRUE_FALSE(by_column)
+    if (isFALSE(by_column)) {
+      ino_stop(
+        "Currently, only {.var by_column = TRUE} is implemented."
+      )
+    }
     is_index_vector(ignore)
   } else {
     ino_stop(
@@ -434,9 +441,6 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
   }
 
   ### standardizing
-  if (!by_column) {
-    argument <- t(argument)
-  }
   if (length(ignore) > 0) {
     if (vector_flag) {
       argument[-ignore, ] <- scale(
@@ -453,9 +457,6 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
   if (vector_flag) {
     argument <- argument[, 1]
   } else {
-    if (!by_column) {
-      argument <- t(argument)
-    }
     if (df_flag) {
       argument <- as.data.frame(argument)
     }
@@ -479,12 +480,13 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #' This helper function subsets an argument.
 #'
 #' @param argument
-#' A \code{numeric} \code{vector}, \code{matrix}, or \code{data.frame}.
+#' A \code{vector}, \code{matrix}, or \code{data.frame}.
+#' In case of \code{how = "(dis)similar"}, it must be \code{numeric}.
 #' @param by_row,how,proportion,centers,ignore,seed
 #' See documentation of method \code{$reduce()} from \code{Nop} object.
 #'
 #' @return
-#' The standardized \code{argument}.
+#' The subsetted \code{argument}.
 #'
 #' @keywords internal
 #'
@@ -493,13 +495,13 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #' @examples
 #' \dontrun{
 #' subset_argument(
-#'   argument = diag(1:6), by_row = TRUE, how = "similar", proportion = 0.5,
-#'   centers = 2, ignore = 1:2, seed = 1
+#'   argument = 1:6, by_row = TRUE, how = "dissimilar", proportion = 0.5,
+#'   centers = 3, ignore = integer(), seed = 1
 #' )
 #' }
 
 subset_argument <- function(
-    argument, by_row, how, proportion, centers, ignore, seed
+    argument, by_row, how, proportion, centers, ignore, seed = NULL
   ) {
 
   ### input checks
@@ -514,9 +516,7 @@ subset_argument <- function(
     )
   }
   is_proportion(proportion)
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
+  ino_seed(seed)
   if (is.vector(argument) && length(argument) > 1) {
     argument <- as.data.frame(argument)
     vector_flag <- TRUE
@@ -524,22 +524,22 @@ subset_argument <- function(
     ignore <- integer()
   } else if (is.data.frame(argument) || is.matrix(argument)) {
     is_TRUE_FALSE(by_row)
+    if (isFALSE(by_row)) {
+      ino_stop(
+        "Currently, only {.var by_row = TRUE} is implemented."
+      )
+    }
     if (how %in% c("similar", "dissimilar")) {
       is_index_vector(ignore)
     }
     vector_flag <- FALSE
   } else {
     ino_stop(
-      glue::glue(
-        "Argument is not suited for reduction."
-      )
+      glue::glue("Argument is not suited for reduction.")
     )
   }
 
   ### subsetting
-  if (!by_row) {
-    argument <- t(argument)
-  }
   n <- nrow(argument)
   m <- ceiling(n * proportion)
   if (how == "random") {
@@ -554,7 +554,21 @@ subset_argument <- function(
     if (length(ignore) > 0) {
       argument_ign <- argument_ign[, -ignore, drop = FALSE]
     }
-    cluster <- stats::kmeans(argument_ign, centers = centers)$cluster
+    cluster <- tryCatch(
+      stats::kmeans(argument_ign, centers = centers)$cluster,
+      error = function(e) {
+        ino_stop(
+          "CLustering with {.fun stats::kmeans} failed:",
+          e$message
+        )
+      },
+      warning = function(w) {
+        ino_stop(
+          "CLustering with {.fun stats::kmeans} failed:",
+          w$message
+        )
+      }
+    )
     ind <- integer(0)
     if (how == "similar") {
       i <- 1
@@ -579,22 +593,15 @@ subset_argument <- function(
   argument <- argument[ind, , drop = FALSE]
   if (vector_flag) {
     argument <- argument[, 1]
-  } else {
-    if (!by_row) {
-      argument <- t(argument)
-    }
   }
 
   ### check for NAs
   if (anyNA(argument)) {
-    ino_warn(
-      "Reduction produced NAs."
-    )
+    ino_warn("Reduction produced NAs.")
   }
 
   ### return argument
   return(argument)
 }
-
 
 
