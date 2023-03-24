@@ -1384,7 +1384,7 @@ Nop <- R6::R6Class(
       if (missing(value)) {
         out <- private$.true_value
         if (is.null(out)) {
-          ino_warn(
+          ino_status(
             "The true optimum function value has not been specified yet."
           )
         }
@@ -1423,7 +1423,7 @@ Nop <- R6::R6Class(
       if (missing(value)) {
         out <- private$.true_parameter
         if (is.null(out)) {
-          ino_warn(
+          ino_status(
             "The true optimum parameter vector has not been specified yet."
           )
         }
