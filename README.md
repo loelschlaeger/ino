@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Initialization of Numerical Optimization <img src="man/figures/logo.png" align="right" height="139" />
+# ino <img src="man/figures/logo.png" align="right" height="139" />
 
 <!-- badges: start -->
 
