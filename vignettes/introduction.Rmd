@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
-  fig.path = "introduction-",
+  fig.path = "figures/introduction-",
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
