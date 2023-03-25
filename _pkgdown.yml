@@ -13,3 +13,8 @@ authors:
     href: https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc.)/
   Dietmar Bauer:
     href: https://de.wikipedia.org/wiki/Dietmar_Bauer
+
+navbar:
+  structure:
+    left:  [intro, news]
+    right: [search, github]
