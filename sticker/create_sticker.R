@@ -34,8 +34,7 @@ p <- ggplot() +
     arrow = arrow(length = unit(0.03, "npc")),
     curvature = 0.3, angle = 120, color = green, size = 1
   ) +
-  theme_void() +
-  theme_transparent()
+  theme_void()
 plot(p)
 
 ### build sticker
@@ -75,7 +74,7 @@ sticker_file <- sticker(
   u_size = 7,
   u_angle = 30,
   ### save file
-  filename = "../ino_sticker.png",
+  filename = "sticker/ino_sticker.png",
   asp = 1,
   dpi = 300
 )
