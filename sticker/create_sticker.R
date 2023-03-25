@@ -27,12 +27,12 @@ p <- ggplot() +
   geom_curve(
     aes(x = 0, y = fun(0), xend = -2.7, yend = 1.02 * fun(-3)),
     arrow = arrow(length = unit(0.03, "npc")),
-    curvature = 0.4, angle = 120, color = red, size = 1
+    curvature = 0.4, angle = 120, color = red, linewidth = 1
   ) +
   geom_curve(
     aes(x = 7, y = fun(7), xend = 4.3, yend = 1.01 * fun(4)),
     arrow = arrow(length = unit(0.03, "npc")),
-    curvature = 0.3, angle = 120, color = green, size = 1
+    curvature = 0.3, angle = 120, color = green, linewidth = 1
   ) +
   theme_void()
 plot(p)
