@@ -1,4 +1,15 @@
-url: ~
 template:
   bootstrap: 5
 
+url: https://loelschlaeger.de/ino/
+
+home:
+  title: Initialization of Numerical Optimization
+
+authors:
+  Lennart Oelschläger:
+    href: https://loelschlaeger.de
+  Marius Ötting:
+    href: https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc.)/
+  Dietmar Bauer:
+    href: https://de.wikipedia.org/wiki/Dietmar_Bauer

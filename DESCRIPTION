@@ -9,7 +9,11 @@ Authors@R: c(
     person("Marius", "\u00d6tting", 
            email = "marius.oetting@uni-bielefeld.de", 
            role = c("aut"),
-           comment = c(ORCID = "0000-0002-9373-0365"))
+           comment = c(ORCID = "0000-0002-9373-0365")),
+    person("Dietmar", "Bauer", 
+           email = "dietmar.bauer@uni-bielefeld.de", 
+           role = "aut",
+           comment = c(ORCID = "0000-0003-2920-7032"))
            )
 Description: Implementation of initialization strategies for the 
     numerical optimization of real-valued functions, in particular likelihood
