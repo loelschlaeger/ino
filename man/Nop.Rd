@@ -88,7 +88,7 @@ which \code{f} is optimized.}
 of length \code{npar} (if available), i.e., the point where \code{f}
 obtains its optimum.}
 
-\item{\code{show_minimum}}{A \code{logical}, set to \code{TRUE} (default) to
+\item{\code{minimized}}{A \code{logical}, set to \code{TRUE} (default) to
 show best minimum in \code{$best_value()}, \code{$best_parameter()}, and
 \code{$optima()}.}
 

@@ -584,10 +584,7 @@ test_that("arguments can be extracted", {
 
 test_that("true value can be extracted and modified", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_warning(
-    ackley$true_value,
-    "has not been specified yet"
-  )
+  expect_null(ackley$true_value)
   expect_error(
     {
       ackley$true_value <- 1:2
@@ -597,18 +594,12 @@ test_that("true value can be extracted and modified", {
   ackley$true_value <- 0
   expect_equal(ackley$true_value, 0)
   ackley$true_value <- NULL
-  expect_warning(
-    expect_null(ackley$true_value),
-    "has not been specified yet"
-  )
+  expect_null(ackley$true_value)
 })
 
 test_that("true parameter can be extracted and modified", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_warning(
-    ackley$true_parameter,
-    "has not been specified yet"
-  )
+  expect_null(ackley$true_parameter)
   expect_error(
     {
       ackley$true_parameter <- 1:4
@@ -625,20 +616,17 @@ test_that("true parameter can be extracted and modified", {
     "Please update"
   )
   ackley$true_parameter <- NULL
-  expect_warning(
-    expect_null(ackley$true_parameter),
-    "has not been specified yet"
-  )
+  expect_null(ackley$true_parameter)
 })
 
 test_that("show minimum can be extracted and modified", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_true(ackley$show_minimum)
-  ackley$show_minimum <- FALSE
-  expect_false(ackley$show_minimum)
+  expect_true(ackley$minimized)
+  ackley$minimized <- FALSE
+  expect_false(ackley$minimized)
   expect_error(
     {
-      ackley$show_minimum <- "TRUE"
+      ackley$minimized <- "TRUE"
     },
     "must be"
   )

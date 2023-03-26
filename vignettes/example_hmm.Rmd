@@ -21,7 +21,8 @@ knitr::opts_chunk$set(
   # all optimizations are pre-computed and loaded below to save building time
   eval = FALSE
 )
-library("ino")
+# library("ino")
+devtools::load_all() # REMOVE
 data("hmm_ino")
 ```
 
@@ -160,7 +161,7 @@ Note that we again use `$reset_argument()` to obtain our actual (non-standardize
 
 Selecting the starting values for the HMM likelihood optimization is a well-known issue, as poor starting values may likely result in local optima.^[Other R packages designed to fit HMMs discuss this topic in more detail, see, e.g., @Michelot:2016.] We thus first evaluate the optimizations by comparing the likelihood values at convergence, which can be displayed using the `$optima()` method. Here,
 
-- `sort_by = "value"` sorts the table by function value (in decreasing order^[By default, optimization is assumed to involve minimizing the target function. If instead the function is maximized, set `hmm_ino$show_minimum <- FALSE` to reverse the ordering in the `$optima()` output.]),
+- `sort_by = "value"` sorts the table by function value (in decreasing order^[By default, optimization is assumed to involve minimizing the target function. If instead the function is maximized, set `hmm_ino$minimized <- FALSE` to reverse the ordering in the `$optima()` output.]),
 - `only_comparable = TRUE` excludes optimization results on the standardized or reduced data set,
 - `digitis = 0` ignores any decimal places.
 
@@ -238,7 +239,7 @@ summary(hmm_ino, c("label", "value", "seconds")) %>%
   filter(value < -22445) %>% 
   group_by(label) %>% 
   summarise(mean_time = mean(seconds)) %>%
-  arrange(median_seconds)
+  arrange(mean_time)
 ```
 
 For those runs that converged to the global optimum, we can again compare the computation time via boxplots:
