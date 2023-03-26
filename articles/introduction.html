@@ -374,7 +374,7 @@ again.</p>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Test optimization with `nlm`</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 421.42</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: 7 3.49 37.15 0.13 -23.35</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: 7 3.49 37.16 0.13 -23.44</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.01</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Test optimization with `optim`</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
@@ -385,7 +385,7 @@ again.</p>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 276.36</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: 4.27 2.02 -0.83 -1.45 0.63</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.03</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.05</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="function-evaluation">Function evaluation<a class="anchor" aria-label="anchor" href="#function-evaluation"></a>
@@ -409,16 +409,16 @@ for example:</p>
 <span><span class="co">#&gt; [1] 421.417</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $parameter</span></span>
-<span><span class="co">#&gt; [1]  -0.6263152   3.4877817  -0.8353112   0.1303885 -23.1685784</span></span>
+<span><span class="co">#&gt; [1]  -0.6263151   3.4877817  -0.8353111   0.1303885 -23.1650356</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.007627964</span></span>
+<span><span class="co">#&gt; [1] 0.01065874</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $initial</span></span>
 <span><span class="co">#&gt; [1] -0.6264538  0.1836433 -0.8356286  1.5952808  0.3295078</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $gradient</span></span>
-<span><span class="co">#&gt; [1] 0.000000e+00 6.716353e-05 0.000000e+00 1.141416e-04 2.453470e-08</span></span>
+<span><span class="co">#&gt; [1] 0.000000e+00 6.559893e-05 0.000000e+00 1.115836e-04 2.208461e-08</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $code</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
@@ -477,7 +477,7 @@ identified optima. Here, we ignore any decimal places by setting
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, sort_by <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    value frequency</span></span>
-<span><span class="co">#&gt; 1    276       105</span></span>
+<span><span class="co">#&gt; 1    276       106</span></span>
 <span><span class="co">#&gt; 2    277         1</span></span>
 <span><span class="co">#&gt; 3    283         1</span></span>
 <span><span class="co">#&gt; 4    290         1</span></span>
@@ -488,15 +488,15 @@ identified optima. Here, we ignore any decimal places by setting
 <span><span class="co">#&gt; 9    355         1</span></span>
 <span><span class="co">#&gt; 10   364         1</span></span>
 <span><span class="co">#&gt; 11   368         1</span></span>
-<span><span class="co">#&gt; 12   370         1</span></span>
-<span><span class="co">#&gt; 13   372         1</span></span>
-<span><span class="co">#&gt; 14   374         1</span></span>
-<span><span class="co">#&gt; 15   389         1</span></span>
+<span><span class="co">#&gt; 12   372         1</span></span>
+<span><span class="co">#&gt; 13   374         1</span></span>
+<span><span class="co">#&gt; 14   389         1</span></span>
+<span><span class="co">#&gt; 15   394         1</span></span>
 <span><span class="co">#&gt; 16   395         2</span></span>
 <span><span class="co">#&gt; 17   397         1</span></span>
 <span><span class="co">#&gt; 18   400         1</span></span>
 <span><span class="co">#&gt; 19   402         1</span></span>
-<span><span class="co">#&gt; 20   406         2</span></span>
+<span><span class="co">#&gt; 20   406         1</span></span>
 <span><span class="co">#&gt; 21   415         1</span></span>
 <span><span class="co">#&gt; 22   419         2</span></span>
 <span><span class="co">#&gt; 23   420         1</span></span>
@@ -513,10 +513,9 @@ optima:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, sort_by <span class="op">=</span> <span class="st">"value"</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   value frequency</span></span>
-<span><span class="co">#&gt; 1   276        19</span></span>
-<span><span class="co">#&gt; 2   370         1</span></span>
-<span><span class="co">#&gt; 3   406         1</span></span>
-<span><span class="co">#&gt; 4   421        79</span></span>
+<span><span class="co">#&gt; 1   276        20</span></span>
+<span><span class="co">#&gt; 2   394         1</span></span>
+<span><span class="co">#&gt; 3   421        79</span></span>
 <span><span class="va">geyser</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, sort_by <span class="op">=</span> <span class="st">"value"</span>, which_optimizer <span class="op">=</span> <span class="st">"optim"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    value frequency</span></span>
 <span><span class="co">#&gt; 1    276         4</span></span>
@@ -548,7 +547,7 @@ optima:</p>
 <span><span class="co">#&gt; 3   421        10</span></span>
 <span><span class="co">#&gt; 4  &lt;NA&gt;         7</span></span></code></pre></div>
 <p>The two most occurring optima are 421 and 276 with total frequencies
-of 163 and 105, respectively. The value 276 is the overall minimum
+of 163 and 106, respectively. The value 276 is the overall minimum
 (potentially the global minimum), while 421 is significantly worse.</p>
 <p>To compare the parameter vectors that led to these different values,
 we can use the <code>$closest_parameter()</code> method. From the saved
@@ -559,14 +558,14 @@ optimum closest to <code>value</code>. We consider only results from the
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">mle</span> <span class="op">&lt;-</span> <span class="va">geyser</span><span class="op">$</span><span class="fu">closest_parameter</span><span class="op">(</span>value <span class="op">=</span> <span class="fl">276</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]  2.02  4.27 -1.45 -0.83 -0.63</span></span>
 <span><span class="co">#&gt; attr(,"run")</span></span>
-<span><span class="co">#&gt; [1] 89</span></span>
+<span><span class="co">#&gt; [1] 99</span></span>
 <span><span class="co">#&gt; attr(,"optimizer")</span></span>
 <span><span class="co">#&gt; [1] "nlm"</span></span>
 <span><span class="va">geyser</span><span class="op">$</span><span class="fu">evaluate</span><span class="op">(</span>at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">mle</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 276.3699</span></span>
 <span><span class="va">mle_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">mle</span>, <span class="st">"run"</span><span class="op">)</span></span>
 <span><span class="op">(</span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="va">geyser</span><span class="op">$</span><span class="fu">closest_parameter</span><span class="op">(</span>value <span class="op">=</span> <span class="fl">421</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]  3.49  2.11  0.13 -0.09 17.49</span></span>
+<span><span class="co">#&gt; [1]  3.49  2.11  0.13 -0.09 17.50</span></span>
 <span><span class="co">#&gt; attr(,"run")</span></span>
 <span><span class="co">#&gt; [1] 13</span></span>
 <span><span class="co">#&gt; attr(,"optimizer")</span></span>
@@ -615,11 +614,11 @@ which explains why the <code>nlm</code> optimizer stops:</p>
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">results</span><span class="op">(</span>which_run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mle_run</span>, <span class="va">bad_run</span><span class="op">)</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span>, which_element <span class="op">=</span> <span class="st">"gradient"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt;     gradient1     gradient2     gradient3     gradient4     gradient5 </span></span>
-<span><span class="co">#&gt;  2.826051e-05 -8.066033e-08  7.162271e-06  4.604317e-06  6.532028e-07 </span></span>
+<span><span class="co">#&gt;  2.698928e-05 -8.063800e-08  6.878054e-06  4.547474e-06  6.529631e-07 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[2]]</span></span>
 <span><span class="co">#&gt;     gradient1     gradient2     gradient3     gradient4     gradient5 </span></span>
-<span><span class="co">#&gt;  2.630258e-06 -1.495794e-07 -1.724342e-07  6.247092e-07  2.660272e-07</span></span></code></pre></div>
+<span><span class="co">#&gt; -8.618280e-06  1.883078e-06  1.025364e-06  2.162608e-06  5.468337e-07</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="custom-sampler-for-initial-values">Custom sampler for initial values<a class="anchor" aria-label="anchor" href="#custom-sampler-for-initial-values"></a>
@@ -644,7 +643,7 @@ benefit of setting a <code>label</code> when calling
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">geyser</span>, which_run <span class="op">=</span> <span class="st">"custom_sampler"</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     value                        parameter</span></span>
-<span><span class="co">#&gt; 1  421.42   3.49, 2.11, 0.13, -0.16, 16.75</span></span>
+<span><span class="co">#&gt; 1  421.42   3.49, 2.11, 0.13, -0.16, 16.74</span></span>
 <span><span class="co">#&gt; 2  421.42 3.49, -1.41, 0.13, -10.17, 16.53</span></span>
 <span><span class="co">#&gt; 3  276.36  2.02, 4.27, -1.45, -0.83, -0.63</span></span>
 <span><span class="co">#&gt; 4  276.36   4.27, 2.02, -0.83, -1.45, 0.63</span></span>
@@ -660,7 +659,7 @@ contrast, most of the runs here lead to the presumably global optimum of
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, sort_by <span class="op">=</span> <span class="st">"value"</span>, which_run <span class="op">=</span> <span class="st">"custom_sampler"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    value frequency</span></span>
-<span><span class="co">#&gt; 1    276       183</span></span>
+<span><span class="co">#&gt; 1    276       182</span></span>
 <span><span class="co">#&gt; 2    277         1</span></span>
 <span><span class="co">#&gt; 3    278         1</span></span>
 <span><span class="co">#&gt; 4    283         1</span></span>
@@ -677,37 +676,38 @@ contrast, most of the runs here lead to the presumably global optimum of
 <span><span class="co">#&gt; 15   320         1</span></span>
 <span><span class="co">#&gt; 16   321         1</span></span>
 <span><span class="co">#&gt; 17   329         1</span></span>
-<span><span class="co">#&gt; 18   331         1</span></span>
-<span><span class="co">#&gt; 19   333         1</span></span>
-<span><span class="co">#&gt; 20   335         1</span></span>
-<span><span class="co">#&gt; 21   337         1</span></span>
-<span><span class="co">#&gt; 22   338         1</span></span>
-<span><span class="co">#&gt; 23   339         1</span></span>
-<span><span class="co">#&gt; 24   344         1</span></span>
+<span><span class="co">#&gt; 18   330         1</span></span>
+<span><span class="co">#&gt; 19   331         1</span></span>
+<span><span class="co">#&gt; 20   333         1</span></span>
+<span><span class="co">#&gt; 21   335         1</span></span>
+<span><span class="co">#&gt; 22   337         1</span></span>
+<span><span class="co">#&gt; 23   338         1</span></span>
+<span><span class="co">#&gt; 24   339         1</span></span>
 <span><span class="co">#&gt; 25   347         1</span></span>
 <span><span class="co">#&gt; 26   351         1</span></span>
 <span><span class="co">#&gt; 27   352         1</span></span>
-<span><span class="co">#&gt; 28   362         1</span></span>
+<span><span class="co">#&gt; 28   359         1</span></span>
 <span><span class="co">#&gt; 29   368         1</span></span>
 <span><span class="co">#&gt; 30   376         1</span></span>
 <span><span class="co">#&gt; 31   377         1</span></span>
 <span><span class="co">#&gt; 32   380         1</span></span>
-<span><span class="co">#&gt; 33   390         3</span></span>
-<span><span class="co">#&gt; 34   395         1</span></span>
-<span><span class="co">#&gt; 35   397         1</span></span>
-<span><span class="co">#&gt; 36   398         1</span></span>
-<span><span class="co">#&gt; 37   401         1</span></span>
-<span><span class="co">#&gt; 38   402         1</span></span>
-<span><span class="co">#&gt; 39   405         1</span></span>
-<span><span class="co">#&gt; 40   406         2</span></span>
-<span><span class="co">#&gt; 41   407         1</span></span>
+<span><span class="co">#&gt; 33   384         1</span></span>
+<span><span class="co">#&gt; 34   390         3</span></span>
+<span><span class="co">#&gt; 35   395         1</span></span>
+<span><span class="co">#&gt; 36   397         1</span></span>
+<span><span class="co">#&gt; 37   398         1</span></span>
+<span><span class="co">#&gt; 38   401         1</span></span>
+<span><span class="co">#&gt; 39   402         1</span></span>
+<span><span class="co">#&gt; 40   405         1</span></span>
+<span><span class="co">#&gt; 41   406         3</span></span>
 <span><span class="co">#&gt; 42   409         2</span></span>
-<span><span class="co">#&gt; 43   411         3</span></span>
-<span><span class="co">#&gt; 44   415         1</span></span>
-<span><span class="co">#&gt; 45   416         2</span></span>
-<span><span class="co">#&gt; 46   417         1</span></span>
-<span><span class="co">#&gt; 47   419         1</span></span>
-<span><span class="co">#&gt; 48   421        64</span></span></code></pre></div>
+<span><span class="co">#&gt; 43   411         2</span></span>
+<span><span class="co">#&gt; 44   413         1</span></span>
+<span><span class="co">#&gt; 45   415         1</span></span>
+<span><span class="co">#&gt; 46   416         2</span></span>
+<span><span class="co">#&gt; 47   417         1</span></span>
+<span><span class="co">#&gt; 48   419         1</span></span>
+<span><span class="co">#&gt; 49   421        64</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="educated-guesses">Educated guesses<a class="anchor" aria-label="anchor" href="#educated-guesses"></a>
