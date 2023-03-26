@@ -42,6 +42,12 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="active nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/introduction.html">Introduction</a>
+  </div>
+</li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
 </li>
@@ -329,8 +335,8 @@ package <span class="citation">(<a href="#ref-Oelschl%C3%A4ger:2023" role="doc-b
 necessary because there is no a priori consistency across optimization
 functions in R with regard to their function inputs and outputs. This
 would make it impossible to allow for arbitrary optimizers and to
-compare their results, see <a href="https://cran.r-project.org/package=optimizeR/readme/README.html" class="external-link">the
-{optimizeR} README file for details</a>.</p>
+compare their results, see <a href="https://github.com/loelschlaeger/optimizeR#readme" class="external-link">the {optimizeR}
+README file</a> for details.</p>
 </blockquote>
 <p>It is possible to define any numerical optimizer implemented in R
 through the {optimizeR} framework. Here, we select two of the most
@@ -379,7 +385,7 @@ again.</p>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 276.36</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: 4.27 2.02 -0.83 -1.45 0.63</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.04</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.03</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="function-evaluation">Function evaluation<a class="anchor" aria-label="anchor" href="#function-evaluation"></a>
@@ -406,7 +412,7 @@ for example:</p>
 <span><span class="co">#&gt; [1]  -0.6263152   3.4877817  -0.8353112   0.1303885 -23.1685784</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.009141445</span></span>
+<span><span class="co">#&gt; [1] 0.007627964</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $initial</span></span>
 <span><span class="co">#&gt; [1] -0.6264538  0.1836433 -0.8356286  1.5952808  0.3295078</span></span>
