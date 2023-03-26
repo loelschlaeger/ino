@@ -980,8 +980,8 @@ include all optimization results.}
 
 \item{\code{...}}{Optionally named expressions of elements.
 See \code{$elements_available()} for the names of all available elements.
-In addition, \code{"true_value"} and \code{"true_parameter"} are
-available (if specified).
+In addition, \code{"true_value"}, \code{"true_parameter"},
+\code{"best_value"}, and \code{"best_parameter"} can be accessed
 As an example, you could add
 \code{distance = "sqrt(sum((parameter - true_parameter) ^ 2))"} for the
 euclidean distance between the estimated and true parameter vector.}

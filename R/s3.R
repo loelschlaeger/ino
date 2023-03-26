@@ -103,7 +103,8 @@ print_optimization_results <- function(x, digits) {
 
 summary.Nop <- function(
     object, which_element = "basic", which_run = "all", which_optimizer = "all",
-    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...) {
+    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...
+  ) {
   ### extract results and combine in data.frame
   out <- data.frame()
   results <- object$results(
@@ -131,8 +132,10 @@ summary.Nop <- function(
       which_run = which_run, which_optimizer = which_optimizer,
       which_element = "all", only_comparable = only_comparable
     )
-    true_value <- suppressWarnings(object$true_value)
-    true_parameter <- suppressWarnings(object$true_parameter)
+    true_value <- object$true_value
+    true_parameter <- object$true_parameter
+    best_value <- object$best_value()
+    best_parameter <- object$best_parameter()
     for (i in seq_along(add_vars)) {
       out[[names(add_vars)[i]]] <- sapply(
         unlist(results_all, recursive = FALSE),

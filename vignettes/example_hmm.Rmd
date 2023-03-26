@@ -242,23 +242,4 @@ summary(hmm_ino, c("label", "value", "seconds")) %>%
   arrange(mean_time)
 ```
 
-For those runs that converged to the global optimum, we can again compare the computation time via boxplots:
-
-```{r, eval = TRUE}
-summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  filter(value < -22445) %>% 
-  ggplot(aes(x = "", y = seconds)) +
-    scale_y_continuous() +
-    geom_boxplot() +
-    facet_wrap("label", labeller = "label_both", nrow = 1) +
-    theme(
-      axis.title.x = element_blank(),
-      axis.text.x = element_blank(),
-      axis.ticks.x = element_blank()
-    ) +
-    ylab("seconds")
-```
-
-While computation is fastest for the educated guesses, subset initialization appears to be a promising approach.
-
 ## References

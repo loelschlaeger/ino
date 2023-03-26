@@ -604,4 +604,30 @@ subset_argument <- function(
   return(argument)
 }
 
+#' Transfer Nop object
+#'
+#' @param x
+#' TODO
+#'
+#' @param return
+#' TODO
+#'
+#' @keywords internal
 
+transfer_nop <- function(
+    x, var = data.frame(
+      "old" = c(".f_name", ".arguments", ".original_arguments",
+                ".true_parameter", ".true_value", ".show_minimum", ".optimizer",
+                ".results", ".runs_last", ".optimization_labels"),
+      "new" = c(".f_name", ".arguments", ".original_arguments",
+                ".true_parameter", ".true_value", ".minimized", ".optimizer",
+                ".results", ".runs_last", ".optimization_labels"))
+  ) {
+  stopifnot(inherits(x, "Nop"))
+  private <- x$.__enclos_env__$private
+  y <- Nop$new(f = private$.f, npar = private$.npar)
+  for (i in seq_len(nrow(var))) {
+    y$.__enclos_env__$private[[var[i, "new"]]] <- private[[var[i, "old"]]]
+  }
+  return(y)
+}
