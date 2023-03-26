@@ -80,7 +80,7 @@ The following histogram hints at two clusters with short and long eruption times
 library("ggplot2")
 ggplot(faithful, aes(x = eruptions)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30) + 
-  xlab("Eruption time (min)") 
+  xlab("eruption time (min)") 
 ```
 
 For both clusters, we assume a normal distribution here, such that we consider a mixture of two Gaussian densities for modeling the overall eruption times. The log-likelihood function is given by
@@ -303,7 +303,7 @@ mixture_density <- function (data, mu, sd, lambda) {
 }
 ggplot(faithful, aes(x = eruptions)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30) + 
-  xlab("Eruption time (min)") +
+  labs(x = "eruption time (min)", colour = "parameter") +
   stat_function(
     fun = function(x) {
       mixture_density(x, mu = mle[1:2], sd = mle[3:4], lambda = mle[5])
@@ -316,7 +316,7 @@ ggplot(faithful, aes(x = eruptions)) +
   )
 ```
 
-It becomes very clear that the mixture defined by `mle` fits much better than `bad`, which practically estimates only a single class. However, the gradients at both points are close to zero, which explains why the `nlm` optimizer stops:
+The mixture defined by the `mle` parameter fits much better than `bad`, which practically estimates only a single class. However, the gradients at both points are close to zero, which explains why the `nlm` optimizer terminates at both points:
 
 ```{r, extract gradients}
 geyser$results(which_run = c(mle_run, bad_run), which_optimizer = "nlm", which_element = "gradient")

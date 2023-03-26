@@ -171,84 +171,117 @@ summary.Nop <- function(
 }
 
 #' @noRd
-#' @importFrom stats reorder median
-#' @importFrom ggplot2 ggplot aes scale_y_continuous geom_boxplot facet_wrap
-#' theme element_blank ylab
-#' @importFrom scales percent
-#' @importFrom dplyr group_by mutate
+#' @importFrom stats complete.cases reorder median
+#' @importFrom ggplot2 ggplot aes scale_y_continuous theme_minimal
+#' @importFrom ggridges stat_density_ridges
+#' @importFrom dplyr group_by summarize select mutate
 #' @importFrom rlang .data
 #' @exportS3Method
 
-plot.Nop <- function(x, by = NULL, relative = TRUE, log = FALSE, ...) {
+plot.Nop <- function(
+    x, which_element = "seconds", by = NULL, relative = FALSE,
+    which_run = "all", which_optimizer = "all", only_comparable = FALSE, ...
+  ) {
+
   ### input checks
+  if (!which_element %in% c("seconds", "value")) {
+    ino_stop(
+      "Argument {.var which_element} must be {.val seconds} or {.val value}."
+    )
+  }
+  if (identical(which_element, "value")) {
+    relative <- FALSE
+  }
   if (is.null(by)) {
     relative <- FALSE
   } else {
     if (!(identical(by, "label") || identical(by, "optimizer"))) {
       ino_stop(
-        "Argument {.var by} must be {.val NULL}, {.val label}, or {.val optimizer}."
+        "Argument {.var by} must be {.val label} or {.val optimizer}."
       )
     }
     is_TRUE_FALSE(relative)
   }
-  is_TRUE_FALSE(log)
 
-  ### prepare optimization times
-  data <- x$summary(which_element = c("seconds", by), digits = Inf)
-  if (!is.null(by)) {
-    data[[by]] <- stats::reorder(
-      data[[by]], data[["seconds"]],
-      FUN = stats::median, decreasing = TRUE, na.rm = TRUE
-    )
-    data <- dplyr::group_by(data, .data[[by]])
-  }
-  if (relative) {
-    med <- dplyr::summarize(
-      data,
-      "median" = stats::median(.data$seconds, na.rm = TRUE), .groups = "drop"
-    ) |>
-      dplyr::select(.data[["median"]]) |>
-      min()
+  ### get data
+  data <- x$summary(
+    which_element = c(which_element, by), which_run = which_run,
+    which_optimizer = which_optimizer, only_comparable = only_comparable,
+    digits = Inf
+  )
+  data <- data[stats::complete.cases(data), , drop = FALSE]
+
+  ### compute relative times
+  if (identical(which_element, "seconds") && relative) {
+    med <- data |> dplyr::group_by(.data[[by]]) |> dplyr::summarize(
+      "median" = stats::median(.data$seconds), .groups = "drop"
+    ) |> dplyr::select("median") |> min()
     data <- data |>
-      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med + 1)
+      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
   }
 
-  ### build plot
+  ### add times
+  if (identical(which_element, "seconds")) {
+
+    ### build base plot
+    if (is.null(by)) {
+      base_plot <- ggplot2::ggplot(data, ggplot2::aes(y = ""))
+    } else {
+      base_plot <- ggplot2::ggplot(data, ggplot2::aes(y = .data[[by]]))
+    }
+    base_plot <- base_plot +
+      ggplot2::theme_minimal()
+
+    ### build time visualization
+    base_plot <- base_plot +
+      ggridges::stat_density_ridges(
+        aes(x = .data[["seconds"]]),
+        quantile_lines = TRUE, quantiles = 0.5,
+        calc_ecdf = TRUE, jittered_points = TRUE,
+        point_shape = '|', point_size = 3, point_alpha = 1, alpha = 0.7
+      )
+    if (relative) {
+      breaks_high <- ceiling(max(data$seconds, na.rm = TRUE))
+      breaks <- unique(c(-1, 0, 1:breaks_high))
+      labels <- paste0(breaks * 100, "%")
+      labels[which(breaks == 0)] <- "reference"
+      base_plot <- base_plot +
+        ggplot2::scale_x_continuous(
+          name = "relative optimization time",
+          breaks = breaks,
+          labels = labels
+        )
+    } else {
+      base_plot <- base_plot +
+        ggplot2::scale_x_continuous(
+          name = "optimization time in seconds"
+        )
+    }
+  }
+
+  ### add values
+  if (identical(which_element, "value")) {
+    base_plot <- base_plot +
+      geom_point(
+        aes(x = .data[["value"]]), position = "jitter"
+      )
+  }
+
+  ### modify y-axis
   if (is.null(by)) {
-    base_plot <- ggplot2::ggplot(data, aes(y = "")) +
+    base_plot <- base_plot +
       ggplot2::theme(
         axis.text.y = ggplot2::element_blank(),
-        axis.ticks.y = ggplot2::element_blank()
+        axis.ticks.y = ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank()
       )
   } else {
-    base_plot <- ggplot2::ggplot(data, aes(y = .data[[by]]))
-  }
-  base_plot <- base_plot +
-    ggplot2::geom_boxplot(aes(x = .data$seconds), na.rm = TRUE)
-  if (relative) {
     base_plot <- base_plot +
-      ggplot2::xlab("relative optimization time")
-    if (log) {
-      base_plot <- base_plot +
-        ggplot2::scale_x_log10(labels = scales::percent)
-    } else {
-      base_plot <- base_plot +
-        ggplot2::scale_x_continuous(labels = scales::percent)
-    }
-  } else {
-    base_plot <- base_plot +
-      ggplot2::xlab("optimization time in seconds")
-    if (log) {
-      base_plot <- base_plot +
-        ggplot2::scale_x_log10()
-    } else {
-      base_plot <- base_plot +
-        ggplot2::scale_x_continuous()
-    }
+      ggplot2::theme(
+        axis.title.y = ggplot2::element_blank()
+      )
   }
-  plot <- base_plot +
-    ggplot2::theme(axis.title.y = ggplot2::element_blank())
 
   ### return plot
-  return(plot)
+  return(base_plot)
 }

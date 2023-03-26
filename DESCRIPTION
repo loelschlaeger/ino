@@ -26,6 +26,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     ggplot2,
+    ggridges,
     mvtnorm,
     crayon,
     cli,
@@ -34,8 +35,7 @@ Imports:
     doSNOW,
     ao (>= 0.2.3),
     glue,
-    rlang,
-    scales
+    rlang
 Suggests: 
     knitr,
     rmarkdown,
