@@ -4,11 +4,11 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.path = "figures/introduction-",
-  fig.dim = c(8, 6), 
+  fig.dim = c(8, 6),
   out.width = "75%"
 )
-library("ino")
-options("ino_verbose" = FALSE)
+devtools::load_all()
+options("ino_verbose" = TRUE)
 set.seed(1)
 
 
@@ -18,9 +18,9 @@ str(faithful)
 
 ## ---- faithful, warning = FALSE--------------------------------------
 library("ggplot2")
-ggplot(faithful, aes(x = eruptions)) + 
-  geom_histogram(aes(y = after_stat(density)), bins = 30) + 
-  xlab("eruption time (min)") 
+ggplot(faithful, aes(x = eruptions)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
+  xlab("eruption time (min)")
 
 
 ## ---- mixture ll-----------------------------------------------------
@@ -62,8 +62,8 @@ em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data)
 
 ## ---- initialize geyser----------------------------------------------
 geyser <- Nop$new(
-  f = normal_mixture_llk, 
-  npar = 5, 
+  f = normal_mixture_llk,
+  npar = 5,
   data = faithful$eruptions
 )
 
@@ -139,8 +139,8 @@ transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
 mixture_density <- function (data, mu, sd, lambda) {
   lambda * dnorm(data, mu[1], sd[1]) + (1 - lambda) * dnorm(data, mu[2], sd[2])
 }
-ggplot(faithful, aes(x = eruptions)) + 
-  geom_histogram(aes(y = after_stat(density)), bins = 30) + 
+ggplot(faithful, aes(x = eruptions)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
   labs(x = "eruption time (min)", colour = "parameter") +
   stat_function(
     fun = function(x) {
@@ -199,7 +199,7 @@ geyser$optima(digits = 0, which_run = "educated_guess")
 
 ## ---- bad educated guess---------------------------------------------
 geyser$optimize(initial = rep(0, 5), label = "bad_educated_guess")
-summary(geyser, which_run = "bad_educated_guess") 
+summary(geyser, which_run = "bad_educated_guess")
 
 
 ## ---- clear optimization results-------------------------------------

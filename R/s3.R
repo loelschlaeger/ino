@@ -189,11 +189,25 @@ plot.Nop <- function(
       "Argument {.var which_element} must be {.val seconds} or {.val value}."
     )
   }
-  if (identical(which_element, "value")) {
+  if (identical(which_element, "value") && relative) {
+    ino_status(
+      paste(
+        "You specified {.var which_element} as {.val value}.",
+        "Argument {.var relative} cannot be {.val TRUE} in this case."
+      )
+    )
     relative <- FALSE
   }
   if (is.null(by)) {
-    relative <- FALSE
+    if (relative) {
+      ino_status(
+        paste(
+          "You specified {.var by} as {.val NULL}.",
+          "Argument {.var relative} cannot be {.val TRUE} in this case."
+        )
+      )
+      relative <- FALSE
+    }
   } else {
     if (!(identical(by, "label") || identical(by, "optimizer"))) {
       ino_stop(
@@ -209,6 +223,9 @@ plot.Nop <- function(
     which_optimizer = which_optimizer, only_comparable = only_comparable,
     digits = Inf
   )
+  if (nrow(data) == 0) {
+    return()
+  }
   data <- data[stats::complete.cases(data), , drop = FALSE]
 
   ### compute relative times
@@ -220,41 +237,49 @@ plot.Nop <- function(
       dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
   }
 
+  ### build base plot
+  if (is.null(by)) {
+    base_plot <- ggplot2::ggplot(
+      data, ggplot2::aes(x = .data[[which_element]], y = "")
+    )
+  } else {
+    base_plot <- ggplot2::ggplot(
+      data, ggplot2::aes(x = .data[[which_element]], y = .data[[by]])
+    )
+  }
+  base_plot <- base_plot +
+    ggplot2::theme_minimal()
+
   ### add times
   if (identical(which_element, "seconds")) {
 
-    ### build base plot
-    if (is.null(by)) {
-      base_plot <- ggplot2::ggplot(data, ggplot2::aes(y = ""))
-    } else {
-      base_plot <- ggplot2::ggplot(data, ggplot2::aes(y = .data[[by]]))
-    }
-    base_plot <- base_plot +
-      ggplot2::theme_minimal()
-
     ### build time visualization
+    bandwidth <- bw.nrd(data$seconds)
     base_plot <- base_plot +
       ggridges::stat_density_ridges(
-        aes(x = .data[["seconds"]]),
-        quantile_lines = TRUE, quantiles = 0.5,
-        calc_ecdf = TRUE, jittered_points = TRUE,
-        point_shape = '|', point_size = 3, point_alpha = 1, alpha = 0.7
+        aes(fill = factor(stat(quantile))),
+        geom = "density_ridges_gradient",
+        calc_ecdf = TRUE,
+        quantiles = 2,
+        bandwidth = bandwidth,
+        jittered_points = TRUE,
+        point_shape = '|',
+        alpha = 0.7, point_size = 3, point_alpha = 0.8,
+      ) +
+      scale_fill_manual(
+        name = "Frequency", values = c("green", "red"),
+        labels = c("Below median", "Above median")
       )
     if (relative) {
-      breaks_high <- ceiling(max(data$seconds, na.rm = TRUE))
-      breaks <- unique(c(-1, 0, 1:breaks_high))
-      labels <- paste0(breaks * 100, "%")
-      labels[which(breaks == 0)] <- "reference"
       base_plot <- base_plot +
         ggplot2::scale_x_continuous(
-          name = "relative optimization time",
-          breaks = breaks,
-          labels = labels
+          labels = scales::percent
         )
     } else {
       base_plot <- base_plot +
         ggplot2::scale_x_continuous(
-          name = "optimization time in seconds"
+          name = "Optimization time in seconds",
+          limits = c(0, NA)
         )
     }
   }
@@ -264,6 +289,9 @@ plot.Nop <- function(
     base_plot <- base_plot +
       geom_point(
         aes(x = .data[["value"]]), position = "jitter"
+      ) +
+      ggplot2::scale_x_continuous(
+        name = "Optimum"
       )
   }
 
