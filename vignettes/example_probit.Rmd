@@ -25,20 +25,22 @@ devtools::load_all() # remove later
 options("ino_verbose" = FALSE)
 ```
 
-The probit model is widely used to study discrete choice behavior in fields like transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. Typically, estimating the probit model's parameters involves numerically maximizing the likelihood function. However, this approach can be computationally expensive and may not converge to the global optimum, especially for complex models. In this vignette, we use the {ino} package to investigate the effect of initialization on probit likelihood maximization.
+The probit model is widely used to study discrete choice behavior in fields like transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. Typically, estimating the probit model's parameters involves numerically maximizing the likelihood function. This approach, however, can be computationally expensive and may not converge to the global optimum, especially for complex models. In this vignette, we use the {ino} package to investigate the effect of initialization on numerical probit likelihood maximization.
 
 ## Model formulation
 
-We briefly formulate the probit model and its estimation. For more details, see @Train:2009 and @Bhat:2011. Assume that $N$ deciders choose among $J \geq 2$ alternatives at each of $T$ choice occasions. Let $y_{nt} \in \{1,\dots,J\}$ label the choice of decider $n$ at occasion $t$. Assume further that the choices are rational in the sense that $y_{nt}$ yields the highest utility $U_{nt}$ for $n$ at $t$. The probit model defines $$U_{nt} = X_{nt} \beta + \epsilon_{nt},$$ where $X_{nt}$ is a $J\times P$ matrix of $P$ characteristics for each alternative, $\beta$ is a coefficient vector of length $P$, and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normal distributed errors (i.e., unobserved influences on the utility). 
+We briefly formulate the probit model and its estimation. For more details, see @Train:2009 and @Bhat:2011. Assume that $N$ deciders choose among $J \geq 2$ alternatives at each of $T$ choice occasions. Let $y_{nt} \in \{1,\dots,J\}$ label the choice of decider $n$ at occasion $t$. Assume further that the choices are rational in the sense that $y_{nt}$ corresponds to the largest entry in the utility vector $U_{nt} \in \mathbb{R}^J$ for $n$ at $t$. 
 
-The probit model (like any utility model) is invariant to the level and scale of the utilities $U_{nt}$. We ensure identifiability by considering utility differences, which reduces $\Sigma$ to $J-1$ dimensions, and fixing the first entry of $b$ to $1$.
+The probit model defines $$U_{nt} = X_{nt} b + \epsilon_{nt},$$ where $X_{nt}$ is a $J\times P$ matrix of $P$ characteristics for each alternative, $b$ is a coefficient vector of length $P$, and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normally distributed errors (i.e., unobserved influences on the utility). 
+
+The probit model (like any utility model) is invariant to the level and scale of the utilities $U_{nt}$. We ensure identifiability by considering utility differences, which reduces $\Sigma$ from $J$ to $J-1$ dimensions, and fixing the first entry of $b$ to $1$.
 
 To account for preference heterogeneity across deciders, the mixed probit model includes decider-specific coefficient vectors as $\beta_n \sim N(b, \Omega)$. In the degenerate case $\Omega = 0$, we have $\beta_n = b$, i.e., all deciders share the same preferences.
 	
-The researcher aims to estimate the values for $b$, $\Omega$, and $\Sigma$, most commonly by the maximum likelihood method. Let $\theta$ denote the vector of the identified parameters, i.e., $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. Note that the length of $\theta$ rises quadratically with both number of alternatives $J$ and choice characteristics $P$. 
+The researcher aims to estimate the values for $b$, $\Omega$, and $\Sigma$, given a set of observed choice data. The most common approach is the maximum likelihood method. Let $\theta$ denote the vector of the identified parameters, i.e., $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. Note that the length of the parameter vector $\theta$ increases quadratically with both the number of alternatives $J$ and the number of choice characteristics $P$. This quadratic increase indicates that numerical optimization becomes computationally demanding for complex models with a high number of choice alternatives or choice covariates.
 
-The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$
-where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the normal density. The integral part of the equation does not have a closed-form expression, and therefore, it must be approximated numerically. Here, we apply the `mvtnorm::GenzBretz` algorithm [@Genz:2009].
+The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\hat{\theta} = \arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$
+where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the Gaussian density. The integral part of the equation does not have a closed-form expression, and therefore, it must be approximated numerically. Here, we apply the `mvtnorm::GenzBretz` algorithm [@Genz:2009].
 
 ## Data simulation and likelihood computation
 
@@ -66,15 +68,15 @@ Sigma <- diag(J)
 probit_data <- sim_mnp(N, T, J, P, b, Omega, Sigma, X)
 ```
 
-```{r}
+```{r, eval = FALSE}
 theta <- attr(probit_data, "true")[-1]
 f_ll_mnp(theta = theta, data = probit_data, neg = TRUE)
-# nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
+nlm(f_ll_mnp, p = theta, data = probit_data, neg = TRUE, print.level = 2)$estimate
 ```
 
-## Setup
+## Setup in {ino}
 
-The following lines specify the `ino` object. The likelihood is computed via `f_ll_mnp()` which is provided via {ino}. Via the `global` argument, we can specify the true parameter vector that leads to the global optimum. The `mpvs = "data"` input specifies that we want to loop over the ten provided data sets.
+The following lines specify the `ino` object. The likelihood is computed via `f_ll_mnp()` which is provided via {ino}.
 
 ```{r}
 probit_ino <- Nop$new(
