@@ -44,27 +44,25 @@ where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the Gaussian d
 
 ## Data simulation and likelihood computation
 
-To simulate data from a probit model, the {ino} package offers the `sim_mnp()` function. We first define a function `X` that samples the $J\times P$ matrix of choice characteristics of decider $n$ at choice occasion $t$. 
+The {ino} package provides the `sim_mnp()` function for simulating choice data from a probit model. To use this function, we need to define a function `X()` that samples the matrix of choice characteristics for the decision maker $n$ at choice occasion $t$. The matrix should have dimensions of $J \times P$, where $J$ is the number of available alternatives and $P$ the number of characteristics that describe each alternative.
 
-```{r}
+```{r, eval = TRUE}
 J <- 3
-P <- 3
-scale <- c(1, 1e-2, 1e+2)
+P <- 2
+scale <- c(1, 10)
 X <- function(n, t) {
-  class <- sample(0:1, 1)
-  mean <- ifelse(class, 1, -1)
-  covariates <- stats::rnorm(J * P, mean = mean, sd = 1) / scale
+  covariates <- stats::rnorm(J * P, mean = 0, sd = 1) / scale
   matrix(covariates, nrow = J, ncol = P, byrow = TRUE)
 }
-X(1, 1)
+X(n = 1, t = 1)
 ```
 
 ```{r}
 N <- 100
-T <- 10
-b <- c(1, -1, 2) * scale
-Omega <- diag(P)
-Sigma <- diag(J)
+T <- 20
+b <- c(1, -1) * scale
+Omega <- matrix(1, P, P) + diag(P)
+Sigma <- matrix(1, J, J) + diag(J)
 probit_data <- sim_mnp(N, T, J, P, b, Omega, Sigma, X)
 ```
 

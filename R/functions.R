@@ -271,7 +271,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 
 sim_mnp <- function(
     N, T = 1, J, P, b = stats::rnorm(P), Omega = NULL, Sigma = diag(J),
-    X = function(n, t) matrix(stats::rnorm(J*P), nrow = J, ncol = P)
+    X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P)
 ) {
   stopifnot(b[1] == 1)
   stopifnot(is.function(X), names(formals(X)) == c("n", "t"))
@@ -355,7 +355,7 @@ sim_mnp <- function(
 #' A \code{numeric}, the log-likelihood value at \code{theta}.
 #'
 #' @examples
-#' data <- sim_mnp(N = 200, J = 3, P = 2, b = c(1,3))
+#' data <- sim_mnp(N = 200, J = 3, P = 2, b = c(1, 3))
 #' theta <- attr(data, "true")[-1]
 #' f_ll_mnp(theta = theta, data = data)
 #' \donttest{
