@@ -24,7 +24,7 @@ the state-dependent normal distributions.
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 }
 \value{
-A \code{numeric}, the log-likelihood value at \code{theta}.
+A \code{numeric}, the log-likelihood value at \code{theta} given \code{data}.
 }
 \description{
 Log-likelihood function of a Gaussian-hidden Markov model

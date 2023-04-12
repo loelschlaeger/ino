@@ -12,7 +12,8 @@ sim_mnp(
   b = stats::rnorm(P),
   Omega = NULL,
   Sigma = diag(J),
-  X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P)
+  X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P),
+  seed = NULL
 )
 }
 \arguments{
@@ -41,10 +42,12 @@ occasion \code{t}. It must
 \item have two arguments \code{n} and \code{t},
 \item return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
 }}
+
+\item{Optionally}{set a seed for the choice data simulation.}
 }
 \value{
-A \code{data.frame}. The first column (\code{N}) is the identifier for the
-decider, the next column (\code{T}) the identifier for the choice occasion.
+A \code{data.frame}. The first column (\code{n}) is the identifier for the
+decider, the next column (\code{t}) the identifier for the choice occasion.
 Next comes the column \code{y} with the indices of the chosen alternatives.
 The last columns contain the column-wise entries of the covariate matrices.
 
@@ -60,7 +63,7 @@ which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 Simulate data from a (normally mixed) multinomial probit model
 }
 \examples{
-sim_mnp(N = 3, J = 2, P = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
+sim_mnp(N = 3, J = 3, P = 2, b = c(1, -1), Omega = diag(2), Sigma = diag(3))
 
 }
 \seealso{

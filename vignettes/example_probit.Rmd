@@ -11,7 +11,7 @@ bibliography: ref.bib
 link-citations: true
 ---
 
-```{r, include = FALSE}
+```{r, setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -37,72 +37,82 @@ The probit model (like any utility model) is invariant to the level and scale of
 
 To account for preference heterogeneity across deciders, the mixed probit model includes decider-specific coefficient vectors as $\beta_n \sim N(b, \Omega)$. In the degenerate case $\Omega = 0$, we have $\beta_n = b$, i.e., all deciders share the same preferences.
 	
-The researcher aims to estimate the values for $b$, $\Omega$, and $\Sigma$, given a set of observed choice data. The most common approach is the maximum likelihood method. Let $\theta$ denote the vector of the identified parameters, i.e., $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. Note that the length of the parameter vector $\theta$ increases quadratically with both the number of alternatives $J$ and the number of choice characteristics $P$. This quadratic increase indicates that numerical optimization becomes computationally demanding for complex models with a high number of choice alternatives or choice covariates.
+The researcher aims to estimate the values for $b$, $\Omega$, and $\Sigma$, given a set of observed choice data. The most common approach is the maximum likelihood method. Let $\theta$ denote the vector of the identified parameters, i.e., $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. To ensure that the estimates result in proper covariance matrices, we actually optimize over the Cholesky factors. Note that the length of the parameter vector $\theta$ increases quadratically with both the number of alternatives $J$ and the number of choice characteristics $P$. This quadratic increase indicates that numerical optimization becomes computationally demanding for complex models with a high number of choice alternatives or choice covariates.
 
 The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\hat{\theta} = \arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$
 where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the Gaussian density. The integral part of the equation does not have a closed-form expression, and therefore, it must be approximated numerically. Here, we apply the `mvtnorm::GenzBretz` algorithm [@Genz:2009].
 
 ## Data simulation and likelihood computation
 
-The {ino} package provides the `sim_mnp()` function for simulating choice data from a probit model. To use this function, we need to define a function `X()` that samples the matrix of choice characteristics for the decision maker $n$ at choice occasion $t$. The matrix should have dimensions of $J \times P$, where $J$ is the number of available alternatives and $P$ the number of characteristics that describe each alternative.
+The {ino} package provides the `sim_mnp()` function for simulating choice data from a probit model. To use this function, we first need to define a function `X()` that samples the matrix of choice characteristics for the decision maker $n$ at choice occasion $t$. The matrix must have the dimension $J \times P$, where $J$ is the number of available alternatives and $P$ the number of characteristics that describe each alternative.
 
-```{r, eval = TRUE}
+In our simulation, the choice setting consists of $J = 3$ alternatives that are described via $P = 2$ characteristics, and each entry of $X_{nt}$ is drawn from a $\mathcal{N}(\mu = 0, \sigma = 3)$ distribution:
+
+```{r, choice covariates, eval = TRUE}
 J <- 3
 P <- 2
-scale <- c(1, 10)
 X <- function(n, t) {
-  covariates <- stats::rnorm(J * P, mean = 0, sd = 1) / scale
-  matrix(covariates, nrow = J, ncol = P, byrow = TRUE)
+  matrix(stats::rnorm(J * P, mean = 0, sd = 3), nrow = J)
 }
 X(n = 1, t = 1)
 ```
 
-```{r}
-N <- 100
+We simulate choice data for $N = 200$ deciders at $T = 20$ choice occasions from the probit model defined by the parameters $b = \begin{pmatrix} 1 & -1 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 1 & 0.5 \\ 0.5 & 1 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.25 \\ -0.5 & 1 & 0.25 \\ 0.25 & 0.25 & 1 \end{pmatrix}$:
+
+```{r, simulate data, eval = TRUE}
+N <- 200
 T <- 20
-b <- c(1, -1) * scale
-Omega <- matrix(1, P, P) + diag(P)
-Sigma <- matrix(1, J, J) + diag(J)
-probit_data <- sim_mnp(N, T, J, P, b, Omega, Sigma, X)
+b <- c(1, -1)
+Omega <- matrix(c(1, 0.5, 0.5, 1), 2, 2)
+Sigma <- matrix(c(1, -0.5, 0.25, -0.5, 1, 0.25, 0.25, 0.25, 1), 3, 3)
+probit_data <- sim_mnp(N, T, J, P, b, Omega, Sigma, X, seed = 1)
 ```
 
-```{r, eval = FALSE}
-theta <- attr(probit_data, "true")[-1]
-f_ll_mnp(theta = theta, data = probit_data, neg = TRUE)
-nlm(f_ll_mnp, p = theta, data = probit_data, neg = TRUE, print.level = 2)$estimate
+The `probit_data` object is a `data.frame` with the decider index `n`, the choice occasion index `t`, the choice `y`, and the choice characteristics `X`:
+
+```{r, head of data, eval = TRUE}
+head(probit_data)
+```
+
+It has the attribute `true`, which provides the true and *identified* parameter values, i.e. the mean effects $b$ except for the first one, the elements $o$ of the lower-triangular Cholesky root of $\Omega$, and the elements $l$ of the lower-triangular Cholesky root of the differenced (with respect to alternative $J$) covariance matrix $\Sigma$:
+
+```{r, true parameter, eval = TRUE}
+(theta <- attr(probit_data, "true"))
+```
+
+The likelihood function is implemented as `f_ll_mnp()`:
+
+```{r, likelihood evaluation, eval = TRUE}
+f_ll_mnp(theta = theta, data = probit_data)
 ```
 
 ## Setup in {ino}
 
-The following lines specify the `ino` object. The likelihood is computed via `f_ll_mnp()` which is provided via {ino}.
+To analyze the outcome of the numerical likelihood optimization for the multinomial mixed probit model, we apply the {ino} package. We first define a `Nop` object by setting `f = f_ll_mnp`, the number of parameters to `npar = 7`, and `data = probit_data`. Then, we apply the `stats::nlm` optimizer with a limit of 1000 iterations. Since this optimizer minimizes the objective function instead of maximizing it, we set `neg = TRUE` to compute the negative log-likelihood value.
 
-```{r}
-probit_ino <- Nop$new(
-  f = f_ll_mnp,
-  npar = length(theta),
-  data = probit_data,
-  neg = TRUE
-)
+```{r, define Nop, eval = TRUE}
+probit_ino <- Nop$new(f = f_ll_mnp, npar = 7, data = probit_data, neg = TRUE)$
+  set_optimizer(optimizer_nlm(iterlim = 1000))
 ```
 
-```{r}
-probit_ino$set_optimizer(optimizer_nlm(iterlim = 1000))
-```
+We save the true parameter vector `theta` and use it later to evaluate whether the optimization has converged to the global optimum:
 
-```{r}
+```{r, set true parameter, eval = TRUE}
 probit_ino$true_parameter <- theta
 ```
 
-```{r}
-probit_ino$test(at = theta)
+The initial `Nop` object looks as follows:
+
+```{r, print initial Nop object, eval = TRUE}
+print(probit_ino)
 ```
 
 ## Random initialization
 
-We initialize `runs = 100` times randomly.
+We optimize `runs = 100` times using random initial values drawn from a standard normal distribution:
 
-```{r}
-probit_ino$optimize(initial = "random", runs = 100)
+```{r, optimize with random initial values}
+probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4)
 ```
 
 ## Initializing using a subsample

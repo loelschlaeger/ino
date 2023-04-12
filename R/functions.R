@@ -183,7 +183,7 @@ sim_hmm <- function(T, N, theta) {
 #' @importFrom stats dnorm
 #'
 #' @return
-#' A \code{numeric}, the log-likelihood value at \code{theta}.
+#' A \code{numeric}, the log-likelihood value at \code{theta} given \code{data}.
 #'
 #' @keywords function
 #'
@@ -245,10 +245,12 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #' occasion \code{t}. It must
 #' - have two arguments \code{n} and \code{t},
 #' - return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
+#' @param
+#' Optionally set a seed for the choice data simulation.
 #'
 #' @return
-#' A \code{data.frame}. The first column (\code{N}) is the identifier for the
-#' decider, the next column (\code{T}) the identifier for the choice occasion.
+#' A \code{data.frame}. The first column (\code{n}) is the identifier for the
+#' decider, the next column (\code{t}) the identifier for the choice occasion.
 #' Next comes the column \code{y} with the indices of the chosen alternatives.
 #' The last columns contain the column-wise entries of the covariate matrices.
 #'
@@ -261,7 +263,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #' which is \code{TRUE} if \code{Omega} is not \code{NULL}).
 #'
 #' @examples
-#' sim_mnp(N = 3, J = 2, P = 2, b = c(1,-1), Omega = diag(2), Sigma = diag(2))
+#' sim_mnp(N = 3, J = 3, P = 2, b = c(1, -1), Omega = diag(2), Sigma = diag(3))
 #'
 #' @importFrom stats rnorm
 #'
@@ -271,14 +273,17 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 
 sim_mnp <- function(
     N, T = 1, J, P, b = stats::rnorm(P), Omega = NULL, Sigma = diag(J),
-    X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P)
+    X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P),
+    seed = NULL
 ) {
+  set.seed(seed)
   stopifnot(b[1] == 1)
   stopifnot(is.function(X), names(formals(X)) == c("n", "t"))
   b <- matrix(b)
   mix <- !(is.null(Omega) || all(Omega == 0))
   if(mix) {
     O <- t(chol(Omega))
+    diag(O) <- abs(diag(O))
     o <- O[lower.tri(O, diag = TRUE)]
   }
   D <- diag(J)
@@ -286,6 +291,7 @@ sim_mnp <- function(
   D <- D[-J, , drop = FALSE]
   Sigma_d <- D %*% Sigma %*% t(D)
   L_d <- t(chol(Sigma_d))
+  diag(L_d) <- abs(diag(L_d))
   l_d <- L_d[lower.tri(L_d, diag = TRUE)]
   Sigma <- matrix(0, J, J)
   Sigma[row(Sigma) != J & col(Sigma) != J] <- Sigma_d
@@ -301,16 +307,27 @@ sim_mnp <- function(
     })
     list(X = lapply(out, `[[`, "X"), y = sapply(out, `[[`, "y"))
   })
+  data_y <- unlist(lapply(data, `[[`, "y"))
+  data_X <- matrix(unlist(lapply(data, `[[`, "X")), ncol = P*J, byrow = TRUE)
+  colnames(data_X) <- paste(
+    "X", paste0(rep(1:J, times = P), rep(1:P, each = J)), sep = "."
+  )
+  true <- c(b[-1], if(mix) o, l_d)
+  chol_ind <- function(dim) {
+    ind <- paste0(rep(1:dim, times = dim), rep(1:dim, each = dim))
+    ind[lower.tri(matrix(ind, dim, dim), diag = TRUE)]
+  }
+  names(true) <- c(
+    if (P >= 2) paste("b", 2:P, sep = "."),
+    if (mix) paste("o", chol_ind(P), sep = "."),
+    paste("l", chol_ind(J - 1), sep = ".")
+  )
   structure(
     cbind(
-      data.frame(
-        N = rep(1:N, each = T),
-        T = rep(1:T, times = N),
-        y = unlist(lapply(data, `[[`, "y"))
-      ),
-      matrix(unlist(lapply(data, `[[`, "X")), ncol = P*J, byrow = TRUE)
+      data.frame(n = rep(1:N, each = T), t = rep(1:T, times = N), y = data_y),
+      data_X
     ),
-    "true" = c(b, if(mix) o, l_d), "J" = J, "P" = P, "mix" = mix
+    "true" = true, "J" = J, "P" = P, "mix" = mix
   )
 }
 
@@ -323,25 +340,25 @@ sim_mnp <- function(
 #' [sim_mnp()] for simulating a data set from a probit model.
 #'
 #' @details
-#' The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
+#' The order of \code{theta} is supposed to be \code{c(b, o, l)}, where
 #' \itemize{
-#'   \item \code{b} denotes the vector of mean effects without the first entry,
+#'   \item \code{b} is the vector of mean effects without the first entry,
 #'   \item \code{o} the lower-triangular elements of the lower-triangular
 #'         Cholesky root of the effect covariance matrix \code{Omega} (if any),
 #'   \item and \code{l} the lower-triangular elements of the lower-triangular
-#'         Cholesky root \code{L} of the differenced (with respect to
+#'         Cholesky root of the differenced (with respect to
 #'         the last alternative) error term covariance matrix \code{Sigma}.
 #' }
 #'
 #' @param theta
-#' A \code{numeric}, the vector of model coefficients, see the details.
+#' A \code{numeric}, the vector of model coefficients.
+#' The order of \code{theta} is \code{c(b, o, l)}, see the details.
 #' @param data
 #' A \code{data.frame}, the output of \code{\link{sim_mnp}}.
 #' @param neg
 #' Set to \code{TRUE} to return the negative log-likelihood value.
 #' @param normal_cdf
-#' A \code{function} that evaluates the CDF of an \code{n}-variate normal
-#' distribution.
+#' A \code{function} that evaluates the \code{n}-variate normal CDF.
 #' It must take the arguments
 #' \itemize{
 #'   \item \code{lower}, the vector of lower limits of length \code{n},
@@ -351,12 +368,17 @@ sim_mnp <- function(
 #' }
 #' and return a single \code{numeric}.
 #'
+#' By default, \code{normal_cdf = mvtnorm::pmvnorm}.
+#' @param threshold
+#' A small \code{numeric} between 0 and 1. Choice probabilities below this value
+#' are set to this value to avoid numerical problems.
+#'
 #' @return
-#' A \code{numeric}, the log-likelihood value at \code{theta}.
+#' A \code{numeric}, the log-likelihood value at \code{theta} given \code{data}.
 #'
 #' @examples
-#' data <- sim_mnp(N = 200, J = 3, P = 2, b = c(1, 3))
-#' theta <- attr(data, "true")[-1]
+#' data <- sim_mnp(N = 500, J = 3, P = 2, b = c(1, 3), Sigma = diag(3))
+#' theta <- attr(data, "true")
 #' f_ll_mnp(theta = theta, data = data)
 #' \donttest{
 #' nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
@@ -368,11 +390,25 @@ sim_mnp <- function(
 #'
 #' @importFrom mvtnorm pmvnorm
 
-f_ll_mnp <- function(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm) {
+f_ll_mnp <- function(
+    theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm, threshold = 1e-6
+  ) {
+  stopifnot(
+    is.numeric(threshold), length(threshold) == 1, threshold > 0, threshold < 1
+  )
+  stopifnot(
+    is.data.frame(data), c("P", "mix", "J") %in% names(attributes(data))
+  )
   P <- attr(data, "P")
   mix <- attr(data, "mix")
   J <- attr(data, "J")
-  stopifnot(is.numeric(theta), length(theta) == (P-1) + mix*(P*(P+1)/2) + (J-1)*J/2)
+  stopifnot(
+    is.numeric(theta), length(theta) == (P-1) + mix *(P*(P+1)/2) + (J-1)*J/2
+  )
+  stopifnot(
+    is.function(normal_cdf),
+    c("lower", "upper", "mean", "sigma") %in% names(formals(normal_cdf))
+  )
   b <- c(1, theta[1:(P-1)]); theta <- theta[-(1:(P-1))]
   chol_2_cov <- function(chol) {
     dim <- -0.5 + sqrt(0.25 + 2*length(chol))
@@ -392,9 +428,9 @@ f_ll_mnp <- function(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm) {
     D[,diff_alt] <- -1
     D[-diff_alt, , drop = FALSE]
   }
-  ll <- sum(unlist(lapply(unique(data$N), function(n) {
-      sapply(unique(data[data$N == n, "T"]), function(t) {
-        ind <- which(data$N == n & data$T == t)
+  ll <- sum(unlist(lapply(unique(data$n), function(n) {
+      sapply(unique(data[data$n == n, "t"]), function(t) {
+        ind <- which(data$n == n & data$t == t)
         y <- data[ind, "y"]
         X <- matrix(as.numeric(data[ind, -(1:3)]), nrow = J, ncol = P)
         D <- delta(y, J)
@@ -405,8 +441,8 @@ f_ll_mnp <- function(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm) {
           what = normal_cdf,
           args = list(lower = -Inf, upper = -sys, mean = 0, sigma = cov)
         )
-        lprob <- suppressWarnings(log(prob))
-        ifelse(is.finite(lprob), lprob, 0)
+        if (!is.finite(prob) || prob < threshold) prob <- threshold
+        log(as.numeric(prob))
       })
   })))
   ifelse(neg, -ll, ll)

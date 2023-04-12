@@ -23,7 +23,7 @@ test_that("HMM likelihood works", {
 test_that("MNP data simulation and likelihood computation works", {
   data <- sim_mnp(N = 3, T = 2, J = 2, P = 2, b = c(1, -1), Omega = diag(2))
   expect_true(is.data.frame(data))
-  theta <- attr(data, "true")[-1]
+  theta <- attr(data, "true")
   ll <- f_ll_mnp(theta = theta, data = data)
   expect_true(is.numeric(ll))
 })
