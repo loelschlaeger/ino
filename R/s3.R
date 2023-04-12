@@ -1,6 +1,7 @@
 #' @noRd
 #' @importFrom crayon underline
 #' @importFrom glue glue
+#' @importFrom forcats fct_reorder
 #' @importFrom cli style_italic
 #' @exportS3Method
 
@@ -234,7 +235,9 @@ plot.Nop <- function(
       "median" = stats::median(.data$seconds), .groups = "drop"
     ) |> dplyr::select("median") |> min()
     data <- data |>
-      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
+      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med) |>
+      mutate(label = forcats::fct_reorder(.f = label, .x = seconds,
+                                          .fun = median, .desc = TRUE))
   }
 
   ### build base plot
@@ -257,7 +260,9 @@ plot.Nop <- function(
     bandwidth <- bw.nrd(data$seconds)
     base_plot <- base_plot +
       ggridges::stat_density_ridges(
-        aes(fill = factor(stat(quantile))),
+        #aes(fill = factor(after_stat(quantile))),
+        #aes(fill = after_stat(x)),
+        fill = "#66999999",
         geom = "density_ridges_gradient",
         calc_ecdf = TRUE,
         quantiles = 2,
@@ -265,11 +270,11 @@ plot.Nop <- function(
         jittered_points = TRUE,
         point_shape = '|',
         alpha = 0.7, point_size = 3, point_alpha = 0.8,
-      ) +
-      scale_fill_manual(
-        name = "Frequency", values = c("green", "red"),
-        labels = c("Below median", "Above median")
-      )
+      ) #+
+      #scale_fill_manual(
+      #  name = "", values = c("#E69F00", "#56B4E9"),
+      #  labels = c("Below median", "Above median")
+      #)
     if (relative) {
       base_plot <- base_plot +
         ggplot2::scale_x_continuous(
