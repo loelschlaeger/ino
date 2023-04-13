@@ -56,7 +56,7 @@ print(probit_ino)
 
 
 ## ---- optimize with random initial values------------------------------------------------------------------------
-probit_ino$optimize(initial = "random", runs = 12, label = "random", ncores = 4)
+probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4)
 
 
 ## ----------------------------------------------------------------------------------------------------------------
