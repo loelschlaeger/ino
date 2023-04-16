@@ -35,7 +35,8 @@ Imports:
     doSNOW,
     ao (>= 0.2.3),
     glue,
-    rlang
+    rlang,
+    forcats
 Suggests: 
     knitr,
     rmarkdown,

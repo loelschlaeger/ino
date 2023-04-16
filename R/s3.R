@@ -1,6 +1,7 @@
 #' @noRd
 #' @importFrom crayon underline
 #' @importFrom glue glue
+#' @importFrom forcats fct_reorder
 #' @importFrom cli style_italic
 #' @exportS3Method
 
@@ -173,7 +174,6 @@ summary.Nop <- function(
 #' @noRd
 #' @importFrom stats complete.cases reorder median
 #' @importFrom ggplot2 ggplot aes scale_y_continuous theme_minimal
-#' @importFrom ggplot2 scale_fill_manual geom_point after_stat
 #' @importFrom ggridges stat_density_ridges
 #' @importFrom dplyr group_by summarize select mutate
 #' @importFrom rlang .data
@@ -182,7 +182,7 @@ summary.Nop <- function(
 plot.Nop <- function(
     x, which_element = "seconds", by = NULL, relative = FALSE,
     which_run = "all", which_optimizer = "all", only_comparable = FALSE, ...
-  ) {
+) {
 
   ### input checks
   if (!which_element %in% c("seconds", "value")) {
@@ -192,20 +192,14 @@ plot.Nop <- function(
   }
   if (identical(which_element, "value") && relative) {
     ino_status(
-      paste(
-        "You specified {.var which_element} as {.val value}.",
-        "Argument {.var relative} cannot be {.val TRUE} in this case."
-      )
+      "Argument {.var relative} cannot be {.val TRUE} if {.var which_element} is {.val value}."
     )
     relative <- FALSE
   }
   if (is.null(by)) {
     if (relative) {
       ino_status(
-        paste(
-          "You specified {.var by} as {.val NULL}.",
-          "Argument {.var relative} cannot be {.val TRUE} in this case."
-        )
+        "Argument {.var relative} cannot be {.val TRUE} if {.var by} is {.val NULL}."
       )
       relative <- FALSE
     }
@@ -231,11 +225,20 @@ plot.Nop <- function(
 
   ### compute relative times
   if (identical(which_element, "seconds") && relative) {
+
+    ### TODO: maybe relative wrt to median of all optimization runs?
     med <- data |> dplyr::group_by(.data[[by]]) |> dplyr::summarize(
       "median" = stats::median(.data$seconds), .groups = "drop"
     ) |> dplyr::select("median") |> min()
     data <- data |>
-      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
+
+      ### TODO: this currently orders only in the relative case
+      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med) |>
+      mutate(
+        label = forcats::fct_reorder(
+          .f = label, .x = seconds, .fun = median, .desc = TRUE
+        )
+      )
   }
 
   ### build base plot
@@ -257,24 +260,12 @@ plot.Nop <- function(
     ### build time visualization
     bandwidth <- bw.nrd(data$seconds)
     base_plot <- base_plot +
-      ggridges::stat_density_ridges(
-        #ggplot2::aes(fill = factor(ggplot2::after_stat(quantile))),
-        geom = "density_ridges_gradient",
-        calc_ecdf = TRUE,
-        quantiles = 2,
-        bandwidth = bandwidth,
-        jittered_points = TRUE,
-        point_shape = '|',
-        alpha = 0.7, point_size = 3, point_alpha = 0.8,
-      ) +
-      ggplot2::scale_fill_manual(
-        name = "Frequency", values = c("green", "red"),
-        labels = c("Below median", "Above median")
-      )
+      geom_boxplot()
     if (relative) {
       base_plot <- base_plot +
         ggplot2::scale_x_continuous(
-          labels = scales::percent
+          labels = scales::percent,
+          name = "Relative optimization time"
         )
     } else {
       base_plot <- base_plot +
@@ -288,7 +279,7 @@ plot.Nop <- function(
   ### add values
   if (identical(which_element, "value")) {
     base_plot <- base_plot +
-      ggplot2::geom_point(
+      geom_point(
         aes(x = .data[["value"]]), position = "jitter"
       ) +
       ggplot2::scale_x_continuous(
