@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
+  fig.path = "figures/introduction-",
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
@@ -167,7 +168,7 @@ print(geyser)
 
 The next step concerns specifying the numerical optimizer via the `$set_optimizer()` method. 
 
-> **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file for details](https://cran.r-project.org/package=optimizeR/readme/README.html).
+> **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file](https://github.com/loelschlaeger/optimizeR#readme) for details.
 
 It is possible to define any numerical optimizer implemented in R through the {optimizeR} framework. Here, we select two of the most popular ones, `stats::nlm()` and `stats::optim()`:
 
@@ -296,7 +297,7 @@ transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
 
 The two estimates `mle` and `bad` for $\boldsymbol{\theta}$ correspond to the following mixture densities:
 
-```{r, visualize estimated mixtures}
+```{r, estimated-mixtures}
 mixture_density <- function (data, mu, sd, lambda) {
   lambda * dnorm(data, mu[1], sd[1]) + (1 - lambda) * dnorm(data, mu[2], sd[2])
 }
@@ -441,13 +442,13 @@ See the other two vignettes for demonstrations of these options.
 
 The `$plot()` method provides an overview of the optimization times. Setting `by = "label"` allows for comparison across initialization strategies, setting `relative = TRUE` plots relative differences to the median of the top boxplot:
 
-```{r, plot by label}
+```{r, plot-by-label}
 geyser$plot(by = "label", relative = TRUE)
 ```
 
 Setting `by = "optimizer"` allows comparison across optimizers:
 
-```{r, plot by optimizer}
+```{r, plot-by-optimizer}
 geyser$plot(by = "optimizer", relative = FALSE)
 ```
 

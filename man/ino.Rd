@@ -23,6 +23,7 @@ Useful links:
 Authors:
 \itemize{
   \item Marius Ötting \email{marius.oetting@uni-bielefeld.de} (\href{https://orcid.org/0000-0002-9373-0365}{ORCID})
+  \item Dietmar Bauer \email{dietmar.bauer@uni-bielefeld.de} (\href{https://orcid.org/0000-0003-2920-7032}{ORCID})
 }
 
 }
