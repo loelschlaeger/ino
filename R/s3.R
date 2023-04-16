@@ -177,6 +177,7 @@ summary.Nop <- function(
 #' @importFrom ggridges stat_density_ridges
 #' @importFrom dplyr group_by summarize select mutate
 #' @importFrom rlang .data
+#' @importFrom scales percent
 #' @exportS3Method
 
 plot.Nop <- function(

@@ -36,7 +36,8 @@ Imports:
     ao (>= 0.2.3),
     glue,
     rlang,
-    forcats
+    forcats,
+    scales
 Suggests: 
     knitr,
     rmarkdown,
