@@ -173,6 +173,7 @@ summary.Nop <- function(
 #' @noRd
 #' @importFrom stats complete.cases reorder median
 #' @importFrom ggplot2 ggplot aes scale_y_continuous theme_minimal
+#' @importFrom ggplot2 scale_fill_manual geom_point after_stat
 #' @importFrom ggridges stat_density_ridges
 #' @importFrom dplyr group_by summarize select mutate
 #' @importFrom rlang .data
@@ -257,7 +258,7 @@ plot.Nop <- function(
     bandwidth <- bw.nrd(data$seconds)
     base_plot <- base_plot +
       ggridges::stat_density_ridges(
-        aes(fill = factor(stat(quantile))),
+        #ggplot2::aes(fill = factor(ggplot2::after_stat(quantile))),
         geom = "density_ridges_gradient",
         calc_ecdf = TRUE,
         quantiles = 2,
@@ -266,7 +267,7 @@ plot.Nop <- function(
         point_shape = '|',
         alpha = 0.7, point_size = 3, point_alpha = 0.8,
       ) +
-      scale_fill_manual(
+      ggplot2::scale_fill_manual(
         name = "Frequency", values = c("green", "red"),
         labels = c("Below median", "Above median")
       )
@@ -287,7 +288,7 @@ plot.Nop <- function(
   ### add values
   if (identical(which_element, "value")) {
     base_plot <- base_plot +
-      geom_point(
+      ggplot2::geom_point(
         aes(x = .data[["value"]]), position = "jitter"
       ) +
       ggplot2::scale_x_continuous(
