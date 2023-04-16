@@ -168,7 +168,7 @@ print(geyser)
 
 The next step concerns specifying the numerical optimizer via the `$set_optimizer()` method. 
 
-> **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file for details](https://cran.r-project.org/package=optimizeR/readme/README.html).
+> **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file](https://github.com/loelschlaeger/optimizeR#readme) for details.
 
 It is possible to define any numerical optimizer implemented in R through the {optimizeR} framework. Here, we select two of the most popular ones, `stats::nlm()` and `stats::optim()`:
 

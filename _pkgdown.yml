@@ -16,5 +16,5 @@ authors:
 
 navbar:
   structure:
-    left:  [intro, news]
+    left:  [articles, tutorials, news]
     right: [search, github]
