@@ -172,7 +172,7 @@ summary.Nop <- function(
 }
 
 #' @noRd
-#' @importFrom stats complete.cases reorder median
+#' @importFrom stats complete.cases reorder median bw.nrd
 #' @importFrom ggplot2 ggplot aes scale_y_continuous theme_minimal
 #' @importFrom ggridges stat_density_ridges
 #' @importFrom dplyr group_by summarize select mutate
@@ -231,14 +231,18 @@ plot.Nop <- function(
       "median" = stats::median(.data$seconds), .groups = "drop"
     ) |> dplyr::select("median") |> min()
     data <- data |>
+      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
 
-      ### TODO: this currently orders only in the relative case
-      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med) |>
-      mutate(
-        label = forcats::fct_reorder(
-          .f = label, .x = seconds, .fun = median, .desc = TRUE
+    ### TODO: this currently orders if 'relative' and 'by = label'
+    if (by == "label") {
+      data <- data |>
+        mutate(
+          label = forcats::fct_reorder(
+            .f = .data[["label"]], .x = .data[["seconds"]],
+            .fun = median, .desc = TRUE
+          )
         )
-      )
+    }
   }
 
   ### build base plot
@@ -258,9 +262,9 @@ plot.Nop <- function(
   if (identical(which_element, "seconds")) {
 
     ### build time visualization
-    bandwidth <- bw.nrd(data$seconds)
+    bandwidth <- stats::bw.nrd(data$seconds)
     base_plot <- base_plot +
-      geom_boxplot()
+      ggplot2::geom_boxplot()
     if (relative) {
       base_plot <- base_plot +
         ggplot2::scale_x_continuous(
@@ -279,7 +283,7 @@ plot.Nop <- function(
   ### add values
   if (identical(which_element, "value")) {
     base_plot <- base_plot +
-      geom_point(
+      ggplot2::geom_point(
         aes(x = .data[["value"]]), position = "jitter"
       ) +
       ggplot2::scale_x_continuous(
