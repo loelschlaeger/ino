@@ -43,7 +43,7 @@ occasion \code{t}. It must
 \item return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
 }}
 
-\item{Optionally}{set a seed for the choice data simulation.}
+\item{seed}{Optionally set a seed for the choice data simulation.}
 }
 \value{
 A \code{data.frame}. The first column (\code{n}) is the identifier for the

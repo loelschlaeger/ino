@@ -245,7 +245,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #' occasion \code{t}. It must
 #' - have two arguments \code{n} and \code{t},
 #' - return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
-#' @param
+#' @param seed
 #' Optionally set a seed for the choice data simulation.
 #'
 #' @return
