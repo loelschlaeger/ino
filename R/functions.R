@@ -437,6 +437,9 @@ f_ll_mnp <- function(
         sys <- as.numeric(D %*% X %*% b)
         cov <- if(mix) X %*% Omega %*% t(X) + Sigma else Sigma
         cov <- D %*% cov %*% t(D)
+        ### round entries to avoid failure in check for covariance matrix
+        ### due to minor discrepancy of symmetric elements
+        cov <- round(cov, 6)
         prob <- do.call(
           what = normal_cdf,
           args = list(lower = -Inf, upper = -sys, mean = 0, sigma = cov)
