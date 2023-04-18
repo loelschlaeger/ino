@@ -4,7 +4,7 @@
 #' This helper function turns various formats of initial parameter
 #' specifications into a unified function call.
 #'
-#' @param initial,npar
+#' @param initial,npar,fail_bad_initial
 #' See documentation of method \code{$optimize()} from \code{Nop} object.
 #'
 #' @return
@@ -26,7 +26,8 @@
 #'
 #' @importFrom glue glue
 
-build_initial <- function(initial, npar) {
+build_initial <- function(initial, npar, fail_bad_initial = TRUE) {
+  is_TRUE_FALSE(fail_bad_initial)
   if (identical(initial, "random")) {
     function(run_id, optimizer_id) {
       ### same initial values across optimizers in given optimization run
@@ -38,7 +39,7 @@ build_initial <- function(initial, npar) {
       function(run_id, optimizer_id) {
         initial[[run_id]]
       }
-    } else {
+    } else if (fail_bad_initial) {
       ino_stop(
         "You specified a {.cls list} as input {.var initial}.",
         "It should only contain {.cls numeric} vectors.",
@@ -50,7 +51,7 @@ build_initial <- function(initial, npar) {
       function(run_id, optimizer_id) {
         initial
       }
-    } else {
+    } else if (fail_bad_initial) {
       ino_stop(
         "The {.cls numeric} input {.var initial} is misspecified.",
         glue::glue("It should be of length {npar}."),
@@ -78,10 +79,12 @@ build_initial <- function(initial, npar) {
     }
     try_initial <- try(initial_tmp(1, 1), silent = TRUE)
     if (!(is.numeric(try_initial) && length(try_initial) == npar)) {
-      ino_stop(
-        "The {.cls function} input {.var initial} is misspecified.",
-        glue::glue("It should return initial values of length {npar}.")
-      )
+      if (fail_bad_initial) {
+        ino_stop(
+          "The {.cls function} input {.var initial} is misspecified.",
+          glue::glue("It should return initial values of length {npar}.")
+        )
+      }
     }
     initial_tmp
   } else {

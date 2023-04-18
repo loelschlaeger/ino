@@ -362,19 +362,26 @@ Nop <- R6::R6Class(
     #' By default, \code{runs = 1}.
     #' @param label
     #' Only relevant if \code{save_results = TRUE}.
-    #' In this case, an optional \code{character} to specify a custom label of the optimization.
+    #' In this case, an optional \code{character} to specify a custom label of
+    #' the optimization.
     #' By default, \code{label = self$new_label} creates a new label.
     #' Labels can be useful to distinguish optimization runs later.
+    #' @param fail_bad_initial
+    #' Either \code{TRUE} to immediately fail if \code{initial} contains any
+    #' misspecifications (default), or \code{FALSE} to include the failed runs
+    #' in the results.
     #' @return
     #' The return value depends on the value of \code{return_results}:
-    #' - if \code{return_results = FALSE}, invisibly the \code{Nop} object,
-    #' - if \code{return_results = TRUE}, a nested \code{list} of optimization
-    #'   results.
-    #'   Each element corresponds to one optimization run and is a \code{list}
-    #'   of results for each optimizer.
-    #'   The results for each optimizer is a \code{list}, the output of
-    #'   \code{\link[optimizeR]{apply_optimizer}}.
-    #'   If \code{simplify = TRUE}, the output is flattened if possible.
+    #' \itemize{
+    #'   \item if \code{return_results = FALSE}, invisibly the \code{Nop} object,
+    #'   \item if \code{return_results = TRUE}, a nested \code{list} of
+    #'         optimization results.
+    #'         Each element corresponds to one optimization run
+    #'         and is a \code{list} of results for each optimizer.
+    #'         The results for each optimizer is a \code{list}, the output of
+    #'         \code{\link[optimizeR]{apply_optimizer}}.
+    #'         If \code{simplify = TRUE}, the output is flattened if possible.
+    #' }
     #' @importFrom parallel makeCluster stopCluster
     #' @importFrom doSNOW registerDoSNOW
     #' @importFrom foreach foreach %dopar% %do%
@@ -383,13 +390,16 @@ Nop <- R6::R6Class(
       return_results = FALSE, save_results = TRUE,
       label = self$new_label, ncores = getOption("ino_ncores", default = 1),
       verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
-      time_limit = NULL, hide_warnings = TRUE
+      time_limit = NULL, hide_warnings = TRUE, fail_bad_initial = TRUE
     ) {
 
       ### input checks
       private$.check_additional_arguments_complete()
       if (is.list(initial)) runs <- length(initial)
-      initial <- build_initial(initial = initial, npar = private$.npar)
+      initial <- build_initial(
+        initial = initial, npar = private$.npar,
+        fail_bad_initial = fail_bad_initial
+      )
       is_count(runs)
       is_TRUE_FALSE(save_results)
       is_TRUE_FALSE(return_results)
@@ -491,7 +501,8 @@ Nop <- R6::R6Class(
     #' @param at
     #' A \code{numeric} of length \code{npar}, the point at which the
     #' function \code{f} and the specified optimizer are tested.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.
+    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+    #' from a standard normal distribution.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function(
@@ -676,7 +687,7 @@ Nop <- R6::R6Class(
         which_optimizer = optimizer_ids, seed = seed, return_results = TRUE,
         save_results = FALSE, label = "continued", ncores = ncores,
         verbose = verbose, simplify = FALSE, time_limit = time_limit,
-        hide_warnings = hide_warnings
+        hide_warnings = hide_warnings, fail_bad_initial = FALSE
       )
       results <- private$.merge_continued_previous_results(
         continued_results = continued_results,

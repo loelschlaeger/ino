@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 # library("ino")
 devtools::load_all() # remove later
-options("ino_verbose" = TRUE) # set to FALSE later
+options("ino_verbose" = TRUE) 
 ```
 
 The probit model is widely used to study discrete choice behavior in fields like transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. Typically, estimating the probit model's parameters involves numerically maximizing the likelihood function. This approach, however, can be computationally expensive and may not converge to the global optimum, especially for complex models. In this vignette, we use the {ino} package to investigate the effect of initialization on numerical probit likelihood maximization.
@@ -118,7 +118,7 @@ probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4
 ## Initializing using a subsample
 
 ```{r, eval = TRUE}
-probit_ino$reduce("data", how = "random", proportion = 0.5)
+probit_ino$reduce("data", how = "random", proportion = 0.25)
 ```
 
 ```{r}

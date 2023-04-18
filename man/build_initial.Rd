@@ -4,10 +4,10 @@
 \alias{build_initial}
 \title{Unified function call for initial parameter specifications}
 \usage{
-build_initial(initial, npar)
+build_initial(initial, npar, fail_bad_initial = TRUE)
 }
 \arguments{
-\item{initial, npar}{See documentation of method \code{$optimize()} from \code{Nop} object.}
+\item{initial, npar, fail_bad_initial}{See documentation of method \code{$optimize()} from \code{Nop} object.}
 }
 \value{
 A \code{function} that returns a \code{numeric} of length \code{npar}.

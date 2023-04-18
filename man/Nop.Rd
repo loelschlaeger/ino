@@ -344,7 +344,8 @@ Optimizes the function.
   verbose = getOption("ino_verbose", default = TRUE),
   simplify = TRUE,
   time_limit = NULL,
-  hide_warnings = TRUE
+  hide_warnings = TRUE,
+  fail_bad_initial = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -391,7 +392,8 @@ saved inside the \code{Nop} object.
 By default, \code{save_results = TRUE}.}
 
 \item{\code{label}}{Only relevant if \code{save_results = TRUE}.
-In this case, an optional \code{character} to specify a custom label of the optimization.
+In this case, an optional \code{character} to specify a custom label of
+the optimization.
 By default, \code{label = self$new_label} creates a new label.
 Labels can be useful to distinguish optimization runs later.}
 
@@ -415,6 +417,10 @@ This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
+
+\item{\code{fail_bad_initial}}{Either \code{TRUE} to immediately fail if \code{initial} contains any
+misspecifications (default), or \code{FALSE} to include the failed runs
+in the results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -422,10 +428,10 @@ Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
 The return value depends on the value of \code{return_results}:
 \itemize{
 \item if \code{return_results = FALSE}, invisibly the \code{Nop} object,
-\item if \code{return_results = TRUE}, a nested \code{list} of optimization
-results.
-Each element corresponds to one optimization run and is a \code{list}
-of results for each optimizer.
+\item if \code{return_results = TRUE}, a nested \code{list} of
+optimization results.
+Each element corresponds to one optimization run
+and is a \code{list} of results for each optimizer.
 The results for each optimizer is a \code{list}, the output of
 \code{\link[optimizeR]{apply_optimizer}}.
 If \code{simplify = TRUE}, the output is flattened if possible.
@@ -452,7 +458,8 @@ Validates the configuration of a \code{Nop} object.
 \describe{
 \item{\code{at}}{A \code{numeric} of length \code{npar}, the point at which the
 function \code{f} and the specified optimizer are tested.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+from a standard normal distribution.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
