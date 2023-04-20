@@ -115,7 +115,7 @@ We optimize `runs = 100` times using random initial values drawn from a standard
 probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4)
 ```
 
-## Initializing using a subsample
+## Initializing using estimates on a data subsample
 
 ```{r, eval = TRUE}
 probit_ino$reduce("data", how = "random", proportion = 0.25)
@@ -127,29 +127,40 @@ probit_ino$optimize(initial = "random", runs = 100, label = "subset", ncores = 4
   continue()
 ```
 
-## Remove runs that did not converge
+```{r, eval = TRUE}
+probit_ino <- ino::probit_ino
 
-3 optimization runs reached the iteration limit of 1000 iterations:
+random_initial <- lapply(probit_ino$results(which_run = "random"), `[[`, "initial") |>
+  do.call(what = rbind) |> sweep(2, probit_ino$true_parameter) |>
+  as.data.frame() |>
+  cbind(type = "random_initial")
 
-```{r, eval = FALSE}
-library("dplyr", warn.conflicts = FALSE)
-summary(probit_ino, "iterations" = "iterations") %>% filter(iterations >= 1000)
+subset_initial <- lapply(
+  probit_ino$results(which_run = "subset", which_element = "previous_run"), 
+  `[[`, "previous_run.parameter"
+  ) |>
+  do.call(what = rbind) |> sweep(2, probit_ino$true_parameter) |>
+  as.data.frame() |>
+  cbind(type = "subset_initial")
+
+library(ggplot2)
+library(reshape2)
+
+melt(rbind(random_initial, subset_initial)) |> 
+  ggplot(aes(x = variable, y = value)) +
+  geom_point(aes(color = type), position = "jitter") +
+  labs(
+    y = "difference to true parameter"
+  ) +
+  scale_x_discrete(
+    labels = c("b.2", "o.11", "o.21", "o.22", "l.11", "l.21", "l.22"),
+    name = "parameter"
+  ) +
+  scale_y_continuous(
+    name = "difference to true parameter",
+    limits = c(-5, 5)
+  )
 ```
-
-We exclude them from further analysis:
-
-```{r, eval = FALSE}
-ind <- which(summary(probit_ino, "iterations" = "iterations")$iterations >= 1000)
-probit_ino <- clear_ino(probit_ino, which = ind) 
-```
-
-## Comparison
-
-```{r, out.width = "100%", fig.dim = c(10, 6), eval = FALSE}
-plot(probit_ino, by = ".strategy", time_unit = "mins", nrow = 1)
-```
-
-We see that the subset initialization strategies reduce the computation time significantly, in comparison to the random initialization on the full data set.
 	
 ## References
 
