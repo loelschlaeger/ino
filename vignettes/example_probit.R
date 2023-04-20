@@ -1,15 +1,15 @@
 ## ---- setup, include = FALSE-----------------------------------------------------------------------------
-#> knitr::opts_chunk$set(
-#>   collapse = TRUE,
-#>   comment = "#>",
-#>   fig.align = "center",
-#>   fig.dim = c(8, 6),
-#>   out.width = "75%",
-#>   eval = FALSE
-#> )
-#> # library("ino")
-#> devtools::load_all() # remove later
-#> options("ino_verbose" = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.dim = c(8, 6),
+  out.width = "75%",
+  eval = FALSE
+)
+# library("ino")
+devtools::load_all() # remove later
+options("ino_verbose" = TRUE)
 
 
 ## ---- choice covariates, eval = TRUE---------------------------------------------------------------------
@@ -56,7 +56,7 @@ print(probit_ino)
 
 
 ## ---- optimize with random initial values----------------------------------------------------------------
-#> probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4)
+probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4)
 
 
 ## ---- eval = TRUE----------------------------------------------------------------------------------------
@@ -64,21 +64,21 @@ probit_ino$reduce("data", how = "random", proportion = 0.25)
 
 
 ## --------------------------------------------------------------------------------------------------------
-#> probit_ino$optimize(initial = "random", runs = 100, label = "subset", ncores = 4)$
-#>   reset_argument("data")$
-#>   continue()
+probit_ino$optimize(initial = "random", runs = 100, label = "subset", ncores = 4)$
+  reset_argument("data")$
+  continue(ncores = 4)
 
 
 ## ---- eval = FALSE---------------------------------------------------------------------------------------
-#> library("dplyr", warn.conflicts = FALSE)
-#> summary(probit_ino, "iterations" = "iterations") %>% filter(iterations >= 1000)
+library("dplyr", warn.conflicts = FALSE)
+summary(probit_ino, "iterations" = "iterations") %>% filter(iterations >= 1000)
 
 
 ## ---- eval = FALSE---------------------------------------------------------------------------------------
-#> ind <- which(summary(probit_ino, "iterations" = "iterations")$iterations >= 1000)
-#> probit_ino <- clear_ino(probit_ino, which = ind)
+ind <- which(summary(probit_ino, "iterations" = "iterations")$iterations >= 1000)
+probit_ino <- clear_ino(probit_ino, which = ind)
 
 
 ## ---- out.width = "100%", fig.dim = c(10, 6), eval = FALSE-----------------------------------------------
-#> plot(probit_ino, by = ".strategy", time_unit = "mins", nrow = 1)
+plot(probit_ino, by = ".strategy", time_unit = "mins", nrow = 1)
 
