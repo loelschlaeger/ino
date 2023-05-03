@@ -33,6 +33,7 @@ Imports:
     glue,
     mvtnorm,
     rlang,
+    forcats,
     scales
 Suggests:
     covr,
