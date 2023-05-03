@@ -864,14 +864,19 @@ Nop <- R6::R6Class(
     #' - \code{"optimizer"} to group by optimizer
     #' - \code{NULL} to not group (default)
     #' @param relative
-    #' Only if \code{which_element = "seconds"} and \code{by} not \code{NULL}.
+    #' Only if \code{which_element = "seconds"}.
     #' In this case, set to \code{TRUE} to plot relative time differences with
-    #' respect to the median of the top plot.
+    #' respect to the overall median.
+    #' @param title
+    #' A \code{character}, the plot title.
+    #' @param xlim
+    #' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
     #' @return
     #' A \code{\link[ggplot2]{ggplot}} object.
     plot = function(
-      which_element = "seconds", by = NULL, relative = FALSE, which_run = "all",
-      which_optimizer = "all", only_comparable = FALSE
+      which_element = "seconds", by = NULL, relative = FALSE,
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+      title = paste("Optimization of", x$f_name), xlim = c(NA, NA)
     ) {
       plot.Nop(
         x = self, which_element = which_element, by = by, relative = relative,

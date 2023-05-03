@@ -172,17 +172,21 @@ summary.Nop <- function(
 }
 
 #' @noRd
-#' @importFrom stats complete.cases reorder median bw.nrd
-#' @importFrom ggplot2 ggplot aes scale_y_continuous theme_minimal
-#' @importFrom ggridges stat_density_ridges
-#' @importFrom dplyr group_by summarize select mutate
+#' @importFrom stats complete.cases median
+#' @importFrom dplyr summarize mutate
+#' @importFrom ggplot2 ggplot aes scale_x_continuous theme_minimal theme
+#' @importFrom ggplot2 geom_boxplot geom_vline annotate element_blank ggtitle
+#' @importFrom ggplot2 coord_cartesian
+#' @importFrom scales label_percent
+#' @importFrom forcats fct_reorder
 #' @importFrom rlang .data
 #' @importFrom scales percent
 #' @exportS3Method
 
 plot.Nop <- function(
     x, which_element = "seconds", by = NULL, relative = FALSE,
-    which_run = "all", which_optimizer = "all", only_comparable = FALSE, ...
+    which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...
 ) {
 
   ### input checks
@@ -191,26 +195,26 @@ plot.Nop <- function(
       "Argument {.var which_element} must be {.val seconds} or {.val value}."
     )
   }
+  if (!is.null(by)) {
+    if (!by %in% c("label", "optimizer")) {
+      ino_stop(
+        "Argument {.var by} must be {.val label} or {.val optimizer} or {.val NULL}."
+      )
+    }
+  }
+  is_TRUE_FALSE(relative)
   if (identical(which_element, "value") && relative) {
     ino_status(
       "Argument {.var relative} cannot be {.val TRUE} if {.var which_element} is {.val value}."
     )
     relative <- FALSE
   }
-  if (is.null(by)) {
-    if (relative) {
-      ino_status(
-        "Argument {.var relative} cannot be {.val TRUE} if {.var by} is {.val NULL}."
-      )
-      relative <- FALSE
-    }
-  } else {
-    if (!(identical(by, "label") || identical(by, "optimizer"))) {
-      ino_stop(
-        "Argument {.var by} must be {.val label} or {.val optimizer}."
-      )
-    }
-    is_TRUE_FALSE(relative)
+  is_name(title)
+  if (!(is.vector(xlim) && length(xlim) == 2)) {
+    ino_stop(
+      "Argument {.var xlim} must be {.cls numeric} vector of length 2.",
+      "Entries can also be {.val NA}."
+    )
   }
 
   ### get data
@@ -219,31 +223,40 @@ plot.Nop <- function(
     which_optimizer = which_optimizer, only_comparable = only_comparable,
     digits = Inf
   )
-  if (nrow(data) == 0) {
-    return()
+
+  ### drop incomplete cases
+  incomplete_cases <- which(!stats::complete.cases(data))
+  if (length(incomplete_cases) > 0) {
+    ino_status(
+      paste("Dropped", length(incomplete_cases), "results with missing data.")
+    )
+    data <- data[-incomplete_cases, , drop = FALSE]
   }
-  data <- data[stats::complete.cases(data), , drop = FALSE]
+  if (nrow(data) == 0) {
+    ino_status(
+      "No data to plot."
+    )
+    return(invisible(NULL))
+  }
 
-  ### compute relative times
+  ### compute relative 'seconds' wrt to median seconds
   if (identical(which_element, "seconds") && relative) {
-
-    ### TODO: maybe relative wrt to median of all optimization runs?
-    med <- data |> dplyr::group_by(.data[[by]]) |> dplyr::summarize(
-      "median" = stats::median(.data$seconds), .groups = "drop"
-    ) |> dplyr::select("median") |> min()
+    med <- dplyr::summarize(
+      data, "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
+    ) |> as.numeric()
     data <- data |>
       dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
+  }
 
-    ### TODO: this currently orders if 'relative' and 'by = label'
-    if (by == "label") {
-      data <- data |>
-        mutate(
-          label = forcats::fct_reorder(
-            .f = .data[["label"]], .x = .data[["seconds"]],
-            .fun = median, .desc = TRUE
-          )
+  ### sort by median 'seconds'
+  if (identical(which_element, "seconds") && !is.null(by)) {
+    data <- data |>
+      dplyr::mutate(
+        label = forcats::fct_reorder(
+          .f = .data[[by]], .x = .data[["seconds"]],
+          .fun = stats::median, .desc = TRUE
         )
-    }
+      )
   }
 
   ### build base plot
@@ -259,18 +272,26 @@ plot.Nop <- function(
   base_plot <- base_plot +
     ggplot2::theme_minimal()
 
-  ### add times
-  if (identical(which_element, "seconds")) {
+  ### add 'values'
+  if (identical(which_element, "value")) {
+    base_plot <- base_plot +
+      ggplot2::geom_point(
+        position = "jitter", alpha = 0.5
+      ) +
+      ggplot2::scale_x_continuous(
+        name = "Function value at optimum"
+      )
+  }
 
-    ### build time visualization
-    bandwidth <- stats::bw.nrd(data$seconds)
+  ### add 'seconds'
+  if (identical(which_element, "seconds")) {
     base_plot <- base_plot +
       ggplot2::geom_boxplot()
     if (relative) {
       base_plot <- base_plot +
         ggplot2::scale_x_continuous(
-          labels = scales::percent,
-          name = "Relative optimization time"
+          labels = scales::label_percent(style_positive = c("plus")),
+          name = "Relative deviation in optimization time"
         )
     } else {
       base_plot <- base_plot +
@@ -279,26 +300,29 @@ plot.Nop <- function(
           limits = c(0, NA)
         )
     }
-  }
-
-  ### add values
-  if (identical(which_element, "value")) {
-    base_plot <- base_plot +
-      ggplot2::geom_point(
-        aes(x = .data[["value"]]), position = "jitter"
+    if (!is.null(by)) {
+      med <- dplyr::summarize(
+        data, "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
+      ) |> as.numeric()
+      base_plot <- base_plot + ggplot2::geom_vline(
+        xintercept = med
       ) +
-      ggplot2::scale_x_continuous(
-        name = "Optimum"
-      )
+        ggplot2::annotate(
+          x = 0, y = Inf, label = "Overall median",
+          geom = "label", vjust = 1
+        )
+    }
   }
 
-  ### modify y-axis
+  ### modify labels and axes
   if (is.null(by)) {
     base_plot <- base_plot +
       ggplot2::theme(
         axis.text.y = ggplot2::element_blank(),
         axis.ticks.y = ggplot2::element_blank(),
-        axis.title.y = ggplot2::element_blank()
+        axis.title.y = ggplot2::element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()
       )
   } else {
     base_plot <- base_plot +
@@ -306,6 +330,10 @@ plot.Nop <- function(
         axis.title.y = ggplot2::element_blank()
       )
   }
+  if (!is.null(title)) {
+    base_plot <- base_plot + ggplot2::ggtitle(label = title)
+  }
+  base_plot <- base_plot + ggplot2::coord_cartesian(xlim = xlim)
 
   ### return plot
   return(base_plot)

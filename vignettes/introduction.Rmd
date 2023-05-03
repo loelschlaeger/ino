@@ -379,15 +379,9 @@ geyser$optima(digits = 0, which_run = "educated_guess")
 
 For comparison, we consider a set of implausible starting values, which leads to local optima:
 
-```{r, bad educated guess}
-geyser$optimize(initial = rep(0, 5), label = "bad_educated_guess")
-summary(geyser, which_run = "bad_educated_guess") 
-```
-
-Using the `$clear()` method, it is possible to discard these results from further comparisons:
-
-```{r, clear optimization results}
-geyser$clear(which_run = "bad_educated_guess")
+```{r, bad guess}
+geyser$optimize(initial = rep(0, 5), label = "bad_guess")
+summary(geyser, which_run = "bad_guess") 
 ```
 
 ### Standardizing the optimization problem

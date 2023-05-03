@@ -1059,7 +1059,9 @@ Visualizes the optimization time or value.
   relative = FALSE,
   which_run = "all",
   which_optimizer = "all",
-  only_comparable = FALSE
+  only_comparable = FALSE,
+  title = paste("Optimization of", x$f_name),
+  xlim = c(NA, NA)
 )}\if{html}{\out{</div>}}
 }
 
@@ -1079,9 +1081,9 @@ Visualizes the optimization time or value.
 \item \code{NULL} to not group (default)
 }}
 
-\item{\code{relative}}{Only if \code{which_element = "seconds"} and \code{by} not \code{NULL}.
+\item{\code{relative}}{Only if \code{which_element = "seconds"}.
 In this case, set to \code{TRUE} to plot relative time differences with
-respect to the median of the top plot.}
+respect to the overall median.}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
@@ -1104,6 +1106,10 @@ respect to the median of the top plot.}
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
 include all optimization results.}
+
+\item{\code{title}}{A \code{character}, the plot title.}
+
+\item{\code{xlim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
 }
 \if{html}{\out{</div>}}
 }
