@@ -186,9 +186,7 @@ summary.Nop <- function(
 plot.Nop <- function(
     x, which_element = "seconds", by = NULL, relative = FALSE,
     which_run = "all", which_optimizer = "all", only_comparable = FALSE,
-    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...
-) {
-
+    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...) {
   ### input checks
   if (!which_element %in% c("seconds", "value")) {
     ino_stop(
@@ -242,7 +240,8 @@ plot.Nop <- function(
   ### compute relative 'seconds' wrt to median seconds
   if (identical(which_element, "seconds") && relative) {
     med <- dplyr::summarize(
-      data, "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
+      data,
+      "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
     ) |> as.numeric()
     data <- data |>
       dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
@@ -302,7 +301,8 @@ plot.Nop <- function(
     }
     if (!is.null(by)) {
       med <- dplyr::summarize(
-        data, "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
+        data,
+        "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
       ) |> as.numeric()
       base_plot <- base_plot + ggplot2::geom_vline(
         xintercept = med
