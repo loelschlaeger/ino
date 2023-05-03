@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.1",
+    "Version": "4.2.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -75,18 +75,6 @@
       "Hash": "dee7cfd76b4c78bab84e09b74b6d471f",
       "Requirements": [
         "Rcpp"
-      ]
-    },
-    "ao": {
-      "Package": "ao",
-      "Version": "0.2.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "baa0c3a3a47847ade12cbeda196cc13f",
-      "Requirements": [
-        "ggplot2",
-        "optimizeR",
-        "rlang"
       ]
     },
     "askpass": {
