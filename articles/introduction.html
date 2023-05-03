@@ -197,7 +197,7 @@ eruption times, respectively:</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://ggplot2.tidyverse.org" class="external-link">"ggplot2"</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">faithful</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">eruptions</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html" class="external-link">after_stat</a></span><span class="op">(</span><span class="va">density</span><span class="op">)</span><span class="op">)</span>, bins <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Eruption time (min)"</span><span class="op">)</span> </span></code></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"eruption time (min)"</span><span class="op">)</span> </span></code></pre></div>
 <p><img src="figures/introduction-faithful-1.png" width="75%" style="display: block; margin: auto;"></p>
 <p>For both clusters, we assume a normal distribution here, such that we
 consider a mixture of two Gaussian densities for modeling the overall
@@ -385,7 +385,7 @@ again.</p>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 276.36</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: 4.27 2.02 -0.83 -1.45 0.63</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.03</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="function-evaluation">Function evaluation<a class="anchor" aria-label="anchor" href="#function-evaluation"></a>
@@ -412,7 +412,7 @@ for example:</p>
 <span><span class="co">#&gt; [1]  -0.6263152   3.4877817  -0.8353112   0.1303885 -23.1685784</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.007704735</span></span>
+<span><span class="co">#&gt; [1] 0.00774765</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $initial</span></span>
 <span><span class="co">#&gt; [1] -0.6264538  0.1836433 -0.8356286  1.5952808  0.3295078</span></span>
@@ -595,7 +595,7 @@ following mixture densities:</p>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">faithful</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">eruptions</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html" class="external-link">after_stat</a></span><span class="op">(</span><span class="va">density</span><span class="op">)</span><span class="op">)</span>, bins <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Eruption time (min)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"eruption time (min)"</span>, colour <span class="op">=</span> <span class="st">"parameter"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html" class="external-link">stat_function</a></span><span class="op">(</span></span>
 <span>    fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu">mixture_density</span><span class="op">(</span><span class="va">x</span>, mu <span class="op">=</span> <span class="va">mle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, sd <span class="op">=</span> <span class="va">mle</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, lambda <span class="op">=</span> <span class="va">mle</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
@@ -607,10 +607,11 @@ following mixture densities:</p>
 <span>    <span class="op">}</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"bad"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><img src="figures/introduction-estimated-mixtures-1.png" width="75%" style="display: block; margin: auto;"></p>
-<p>It becomes very clear that the mixture defined by <code>mle</code>
-fits much better than <code>bad</code>, which practically estimates only
-a single class. However, the gradients at both points are close to zero,
-which explains why the <code>nlm</code> optimizer stops:</p>
+<p>The mixture defined by the <code>mle</code> parameter fits much
+better than <code>bad</code>, which practically estimates only a single
+class. However, the gradients at both points are close to zero, which
+explains why the <code>nlm</code> optimizer terminates at both
+points:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">results</span><span class="op">(</span>which_run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mle_run</span>, <span class="va">bad_run</span><span class="op">)</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span>, which_element <span class="op">=</span> <span class="st">"gradient"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
@@ -744,16 +745,12 @@ numeric vector of length <code>npar</code>, or, for convenience, to a
 <p>For comparison, we consider a set of implausible starting values,
 which leads to local optima:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"bad_educated_guess"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">geyser</span>, which_run <span class="op">=</span> <span class="st">"bad_educated_guess"</span><span class="op">)</span> </span>
+<code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"bad_guess"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">geyser</span>, which_run <span class="op">=</span> <span class="st">"bad_guess"</span><span class="op">)</span> </span>
 <span><span class="co">#&gt;    value                       parameter</span></span>
 <span><span class="co">#&gt; 1 421.42    3.49, 3.49, 0.13, 0.13, 0.00</span></span>
 <span><span class="co">#&gt; 2 384.78 1.84, 3.64, -2.92, -0.03, -3.00</span></span>
 <span><span class="co">#&gt; 3 421.42    3.49, 3.49, 0.13, 0.13, 0.00</span></span></code></pre></div>
-<p>Using the <code>$clear()</code> method, it is possible to discard
-these results from further comparisons:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">clear</span><span class="op">(</span>which_run <span class="op">=</span> <span class="st">"bad_educated_guess"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="standardizing-the-optimization-problem">Standardizing the optimization problem<a class="anchor" aria-label="anchor" href="#standardizing-the-optimization-problem"></a>
@@ -763,7 +760,7 @@ of the optimization problem, which could potentially improve the
 performance of the numerical optimizer. In our example, we can
 standardize the data before running the optimization via the
 <code>$standardize()</code> method:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">standardize</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">geyser</span><span class="op">$</span><span class="fu">get_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  num [1:272] 0.0983 -1.4787 -0.1356 -1.0556 0.9158 ...</span></span></code></pre></div>
@@ -771,7 +768,7 @@ standardize the data before running the optimization via the
 use <code>$optmize()</code>, which by default uses random starting
 values. Below, we will compare these results with those obtained on the
 original optimization problem.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span></span>
 <span>  <span class="fu">optimize</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"data_standardized"</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span></code></pre></div>
@@ -794,13 +791,13 @@ it can be beneficial to initially consider a reduced data set. The
 following application of the <code>$reduce()</code> method transforms
 <code>"data"</code> by selecting a proportion of 30% data points at
 random:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">reduce</span><span class="op">(</span>argument_name <span class="op">=</span> <span class="st">"data"</span>, how <span class="op">=</span> <span class="st">"random"</span>, prop <span class="op">=</span> <span class="fl">0.3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">geyser</span><span class="op">$</span><span class="fu">get_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  num [1:82] 4.2 1.75 4.25 1.75 3.45 ...</span></span></code></pre></div>
 <p>Similar to the standardizing above, calling <code>$optimize()</code>
 now optimizes on the reduced data set:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span></span>
 <span>  <span class="fu">optimize</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"data_subset"</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">$</span></span>
@@ -834,19 +831,19 @@ optimization times. Setting <code>by = "label"</code> allows for
 comparison across initialization strategies, setting
 <code>relative = TRUE</code> plots relative differences to the median of
 the top boxplot:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>by <span class="op">=</span> <span class="st">"label"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/introduction-plot-by-label-1.png" width="75%" style="display: block; margin: auto;"></p>
 <p>Setting <code>by = "optimizer"</code> allows comparison across
 optimizers:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>by <span class="op">=</span> <span class="st">"optimizer"</span>, relative <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/introduction-plot-by-optimizer-1.png" width="75%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="the-final-nop-object">The final <code>Nop</code> object<a class="anchor" aria-label="anchor" href="#the-final-nop-object"></a>
 </h3>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">geyser</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="text-decoration: underline;">Optimization problem:</span></span></span>
 <span><span class="co">#&gt; - Function: normal_mixture_llk</span></span>
@@ -857,11 +854,11 @@ optimizers:</p>
 <span><span class="co">#&gt; - 2: optim </span></span>
 <span><span class="co">#&gt; - 3: em </span></span>
 <span><span class="co">#&gt; <span style="text-decoration: underline;">Optimization results:</span></span></span>
-<span><span class="co"><span style="text-decoration: underline;">#&gt; </span>- Total runs (comparable): 433 (332)</span></span>
+<span><span class="co"><span style="text-decoration: underline;">#&gt; </span>- Total runs (comparable): 433 (333)</span></span>
 <span><span class="co">#&gt; - Best parameter: 3.53 1.75 0.11 -32.71 3.79</span></span>
 <span><span class="co">#&gt; - Best value: 248.98</span></span></code></pre></div>
 <p>The best optimization result can be extracted via:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geyser</span><span class="op">$</span><span class="fu">best_value</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 248.98</span></span>
 <span><span class="co">#&gt; attr(,"run")</span></span>

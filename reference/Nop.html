@@ -99,7 +99,7 @@ Call <code>object$optimize()</code> for optimization. See also the methods
 different filter options for optimization runs, optimizers, and elements:</p><ul><li><p><code>$results()</code> returns all saved optimization results,</p></li>
 <li><p><code>$summary()</code> summarizes the results,</p></li>
 <li><p><code>$optima()</code> returns a frequency table of identified optima,</p></li>
-<li><p><code>$plot()</code> visualizes the optimization times,</p></li>
+<li><p><code>$plot()</code> visualizes the optimization time or value,</p></li>
 <li><p><code>$best_parameter()</code> returns the parameter vector at which the optimum value is obtained,</p></li>
 <li><p><code>$best_value()</code> returns the found optimum value of <code>f</code>,</p></li>
 <li><p><code>$closest_parameter()</code> returns parameter closest to a specified value.</p></li>
@@ -1166,14 +1166,29 @@ include all optimization results.</p></dd>
 
 </div><p></p><hr><a id="method-Nop-plot"></a><div class="section">
 <h3 id="method-plot-">Method <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code><a class="anchor" aria-label="anchor" href="#method-plot-"></a></h3>
-<p>Visualizes the optimization times.</p><div class="section">
+<p>Visualizes the optimization time or value.</p><div class="section">
 <h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>by <span class="op">=</span> <span class="cn">NULL</span>, relative <span class="op">=</span> <span class="cn">FALSE</span>, log <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span></span>
+<span>  which_element <span class="op">=</span> <span class="st">"seconds"</span>,</span>
+<span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  relative <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  which_run <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  which_optimizer <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  only_comparable <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Optimization of"</span>, <span class="va">x</span><span class="op">$</span><span class="va">f_name</span><span class="op">)</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-20">Arguments<a class="anchor" aria-label="anchor" href="#arguments-20"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>by</code></dt>
+<p></p><div class="arguments"><dl><dt><code>which_element</code></dt>
+<dd><p>Either:</p><ul><li><p><code>"seconds"</code> to plot the optimization times (default)</p></li>
+<li><p><code>"value"</code> to plot the optimization values</p></li>
+</ul></dd>
+
+
+<dt><code>by</code></dt>
 <dd><p>Either:</p><ul><li><p><code>"label"</code> to group by optimization label</p></li>
 <li><p><code>"optimizer"</code> to group by optimizer</p></li>
 <li><p><code>NULL</code> to not group (default)</p></li>
@@ -1181,19 +1196,48 @@ include all optimization results.</p></dd>
 
 
 <dt><code>relative</code></dt>
-<dd><p>Set to <code>TRUE</code> to plot relative time differences with
-respect to the median of the top boxplot.</p></dd>
+<dd><p>Only if <code>which_element = "seconds"</code>.
+In this case, set to <code>TRUE</code> to plot relative time differences with
+respect to the overall median.</p></dd>
 
 
-<dt><code>log</code></dt>
-<dd><p>Set to <code>TRUE</code> to plot a log10-x-axis.</p></dd>
+<dt><code>which_run</code></dt>
+<dd><p>Select saved results of optimization runs. Either:</p><ul><li><p><code>"all"</code>, all results,</p></li>
+<li><p><code>"last"</code>, the results from the last optimization,</p></li>
+<li><p><code>"failed"</code>, the results from failed optimization runs,</p></li>
+<li><p>a <code>character</code> (vector) of labels specified in <code>$optimize()</code>,</p></li>
+<li><p>a <code>numeric</code> (vector) of run ids.</p></li>
+</ul></dd>
+
+
+<dt><code>which_optimizer</code></dt>
+<dd><p>Select specified numerical optimizers. Either:</p><ul><li><p><code>"all"</code>, all specified optimizers,</p></li>
+<li><p><code>"removed"</code>, all removed optimizers,</p></li>
+<li><p><code>"active"</code>, all active optimizers (i.e., not removed),</p></li>
+<li><p>a <code>character</code> (vector) of specified optimizer labels,</p></li>
+<li><p>a <code>numeric</code> (vector) of optimizer ids (see <code>$print()</code> output).</p></li>
+</ul></dd>
+
+
+<dt><code>only_comparable</code></dt>
+<dd><p>Either <code>TRUE</code> to show only comparable results (i.e., results obtained
+for the original optimization problem), or <code>FALSE</code> to
+include all optimization results.</p></dd>
+
+
+<dt><code>title</code></dt>
+<dd><p>A <code>character</code>, the plot title.</p></dd>
+
+
+<dt><code>xlim</code></dt>
+<dd><p>Passed on to <code><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html" class="external-link">coord_cartesian</a></code>.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
 <h4 id="returns-20">Returns<a class="anchor" aria-label="anchor" href="#returns-20"></a></h4>
-<p>NO return value. Draws a plot to the current device.</p>
+<p>A <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></code> object.</p>
 </div>
 
 </div><p></p><hr><a id="method-Nop-best_value"></a><div class="section">
