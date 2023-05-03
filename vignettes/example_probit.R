@@ -3,13 +3,13 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
-  fig.dim = c(8, 6), 
+  fig.dim = c(8, 6),
   out.width = "75%",
   eval = FALSE
 )
 # library("ino")
 devtools::load_all() # remove later
-options("ino_verbose" = TRUE) 
+options("ino_verbose" = TRUE)
 
 
 ## ---- choice covariates, eval = TRUE-----------------------------------------------------------
@@ -21,9 +21,9 @@ X(n = 1, t = 1)
 
 ## ---- simulate data, eval = TRUE---------------------------------------------------------------
 N <- 200
-T <- 20
-b <- c(1, -10)
-Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
+T <- 30
+b <- c(1, -5)
+Omega <- matrix(c(1, 0.1, 0.1, 2), 2, 2)
 Sigma <- matrix(c(1, -0.5, 0.2, -0.5, 1, 0.2, 0.2, 0.2, 1), 3, 3)
 probit_data <- sim_mnp(N, T, J = 3, P = 2, b, Omega, Sigma, X, seed = 1)
 
@@ -54,17 +54,22 @@ print(probit_ino)
 
 
 ## ---- optimize with random initial values------------------------------------------------------
-probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4)
+
+saveRDS(probit_ino, "probit_ino.rds")
+
+probit_ino$optimize(initial = "random", runs = 20, label = "random", ncores = 5)
 
 
-## ---- eval = TRUE------------------------------------------------------------------------------
-probit_ino$reduce("data", how = "random", proportion = 0.25)
+for (proportion in seq(0.1, 0.9, 0.1)) {
 
+  saveRDS(probit_ino, "probit_ino.rds")
 
-## ----------------------------------------------------------------------------------------------
-probit_ino$optimize(initial = "random", runs = 100, label = "subset", ncores = 4)$
-  reset_argument("data")$
-  continue()
+  probit_ino$reduce("data", how = "first", proportion = proportion)$
+    optimize(initial = "random", runs = 20, label = paste0("subset_", proportion) , ncores = 5)$
+    reset_argument("data")$
+    continue()
+
+}
 
 
 ## ---- eval = TRUE------------------------------------------------------------------------------
@@ -76,7 +81,7 @@ random_initial <- lapply(probit_ino$results(which_run = "random"), `[[`, "initia
   cbind(type = "random_initial")
 
 subset_initial <- lapply(
-  probit_ino$results(which_run = "subset", which_element = "previous_run"), 
+  probit_ino$results(which_run = "subset", which_element = "previous_run"),
   `[[`, "previous_run.parameter"
   ) |>
   do.call(what = rbind) |> sweep(2, probit_ino$true_parameter) |>
@@ -86,7 +91,7 @@ subset_initial <- lapply(
 library(ggplot2)
 library(reshape2)
 
-melt(rbind(random_initial, subset_initial)) |> 
+melt(rbind(random_initial, subset_initial)) |>
   ggplot(aes(x = variable, y = value)) +
   geom_point(aes(color = type), position = "jitter") +
   labs(
