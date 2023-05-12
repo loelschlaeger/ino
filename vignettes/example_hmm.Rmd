@@ -200,13 +200,13 @@ hmm_ino$best_value()
 
 ### Optimization time
 
-The `plot()` function can be used to investigate the optimization times across initialization strategies (`by = "label"`). Since the absolute times depend  ^[Setting `relative = FALSE` in the `plot()` call shows the absolute times.]  
+The `plot()` function can be used to investigate the optimization times across initialization strategies (`by = "label"`).^[Setting `relative = FALSE` in the `plot()` call shows the absolute times.]  
 
 ```{r, optimization time, eval = TRUE}
 plot(hmm_ino, by = "label")
 ```
 
-Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute point statistics of interest, like the median computation time per strategy:
+Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute summary statistics of interest, like the median computation time per strategy:
 
 ```{r, warning = FALSE, message = FALSE, eval = TRUE}
 summary(hmm_ino, c("label", "seconds")) %>% 
@@ -217,7 +217,7 @@ summary(hmm_ino, c("label", "seconds")) %>%
 
 We can draw the following conclusions:
 
-- Intuitively, optimization runs based on our educated guesses should be faster than runs with random starting values, since we have carefully chosen these starting values by investigating the data:
+- Intuitively, optimization runs based on our educated guesses should be faster than runs with random starting values, since we have carefully chosen these starting values by investigating the data
 
 ### Considering successful runs only
 
@@ -232,14 +232,29 @@ summary(hmm_ino, c("label", "value", "seconds")) %>%
 
 While for the educated guesses about 55\% of the runs converge to the global optimum, the random initialization and subset initialization strategies get stuck more often in local optima. Note that the standardized initialization approach cannot be compared to the other approaches here.
 
-Let's again compare the median computation time, but only for those runs that lead to the global optimum:
+Let's again compare the median computation time, but only for those runs that lead to the apparent global optimum:
 
 ```{r, eval = TRUE}
 summary(hmm_ino, c("label", "value", "seconds")) %>% 
   filter(value < -22445) %>% 
-  group_by(label) %>% 
-  summarise(mean_time = mean(seconds)) %>%
-  arrange(mean_time)
+  ggplot(aes(y = label, x = seconds)) +
+  geom_boxplot() + ylab("")
 ```
+
+Looking at the boxplots, the subset last strategy appears to be considerably slower  than the subset first method. Examining the initial values (obtained from fitting the model to the subset in the first step), for example for the second run,
+
+```{r}
+hmm_ino$results("subset_last")[[2]]$initial
+# to obtain the inital values of all optimization runs, run
+# lapply(hmm_ino$results("subset_last"), '[[', "initial")
+```
+
+we see that the starting values for the transition probability matrix (i.e., the first two entries) deviate from the values obtained at the global optimum (cf. `hmm_ino$best_parameter()`). For the subset first strategy, the initial values of the tpm are much closer to those at the global optimum (again considering the second run for illustration):
+
+```{r}
+hmm_ino$results("subset_first")[[2]]$initial
+```
+
+
 
 ## References
