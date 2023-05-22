@@ -103,10 +103,8 @@ print_optimization_results <- function(x, digits) {
 #' @exportS3Method
 
 summary.Nop <- function(
-  object, which_element = "basic", which_run = "all", which_optimizer = "all",
-  digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...
-) {
-
+    object, which_element = "basic", which_run = "all", which_optimizer = "all",
+    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...) {
   ### extract results and combine in data.frame
   out <- data.frame()
   results <- object$results(
@@ -118,8 +116,8 @@ summary.Nop <- function(
     return(invisible(out))
   }
   result_names <- unique(names(
-    unlist(unlist(results, recursive = FALSE), recursive = FALSE))
-  )
+    unlist(unlist(results, recursive = FALSE), recursive = FALSE)
+  ))
   for (run_id in seq_along(results)) {
     for (optimizer_id in seq_along(results[[run_id]])) {
       append <- results[[run_id]][[optimizer_id]]
@@ -193,10 +191,9 @@ summary.Nop <- function(
 #' @exportS3Method
 
 plot.Nop <- function(
-  x, which_element = "seconds", by = NULL, relative = FALSE,
-  which_run = "all", which_optimizer = "all", only_comparable = FALSE,
-  title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...
-) {
+    x, which_element = "seconds", by = NULL, relative = FALSE,
+    which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...) {
   ### input checks
   if (!which_element %in% c("seconds", "value")) {
     ino_stop(
