@@ -15,8 +15,6 @@ is_index_vector(x, error = TRUE)
 \value{
 If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
-
-Either invisibly \code{TRUE} or an error is thrown.
 }
 \description{
 This function checks whether the input is proper index vector, i.e., a
