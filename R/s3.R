@@ -117,7 +117,9 @@ summary.Nop <- function(
   if (length(results) == 0) {
     return(invisible(out))
   }
-  result_names <- unique(names(unlist(results)))
+  result_names <- unique(names(
+    unlist(unlist(results, recursive = FALSE), recursive = FALSE))
+  )
   for (run_id in seq_along(results)) {
     for (optimizer_id in seq_along(results[[run_id]])) {
       append <- results[[run_id]][[optimizer_id]]
