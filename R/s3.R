@@ -103,8 +103,10 @@ print_optimization_results <- function(x, digits) {
 #' @exportS3Method
 
 summary.Nop <- function(
-    object, which_element = "basic", which_run = "all", which_optimizer = "all",
-    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...) {
+  object, which_element = "basic", which_run = "all", which_optimizer = "all",
+  digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...
+) {
+
   ### extract results and combine in data.frame
   out <- data.frame()
   results <- object$results(
@@ -115,9 +117,14 @@ summary.Nop <- function(
   if (length(results) == 0) {
     return(invisible(out))
   }
+  result_names <- unique(names(unlist(results)))
   for (run_id in seq_along(results)) {
     for (optimizer_id in seq_along(results[[run_id]])) {
       append <- results[[run_id]][[optimizer_id]]
+      missing_results <- setdiff(result_names, names(append))
+      if (length(missing_results) > 0) {
+        append[missing_results] <- NA
+      }
       if (length(append) > 0) {
         out <- dplyr::bind_rows(out, as.data.frame(t(cbind(append))))
       }
