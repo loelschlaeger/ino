@@ -184,9 +184,10 @@ summary.Nop <- function(
 #' @exportS3Method
 
 plot.Nop <- function(
-    x, which_element = "seconds", by = NULL, relative = FALSE,
-    which_run = "all", which_optimizer = "all", only_comparable = FALSE,
-    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...) {
+  x, which_element = "seconds", by = NULL, relative = FALSE,
+  which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+  title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...
+) {
   ### input checks
   if (!which_element %in% c("seconds", "value")) {
     ino_stop(
@@ -308,7 +309,7 @@ plot.Nop <- function(
         xintercept = med
       ) +
         ggplot2::annotate(
-          x = 0, y = Inf, label = "Overall median",
+          x = med, y = Inf, label = "Overall median",
           geom = "label", vjust = 1
         )
     }
