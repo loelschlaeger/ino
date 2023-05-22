@@ -25,22 +25,21 @@ devtools::load_all() # remove later
 options("ino_verbose" = TRUE) 
 ```
 
-The probit model is widely used to study discrete choice behavior in fields like transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. Typically, estimating the probit model's parameters involves numerically maximizing the likelihood function. This approach, however, can be computationally expensive and may not converge to the global optimum, especially for complex models. In this vignette, we use the {ino} package to investigate the effect of initialization on numerical probit likelihood maximization.
+The probit model is a widely employed statistical tool for analyzing discrete choice behavior in various fields, including transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. The estimation of probit model parameters typically involves the numerical maximization of the likelihood function. However, this approach can be computationally expensive and may encounter problems in reaching the global optimum, especially when dealing with complex models. In this vignette, we utilize the `{ino}` package to investigate the influence of initialization on the numerical maximization of the probit likelihood function.
 
 ## Model formulation
 
-We briefly formulate the probit model and its estimation. For more details, see @Train:2009 and @Bhat:2011. Assume that $N$ deciders choose among $J \geq 2$ alternatives at each of $T$ choice occasions. Let $y_{nt} \in \{1,\dots,J\}$ label the choice of decider $n$ at occasion $t$. Assume further that the choices are rational in the sense that $y_{nt}$ corresponds to the largest entry in the utility vector $U_{nt} \in \mathbb{R}^J$ for $n$ at $t$. 
+In our model formulation, we consider a scenario where a total of $N$ deciders are faced with choosing among $J \geq 2$ alternatives at each of the $T$ choice occasions. The choice made by decider $n$ at occasion $t$ is denoted as $y_{nt}$ and can take values in the set $\{1, \dots, J\}$. For more comprehensive details on the probit model and its estimation, please refer to the works by @Train:2009 and @Bhat:2011.
 
-The probit model defines $$U_{nt} = X_{nt} b + \epsilon_{nt},$$ where $X_{nt}$ is a $J\times P$ matrix of $P$ characteristics for each alternative, $b$ is a coefficient vector of length $P$, and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normally distributed errors (i.e., unobserved influences on the utility). 
+We assume that the choices are rational, meaning that the selected alternative $y_{nt}$ corresponds to the alternative with the highest utility among the available options. The utility for decider $n$ at occasion $t$ is represented by a vector $U_{nt} \in \mathbb{R}^J$, where each entry of the vector corresponds to the utility associated with a specific alternative. The probit model explains the utility vector as $$U_{nt} = X_{nt} b + \epsilon_{nt},$$ where $X_{nt}$ is a $J\times P$ matrix containing $P$ characteristics for each alternative, $b$ is a coefficient vector of length $P$, and $\epsilon_{nt} \sim N(0,\Sigma)$ denotes the vector of jointly normally distributed errors, which capture unobserved influences on the utility.
 
 The probit model (like any utility model) is invariant to the level and scale of the utilities $U_{nt}$. We ensure identifiability by considering utility differences, which reduces $\Sigma$ from $J$ to $J-1$ dimensions, and fixing the first entry of $b$ to $1$.
 
-To account for preference heterogeneity across deciders, the mixed probit model includes decider-specific coefficient vectors as $\beta_n \sim N(b, \Omega)$. In the degenerate case $\Omega = 0$, we have $\beta_n = b$, i.e., all deciders share the same preferences.
-	
-The researcher aims to estimate the values for $b$, $\Omega$, and $\Sigma$, given a set of observed choice data. The most common approach is the maximum likelihood method. Let $\theta$ denote the vector of the identified parameters, i.e., $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. To ensure that the estimates result in proper covariance matrices, we actually optimize over the Cholesky factors. Note that the length of the parameter vector $\theta$ increases quadratically with both the number of alternatives $J$ and the number of choice characteristics $P$. This quadratic increase indicates that numerical optimization becomes computationally demanding for complex models with a high number of choice alternatives or choice covariates.
+To account for preference heterogeneity across decision-makers, the mixed probit model incorporates decider-specific coefficient vectors as $\beta_n \sim N(b, \Omega)$. In the degenerate case where $\Omega = 0$, all decision-makers share the same preferences, and $\beta_n \equiv b$.
 
-The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\hat{\theta} = \arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$
-where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ the Gaussian density. The integral part of the equation does not have a closed-form expression, and therefore, it must be approximated numerically. Here, we apply the `mvtnorm::GenzBretz` algorithm [@Genz:2009].
+The goal of the researcher is to estimate the values for $b$, $\Omega$, and $\Sigma$ based on a set of observed choice data. The most common approach for estimation is the maximum likelihood method. Let $\theta$ represent the vector of identified parameters, which includes $P-1$ coefficients of $b$, $P(P+1)/2$ coefficients of $\Omega$, and $J(J-1)/2$ coefficients of the differenced matrix $\Sigma$. To ensure that the estimates result in proper covariance matrices, the optimization is performed over the Cholesky factors. It is important to note that the length of the parameter vector $\theta$ increases quadratically with both the number of alternatives $J$ and the number of choice characteristics $P$, indicating that numerical optimization becomes computationally demanding for complex models with a high number of alternatives or choice covariates.
+
+The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\hat{\theta} = \arg \max_\theta \log \sum_{n,t,j} 1(y_{nt} = j) \int 1(j = \arg \max U_{nt}) \phi(\epsilon_{nt}) d \epsilon_{nt},$$ where $1(\cdot)$ denotes the indicator function and $\phi(\cdot)$ represents the Gaussian density. The integral part of the equation does not have a closed-form expression, thus requiring numerical approximation. Here, we utilize the `mvtnorm::GenzBretz()` algorithm by @Genz:2009 for this purpose.
 
 ## Data simulation and likelihood computation
 
@@ -50,7 +49,19 @@ In our simulation, the choice setting consists of $J = 3$ alternatives that are 
 
 ```{r, choice covariates, eval = TRUE}
 X <- function(n, t) {
-  cbind(stats::rnorm(3, mean = 10, sd = 3), stats::rnorm(3, mean = 0, sd = 0.3))
+  
+  cost <- round(stats::rlnorm(3, meanlog = 7, sdlog = 0.3))
+  
+  set.seed(n)
+  age_group <- sample(c("young", "old"), size = 1)
+  
+  age <- (age_group == "young") * rpois(n = 1, lambda = 30) + (age_group == "old") * rpois(n = 1, lambda = 60)
+  
+  
+  covariates <- cbind(cost, diag(3)[, -1] * age)
+  rownames(covariates) <- c("beach", "cruise", "party")
+  colnames(covariates) <- c("cost", "age_cruise", "age_party")
+  return(covariates)
 }
 X(n = 1, t = 1)
 ```
@@ -58,12 +69,13 @@ X(n = 1, t = 1)
 We simulate choice data for $N = 200$ deciders at $T = 20$ choice occasions from the probit model defined by the parameters $b = \begin{pmatrix} 1 & -10 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 0.2 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.2 \\ -0.5 & 1 & 0.2 \\ 0.2 & 0.2 & 1 \end{pmatrix}$:
 
 ```{r, simulate data, eval = TRUE}
-N <- 200
-T <- 20
-b <- c(1, -10)
-Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
+N <- 100 # 200
+T <- 10 # 20
+b <- c(1, -0.1, -0.8)
+#Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
 Sigma <- matrix(c(1, -0.5, 0.2, -0.5, 1, 0.2, 0.2, 0.2, 1), 3, 3)
-probit_data <- sim_mnp(N, T, J = 3, P = 2, b, Omega, Sigma, X, seed = 1)
+Omega <- Sigma
+probit_data <- sim_mnp(N, T, J = 3, P = 3, b, Omega, Sigma, X, seed = 1)
 ```
 
 The `probit_data` object is a `data.frame` with the decider index `n`, the choice occasion index `t`, the choice `y`, and the choice characteristics `X`:
@@ -89,7 +101,7 @@ f_ll_mnp(theta = theta, data = probit_data)
 To analyze the outcome of the numerical likelihood optimization for the multinomial mixed probit model, we apply the {ino} package. We first define a `Nop` object by setting `f = f_ll_mnp`, the number of parameters to `npar = 7`, and `data = probit_data`. Then, we apply the `stats::nlm` optimizer with a limit of 1000 iterations. Since this optimizer minimizes the objective function instead of maximizing it, we set `neg = TRUE` to compute the negative log-likelihood value.
 
 ```{r, define Nop, eval = TRUE}
-probit_ino <- Nop$new(f = f_ll_mnp, npar = 7, data = probit_data, neg = TRUE)$
+probit_ino <- Nop$new(f = f_ll_mnp, npar = length(theta), data = probit_data, neg = TRUE)$
   set_optimizer(optimizer_nlm(iterlim = 1000))
 ```
 
