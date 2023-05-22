@@ -103,8 +103,10 @@ print_optimization_results <- function(x, digits) {
 #' @exportS3Method
 
 summary.Nop <- function(
-    object, which_element = "basic", which_run = "all", which_optimizer = "all",
-    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...) {
+  object, which_element = "basic", which_run = "all", which_optimizer = "all",
+  digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...
+) {
+
   ### extract results and combine in data.frame
   out <- data.frame()
   results <- object$results(
@@ -115,9 +117,16 @@ summary.Nop <- function(
   if (length(results) == 0) {
     return(invisible(out))
   }
+  result_names <- unique(names(
+    unlist(unlist(results, recursive = FALSE), recursive = FALSE))
+  )
   for (run_id in seq_along(results)) {
     for (optimizer_id in seq_along(results[[run_id]])) {
       append <- results[[run_id]][[optimizer_id]]
+      missing_results <- setdiff(result_names, names(append))
+      if (length(missing_results) > 0) {
+        append[missing_results] <- NA
+      }
       if (length(append) > 0) {
         out <- dplyr::bind_rows(out, as.data.frame(t(cbind(append))))
       }
@@ -184,9 +193,10 @@ summary.Nop <- function(
 #' @exportS3Method
 
 plot.Nop <- function(
-    x, which_element = "seconds", by = NULL, relative = FALSE,
-    which_run = "all", which_optimizer = "all", only_comparable = FALSE,
-    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...) {
+  x, which_element = "seconds", by = NULL, relative = FALSE,
+  which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+  title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...
+) {
   ### input checks
   if (!which_element %in% c("seconds", "value")) {
     ino_stop(
@@ -308,7 +318,7 @@ plot.Nop <- function(
         xintercept = med
       ) +
         ggplot2::annotate(
-          x = 0, y = Inf, label = "Overall median",
+          x = med, y = Inf, label = "Overall median",
           geom = "label", vjust = 1
         )
     }

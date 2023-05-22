@@ -311,9 +311,6 @@ is_TRUE_FALSE <- function(x, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @return
-#' Either invisibly \code{TRUE} or an error is thrown.
-#'
 #' @keywords utils
 #'
 #' @examples

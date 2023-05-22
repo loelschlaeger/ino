@@ -769,14 +769,19 @@ Nop <- R6::R6Class(
     clear = function(
       which_run, which_optimizer = "all", which_element = "all"
     ) {
+      if (missing(which_run)) {
+        ino_stop("Please specify {.var which_run}.")
+      }
       run_ids <- private$.get_run_ids(which_run)
       if (length(run_ids) == 0) {
         return(invisible(self))
       }
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      which_element <- private$.check_which_element(
-        which_element = which_element, optimizer_ids = optimizer_ids,
-        protected_elements = c("run", "optimizer", "label")
+      which_element <- suppressWarnings(
+        private$.check_which_element(
+          which_element = which_element, optimizer_ids = optimizer_ids,
+          protected_elements = c("run", "optimizer", "label")
+        )
       )
       for (i in run_ids) {
         for (j in optimizer_ids) {
@@ -1075,7 +1080,7 @@ Nop <- R6::R6Class(
         self$elements_available(which_optimizer = optimizer_ids)
       ))
       if (identical(which_element, "all")) {
-        return(all_elements)
+        which_element <- all_elements
       }
       if (identical(which_element, "basic")) {
         which_element <- c("value", "parameter")
@@ -1096,7 +1101,7 @@ Nop <- R6::R6Class(
       protect <- intersect(which_element, protected_elements)
       if (length(protect) > 0) {
         ino_warn(
-          "The following elements can not be selected:",
+          "The following elements cannot be selected:",
           glue::glue("{protect}")
         )
         which_element <- setdiff(which_element, protected_elements)
