@@ -1,22 +1,22 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# {ino}: Initialization of Numerical Optimization
+# ino <a href="https://loelschlaeger.de/ino/"><img src="man/figures/logo.png" align="right" height="139" /></a>
 
 <!-- badges: start -->
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/ino)](https://CRAN.R-project.org/package=ino)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/last-month/ino)](https://CRAN.R-project.org/package=ino)
 [![R-CMD-check](https://github.com/loelschlaeger/ino/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ino/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/loelschlaeger/ino/branch/master/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ino?branch=master)
 <!-- badges: end -->
 
-The R-package {ino} provides implementation of several initialization
-strategies for the numerical optimization of real-valued functions, in
-particular likelihood functions of statistical models.
-
-Please see the vignettes for a manual and two example applications.
+The {ino} R package implements initialization strategies and analysis
+tools for numerical optimization of real-valued functions, with a
+specific focus on likelihood functions of statistical models.
 
 ## Installation
 

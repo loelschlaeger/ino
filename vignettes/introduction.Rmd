@@ -16,17 +16,19 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
+  fig.path = "figures/introduction-",
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
 library("ino")
 options("ino_verbose" = FALSE)
 set.seed(1)
+ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
 ## Motivation behind {ino}
 
-Optimization is of great relevance in many fields, including finance (portfolio optimization), engineering (minimizing air resistance), and statistics (likelihood maximization for model fitting). Often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for gradient or Hessian are unknown. In these cases, numerical optimization algorithms are helpful. They iteratively explore the parameter space, guaranteeing to improve the function value over each iteration, and eventually converge to a point where no more improvements can be made [@Bonnans:2006]. In R, several functions are available that can be applied to numerically solve optimization problems, including (quasi) Newton (`stats::nlm()`, `stats::nlminb()`, `stats::optim()`), direct search (`pracma::nelder_mead()`), and conjugate gradient methods (`Rcgmin::Rcgmin()`). The [CRAN Task View: Optimization and Mathematical Programming](https://CRAN.R-project.org/view=Optimization) provides a comprehensive list of packages for solving optimization problems. 
+Optimization is of great relevance in many fields, including finance (portfolio optimization), engineering (minimizing air resistance), and statistics (likelihood maximization for model fitting). Often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for gradient or Hessian are not available. In these cases, numerical optimization algorithms are helpful. They iteratively explore the parameter space, guaranteeing to improve the function value over each iteration, and eventually converge to a point where no more improvements can be made [@Bonnans:2006]. In R, several functions are available that can be applied to numerically solve optimization problems, including (quasi) Newton (`stats::nlm()`, `stats::nlminb()`, `stats::optim()`), direct search (`pracma::nelder_mead()`), and conjugate gradient methods (`Rcgmin::Rcgmin()`). The [CRAN Task View: Optimization and Mathematical Programming](https://CRAN.R-project.org/view=Optimization) provides a comprehensive list of packages for solving optimization problems. 
 
 One thing that all of these numerical optimizers have in common is that initial parameter values must be specified, i.e., the point from where the optimization is started. Optimization theory [@Nocedal:2006] states that the choice of an initial point has a large influence on the optimization result, in particular convergence time and rate. In general, starting in areas of function saturation increases computation time, starting in areas of non-concavity leads to convergence problems or convergence to local rather than global optima. Consequently, numerical optimization can be facilitated by 
 
@@ -34,7 +36,7 @@ One thing that all of these numerical optimizers have in common is that initial 
 
 2. putting effort on identifying good starting values.
 
-However, it is generally unclear what good initial values are and how they might affect the optimization. Therefore, the purpose of the {ino} R package (*ino* is an acronym for ***i***nitialization of ***n***umerical ***o***ptimization) is to provide a comprehensive toolbox for 
+However, it is generally unclear what good initial values are and how they might affect the optimization. Therefore, the purpose of the {ino} R package^[*ino* is an acronym for ***i***nitialization of ***n***umerical ***o***ptimization.] is to provide a comprehensive toolbox for 
 
 1. evaluating the effect of the initial values on the optimization,
 
@@ -45,7 +47,7 @@ However, it is generally unclear what good initial values are and how they might
 ## Functionality of {ino}
 
 To specify an optimization problem in {ino}, we use an object-oriented framework based on the {R6} package [@Chang:2021]. The general workflow is to first create
-a `Nop` object (specifying a ***n***umerical ***o***ptimization ***p***roblem), and then apply methods to change the attributes of that object, e.g., to optimize the function and investigate the optimization results:
+a `Nop` object^[*Nop* is an acronym for ***n***umerical ***o***ptimization ***p***roblem.], and then apply methods to change the attributes of that object, e.g., to optimize the function and investigate the optimization results:
 
 - The starting point for working with {ino} is to initialize a `Nop` object via `object <- Nop$new()`.
 
@@ -55,13 +57,13 @@ a `Nop` object (specifying a ***n***umerical ***o***ptimization ***p***roblem), 
 
 - For analyzing the results, `$optima()` provides an overview of all identified optima, and the `$plot()` and `$summary()` methods summarize the optimization runs.
 
-- The methods `$standardize()` and `$reduce()` can be used to advantageously transform the optimization problem.
+- The methods `$standardize()` and `$reduce()` are available to advantageously transform the optimization problem.
 
-These methods are illustrated in the following example.
+We illustrate these methods in the following application.
 
 ## Working with {ino}
 
-We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times from the popular `faithful` data set that is provided by the {datasets} package.
+We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times from the popular `faithful` data set that is provided via base R.
 
 > **Remark:** Optimization in this example is very fast. This is because the data set is relatively small and we consider a model with two classes only. Therefore, it might not seem relevant to be concerned about initialization here. However, the problem scales: optimization time will rise with more data and more parameters, in which case initialization becomes a greater issue, see for example @Shireman:2017. Additionally, we will see that even this simple optimization problem suffers heavily from local optima, depending on the choice of initial values.
 
@@ -73,27 +75,26 @@ The `faithful` data set contains information about eruption times (`eruptions`) 
 str(faithful)
 ```
 
-The following histogram hints at two clusters with short and long eruption times, respectively:
+The data histogram hints at two clusters with short and long eruption times, respectively.
 
 ```{r, faithful, warning = FALSE}
 library("ggplot2")
 ggplot(faithful, aes(x = eruptions)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30) + 
-  xlab("Eruption time (min)") 
+  xlab("eruption time (min)") 
 ```
 
-For both clusters, we assume a normal distribution here, such that we consider a mixture of two Gaussian densities for modeling the overall eruption times. The log-likelihood function is given by
+For both clusters, we assume a normal distribution, such that we consider a mixture of two Gaussian densities for modeling the overall eruption times. The log-likelihood function is defined by
 
 \begin{equation}
 \ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \lambda \phi_{\mu_1, \sigma_1^2}(x_i) + (1-\lambda)\phi_{\mu_2,\sigma_2^2} (x_i) \Big),
 \end{equation}
 
-where the sum goes over all observations $1, \dots, n = 272$, $\phi_{\mu_1, \sigma_1^2}$ and $\phi_{\mu_2, \sigma_2^2}$ denote the normal density for the first and second cluster, respectively, and $\lambda$ is the mixing proportion. The vector of parameters to be estimated is thus $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)$. As there exists no closed-form solution for the maximum likelihood estimator $\boldsymbol{\theta}^* = \arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta})$, we need numerical optimization for finding the function optimum. 
+where the sum goes over all observations $1, \dots, n = 272$, $\phi_{\mu_1, \sigma_1^2}$ and $\phi_{\mu_2, \sigma_2^2}$ denote the normal density for the first and second cluster, respectively, and $\lambda$ is the mixing proportion. The parameter vector to be estimated is thus $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)$. As there exists no closed-form solution for the maximum likelihood estimator $\boldsymbol{\theta}^* = \arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta})$, we need numerical optimization for finding the function optimum. 
 
-The following function calculates the log-likelihood value of the two-class Gaussian mixture model, given the parameter vector `theta` and the observation vector `data`. Note:
+The following function calculates the log-likelihood value given the parameter vector `theta` and the observation vector `data`. 
 
-1. We restrict the standard deviations `sd` to be positive (via the exponential transformation) and `lambda` to be between 0 and 1 (via the logit transformation).
-2. The function returns the negative log-likelihood value by default (`neg = TRUE`). This is necessary because most R optimizers only minimize (e.g., `stats::nlm`), where we can use that $\arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta}) = \arg\min_{\boldsymbol{\theta}} -\ell(\boldsymbol{\theta})$.
+> **Remark:** We restrict the standard deviations `sd` to be positive (via the exponential transformation) and `lambda` to be between 0 and 1 (via the logit transformation). The function returns the negative log-likelihood value by default (`neg = TRUE`). This is necessary because most R optimizers only minimize (e.g., `stats::nlm`), where we can use the fact that $\arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta}) = \arg\min_{\boldsymbol{\theta}} -\ell(\boldsymbol{\theta})$.
 
 ```{r, mixture ll}
 normal_mixture_llk <- function(theta, data, neg = TRUE){
@@ -167,7 +168,7 @@ print(geyser)
 
 The next step concerns specifying the numerical optimizer via the `$set_optimizer()` method. 
 
-> **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file for details](https://cran.r-project.org/package=optimizeR/readme/README.html).
+> **Remark:** Numerical optimizers must be specified through the unified framework provided by the [{optimizeR}](https://CRAN.R-project.org/package=optimizeR) package [@Oelschläger:2023]. This is necessary because there is no a priori consistency across optimization functions in R with regard to their function inputs and outputs. This would make it impossible to allow for arbitrary optimizers and to compare their results, see [the {optimizeR} README file](https://github.com/loelschlaeger/optimizeR#readme) for details.
 
 It is possible to define any numerical optimizer implemented in R through the {optimizeR} framework. Here, we select two of the most popular ones, `stats::nlm()` and `stats::optim()`:
 
@@ -296,13 +297,13 @@ transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
 
 The two estimates `mle` and `bad` for $\boldsymbol{\theta}$ correspond to the following mixture densities:
 
-```{r, visualize estimated mixtures}
+```{r, estimated-mixtures}
 mixture_density <- function (data, mu, sd, lambda) {
   lambda * dnorm(data, mu[1], sd[1]) + (1 - lambda) * dnorm(data, mu[2], sd[2])
 }
 ggplot(faithful, aes(x = eruptions)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30) + 
-  xlab("Eruption time (min)") +
+  labs(x = "eruption time (min)", colour = "parameter") +
   stat_function(
     fun = function(x) {
       mixture_density(x, mu = mle[1:2], sd = mle[3:4], lambda = mle[5])
@@ -315,7 +316,7 @@ ggplot(faithful, aes(x = eruptions)) +
   )
 ```
 
-It becomes very clear that the mixture defined by `mle` fits much better than `bad`, which practically estimates only a single class. However, the gradients at both points are close to zero, which explains why the `nlm` optimizer stops:
+The mixture defined by the `mle` parameter fits much better than `bad`, which practically estimates only a single class. However, the gradients at both points are close to zero, which explains why the `nlm` optimizer terminates at both points:
 
 ```{r, extract gradients}
 geyser$results(which_run = c(mle_run, bad_run), which_optimizer = "nlm", which_element = "gradient")
@@ -378,15 +379,9 @@ geyser$optima(digits = 0, which_run = "educated_guess")
 
 For comparison, we consider a set of implausible starting values, which leads to local optima:
 
-```{r, bad educated guess}
-geyser$optimize(initial = rep(0, 5), label = "bad_educated_guess")
-summary(geyser, which_run = "bad_educated_guess") 
-```
-
-Using the `$clear()` method, it is possible to discard these results from further comparisons:
-
-```{r, clear optimization results}
-geyser$clear(which_run = "bad_educated_guess")
+```{r, bad guess}
+geyser$optimize(initial = rep(0, 5), label = "bad_guess")
+summary(geyser, which_run = "bad_guess") 
 ```
 
 ### Standardizing the optimization problem
@@ -441,13 +436,13 @@ See the other two vignettes for demonstrations of these options.
 
 The `$plot()` method provides an overview of the optimization times. Setting `by = "label"` allows for comparison across initialization strategies, setting `relative = TRUE` plots relative differences to the median of the top boxplot:
 
-```{r, plot by label}
+```{r, plot-by-label}
 geyser$plot(by = "label", relative = TRUE)
 ```
 
 Setting `by = "optimizer"` allows comparison across optimizers:
 
-```{r, plot by optimizer}
+```{r, plot-by-optimizer}
 geyser$plot(by = "optimizer", relative = FALSE)
 ```
 

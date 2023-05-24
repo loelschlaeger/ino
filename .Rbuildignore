@@ -5,7 +5,11 @@
 ^LICENSE\.md$
 ^README\.Rmd$
 ^\.github$
-cran-comments.md
-^CRAN-SUBMISSION$
 ^codecov\.yml$
 ^\vignettes\**.R$
+^CRAN-SUBMISSION$
+^cran-comments\.md$
+^sticker$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

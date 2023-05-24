@@ -51,7 +51,7 @@ different filter options for optimization runs, optimizers, and elements:
 \item \code{$results()} returns all saved optimization results,
 \item \code{$summary()} summarizes the results,
 \item \code{$optima()} returns a frequency table of identified optima,
-\item \code{$plot()} visualizes the optimization times,
+\item \code{$plot()} visualizes the optimization time or value,
 \item \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
 \item \code{$best_value()} returns the found optimum value of \code{f},
 \item \code{$closest_parameter()} returns parameter closest to a specified value.
@@ -1058,14 +1058,29 @@ A \code{data.frame}.
 \if{html}{\out{<a id="method-Nop-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-plot}{}}}
 \subsection{Method \code{plot()}}{
-Visualizes the optimization times.
+Visualizes the optimization time or value.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, relative = FALSE, log = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(
+  which_element = "seconds",
+  by = NULL,
+  relative = FALSE,
+  which_run = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE,
+  title = paste("Optimization of", x$f_name),
+  xlim = c(NA, NA)
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{which_element}}{Either:
+\itemize{
+\item \code{"seconds"} to plot the optimization times (default)
+\item \code{"value"} to plot the optimization values
+}}
+
 \item{\code{by}}{Either:
 \itemize{
 \item \code{"label"} to group by optimization label
@@ -1073,15 +1088,40 @@ Visualizes the optimization times.
 \item \code{NULL} to not group (default)
 }}
 
-\item{\code{relative}}{Set to \code{TRUE} to plot relative time differences with
-respect to the median of the top boxplot.}
+\item{\code{relative}}{Only if \code{which_element = "seconds"}.
+In this case, set to \code{TRUE} to plot relative time differences with
+respect to the overall median.}
 
-\item{\code{log}}{Set to \code{TRUE} to plot a log10-x-axis.}
+\item{\code{which_run}}{Select saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"}, all results,
+\item \code{"last"}, the results from the last optimization,
+\item \code{"failed"}, the results from failed optimization runs,
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"}, all specified optimizers,
+\item \code{"removed"}, all removed optimizers,
+\item \code{"active"}, all active optimizers (i.e., not removed),
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
+}}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} to
+include all optimization results.}
+
+\item{\code{title}}{A \code{character}, the plot title.}
+
+\item{\code{xlim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-NO return value. Draws a plot to the current device.
+A \code{\link[ggplot2]{ggplot}} object.
 }
 }
 \if{html}{\out{<hr>}}
