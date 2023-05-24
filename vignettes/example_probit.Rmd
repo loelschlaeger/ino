@@ -43,39 +43,27 @@ The maximum likelihood estimate $\hat{\theta}$ is obtained by solving $$\hat{\th
 
 ## Data simulation and likelihood computation
 
-The {ino} package provides the `sim_mnp()` function for simulating choice data from a probit model. To use this function, we first need to define a function `X()` that samples the matrix of choice characteristics for the decision maker $n$ at choice occasion $t$. The matrix must have the dimension $J \times P$, where $J$ is the number of available alternatives and $P$ the number of characteristics that describe each alternative.
+The `{ino}` package provides the `sim_mnp()` function, which enables simulation of choice data from a probit model. Prior to utilizing this function, it is necessary to define the function `X(n, t)`, which generates a matrix representing the choice characteristics for decision maker $n$ at choice occasion $t$. The matrix should have dimensions of $J \times P$, where $J$ corresponds to the number of available alternatives, and $P$ indicates the number of characteristics describing each alternative.
 
-In our simulation, the choice setting consists of $J = 3$ alternatives that are described via $P = 2$ characteristics. The entries of the first column of $X_{nt}$ are drawn from the $\mathcal{N}(\mu = 10, \sigma = 3)$ distribution, and the entries of the second column from $\mathcal{N}(\mu = 0, \sigma = 0.3)$. This design mimics that choice covariates are usually observed on different scales.
+For our simulation, we have a choice setting with $J = 3$ alternatives, characterized by $P = 2$ attributes. The values in the first column of $X_{nt}$ are drawn from a normal distribution $\mathcal{N}(\mu = 10, \sigma = 3)$, while the values in the second column are drawn from $\mathcal{N}(\mu = 0, \sigma = 0.3)$. This design reflects the common situation of observing choice covariates on different scales.
 
 ```{r, choice covariates, eval = TRUE}
 X <- function(n, t) {
-  
-  cost <- round(stats::rlnorm(3, meanlog = 7, sdlog = 0.3))
-  
-  set.seed(n)
-  age_group <- sample(c("young", "old"), size = 1)
-  
-  age <- (age_group == "young") * rpois(n = 1, lambda = 30) + (age_group == "old") * rpois(n = 1, lambda = 60)
-  
-  
-  covariates <- cbind(cost, diag(3)[, -1] * age)
-  rownames(covariates) <- c("beach", "cruise", "party")
-  colnames(covariates) <- c("cost", "age_cruise", "age_party")
-  return(covariates)
+  J <- 3
+  cbind(stats::rnorm(J, mean = 10, sd = 3), stats::rnorm(J, mean = 0, sd = 0.3))
 }
 X(n = 1, t = 1)
 ```
 
-We simulate choice data for $N = 200$ deciders at $T = 20$ choice occasions from the probit model defined by the parameters $b = \begin{pmatrix} 1 & -10 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 0.2 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.2 \\ -0.5 & 1 & 0.2 \\ 0.2 & 0.2 & 1 \end{pmatrix}$:
+We simulate choice data for $N = 200$ deciders at $T = 20$ choice occasions from the probit model defined by the parameter values $b = \begin{pmatrix} 1 & -10 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 0.2 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.2 \\ -0.5 & 1 & 0.2 \\ 0.2 & 0.2 & 1 \end{pmatrix}$:
 
 ```{r, simulate data, eval = TRUE}
-N <- 100 # 200
-T <- 10 # 20
-b <- c(1, -0.1, -0.8)
-#Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
+N <- 200
+T <- 20
+b <- c(1, -10)
+Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
 Sigma <- matrix(c(1, -0.5, 0.2, -0.5, 1, 0.2, 0.2, 0.2, 1), 3, 3)
-Omega <- Sigma
-probit_data <- sim_mnp(N, T, J = 3, P = 3, b, Omega, Sigma, X, seed = 1)
+probit_data <- sim_mnp(N, T, J = 3, P = 2, b, Omega, Sigma, X, seed = 1)
 ```
 
 The `probit_data` object is a `data.frame` with the decider index `n`, the choice occasion index `t`, the choice `y`, and the choice characteristics `X`:
@@ -84,13 +72,13 @@ The `probit_data` object is a `data.frame` with the decider index `n`, the choic
 head(probit_data)
 ```
 
-It has the attribute `true`, which provides the true and *identified* parameter values, i.e. the mean effects $b$ except for the first one, the elements $o$ of the lower-triangular Cholesky root of $\Omega$, and the elements $l$ of the lower-triangular Cholesky root of the differenced (with respect to alternative $J$) covariance matrix $\Sigma$:
+The `probit_data` object includes the attribute `true`, which contains the true and *identified* parameter values. These values consist of the mean effects $b$, excluding the first element, the elements $o$ of the lower-triangular Cholesky root of $\Omega$, and the elements $l$ of the lower-triangular Cholesky root of the differenced covariance matrix $\Sigma$ (with respect to alternative $J$):
 
 ```{r, true parameter, eval = TRUE}
-(theta <- attr(probit_data, "true"))
+round(theta <- attr(probit_data, "true"), 2)
 ```
 
-The likelihood function is implemented as `f_ll_mnp()`:
+The probit likelihood function is implemented as `f_ll_mnp()` and can be evaluated by providing a parameter vector `theta` and a data set `probit_data`:
 
 ```{r, likelihood evaluation, eval = TRUE}
 f_ll_mnp(theta = theta, data = probit_data)
@@ -98,14 +86,17 @@ f_ll_mnp(theta = theta, data = probit_data)
 
 ## Setup in {ino}
 
-To analyze the outcome of the numerical likelihood optimization for the multinomial mixed probit model, we apply the {ino} package. We first define a `Nop` object by setting `f = f_ll_mnp`, the number of parameters to `npar = 7`, and `data = probit_data`. Then, we apply the `stats::nlm` optimizer with a limit of 1000 iterations. Since this optimizer minimizes the objective function instead of maximizing it, we set `neg = TRUE` to compute the negative log-likelihood value.
+To analyze the outcome of the numerical likelihood optimization for the multinomial mixed probit model, we apply the `{ino}` package:
+
+- We first define a `Nop` object by setting the target function `f = f_ll_mnp`, the number of parameters to `npar = 7`, and `data = probit_data`. 
+- Then, we apply the `stats::nlm` optimizer with a limit of 1000 iterations. Since this optimizer minimizes the objective function instead of maximizing it, we set `neg = TRUE` to compute the negative log-likelihood value.
 
 ```{r, define Nop, eval = TRUE}
-probit_ino <- Nop$new(f = f_ll_mnp, npar = length(theta), data = probit_data, neg = TRUE)$
+probit_ino <- Nop$new(f = f_ll_mnp, npar = 7, data = probit_data, neg = TRUE)$
   set_optimizer(optimizer_nlm(iterlim = 1000))
 ```
 
-We save the true parameter vector `theta` and use it later to evaluate whether the optimization has converged to the global optimum:
+The true parameter vector `theta` is saved to assess the convergence of the optimization runs to the global optimum:
 
 ```{r, set true parameter, eval = TRUE}
 probit_ino$true_parameter <- theta
@@ -122,54 +113,26 @@ print(probit_ino)
 We optimize `runs = 100` times using random initial values drawn from a standard normal distribution:
 
 ```{r, optimize with random initial values}
-probit_ino$optimize(initial = "random", runs = 100, label = "random", ncores = 4)
+probit_ino$optimize(initial = "random", runs = 100, label = "random")
 ```
 
-## Initializing using estimates on a data subsample
-
-```{r, eval = TRUE}
-probit_ino$reduce("data", how = "random", proportion = 0.25)
-```
+## Initializing using estimates from a data subsample
 
 ```{r}
-probit_ino$optimize(initial = "random", runs = 100, label = "subset", ncores = 4)$
+probit_ino$
+  reduce("data", how = "random", proportion = 0.2)$
+  optimize(initial = "random", runs = 100, label = "subset")$
   reset_argument("data")$
   continue()
 ```
+	
+## Estimation with standardized covariates
 
-```{r, eval = TRUE}
-probit_ino <- ino::probit_ino
-
-random_initial <- lapply(probit_ino$results(which_run = "random"), `[[`, "initial") |>
-  do.call(what = rbind) |> sweep(2, probit_ino$true_parameter) |>
-  as.data.frame() |>
-  cbind(type = "random_initial")
-
-subset_initial <- lapply(
-  probit_ino$results(which_run = "subset", which_element = "previous_run"), 
-  `[[`, "previous_run.parameter"
-  ) |>
-  do.call(what = rbind) |> sweep(2, probit_ino$true_parameter) |>
-  as.data.frame() |>
-  cbind(type = "subset_initial")
-
-library(ggplot2)
-library(reshape2)
-
-melt(rbind(random_initial, subset_initial)) |> 
-  ggplot(aes(x = variable, y = value)) +
-  geom_point(aes(color = type), position = "jitter") +
-  labs(
-    y = "difference to true parameter"
-  ) +
-  scale_x_discrete(
-    labels = c("b.2", "o.11", "o.21", "o.22", "l.11", "l.21", "l.22"),
-    name = "parameter"
-  ) +
-  scale_y_continuous(
-    name = "difference to true parameter",
-    limits = c(-5, 5)
-  )
+```{r}
+probit_ino$
+  standardize("data", by_column = TRUE, ignore = 1:3)$
+  optimize(initial = "random", runs = 100, label = "standardized")$
+  reset_argument("data")
 ```
 	
 ## References
