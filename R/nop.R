@@ -109,7 +109,7 @@
 #' - \code{$results()} returns all saved optimization results,
 #' - \code{$summary()} summarizes the results,
 #' - \code{$optima()} returns a frequency table of identified optima,
-#' - \code{$plot()} visualizes the optimization times,
+#' - \code{$plot()} visualizes the optimization time or value,
 #' - \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
 #' - \code{$best_value()} returns the found optimum value of \code{f},
 #' - \code{$closest_parameter()} returns parameter closest to a specified value.
@@ -769,14 +769,19 @@ Nop <- R6::R6Class(
     clear = function(
       which_run, which_optimizer = "all", which_element = "all"
     ) {
+      if (missing(which_run)) {
+        ino_stop("Please specify {.var which_run}.")
+      }
       run_ids <- private$.get_run_ids(which_run)
       if (length(run_ids) == 0) {
         return(invisible(self))
       }
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      which_element <- private$.check_which_element(
-        which_element = which_element, optimizer_ids = optimizer_ids,
-        protected_elements = c("run", "optimizer", "label")
+      which_element <- suppressWarnings(
+        private$.check_which_element(
+          which_element = which_element, optimizer_ids = optimizer_ids,
+          protected_elements = c("run", "optimizer", "label")
+        )
       )
       for (i in run_ids) {
         for (j in optimizer_ids) {
@@ -853,21 +858,36 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Visualizes the optimization times.
+    #' Visualizes the optimization time or value.
+    #' @param which_element
+    #' Either:
+    #' - \code{"seconds"} to plot the optimization times (default)
+    #' - \code{"value"} to plot the optimization values
     #' @param by
     #' Either:
     #' - \code{"label"} to group by optimization label
     #' - \code{"optimizer"} to group by optimizer
     #' - \code{NULL} to not group (default)
     #' @param relative
-    #' Set to \code{TRUE} to plot relative time differences with
-    #' respect to the median of the top boxplot.
-    #' @param log
-    #' Set to \code{TRUE} to plot a log10-x-axis.
+    #' Only if \code{which_element = "seconds"}.
+    #' In this case, set to \code{TRUE} to plot relative time differences with
+    #' respect to the overall median.
+    #' @param title
+    #' A \code{character}, the plot title.
+    #' @param xlim
+    #' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
     #' @return
-    #' NO return value. Draws a plot to the current device.
-    plot = function(by = NULL, relative = FALSE, log = FALSE) {
-      plot.Nop(x = self, by = by, relative = relative, log = log)
+    #' A \code{\link[ggplot2]{ggplot}} object.
+    plot = function(
+      which_element = "seconds", by = NULL, relative = FALSE,
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+      title = paste("Optimization of", x$f_name), xlim = c(NA, NA)
+    ) {
+      plot.Nop(
+        x = self, which_element = which_element, by = by, relative = relative,
+        which_run = which_run, which_optimizer = which_optimizer,
+        only_comparable = only_comparable
+      )
     },
 
     #' @description
@@ -1060,7 +1080,7 @@ Nop <- R6::R6Class(
         self$elements_available(which_optimizer = optimizer_ids)
       ))
       if (identical(which_element, "all")) {
-        return(all_elements)
+        which_element <- all_elements
       }
       if (identical(which_element, "basic")) {
         which_element <- c("value", "parameter")
@@ -1081,7 +1101,7 @@ Nop <- R6::R6Class(
       protect <- intersect(which_element, protected_elements)
       if (length(protect) > 0) {
         ino_warn(
-          "The following elements can not be selected:",
+          "The following elements cannot be selected:",
           glue::glue("{protect}")
         )
         which_element <- setdiff(which_element, protected_elements)

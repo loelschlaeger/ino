@@ -434,14 +434,37 @@ test_that("overview of optima works", {
   )
 })
 
-test_that("optimization times can be plotted", {
+test_that("optimization times and values can be plotted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())$
-    optimize(runs = 10)
-  pdf(file = tempfile())
-  expect_s3_class(ackley$plot(), "ggplot")
-  dev.off()
+    optimize(runs = 100, label = "1")$
+    optimize(runs = 100, label = "2")
+  combinations <- expand.grid(
+    which_element = c("seconds", "value"),
+    by = list("label", "optimizer", NULL),
+    relative = c(TRUE, FALSE),
+    which_run = "all",
+    which_optimizer = "all",
+    only_comparable = c(TRUE, FALSE),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    which_element <- combinations[i, "which_element"]
+    by <- combinations[[i, "by"]]
+    relative <- combinations[i, "relative"]
+    which_run <- combinations[i, "which_run"]
+    which_optimizer <- combinations[i, "which_optimizer"]
+    only_comparable <- combinations[i, "only_comparable"]
+    expect_s3_class(
+      ackley$plot(
+        which_element = which_element, by = by, relative = relative,
+        which_run = which_run, which_optimizer = which_optimizer,
+        only_comparable = only_comparable
+      ),
+      "ggplot"
+    )
+  }
 })
 
 test_that("best value can be extracted", {
