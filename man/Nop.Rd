@@ -123,6 +123,7 @@ not been used yet.}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
+\item \href{#method-Nop-deviation}{\code{Nop$deviation()}}
 \item \href{#method-Nop-best_value}{\code{Nop$best_value()}}
 \item \href{#method-Nop-best_parameter}{\code{Nop$best_parameter()}}
 \item \href{#method-Nop-closest_parameter}{\code{Nop$closest_parameter()}}
@@ -1117,6 +1118,70 @@ include all optimization results.}
 \item{\code{title}}{A \code{character}, the plot title.}
 
 \item{\code{xlim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{\link[ggplot2]{ggplot}} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-deviation"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
+\subsection{Method \code{deviation()}}{
+Visualizes deviation of parameters.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
+  reference = self$true_parameter,
+  which_element = "initial",
+  which_run = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE,
+  title = "Parameter deviation",
+  ylim = c(NA, NA),
+  parameter_labels = paste0("theta", 1:self$npar)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{reference}}{A \code{numeric} of length \code{self$npar}, the reference parameters.}
+
+\item{\code{which_element}}{Either:
+\itemize{
+\item \code{"initial"} to compute deviations to the initial values (default)
+\item \code{"parameter"} to compute deviations to the estimated parameters
+}}
+
+\item{\code{which_run}}{Select saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"}, all results,
+\item \code{"last"}, the results from the last optimization,
+\item \code{"failed"}, the results from failed optimization runs,
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"}, all specified optimizers,
+\item \code{"removed"}, all removed optimizers,
+\item \code{"active"}, all active optimizers (i.e., not removed),
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
+}}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} to
+include all optimization results.}
+
+\item{\code{title}}{A \code{character}, the plot title.}
+
+\item{\code{ylim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
+
+\item{\code{parameter_labels}}{A \code{character} of length \code{length(reference)} with labels for the
+parameters.}
 }
 \if{html}{\out{</div>}}
 }

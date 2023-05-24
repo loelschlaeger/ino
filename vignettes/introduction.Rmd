@@ -2,8 +2,8 @@
 title: "Introduction"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction}
   %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Introduction}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console

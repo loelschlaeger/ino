@@ -16,11 +16,14 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
+  fig.path = "figures/probit-",
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
 library("ino")
 options("ino_verbose" = TRUE) 
+set.seed(1)
+ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
 The probit model is a widely employed statistical tool for analyzing discrete choice behavior in various fields, including transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. The estimation of probit model parameters typically involves the numerical maximization of the likelihood function. However, this approach can be computationally expensive and may encounter problems in reaching the global optimum, especially when dealing with complex models. In this vignette, we utilize the `{ino}` package to investigate the influence of initialization on the numerical maximization of the probit likelihood function.
@@ -131,6 +134,13 @@ The `$reduce()` method offers additional options for selecting the composition o
 - `how = "first"` and `how = "last"`: These options allow to select the subset from the beginning or the end of the data, respectively, focusing on specific segments of the data set.
 
 - `how = "similar"` and `how = "dissimilar"`: These options utilize k-means clustering to identify subsets of similar or dissimilar data points. By clustering the data based on similarity, a subset that represents a distinct group within the data set can be selected. This approach can be particularly useful when there are distinct patterns or characteristics within the data.
+
+```{r, deviation, eval = TRUE}
+probit_ino$deviation(
+  reference = probit_ino$true_parameter, which_run = c("random", "subset"),
+  parameter_labels = c("b.2", "o.11", "o.21", "o.22", "l.11", "l.21", "l.22")  
+)
+```
 	
 ## Estimation with standardized covariates
 
@@ -154,7 +164,7 @@ probit_ino$optima(digits = 0, which_run = "subset")
 plot(probit_ino, by = "label", relative = TRUE)
 ```
 	
-```{r, summary, eval = TRUE}
+```{r, summary, eval = TRUE, warning = FALSE}
 library("dplyr")
 summary(probit_ino, which_element = c("seconds", "label")) %>% 
   group_by(label) %>% 

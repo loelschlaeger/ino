@@ -74,6 +74,12 @@
 #' An \code{integer}, the time limit in seconds for computations.
 #' No time limit if \code{time_limit = NULL} (the default).
 #' This currently only works reliably under Windows.
+#' @param title
+#' A \code{character}, the plot title.
+#' @param xlim
+#' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
+#' @param ylim
+#' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
 #'
 #' @details
 #' # Getting Started
@@ -883,10 +889,6 @@ Nop <- R6::R6Class(
     #' Only if \code{which_element = "seconds"}.
     #' In this case, set to \code{TRUE} to plot relative time differences with
     #' respect to the overall median.
-    #' @param title
-    #' A \code{character}, the plot title.
-    #' @param xlim
-    #' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
     #' @return
     #' A \code{\link[ggplot2]{ggplot}} object.
     plot = function(
@@ -899,6 +901,49 @@ Nop <- R6::R6Class(
         which_run = which_run, which_optimizer = which_optimizer,
         only_comparable = only_comparable
       )
+    },
+
+    #' @description
+    #' Visualizes deviation of parameters.
+    #' @param reference
+    #' A \code{numeric} of length \code{self$npar}, the reference parameters.
+    #' @param which_element
+    #' Either:
+    #' - \code{"initial"} to compute deviations to the initial values (default)
+    #' - \code{"parameter"} to compute deviations to the estimated parameters
+    #' @param parameter_labels
+    #' A \code{character} of length \code{length(reference)} with labels for the
+    #' parameters.
+    #' @return
+    #' A \code{\link[ggplot2]{ggplot}} object.
+    #' @importFrom ggplot2 ggplot aes geom_point scale_x_discrete
+    #' @importFrom ggplot2 scale_y_continuous geom_hline coord_cartesian
+    #' @importFrom reshape2 melt
+    deviation = function(
+      reference = self$true_parameter, which_element = "initial",
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+      title = "Parameter deviation", ylim = c(NA, NA),
+      parameter_labels = paste0("theta", 1:self$npar)
+    ) {
+      data <- self$summary(
+        which_run = which_run, which_element = c(which_element, "label")
+      )
+      data <- data.frame(
+        "label" = data[["label"]],
+        t(sapply(data[[which_element]], function(x) x - reference))
+      ) |>
+        reshape2::melt(id.vars = "label")
+      data |> ggplot2::ggplot(ggplot2::aes(x = variable, y = value)) +
+        ggplot2::geom_point(ggplot2::aes(color = label), position = "jitter") +
+        ggplot2::scale_x_discrete(
+          labels = parameter_labels,
+          name = which_element
+        ) +
+        ggplot2::scale_y_continuous(
+          name = "deviation"
+        ) +
+        ggplot2::geom_hline(yintercept = 0) +
+        ggplot2::coord_cartesian(ylim = ylim)
     },
 
     #' @description
