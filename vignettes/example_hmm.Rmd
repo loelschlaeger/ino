@@ -21,8 +21,7 @@ knitr::opts_chunk$set(
   # all optimizations are pre-computed and loaded below to save building time
   eval = FALSE
 )
-# library("ino")
-devtools::load_all() # REMOVE
+library("ino")
 data("hmm_ino")
 ```
 
@@ -56,7 +55,7 @@ ggplot(dax, aes(x = date, y = logreturn)) +
   scale_y_continuous(labels = scales::label_percent())
 ```
 
-As the log returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions --- note that some applications instead use symmetric lambda or t-distributions to also model the kurtosis [@Lihn:2017; @Oelschläger:2021].
+As the log returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions --- note that some applications instead use t-distributions to also model the kurtosis [@Oelschläger:2021].
 
 ## Likelihood optimization
 
