@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
   fig.path = "figures/hmm-",
   fig.dim = c(8, 6), 
   out.width = "75%",
-  # all optimizations are pre-computed and loaded below to save building time
+  # all optimizations are pre-computed to save building time
   eval = FALSE
 )
 library("ino")
@@ -49,7 +49,7 @@ dax <- download_data(symbol = "^GDAXI", from = "1990-01-01", to = "2020-01-01") 
 
 The time series looks as follows:
 
-```{r, plot dax data, message = FALSE, warning = FALSE, eval = TRUE}
+```{r, plot-dax-data, message = FALSE, warning = FALSE, eval = TRUE}
 library("ggplot2")
 ggplot(dax, aes(x = date, y = logreturn)) +
   geom_point() +
@@ -194,7 +194,7 @@ Note that the attributes `"run"` and `"optimizer"` provide the information, in w
 
 We can compute the proportion of runs that lead to the apparent global optimum of `r format(as.numeric(hmm_ino$best_value()), scientific = FALSE)` as follows:
 
-```{r, eval = TRUE}
+```{r, proportion of converged runs, eval = TRUE}
 summary(hmm_ino, c("label", "value", "seconds"), global_optimum = "value < -22445", only_comparable = TRUE) %>% 
   group_by(label) %>% 
   summarise(proportion = mean(global_optimum, na.rm = TRUE))
@@ -206,19 +206,22 @@ While for the educated guesses about 55\% of the runs converge to the global opt
 
 The `plot()` function can be used to investigate the optimization times across initialization strategies (`by = "label"`).^[Setting `relative = FALSE` in the `plot()` call shows the absolute times.]  
 
-```{r, optimization time, eval = TRUE}
+```{r, optimization-time, eval = TRUE}
 plot(hmm_ino, by = "label")
 ```
 
-Using the output provided by `summary()` and some data manipulation functions provided by the package `{dplyr}`, we can also compute summary statistics of interest, like the median computation time per strategy:
+Using the output provided by `summary()` and some data manipulation functions provided by the package `{dplyr}`, we can also compute summary statistics of interest, like the median computation time or standard deviation per strategy:
 
-```{r, warning = FALSE, message = FALSE, eval = TRUE}
+```{r, summary statistics, warning = FALSE, message = FALSE, eval = TRUE}
 summary(hmm_ino, c("label", "seconds")) %>% 
   group_by(label) %>% 
-  summarise(median_seconds = median(seconds, na.rm = TRUE)) %>%
+  summarise(
+    median_seconds = median(seconds, na.rm = TRUE),
+    sd_seconds = sd(seconds, na.rm = TRUE)
+  ) %>%
   arrange(median_seconds)
 ```
 
-The subset and the standardize approach can improve the optimization time by a factor of 2 in this example compared to the random initialization approach.
+The subset and the standardize approach can improve the median optimization time by a factor of about 2 in this example compared to the random initialization approach.
 
 ## References
