@@ -10,7 +10,7 @@
 #> # library("ino")
 devtools::load_all() # remove later
 options("ino_verbose" = TRUE)
-
+options("ino_verbose" = TRUE, "ino_ncores" = 4) # REMOVE later
 
 ## ---- choice covariates, eval = TRUE------------------------------------------------
 X <- function(n, t) {

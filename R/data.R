@@ -38,7 +38,7 @@
 # #' dataset
 # "hmm_ino"
 
-#' Example application of \{ino\} to probit likelihood
+#' Example application of to probit likelihood
 #'
 #' @description
 #' See the vignette about the probit likelihood for details:
