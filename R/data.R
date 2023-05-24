@@ -21,7 +21,7 @@
 #' dataset
 "earthquakes"
 
-#' Example application of \{ino\} to HMM likelihood
+#' Example application to HMM likelihood
 #'
 #' @description
 #' See the vignette about the HMM likelihood for details:

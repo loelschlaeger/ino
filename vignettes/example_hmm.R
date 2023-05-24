@@ -4,16 +4,16 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.path = "figures/hmm-",
-  fig.dim = c(8, 6), 
+  fig.dim = c(8, 6),
   out.width = "75%",
   # all optimizations are pre-computed and loaded below to save building time
   eval = FALSE
 )
 library("ino")
-data("hmm_ino")
+# data("hmm_ino")
 set.seed(1)
 ggplot2::theme_set(ggplot2::theme_minimal())
-
+options("ino_verbose" = TRUE); options("ino_ncores" = 4) #REMOVE
 
 ## ---- download dax data, message = FALSE, warning = FALSE, eval = TRUE------------
 library("fHMM")
@@ -39,10 +39,10 @@ ggplot(dax, aes(x = date, y = logreturn)) +
 
 ## ---- define ino object-----------------------------------------------------------
 hmm_ino <- Nop$new(
-  f = f_ll_hmm, 
-  npar = 6, 
-  data = dax$logreturn, 
-  N = 2, 
+  f = f_ll_hmm,
+  npar = 6,
+  data = dax$logreturn,
+  N = 2,
   neg = TRUE
 )$
 set_optimizer(optimizer_nlm())
@@ -62,7 +62,7 @@ mu_2 <- c(0, 0.05)
 sd_1 <- c(log(0.1), log(0.5))
 sd_2 <- c(log(0.75), log(1))
 starting_values <- asplit(expand.grid(
-  tpm_entry_1, tpm_entry_2, mu_1, mu_2, sd_1, sd_2), 
+  tpm_entry_1, tpm_entry_2, mu_1, mu_2, sd_1, sd_2),
   MARGIN = 1
 )
 
@@ -99,7 +99,7 @@ local <- total - global
 
 
 ## ---- summary of results, eval = TRUE---------------------------------------------
-summary(hmm_ino, which_element = c("value", "parameter", "seconds")) %>% 
+summary(hmm_ino, which_element = c("value", "parameter", "seconds")) %>%
   head(n = 10)
 
 
@@ -112,8 +112,8 @@ hmm_ino$best_value()
 
 
 ## ---- eval = TRUE-----------------------------------------------------------------
-summary(hmm_ino, c("label", "value", "seconds"), global_optimum = "value < -22445", only_comparable = TRUE) %>% 
-  group_by(label) %>% 
+summary(hmm_ino, c("label", "value", "seconds"), global_optimum = "value < -22445", only_comparable = TRUE) %>%
+  group_by(label) %>%
   summarise(proportion = mean(global_optimum, na.rm = TRUE))
 
 
@@ -122,8 +122,8 @@ plot(hmm_ino, by = "label")
 
 
 ## ---- warning = FALSE, message = FALSE, eval = TRUE-------------------------------
-summary(hmm_ino, c("label", "seconds")) %>% 
-  group_by(label) %>% 
+summary(hmm_ino, c("label", "seconds")) %>%
+  group_by(label) %>%
   summarise(median_seconds = median(seconds, na.rm = TRUE)) %>%
   arrange(median_seconds)
 
