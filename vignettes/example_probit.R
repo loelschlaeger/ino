@@ -10,7 +10,7 @@
 #> # library("ino")
 devtools::load_all() # remove later
 options("ino_verbose" = TRUE)
-options("ino_verbose" = TRUE, "ino_ncores" = 4) # REMOVE later
+options("ino_verbose" = TRUE, "ino_ncores" = 20) # REMOVE later
 
 ## ---- choice covariates, eval = TRUE------------------------------------------------
 X <- function(n, t) {
@@ -22,7 +22,7 @@ X(n = 1, t = 1)
 
 ## ---- simulate data, eval = TRUE----------------------------------------------------
 N <- 200
-T <- 20
+T <- 30
 b <- c(1, -10)
 Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
 Sigma <- matrix(c(1, -0.5, 0.2, -0.5, 1, 0.2, 0.2, 0.2, 1), 3, 3)

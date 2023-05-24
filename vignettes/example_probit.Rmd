@@ -56,11 +56,11 @@ X <- function(n, t) {
 X(n = 1, t = 1)
 ```
 
-We simulate choice data for $N = 200$ deciders at $T = 20$ choice occasions from the probit model defined by the parameter values $b = \begin{pmatrix} 1 & -10 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 0.2 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.2 \\ -0.5 & 1 & 0.2 \\ 0.2 & 0.2 & 1 \end{pmatrix}$:
+We simulate choice data for $N = 200$ deciders at $T = 30$ choice occasions from the probit model defined by the parameter values $b = \begin{pmatrix} 1 & -10 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 0.2 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.2 \\ -0.5 & 1 & 0.2 \\ 0.2 & 0.2 & 1 \end{pmatrix}$:
 
 ```{r, simulate data, eval = TRUE}
 N <- 200
-T <- 20
+T <- 30
 b <- c(1, -10)
 Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
 Sigma <- matrix(c(1, -0.5, 0.2, -0.5, 1, 0.2, 0.2, 0.2, 1), 3, 3)
