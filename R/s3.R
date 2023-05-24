@@ -106,6 +106,7 @@ summary.Nop <- function(
     object, which_element = "basic", which_run = "all", which_optimizer = "all",
     digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...
   ) {
+
   ### extract results and combine in data.frame
   out <- data.frame()
   results <- object$results(
@@ -138,7 +139,8 @@ summary.Nop <- function(
   if (length(add_vars) > 0) {
     results_all <- object$results(
       which_run = which_run, which_optimizer = which_optimizer,
-      which_element = "all", only_comparable = only_comparable
+      which_element = "all", only_comparable = only_comparable,
+      simplify = FALSE
     )
     true_value <- object$true_value
     true_parameter <- object$true_parameter

@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
+  fig.path = "figures/hmm-",
   fig.dim = c(8, 6), 
   out.width = "75%",
   # all optimizations are pre-computed and loaded below to save building time
@@ -23,13 +24,15 @@ knitr::opts_chunk$set(
 )
 library("ino")
 data("hmm_ino")
+set.seed(1)
+ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
-In this vignette^[The vignette was build using R `r paste(R.Version()[c("major","minor")], collapse = ".")` with the {ino} `r utils::packageVersion("ino")` package.] we describe the workflow of the {ino} package for fitting a hidden Markov model (HMM) through likelihood optimization. HMMs are statistical models used to explain systems that can only be observed indirectly through a sequence of outputs, and have unobservable hidden states. They consist of two processes, a Markov process that describes the hidden states, and an observable process that describes the outputs produced by the system, where the probability of observing an output at a given time depends only on the current state. State-switching models like HMMs are commonly used in speech recognition, animal movement modeling, bioinformatics, and finance. For more technical details about HMMs and their scope of application, see, e.g., @Zucchini:2016.
+In this vignette^[The vignette was build using R `r paste(R.Version()[c("major","minor")], collapse = ".")` with the `{ino}` `r utils::packageVersion("ino")` package.] we describe the workflow of the `{ino}` package for fitting a hidden Markov model (HMM) through likelihood optimization. HMMs are statistical models used to explain systems that can only be observed indirectly through a sequence of outputs, and have unobservable hidden states. They consist of two processes, a Markov process that describes the hidden states, and an observable process that describes the outputs produced by the system, where the probability of observing an output at a given time depends only on the current state. State-switching models like HMMs are commonly used in speech recognition, animal movement modeling, bioinformatics, and finance. For more technical details about HMMs and their scope of application, see, e.g., @Zucchini:2016.
 
 ## Application to financial data
 
-The example data set considered throughout this vignette covers a time series of log returns from the [German stock index DAX](https://en.wikipedia.org/wiki/DAX) over 30 years. The DAX closing prices are freely accessible via Yahoo Finance and can be downloaded via the `download_data()` function from the {fHMM} package [@Oelschläger:2023b]. They can easily be transformed to log returns using the {dplyr} package [@Wickham:2023]:
+The example data set considered throughout this vignette covers a time series of log returns from the [German stock index DAX](https://en.wikipedia.org/wiki/DAX) over 30 years. The DAX closing prices are freely accessible via Yahoo Finance and can be downloaded via the `download_data()` function from the `{fHMM}` package [@Oelschläger:2023b]. They can easily be transformed to log returns using the `{dplyr}` package [@Wickham:2023]:
 
 ```{r, download dax data, message = FALSE, warning = FALSE, eval = TRUE}
 library("fHMM")
@@ -65,7 +68,7 @@ We consider a 2-state (`N = 2`) Gaussian-HMM here to model bearish and bullish m
 - two for the means of the state-dependent distributions,
 - two for the standard deviations of the state-dependent distributions.
 
-The likelihood for a Gaussian-HMM is given by the function `f_ll_hmm()` provided by the {ino} package. The argument `neg = TRUE` indicates that we minimize the negative log-likelihood, and `set_optimizer(optimizer_nlm())` selects the optimizer `stats::nlm()` (see the introductory vignette for more details on how to specify optimizers).
+The likelihood for a Gaussian-HMM is given by the function `f_ll_hmm()` provided by the `{ino}` package. The argument `neg = TRUE` indicates that we minimize the negative log-likelihood, and `set_optimizer(optimizer_nlm())` selects the optimizer `stats::nlm()` (see the introductory vignette for more details on how to specify optimizers).
 
 ```{r, define ino object}
 hmm_ino <- Nop$new(
@@ -126,17 +129,7 @@ To illustrate the subset initialization strategy, we consider the first quarter 
 ```{r, subset initialization first}
 hmm_ino$
   reduce("data", how = "first", prop = 0.25)$
-  optimize(initial = sampler, runs = 100, label = "subset_first")$
-  reset_argument("data")$
-  continue()
-```
-
-For comparison, we also consider the subset obtained from the last 25\% of the observations:
-
-```{r, subset initialization last}
-hmm_ino$
-  reduce("data", how = "last", prop = 0.25)$
-  optimize(initial = sampler, runs = 100, label = "subset_last")$
+  optimize(initial = sampler, runs = 100, label = "subset")$
   reset_argument("data")$
   continue()
 ```
@@ -197,6 +190,18 @@ hmm_ino$best_parameter()
 hmm_ino$best_value()
 ```
 
+Note that the attributes `"run"` and `"optimizer"` provide the information, in which optimization run and with which optimizer this estimate was obtained.
+
+We can compute the proportion of runs that lead to the apparent global optimum of `r format(as.numeric(hmm_ino$best_value()), scientific = FALSE)` as follows:
+
+```{r, eval = TRUE}
+summary(hmm_ino, c("label", "value", "seconds"), global_optimum = "value < -22445", only_comparable = TRUE) %>% 
+  group_by(label) %>% 
+  summarise(proportion = mean(global_optimum, na.rm = TRUE))
+```
+
+While for the educated guesses about 55\% of the runs converge to the global optimum, the random initialization and subset initialization strategies get stuck more often in local optima. Note that the standardized initialization approach cannot be compared to the other approaches here.
+
 ### Optimization time
 
 The `plot()` function can be used to investigate the optimization times across initialization strategies (`by = "label"`).^[Setting `relative = FALSE` in the `plot()` call shows the absolute times.]  
@@ -205,7 +210,7 @@ The `plot()` function can be used to investigate the optimization times across i
 plot(hmm_ino, by = "label")
 ```
 
-Using the output provided by `summary()` and some data manipulation functions provided by the package {dplyr}, we can also compute summary statistics of interest, like the median computation time per strategy:
+Using the output provided by `summary()` and some data manipulation functions provided by the package `{dplyr}`, we can also compute summary statistics of interest, like the median computation time per strategy:
 
 ```{r, warning = FALSE, message = FALSE, eval = TRUE}
 summary(hmm_ino, c("label", "seconds")) %>% 
@@ -214,46 +219,6 @@ summary(hmm_ino, c("label", "seconds")) %>%
   arrange(median_seconds)
 ```
 
-We can draw the following conclusions:
-
-- Intuitively, optimization runs based on our educated guesses should be faster than runs with random starting values, since we have carefully chosen these starting values by investigating the data
-
-### Considering successful runs only
-
-This comparison can however be considered somewhat 'unfair', as not all optimization runs lead to the global optimum --- optimization runs that lead to local optima may have less iterations and hence lower computation time. We can first check which runs lead to the apparent global optimum of `r format(as.numeric(hmm_ino$best_value()), scientific = FALSE)`. For that, we will again use functions from {dplyr}.
-
-```{r, eval = TRUE}
-summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  mutate(global_optimum = ifelse(value < -22445, 1, 0)) %>% 
-  group_by(label) %>% 
-  summarise(proportion_global_optimum = mean(global_optimum, na.rm = TRUE))
-```
-
-While for the educated guesses about 55\% of the runs converge to the global optimum, the random initialization and subset initialization strategies get stuck more often in local optima. Note that the standardized initialization approach cannot be compared to the other approaches here.
-
-Let's again compare the median computation time, but only for those runs that lead to the apparent global optimum:
-
-```{r, eval = TRUE}
-summary(hmm_ino, c("label", "value", "seconds")) %>% 
-  filter(value < -22445) %>% 
-  ggplot(aes(y = label, x = seconds)) +
-  geom_boxplot() + ylab("")
-```
-
-Looking at the boxplots, the subset last strategy appears to be considerably slower  than the subset first method. Examining the initial values (obtained from fitting the model to the subset in the first step), for example for the second run,
-
-```{r}
-hmm_ino$results("subset_last")[[2]]$initial
-# to obtain the inital values of all optimization runs, run
-# lapply(hmm_ino$results("subset_last"), '[[', "initial")
-```
-
-we see that the starting values for the transition probability matrix (i.e., the first two entries) deviate from the values obtained at the global optimum (cf. `hmm_ino$best_parameter()`). For the subset first strategy, the initial values of the tpm are much closer to those at the global optimum (again considering the second run for illustration):
-
-```{r}
-hmm_ino$results("subset_first")[[2]]$initial
-```
-
-
+The subset and the standardize approach can improve the optimization time by a factor of 2 in this example compared to the random initialization approach.
 
 ## References
