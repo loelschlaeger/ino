@@ -21,6 +21,7 @@
       <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/example_hmm.html">Example: Hidden Markov Model</a>
     <a class="dropdown-item" href="../articles/introduction.html">Introduction</a>
   </div>
 </li>
@@ -140,7 +141,7 @@ of length <code>npar</code> (if available), i.e., the point where <code>f</code>
 obtains its optimum.</p></dd>
 
 
-<dt><code>show_minimum</code></dt>
+<dt><code>minimized</code></dt>
 <dd><p>A <code>logical</code>, set to <code>TRUE</code> (default) to
 show best minimum in <code>$best_value()</code>, <code>$best_parameter()</code>, and
 <code>$optima()</code>.</p></dd>
@@ -1093,8 +1094,8 @@ include all optimization results.</p></dd>
 <dt><code>...</code></dt>
 <dd><p>Optionally named expressions of elements.
 See <code>$elements_available()</code> for the names of all available elements.
-In addition, <code>"true_value"</code> and <code>"true_parameter"</code> are
-available (if specified).
+In addition, <code>"true_value"</code>, <code>"true_parameter"</code>,
+<code>"best_value"</code>, and <code>"best_parameter"</code> can be accessed
 As an example, you could add
 <code>distance = "sqrt(sum((parameter - true_parameter) ^ 2))"</code> for the
 euclidean distance between the estimated and true parameter vector.</p></dd>

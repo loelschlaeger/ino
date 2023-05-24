@@ -7,6 +7,9 @@
     <loc>https://loelschlaeger.de/ino/LICENSE.html</loc>
   </url>
   <url>
+    <loc>https://loelschlaeger.de/ino/articles/example_hmm.html</loc>
+  </url>
+  <url>
     <loc>https://loelschlaeger.de/ino/articles/index.html</loc>
   </url>
   <url>
@@ -50,6 +53,9 @@
   </url>
   <url>
     <loc>https://loelschlaeger.de/ino/reference/filter_results.html</loc>
+  </url>
+  <url>
+    <loc>https://loelschlaeger.de/ino/reference/hmm_ino.html</loc>
   </url>
   <url>
     <loc>https://loelschlaeger.de/ino/reference/index.html</loc>
@@ -98,5 +104,8 @@
   </url>
   <url>
     <loc>https://loelschlaeger.de/ino/reference/test_nop.html</loc>
+  </url>
+  <url>
+    <loc>https://loelschlaeger.de/ino/reference/transfer_nop.html</loc>
   </url>
 </urlset>
