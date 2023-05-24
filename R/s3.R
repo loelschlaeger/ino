@@ -115,9 +115,16 @@ summary.Nop <- function(
   if (length(results) == 0) {
     return(invisible(out))
   }
+  result_names <- unique(names(
+    unlist(unlist(results, recursive = FALSE), recursive = FALSE)
+  ))
   for (run_id in seq_along(results)) {
     for (optimizer_id in seq_along(results[[run_id]])) {
       append <- results[[run_id]][[optimizer_id]]
+      missing_results <- setdiff(result_names, names(append))
+      if (length(missing_results) > 0) {
+        append[missing_results] <- NA
+      }
       if (length(append) > 0) {
         out <- dplyr::bind_rows(out, as.data.frame(t(cbind(append))))
       }
@@ -308,7 +315,7 @@ plot.Nop <- function(
         xintercept = med
       ) +
         ggplot2::annotate(
-          x = 0, y = Inf, label = "Overall median",
+          x = med, y = Inf, label = "Overall median",
           geom = "label", vjust = 1
         )
     }
