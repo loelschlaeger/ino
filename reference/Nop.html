@@ -1429,7 +1429,7 @@ The output has two attributes:</p><ul><li><p><code>run</code>, the run id that l
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">Nop</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>f <span class="op">=</span> <span class="va">f_ackley</span>, npar <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">$</span></span></span>
-<span class="r-in"><span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu">optimizer_nlm</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">$</span></span></span>
+<span class="r-in"><span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">$</span></span></span>
 <span class="r-in"><span>  <span class="fu">optimize</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span></span></span>
 <span class="r-in"><span>  <span class="fu">optima</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   value frequency</span>
