@@ -21,22 +21,22 @@
 #' dataset
 "earthquakes"
 
-# #' Example application of \{ino\} to HMM likelihood
-# #'
-# #' @description
-# #' See the vignette about the HMM likelihood for details:
-# #' \code{vignette("example_hmm", package = "ino")}
-# #'
-# #' @docType data
-# #'
-# #' @usage data("hmm_ino")
-# #'
-# #' @format
-# #' A \code{\link{Nop}} object.
-# #'
-# #' @keywords
-# #' dataset
-# "hmm_ino"
+#' Example application to HMM likelihood
+#'
+#' @description
+#' See the vignette about the HMM likelihood for details:
+#' \code{vignette("example_hmm", package = "ino")}
+#'
+#' @docType data
+#'
+#' @usage data("hmm_ino")
+#'
+#' @format
+#' A \code{\link{Nop}} object.
+#'
+#' @keywords
+#' dataset
+"hmm_ino"
 
 # #' Example application of \{ino\} to probit likelihood
 # #'
