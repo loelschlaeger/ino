@@ -56,11 +56,11 @@ X <- function(n, t) {
 X(n = 1, t = 1)
 ```
 
-We simulate choice data for $N = 200$ deciders at $T = 30$ choice occasions from the probit model defined by the parameter values $b = \begin{pmatrix} 1 & -10 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 0.2 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.2 \\ -0.5 & 1 & 0.2 \\ 0.2 & 0.2 & 1 \end{pmatrix}$:
+We simulate choice data for $N = 100$ deciders at $T = 20$ choice occasions from the probit model defined by the parameter values $b = \begin{pmatrix} 1 & -10 \end{pmatrix}^\top$, $\Omega = \begin{pmatrix} 0.2 & 0.5 \\ 0.5 & 2 \end{pmatrix}$, and $\Sigma = \begin{pmatrix} 1 & -0.5 & 0.2 \\ -0.5 & 1 & 0.2 \\ 0.2 & 0.2 & 1 \end{pmatrix}$:
 
 ```{r, simulate data, eval = TRUE}
-N <- 200
-T <- 30
+N <- 100
+T <- 20
 b <- c(1, -10)
 Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
 Sigma <- matrix(c(1, -0.5, 0.2, -0.5, 1, 0.2, 0.2, 0.2, 1), 3, 3)
@@ -135,10 +135,11 @@ The `$reduce()` method offers additional options for selecting the composition o
 
 - `how = "similar"` and `how = "dissimilar"`: These options utilize k-means clustering to identify subsets of similar or dissimilar data points. By clustering the data based on similarity, a subset that represents a distinct group within the data set can be selected. This approach can be particularly useful when there are distinct patterns or characteristics within the data.
 
-```{r, deviation, eval = TRUE}
+```{r, deviation, eval = TRUE, warning = FALSE}
 probit_ino$deviation(
   reference = probit_ino$true_parameter, which_run = c("random", "subset"),
-  parameter_labels = c("b.2", "o.11", "o.21", "o.22", "l.11", "l.21", "l.22")  
+  parameter_labels = c("b.2", "o.11", "o.21", "o.22", "l.11", "l.21", "l.22"),
+  ylim = c(-10, 10)
 )
 ```
 	
@@ -153,25 +154,35 @@ probit_ino$
   reset_argument("data")
 ```
 
+We also combine standardization and subsampling:
+
+```{r, optimize with standardize and subset, eval = FALSE}
+probit_ino$
+  standardize("data", by_column = TRUE, ignore = 1:3)$
+  reduce("data", how = "random", proportion = 0.2)$
+  optimize(initial = "random", runs = 100, label = "standardized_subset")$
+  reset_argument("data")$
+  standardize("data", by_column = TRUE, ignore = 1:3)$
+  continue()
+```
+
 ## Results
 
-```{r, optima, eval = TRUE}
-probit_ino$optima(digits = 0, which_run = "random")
-probit_ino$optima(digits = 0, which_run = "subset")
-```
+Both the subset and standardize approach improve the optimization time significantly in comparison to the random initialization. The combination of both strategies is twice as fast on average.
 
 ```{r, times, eval = TRUE, message = FALSE}
-plot(probit_ino, by = "label", relative = TRUE)
+plot(probit_ino, by = "label", relative = TRUE, xlim = c(-1, 3))
 ```
 	
-```{r, summary, eval = TRUE, warning = FALSE}
+```{r, summary, eval = TRUE, warning = FALSE, message = FALSE}
 library("dplyr")
 summary(probit_ino, which_element = c("seconds", "label")) %>% 
   group_by(label) %>% 
   summarize(
     mean_seconds = mean(seconds, na.rm = TRUE),
     sd_seconds = sd(seconds, na.rm = TRUE)
-  )
+  ) %>%
+  arrange(mean_seconds)
 ```
 	
 ## References
