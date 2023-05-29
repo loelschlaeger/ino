@@ -18,7 +18,13 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/ino.html">Get started</a>
+</li>
+<li class="active nav-item">
+  <a class="nav-link" href="../reference/index.html">Reference</a>
+</li>
+<li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/example_hmm.html">Example: Hidden Markov Model</a>
@@ -142,10 +148,10 @@ multinomial probit model.</p></div>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">sim_mnp</span><span class="op">(</span>N <span class="op">=</span> <span class="fl">3</span>, J <span class="op">=</span> <span class="fl">3</span>, P <span class="op">=</span> <span class="fl">2</span>, b <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, Omega <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>, Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n t y        X.11       X.21       X.31        X.12       X.22      X.32</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1 1 3 -1.11871568  0.3361626  0.3609079  0.92111840 -0.2013457  1.076612</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2 1 1 -0.05498305 -0.7502508 -0.1746370 -0.55330010 -0.8955766 -0.166433</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 3 1 2 -1.68098161  0.5238969  0.5525427 -0.09449931 -1.4703256 -0.183856</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n t y       X.11       X.21       X.31       X.12        X.22        X.32</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1 1 2  0.5396573 -0.6786055 -0.9721081 -0.5895913 -1.86381232 -0.17891957</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2 1 1 -0.5603842  1.0376832 -0.4692670  0.2295676  0.09264183  0.07589683</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 3 1 2  0.1738247 -0.3501958 -0.5629052 -0.1274283 -1.69907398  1.20993166</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
