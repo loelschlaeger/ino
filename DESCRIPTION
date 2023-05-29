@@ -28,12 +28,13 @@ Imports:
     crayon,
     doSNOW,
     dplyr,
+    forcats,
     foreach,
     ggplot2,
     glue,
     mvtnorm,
+    reshape2,
     rlang,
-    forcats,
     scales
 Suggests:
     covr,
