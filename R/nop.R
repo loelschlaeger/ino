@@ -813,8 +813,8 @@ Nop <- R6::R6Class(
     #' @param ...
     #' Optionally named expressions of elements.
     #' See \code{$elements_available()} for the names of all available elements.
-    #' In addition, \code{"true_value"} and \code{"true_parameter"} are
-    #' available (if specified).
+    #' In addition, \code{"true_value"}, \code{"true_parameter"},
+    #' \code{"best_value"}, and \code{"best_parameter"} can be accessed
     #' As an example, you could add
     #' \code{distance = "sqrt(sum((parameter - true_parameter) ^ 2))"} for the
     #' euclidean distance between the estimated and true parameter vector.
@@ -866,7 +866,7 @@ Nop <- R6::R6Class(
       colnames(optima) <- c("value", "frequency")
 
       ### sort rows
-      decreasing <- ifelse(sort_by == "value" && self$show_minimum, FALSE, TRUE)
+      decreasing <- ifelse(sort_by == "value" && self$minimized, FALSE, TRUE)
       optima <- optima[order(optima[[sort_by]], decreasing = decreasing), ]
       rownames(optima) <- NULL
 
@@ -972,7 +972,7 @@ Nop <- R6::R6Class(
         only_comparable = only_comparable, digits = Inf
       )
       best <- do.call(
-        what = ifelse(self$show_minimum, which.min, which.max),
+        what = ifelse(self$minimized, which.min, which.max),
         args = list(summary$value)
       )
       structure(
@@ -1064,7 +1064,7 @@ Nop <- R6::R6Class(
     .original_arguments = list(),
     .true_parameter = NULL,
     .true_value = NULL,
-    .show_minimum = TRUE,
+    .minimized = TRUE,
     .optimizer = list(),
     .results = list(),
     .runs_last = integer(),
@@ -1462,13 +1462,7 @@ Nop <- R6::R6Class(
     #' (if available).
     true_value = function(value) {
       if (missing(value)) {
-        out <- private$.true_value
-        if (is.null(out)) {
-          ino_warn(
-            "The true optimum function value has not been specified yet."
-          )
-        }
-        return(out)
+        private$.true_value
       } else {
         if (is.null(value)) {
           private$.true_value <- NULL
@@ -1501,13 +1495,7 @@ Nop <- R6::R6Class(
     #' obtains its optimum.
     true_parameter = function(value) {
       if (missing(value)) {
-        out <- private$.true_parameter
-        if (is.null(out)) {
-          ino_warn(
-            "The true optimum parameter vector has not been specified yet."
-          )
-        }
-        return(out)
+        private$.true_parameter
       } else {
         if (is.null(value)) {
           private$.true_parameter <- NULL
@@ -1530,17 +1518,17 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field show_minimum A \code{logical}, set to \code{TRUE} (default) to
+    #' @field minimized A \code{logical}, set to \code{TRUE} (default) to
     #' show best minimum in \code{$best_value()}, \code{$best_parameter()}, and
     #' \code{$optima()}.
-    show_minimum = function(value) {
+    minimized = function(value) {
       if (missing(value)) {
-        private$.show_minimum
+        private$.minimized
       } else {
         if (!isTRUE(value) && !isFALSE(value)) {
-          ino_stop("{.var show_minimum} must be {.val TRUE} or {.val FALSE}.")
+          ino_stop("{.var minimized} must be {.val TRUE} or {.val FALSE}.")
         }
-        private$.show_minimum <- value
+        private$.minimized <- value
       }
     },
 

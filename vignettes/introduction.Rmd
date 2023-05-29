@@ -26,7 +26,7 @@ set.seed(1)
 ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
-## Motivation behind {ino}
+## Motivation
 
 Optimization is of great relevance in many fields, including finance (portfolio optimization), engineering (minimizing air resistance), and statistics (likelihood maximization for model fitting). Often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for gradient or Hessian are not available. In these cases, numerical optimization algorithms are helpful. They iteratively explore the parameter space, guaranteeing to improve the function value over each iteration, and eventually converge to a point where no more improvements can be made [@Bonnans:2006]. In R, several functions are available that can be applied to numerically solve optimization problems, including (quasi) Newton (`stats::nlm()`, `stats::nlminb()`, `stats::optim()`), direct search (`pracma::nelder_mead()`), and conjugate gradient methods (`Rcgmin::Rcgmin()`). The [CRAN Task View: Optimization and Mathematical Programming](https://CRAN.R-project.org/view=Optimization) provides a comprehensive list of packages for solving optimization problems. 
 
@@ -36,7 +36,7 @@ One thing that all of these numerical optimizers have in common is that initial 
 
 2. putting effort on identifying good starting values.
 
-However, it is generally unclear what good initial values are and how they might affect the optimization. Therefore, the purpose of the {ino} R package^[*ino* is an acronym for ***i***nitialization of ***n***umerical ***o***ptimization.] is to provide a comprehensive toolbox for 
+However, it is generally unclear what good initial values are and how they might affect the optimization. Therefore, the purpose of the `{ino}` R package^[*ino* is an acronym for ***i***nitialization of ***n***umerical ***o***ptimization.] is to provide a comprehensive toolbox for 
 
 1. evaluating the effect of the initial values on the optimization,
 
@@ -44,12 +44,12 @@ However, it is generally unclear what good initial values are and how they might
 
 3. and comparing different optimizers.
 
-## Functionality of {ino}
+## Package functionality
 
-To specify an optimization problem in {ino}, we use an object-oriented framework based on the {R6} package [@Chang:2021]. The general workflow is to first create
+To specify an optimization problem in `{ino}`, we use an object-oriented framework based on the `{R6}` package [@Chang:2021]. The general workflow is to first create
 a `Nop` object^[*Nop* is an acronym for ***n***umerical ***o***ptimization ***p***roblem.], and then apply methods to change the attributes of that object, e.g., to optimize the function and investigate the optimization results:
 
-- The starting point for working with {ino} is to initialize a `Nop` object via `object <- Nop$new()`.
+- The starting point for working with `{ino}` is to initialize a `Nop` object via `object <- Nop$new()`.
 
 - Next, use the method `$set_optimizer()` to define one or more numerical optimizer.
 
@@ -61,9 +61,9 @@ a `Nop` object^[*Nop* is an acronym for ***n***umerical ***o***ptimization ***p*
 
 We illustrate these methods in the following application.
 
-## Working with {ino}
+## Workflow
 
-We demonstrate the basic {ino} workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times from the popular `faithful` data set that is provided via base R.
+We demonstrate the basic `{ino}` workflow in the context of likelihood maximization, where we fit a two-class Gaussian mixture model to Geyser eruption times from the popular `faithful` data set that is provided via base R.
 
 > **Remark:** Optimization in this example is very fast. This is because the data set is relatively small and we consider a model with two classes only. Therefore, it might not seem relevant to be concerned about initialization here. However, the problem scales: optimization time will rise with more data and more parameters, in which case initialization becomes a greater issue, see for example @Shireman:2017. Additionally, we will see that even this simple optimization problem suffers heavily from local optima, depending on the choice of initial values.
 
@@ -144,7 +144,7 @@ em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data)
 }
 ```
 
-### Specification in {ino}
+### Setup
 
 The optimization problem is specified as a `Nop` object called `geyser`, where
 
@@ -446,17 +446,37 @@ Setting `by = "optimizer"` allows comparison across optimizers:
 geyser$plot(by = "optimizer", relative = FALSE)
 ```
 
-### The final `Nop` object
-
-```{r, print final geyser object}
-print(geyser)
-```
+### The global optimum
 
 The best optimization result can be extracted via:
 
 ```{r, extract best value and parameter}
 geyser$best_value()
 geyser$best_parameter()
+```
+
+```{r, check assumptions about best value, include = FALSE}
+stopifnot(round(geyser$best_value()) == 249)
+frequency_best_value <- geyser$optima(digits = 0, sort_by = "value")[1, "frequency"]
+stopifnot(frequency_best_value == 1)
+```
+
+The best function value of `r round(geyser$best_value(), 2)` is unique:
+
+```{r, best optimum}
+head(geyser$optima(digits = 0, sort_by = "value"))
+```
+
+Furthermore, it does not produce a two-class mixture, since one class variance is practically zero, see the output of `geyser$best_parameter()`. We can therefore delete this result from our `Nop` object:
+
+```{r, delete optimum}
+geyser$clear(which_run = attr(geyser$best_value(), "run"))
+```
+
+The final `Nop` object then looks as follows:
+
+```{r, print final geyser object}
+print(geyser)
 ```
 
 ## References
