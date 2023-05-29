@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ino</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -182,7 +182,7 @@ choice covariates on different scales.</p>
 <span><span class="co">#&gt; [2,] 10.550930  0.09885233</span></span>
 <span><span class="co">#&gt; [3,]  7.493114 -0.24614052</span></span></code></pre></div>
 <p>We simulate choice data for <span class="math inline">\(N =
-200\)</span> deciders at <span class="math inline">\(T = 30\)</span>
+100\)</span> deciders at <span class="math inline">\(T = 20\)</span>
 choice occasions from the probit model defined by the parameter values
 <span class="math inline">\(b = \begin{pmatrix} 1 &amp; -10
 \end{pmatrix}^\top\)</span>, <span class="math inline">\(\Omega =
@@ -191,8 +191,8 @@ choice occasions from the probit model defined by the parameter values
 0.2 \\ -0.5 &amp; 1 &amp; 0.2 \\ 0.2 &amp; 0.2 &amp; 1
 \end{pmatrix}\)</span>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
-<span><span class="cn">T</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
+<code class="sourceCode R"><span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span><span class="cn">T</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
 <span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">Omega</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">Sigma</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.2</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -203,13 +203,13 @@ the decider index <code>n</code>, the choice occasion index
 characteristics <code>X</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">probit_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   n t y       X.11      X.21      X.31       X.12        X.22       X.32</span></span>
-<span><span class="co">#&gt; 1 1 1 2 13.2233229 15.686964  8.191008 -0.1172603 -0.12486661 -0.1126972</span></span>
-<span><span class="co">#&gt; 2 1 2 3  7.9073851  8.835497 11.957609  0.3374317 -0.23163324 -0.1524259</span></span>
-<span><span class="co">#&gt; 3 1 3 3  5.7100197 15.127363 14.305209 -0.2131113 -0.01952027 -0.5278406</span></span>
-<span><span class="co">#&gt; 4 1 4 1  7.6612945  8.076469  7.956606 -0.6099857  0.15028907 -0.4595394</span></span>
-<span><span class="co">#&gt; 5 1 5 2 12.6760252  9.922855  8.057019  0.1939078 -0.13014982  0.5317834</span></span>
-<span><span class="co">#&gt; 6 1 6 2  0.9758542  5.901664  8.727693  0.0710411 -0.70281694  0.2885090</span></span></code></pre></div>
+<span><span class="co">#&gt;   n t y      X.11      X.21      X.31          X.12       X.22        X.32</span></span>
+<span><span class="co">#&gt; 1 1 1 2 11.228206 15.066620 14.759765 -0.0992723402 -0.6855707  0.74929848</span></span>
+<span><span class="co">#&gt; 2 1 2 1 11.530325  9.506873 11.262084 -0.1200740232 -0.4110624  0.29635148</span></span>
+<span><span class="co">#&gt; 3 1 3 2 11.926724  9.865873  4.800345  0.0006395579 -0.1890901 -0.10229057</span></span>
+<span><span class="co">#&gt; 4 1 4 2  5.183460 10.591580 10.789527 -0.2957480101 -0.8666762 -0.19214451</span></span>
+<span><span class="co">#&gt; 5 1 5 1 11.682462  6.440624 13.290331 -0.0016032085  0.2121932  0.31023232</span></span>
+<span><span class="co">#&gt; 6 1 6 3  3.999505  8.365628  9.232988 -0.0498363110  0.3061392  0.04086657</span></span></code></pre></div>
 <p>The <code>probit_data</code> object includes the attribute
 <code>true</code>, which contains the true and <em>identified</em>
 parameter values. These values consist of the mean effects <span class="math inline">\(b\)</span>, excluding the first element, the
@@ -226,7 +226,7 @@ Cholesky root of the differenced covariance matrix <span class="math inline">\(\
 vector <code>theta</code> and a data set <code>probit_data</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/f_ll_mnp.html">f_ll_mnp</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">theta</span>, data <span class="op">=</span> <span class="va">probit_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -2153.488</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] -696.4395</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
@@ -306,9 +306,9 @@ distinct patterns or characteristics within the data.</p></li>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">probit_ino</span><span class="op">$</span><span class="fu">deviation</span><span class="op">(</span></span>
 <span>  reference <span class="op">=</span> <span class="va">probit_ino</span><span class="op">$</span><span class="va">true_parameter</span>, which_run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"random"</span>, <span class="st">"subset"</span><span class="op">)</span>,</span>
-<span>  parameter_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b.2"</span>, <span class="st">"o.11"</span>, <span class="st">"o.21"</span>, <span class="st">"o.22"</span>, <span class="st">"l.11"</span>, <span class="st">"l.21"</span>, <span class="st">"l.22"</span><span class="op">)</span>  </span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 14 rows containing missing values (`geom_point()`).</span></span></code></pre></div>
+<span>  parameter_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b.2"</span>, <span class="st">"o.11"</span>, <span class="st">"o.21"</span>, <span class="st">"o.22"</span>, <span class="st">"l.11"</span>, <span class="st">"l.21"</span>, <span class="st">"l.22"</span><span class="op">)</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">10</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/probit-deviation-1.png" width="75%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
@@ -327,72 +327,41 @@ indices from the standardization.</p>
 <span>  <span class="fu">standardize</span><span class="op">(</span><span class="st">"data"</span>, by_column <span class="op">=</span> <span class="cn">TRUE</span>, ignore <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="st">"random"</span>, runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"standardized"</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span></code></pre></div>
+<p>We also combine standardization and subsampling:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">probit_ino</span><span class="op">$</span></span>
+<span>  <span class="fu">standardize</span><span class="op">(</span><span class="st">"data"</span>, by_column <span class="op">=</span> <span class="cn">TRUE</span>, ignore <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">reduce</span><span class="op">(</span><span class="st">"data"</span>, how <span class="op">=</span> <span class="st">"random"</span>, proportion <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="st">"random"</span>, runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"standardized_subset"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">standardize</span><span class="op">(</span><span class="st">"data"</span>, by_column <span class="op">=</span> <span class="cn">TRUE</span>, ignore <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">continue</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a>
 </h2>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">probit_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, which_run <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   value frequency</span></span>
-<span><span class="co">#&gt; 1   688        81</span></span>
-<span><span class="co">#&gt; 2  &lt;NA&gt;         9</span></span>
-<span><span class="co">#&gt; 3   689         5</span></span>
-<span><span class="co">#&gt; 4   690         2</span></span>
-<span><span class="co">#&gt; 5   814         1</span></span>
-<span><span class="co">#&gt; 6  1234         1</span></span>
-<span><span class="co">#&gt; 7  1886         1</span></span>
-<span><span class="va">probit_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, which_run <span class="op">=</span> <span class="st">"subset"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    value frequency</span></span>
-<span><span class="co">#&gt; 1    688        64</span></span>
-<span><span class="co">#&gt; 2    715         4</span></span>
-<span><span class="co">#&gt; 3    713         3</span></span>
-<span><span class="co">#&gt; 4    718         3</span></span>
-<span><span class="co">#&gt; 5    689         2</span></span>
-<span><span class="co">#&gt; 6    690         2</span></span>
-<span><span class="co">#&gt; 7    692         2</span></span>
-<span><span class="co">#&gt; 8    717         2</span></span>
-<span><span class="co">#&gt; 9    759         2</span></span>
-<span><span class="co">#&gt; 10  &lt;NA&gt;         2</span></span>
-<span><span class="co">#&gt; 11   700         1</span></span>
-<span><span class="co">#&gt; 12   721         1</span></span>
-<span><span class="co">#&gt; 13   739         1</span></span>
-<span><span class="co">#&gt; 14   740         1</span></span>
-<span><span class="co">#&gt; 15   745         1</span></span>
-<span><span class="co">#&gt; 16   747         1</span></span>
-<span><span class="co">#&gt; 17   748         1</span></span>
-<span><span class="co">#&gt; 18   750         1</span></span>
-<span><span class="co">#&gt; 19   752         1</span></span>
-<span><span class="co">#&gt; 20   753         1</span></span>
-<span><span class="co">#&gt; 21   756         1</span></span>
-<span><span class="co">#&gt; 22   757         1</span></span>
-<span><span class="co">#&gt; 23   758         1</span></span>
-<span><span class="co">#&gt; 24   760         1</span></span></code></pre></div>
+<p>Both the subset and standardize approach improve the optimization
+time significantly in comparison to the random initialization. The
+combination of both strategies is twice as fast on average.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">probit_ino</span>, by <span class="op">=</span> <span class="st">"label"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">probit_ino</span>, by <span class="op">=</span> <span class="st">"label"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span>, xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/probit-times-1.png" width="75%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://dplyr.tidyverse.org" class="external-link">"dplyr"</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter, lag</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">probit_ino</span>, which_element <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"seconds"</span>, <span class="st">"label"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">label</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
 <span>    mean_seconds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">seconds</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    sd_seconds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">seconds</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">mean_seconds</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
 <span><span class="co">#&gt;   label               mean_seconds sd_seconds</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> random                     <span style="text-decoration: underline;">2</span>177.      <span style="text-decoration: underline;">1</span>589.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> standardized_subset        <span style="text-decoration: underline;">1</span>038.       548.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> standardized               <span style="text-decoration: underline;">1</span>442.       995.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> standardized_subset        <span style="text-decoration: underline;">1</span>038.       548.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> subset                     <span style="text-decoration: underline;">1</span>747.      <span style="text-decoration: underline;">1</span>024.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> subset                     <span style="text-decoration: underline;">1</span>747.      <span style="text-decoration: underline;">1</span>024.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> random                     <span style="text-decoration: underline;">2</span>177.      <span style="text-decoration: underline;">1</span>589.</span></span></code></pre></div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
