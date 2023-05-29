@@ -1,10 +1,6 @@
+# ino 1.0.0
 
-
-# ino 0.2.0.9000
-
-* The `get_vars()` function has a new argument `simplify`. If it is set to `TRUE` (the default), the nested list output will be simplified.
-
-* Big update: using R6 classes now.
+* The package is now based on an R6 class called `Nop`. See the documentation `?Nop` for details.  
 
 # ino 0.2.0
 
@@ -16,7 +12,7 @@
 
 ## New optimizer framework
 
-* Optimizer in `setup_ino()` are now specified via the framework provided by the [{optimizeR} package](https://CRAN.R-project.org/package=optimizeR).
+* Optimizer in `setup_ino()` are now specified via the framework provided by the [`{optimizeR}`](https://CRAN.R-project.org/package=optimizeR) package.
 * Optimizer can be changed afterwards via the `update_opt()` helper function.
 
 # ino 0.1.0
