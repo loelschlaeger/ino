@@ -4,17 +4,23 @@
 \alias{f_ll_mnp}
 \title{Log-likelihood function of the (normally mixed) multinomial probit model}
 \usage{
-f_ll_mnp(theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm)
+f_ll_mnp(
+  theta,
+  data,
+  neg = FALSE,
+  normal_cdf = mvtnorm::pmvnorm,
+  threshold = 1e-06
+)
 }
 \arguments{
-\item{theta}{A \code{numeric}, the vector of model coefficients, see the details.}
+\item{theta}{A \code{numeric}, the vector of model coefficients.
+The order of \code{theta} is \code{c(b, o, l)}, see the details.}
 
 \item{data}{A \code{data.frame}, the output of \code{\link{sim_mnp}}.}
 
 \item{neg}{Set to \code{TRUE} to return the negative log-likelihood value.}
 
-\item{normal_cdf}{A \code{function} that evaluates the CDF of an \code{n}-variate normal
-distribution.
+\item{normal_cdf}{A \code{function} that evaluates the \code{n}-variate normal CDF.
 It must take the arguments
 \itemize{
 \item \code{lower}, the vector of lower limits of length \code{n},
@@ -22,28 +28,33 @@ It must take the arguments
 \item \code{mean}, the mean vector of length \code{n},
 \item \code{sigma}, the \code{n} times \code{n} covariance matrix,
 }
-and return a single \code{numeric}.}
+and return a single \code{numeric}.
+
+By default, \code{normal_cdf = mvtnorm::pmvnorm}.}
+
+\item{threshold}{A small \code{numeric} between 0 and 1. Choice probabilities below this value
+are set to this value to avoid numerical problems.}
 }
 \value{
-A \code{numeric}, the log-likelihood value at \code{theta}.
+A \code{numeric}, the log-likelihood value at \code{theta} given \code{data}.
 }
 \description{
 Log-likelihood function of the (normally mixed) multinomial probit model
 }
 \details{
-The order of \code{theta} is supposed to be \code{c(b,o,l)}, where
+The order of \code{theta} is supposed to be \code{c(b, o, l)}, where
 \itemize{
-\item \code{b} denotes the vector of mean effects without the first entry,
+\item \code{b} is the vector of mean effects without the first entry,
 \item \code{o} the lower-triangular elements of the lower-triangular
 Cholesky root of the effect covariance matrix \code{Omega} (if any),
 \item and \code{l} the lower-triangular elements of the lower-triangular
-Cholesky root \code{L} of the differenced (with respect to
+Cholesky root of the differenced (with respect to
 the last alternative) error term covariance matrix \code{Sigma}.
 }
 }
 \examples{
-data <- sim_mnp(N = 200, J = 3, P = 2, b = c(1,3))
-theta <- attr(data, "true")[-1]
+data <- sim_mnp(N = 500, J = 3, P = 2, b = c(1, 3), Sigma = diag(3))
+theta <- attr(data, "true")
 f_ll_mnp(theta = theta, data = data)
 \donttest{
 nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate

@@ -123,6 +123,7 @@ not been used yet.}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
+\item \href{#method-Nop-deviation}{\code{Nop$deviation()}}
 \item \href{#method-Nop-best_value}{\code{Nop$best_value()}}
 \item \href{#method-Nop-best_parameter}{\code{Nop$best_parameter()}}
 \item \href{#method-Nop-closest_parameter}{\code{Nop$closest_parameter()}}
@@ -344,7 +345,8 @@ Optimizes the function.
   verbose = getOption("ino_verbose", default = TRUE),
   simplify = TRUE,
   time_limit = NULL,
-  hide_warnings = TRUE
+  hide_warnings = TRUE,
+  fail_bad_initial = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -391,7 +393,8 @@ saved inside the \code{Nop} object.
 By default, \code{save_results = TRUE}.}
 
 \item{\code{label}}{Only relevant if \code{save_results = TRUE}.
-In this case, an optional \code{character} to specify a custom label of the optimization.
+In this case, an optional \code{character} to specify a custom label of
+the optimization.
 By default, \code{label = self$new_label} creates a new label.
 Labels can be useful to distinguish optimization runs later.}
 
@@ -415,6 +418,10 @@ This currently only works reliably under Windows.}
 
 \item{\code{hide_warnings}}{A \code{logical}.
 Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
+
+\item{\code{fail_bad_initial}}{Either \code{TRUE} to immediately fail if \code{initial} contains any
+misspecifications (default), or \code{FALSE} to include the failed runs
+in the results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -422,10 +429,10 @@ Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
 The return value depends on the value of \code{return_results}:
 \itemize{
 \item if \code{return_results = FALSE}, invisibly the \code{Nop} object,
-\item if \code{return_results = TRUE}, a nested \code{list} of optimization
-results.
-Each element corresponds to one optimization run and is a \code{list}
-of results for each optimizer.
+\item if \code{return_results = TRUE}, a nested \code{list} of
+optimization results.
+Each element corresponds to one optimization run
+and is a \code{list} of results for each optimizer.
 The results for each optimizer is a \code{list}, the output of
 \code{\link[optimizeR]{apply_optimizer}}.
 If \code{simplify = TRUE}, the output is flattened if possible.
@@ -452,7 +459,8 @@ Validates the configuration of a \code{Nop} object.
 \describe{
 \item{\code{at}}{A \code{numeric} of length \code{npar}, the point at which the
 function \code{f} and the specified optimizer are tested.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+from a standard normal distribution.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
@@ -1110,6 +1118,70 @@ include all optimization results.}
 \item{\code{title}}{A \code{character}, the plot title.}
 
 \item{\code{xlim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{\link[ggplot2]{ggplot}} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-deviation"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
+\subsection{Method \code{deviation()}}{
+Visualizes deviation of parameters.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
+  reference = self$true_parameter,
+  which_element = "initial",
+  which_run = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE,
+  title = "Parameter deviation",
+  ylim = c(NA, NA),
+  parameter_labels = paste0("theta", 1:self$npar)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{reference}}{A \code{numeric} of length \code{self$npar}, the reference parameters.}
+
+\item{\code{which_element}}{Either:
+\itemize{
+\item \code{"initial"} to compute deviations to the initial values (default)
+\item \code{"parameter"} to compute deviations to the estimated parameters
+}}
+
+\item{\code{which_run}}{Select saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"}, all results,
+\item \code{"last"}, the results from the last optimization,
+\item \code{"failed"}, the results from failed optimization runs,
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"}, all specified optimizers,
+\item \code{"removed"}, all removed optimizers,
+\item \code{"active"}, all active optimizers (i.e., not removed),
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
+}}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} to
+include all optimization results.}
+
+\item{\code{title}}{A \code{character}, the plot title.}
+
+\item{\code{ylim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
+
+\item{\code{parameter_labels}}{A \code{character} of length \code{length(reference)} with labels for the
+parameters.}
 }
 \if{html}{\out{</div>}}
 }
