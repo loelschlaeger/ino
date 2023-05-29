@@ -1,5 +1,7 @@
 ---
 title: "Introduction"
+description: >
+  Learn how to get started with the {ino} package.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction}
@@ -16,7 +18,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
-  fig.path = "figures/introduction-",
+  fig.path = "figures/ino-",
   fig.dim = c(8, 6), 
   out.width = "75%"
 )
