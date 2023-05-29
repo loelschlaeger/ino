@@ -8,12 +8,14 @@ f_ll_hmm(theta, data, N, neg = FALSE)
 }
 \arguments{
 \item{theta}{A \code{numeric} vector of model parameters.
-- The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
-  elements of the transition probability matrix.
-- The next \code{N} elements are the mean values of the state-dependent
-  normal distributions.
-- The last \code{N} elements are the logarithms of the standard deviations of
-  the state-dependent normal distributions.}
+\itemize{
+\item The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
+elements of the transition probability matrix.
+\item The next \code{N} elements are the mean values of the state-dependent
+normal distributions.
+\item The last \code{N} elements are the logarithms of the standard deviations of
+the state-dependent normal distributions.
+}}
 
 \item{data}{A \code{numeric} vector, the time series data.}
 
