@@ -12,14 +12,12 @@ sim_hmm(T, N, theta)
 \item{N}{An \code{integer}, the number of states.}
 
 \item{theta}{A \code{numeric} vector of model parameters.
-\itemize{
-\item The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
-elements of the transition probability matrix.
-\item The next \code{N} elements are the mean values of the state-dependent
-normal distributions.
-\item The last \code{N} elements are the logarithms of the standard deviations of
-the state-dependent normal distributions.
-}}
+- The first \code{N*(N-1)} elements are the logarithms of the non-diagonal
+  elements of the transition probability matrix.
+- The next \code{N} elements are the mean values of the state-dependent
+  normal distributions.
+- The last \code{N} elements are the logarithms of the standard deviations of
+  the state-dependent normal distributions.}
 }
 \value{
 A \code{numeric} vector, the simulated time series.
@@ -37,7 +35,7 @@ plot(data, type = "l")
 
 }
 \seealso{
-\code{\link[=f_ll_hmm]{f_ll_hmm()}} for computing the log-likelihood of a Gaussian-hidden Markov
+[f_ll_hmm()] for computing the log-likelihood of a Gaussian-hidden Markov
 model
 }
 \keyword{function}

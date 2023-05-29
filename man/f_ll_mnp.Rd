@@ -23,10 +23,10 @@ The order of \code{theta} is \code{c(b, o, l)}, see the details.}
 \item{normal_cdf}{A \code{function} that evaluates the \code{n}-variate normal CDF.
 It must take the arguments
 \itemize{
-\item \code{lower}, the vector of lower limits of length \code{n},
-\item \code{upper}, the vector of upper limits of length \code{n},
-\item \code{mean}, the mean vector of length \code{n},
-\item \code{sigma}, the \code{n} times \code{n} covariance matrix,
+  \item \code{lower}, the vector of lower limits of length \code{n},
+  \item \code{upper}, the vector of upper limits of length \code{n},
+  \item \code{mean}, the mean vector of length \code{n},
+  \item \code{sigma}, the \code{n} times \code{n} covariance matrix,
 }
 and return a single \code{numeric}.
 
@@ -44,12 +44,12 @@ Log-likelihood function of the (normally mixed) multinomial probit model
 \details{
 The order of \code{theta} is supposed to be \code{c(b, o, l)}, where
 \itemize{
-\item \code{b} is the vector of mean effects without the first entry,
-\item \code{o} the lower-triangular elements of the lower-triangular
-Cholesky root of the effect covariance matrix \code{Omega} (if any),
-\item and \code{l} the lower-triangular elements of the lower-triangular
-Cholesky root of the differenced (with respect to
-the last alternative) error term covariance matrix \code{Sigma}.
+  \item \code{b} is the vector of mean effects without the first entry,
+  \item \code{o} the lower-triangular elements of the lower-triangular
+        Cholesky root of the effect covariance matrix \code{Omega} (if any),
+  \item and \code{l} the lower-triangular elements of the lower-triangular
+        Cholesky root of the differenced (with respect to
+        the last alternative) error term covariance matrix \code{Sigma}.
 }
 }
 \examples{
@@ -65,6 +65,6 @@ nlm(f_ll_mnp, p = theta, data = data, neg = TRUE)$estimate
 https://en.wikipedia.org/wiki/Multinomial_probit
 }
 \seealso{
-\code{\link[=sim_mnp]{sim_mnp()}} for simulating a data set from a probit model.
+[sim_mnp()] for simulating a data set from a probit model.
 }
 \keyword{function}

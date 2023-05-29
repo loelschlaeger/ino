@@ -38,10 +38,8 @@ times \code{J}.}
 
 \item{X}{A \code{function} that samples the covariates of decider \code{n} at choice
 occasion \code{t}. It must
-\itemize{
-\item have two arguments \code{n} and \code{t},
-\item return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.
-}}
+- have two arguments \code{n} and \code{t},
+- return a \code{numeric} \code{matrix} of dimension \code{J} times \code{P}.}
 
 \item{seed}{Optionally set a seed for the choice data simulation.}
 }
@@ -67,7 +65,7 @@ sim_mnp(N = 3, J = 3, P = 2, b = c(1, -1), Omega = diag(2), Sigma = diag(3))
 
 }
 \seealso{
-\code{\link[=f_ll_mnp]{f_ll_mnp()}} for computing the log-likelihood of a (normally mixed)
+[f_ll_mnp()] for computing the log-likelihood of a (normally mixed)
 multinomial probit model.
 }
 \keyword{function}

@@ -12,10 +12,8 @@ build_initial(initial, npar, fail_bad_initial = TRUE)
 \value{
 A \code{function} that returns a \code{numeric} of length \code{npar}.
 The \code{function} has two \code{integer} arguments:
-\enumerate{
-\item \code{run_id}, which selects the run,
-\item \code{optimizer_id}, which selects the optimizer.
-}
+1. \code{run_id}, which selects the run,
+2. \code{optimizer_id}, which selects the optimizer.
 }
 \description{
 This helper function turns various formats of initial parameter

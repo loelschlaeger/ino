@@ -4,60 +4,47 @@
 \alias{Nop}
 \title{Nop Object (R6 Class)}
 \description{
-A \code{Nop} object defines a \emph{N}umerical \emph{O}ptimization \emph{P}roblem.
+A \code{Nop} object defines a *N*umerical *O*ptimization *P*roblem.
 }
-\section{Getting Started}{
-\subsection{Step 1: Create a new \code{Nop} object:}{
+\details{
+# Getting Started
 
+## Step 1: Create a new \code{Nop} object:
 Call \code{object <- Nop$new(f, npar, ...)} where
-\itemize{
-\item \code{f} is the function to be optimized over its first argument,
-\item \code{npar} is the length of the first argument of \code{f},
-\item and \code{...} are additional arguments for \code{f}.
-}
-}
+- \code{f} is the function to be optimized over its first argument,
+- \code{npar} is the length of the first argument of \code{f},
+- and \code{...} are additional arguments for \code{f}.
 
-\subsection{Step 2: Specify numerical optimizer:}{
-
+## Step 2: Specify numerical optimizer:
 Call \code{object$set_optimizer(<optimizer object>)}, where
 \code{<optimizer object>} is an object of class \code{optimizer}, which can
 be created with the \code{\link[optimizeR]{define_optimizer}} function from
 the \{optimizeR\} package.
 Two optimizer objects are already available:
-\itemize{
-\item \code{\link[optimizeR]{optimizer_nlm}}
-\item \code{\link[optimizeR]{optimizer_optim}}
-}
-}
+- \code{\link[optimizeR]{optimizer_nlm}}
+- \code{\link[optimizeR]{optimizer_optim}}
 
-\subsection{Step 3: Test the configuration}{
-
+## Step 3: Test the configuration
 Call \code{object$test()} to validate your configuration. An overview of
 the configuration yields the \code{$print()} method.
-}
-}
 
-\section{Optimization}{
+# Optimization
 Call \code{object$evaluate()} to evaluate the target function at some point.
 Call \code{object$optimize()} for optimization. See also the methods
 \code{object$standardize()}, \code{object$reduce()}, and
 \code{object$continue()} for initialization strategies.
-}
 
-\section{Analysis of the results}{
+# Analysis of the results
 The following are methods for the analysis of optimization results, with
 different filter options for optimization runs, optimizers, and elements:
-\itemize{
-\item \code{$results()} returns all saved optimization results,
-\item \code{$summary()} summarizes the results,
-\item \code{$optima()} returns a frequency table of identified optima,
-\item \code{$plot()} visualizes the optimization time or value,
-\item \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
-\item \code{$best_value()} returns the found optimum value of \code{f},
-\item \code{$closest_parameter()} returns parameter closest to a specified value.
+- \code{$results()} returns all saved optimization results,
+- \code{$summary()} summarizes the results,
+- \code{$optima()} returns a frequency table of identified optima,
+- \code{$plot()} visualizes the optimization time or value,
+- \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
+- \code{$best_value()} returns the found optimum value of \code{f},
+- \code{$closest_parameter()} returns parameter closest to a specified value.
 }
-}
-
 \examples{
 Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer_nlm())$
@@ -279,13 +266,11 @@ Removes numerical optimizer.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 }
 \if{html}{\out{</div>}}
 }
@@ -320,11 +305,9 @@ Set to \code{TRUE} (\code{FALSE}) to hide (show) warning messages.}
 }
 \subsection{Returns}{
 Either:
-\itemize{
-\item a \code{numeric} value, the function value at \code{at},
-\item \code{"time limit reached"} if the time limit was reached,
-\item the error message if the evaluation failed.
-}
+- a \code{numeric} value, the function value at \code{at},
+- \code{"time limit reached"} if the time limit was reached,
+- the error message if the evaluation failed.
 }
 }
 \if{html}{\out{<hr>}}
@@ -354,32 +337,28 @@ Optimizes the function.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{initial}}{Specify the initial point where the optimizer should start. Either:
-\itemize{
-\item the \code{character} \code{"random"} (the default) for random initial
-values drawn from a standard normal distribution,
-\item a \code{numeric} vector of length \code{npar}, the starting point for
-optimization,
-\item a \code{list} of such vectors (in this case, \code{runs} is set to the
-length of the \code{list}),
-\item or a \code{function} without any arguments that returns a
-\code{numeric} vector of length \code{npar}.
+- the \code{character} \code{"random"} (the default) for random initial
+  values drawn from a standard normal distribution,
+- a \code{numeric} vector of length \code{npar}, the starting point for
+  optimization,
+- a \code{list} of such vectors (in this case, \code{runs} is set to the
+  length of the \code{list}),
+- or a \code{function} without any arguments that returns a
+  \code{numeric} vector of length \code{npar}.
 In all these cases, the same initial values are used for each optimizer.
 For more flexibility, a \code{funtion} for \code{initial} can have two
 arguments, where the first argument specifies the optimization run,
-and the second argument specifies the optimizer.
-}}
+and the second argument specifies the optimizer.}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization runs.
 By default, \code{runs = 1}.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
 Can be \code{NULL} for no seed, which is the default.}
@@ -428,14 +407,14 @@ in the results.}
 \subsection{Returns}{
 The return value depends on the value of \code{return_results}:
 \itemize{
-\item if \code{return_results = FALSE}, invisibly the \code{Nop} object,
-\item if \code{return_results = TRUE}, a nested \code{list} of
-optimization results.
-Each element corresponds to one optimization run
-and is a \code{list} of results for each optimizer.
-The results for each optimizer is a \code{list}, the output of
-\code{\link[optimizeR]{apply_optimizer}}.
-If \code{simplify = TRUE}, the output is flattened if possible.
+  \item if \code{return_results = FALSE}, invisibly the \code{Nop} object,
+  \item if \code{return_results = TRUE}, a nested \code{list} of
+        optimization results.
+        Each element corresponds to one optimization run
+        and is a \code{list} of results for each optimizer.
+        The results for each optimizer is a \code{list}, the output of
+        \code{\link[optimizeR]{apply_optimizer}}.
+        If \code{simplify = TRUE}, the output is flattened if possible.
 }
 }
 }
@@ -463,13 +442,11 @@ Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
 from a standard normal distribution.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
 No time limit if \code{time_limit = NULL} (the default).
@@ -566,16 +543,14 @@ In that case, either \code{TRUE} to reduce row-wise (default) or
 Currently, only \code{by_row = TRUE} is implemented.}
 
 \item{\code{how}}{A \code{character}, specifying how to reduce. Can be one of:
-\itemize{
-\item \code{"random"} (default), reduce at random
-\item \code{"first"}, reduce to the first elements
-\item \code{"last"}, reduce to the last elements
-\item \code{"similar"}, reduce to similar elements
-\item \code{"dissimilar"}, reduce to dissimilar elements
+- \code{"random"} (default), reduce at random
+- \code{"first"}, reduce to the first elements
+- \code{"last"}, reduce to the last elements
+- \code{"similar"}, reduce to similar elements
+- \code{"dissimilar"}, reduce to dissimilar elements
 Note that \code{"similar"} and \code{"dissimilar"} are based on k-means
 clustering via \code{\link[stats]{kmeans}}. To apply these options,
-the argument \code{argument_name} must be \code{numeric}.
-}}
+the argument \code{argument_name} must be \code{numeric}.}
 
 \item{\code{proportion}}{A \code{numeric} between \code{0} and \code{1}, specifying the
 reduction proportion.
@@ -654,22 +629,18 @@ Continues optimization runs, e.g., with a transformed parameter.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{seed}}{An \code{integer}, passed to \code{\link{set.seed}} for reproducibility.
 Can be \code{NULL} for no seed, which is the default.}
@@ -728,46 +699,36 @@ Returns saved optimization results.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{which_element}}{Select elements of saved optimization results.
 See \code{$elements_available()} for the names of all available elements.
 Either:
-\itemize{
-\item \code{"all"}, all elements,
-\item \code{"basic"}, the elements
-\itemize{
-\item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
-is obtained,
-}
-\item \code{"default"}, the elements that are saved for all optimization runs by
-default, i.e.
-\itemize{
-\item \code{"run"}, the run id,
-\item \code{"optimizer"}, the label for the optimizer,
-\item \code{"value"} and \code{"parameter"} (see above),
-\item \code{"seconds"}, the optimization time in seconds,
-\item \code{"label"}, the label for the optimization run,
-}
-\item a \code{character} (vector), names of specific elements in the optimization
-output.
-}}
+- \code{"all"}, all elements,
+- \code{"basic"}, the elements
+  - \code{"value"}, the \code{numeric} value of the found optimum,
+  - \code{"parameter"}, the parameter \code{vector} at which the optimum value
+    is obtained,
+- \code{"default"}, the elements that are saved for all optimization runs by
+  default, i.e.
+  - \code{"run"}, the run id,
+  - \code{"optimizer"}, the label for the optimizer,
+  - \code{"value"} and \code{"parameter"} (see above),
+  - \code{"seconds"}, the optimization time in seconds,
+  - \code{"label"}, the label for the optimization run,
+- a \code{character} (vector), names of specific elements in the optimization
+  output.}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -804,22 +765,18 @@ Returns the number of saved optimization runs.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -844,13 +801,11 @@ Returns names of available elements per optimizer.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 }
 \if{html}{\out{</div>}}
 }
@@ -871,46 +826,36 @@ Deletes optimization results.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{which_element}}{Select elements of saved optimization results.
 See \code{$elements_available()} for the names of all available elements.
 Either:
-\itemize{
-\item \code{"all"}, all elements,
-\item \code{"basic"}, the elements
-\itemize{
-\item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
-is obtained,
-}
-\item \code{"default"}, the elements that are saved for all optimization runs by
-default, i.e.
-\itemize{
-\item \code{"run"}, the run id,
-\item \code{"optimizer"}, the label for the optimizer,
-\item \code{"value"} and \code{"parameter"} (see above),
-\item \code{"seconds"}, the optimization time in seconds,
-\item \code{"label"}, the label for the optimization run,
-}
-\item a \code{character} (vector), names of specific elements in the optimization
-output.
-}}
+- \code{"all"}, all elements,
+- \code{"basic"}, the elements
+  - \code{"value"}, the \code{numeric} value of the found optimum,
+  - \code{"parameter"}, the parameter \code{vector} at which the optimum value
+    is obtained,
+- \code{"default"}, the elements that are saved for all optimization runs by
+  default, i.e.
+  - \code{"run"}, the run id,
+  - \code{"optimizer"}, the label for the optimizer,
+  - \code{"value"} and \code{"parameter"} (see above),
+  - \code{"seconds"}, the optimization time in seconds,
+  - \code{"label"}, the label for the optimization run,
+- a \code{character} (vector), names of specific elements in the optimization
+  output.}
 }
 \if{html}{\out{</div>}}
 }
@@ -940,44 +885,34 @@ Provides an overview of the optimization runs.
 \item{\code{which_element}}{Select elements of saved optimization results.
 See \code{$elements_available()} for the names of all available elements.
 Either:
-\itemize{
-\item \code{"all"}, all elements,
-\item \code{"basic"}, the elements
-\itemize{
-\item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
-is obtained,
-}
-\item \code{"default"}, the elements that are saved for all optimization runs by
-default, i.e.
-\itemize{
-\item \code{"run"}, the run id,
-\item \code{"optimizer"}, the label for the optimizer,
-\item \code{"value"} and \code{"parameter"} (see above),
-\item \code{"seconds"}, the optimization time in seconds,
-\item \code{"label"}, the label for the optimization run,
-}
-\item a \code{character} (vector), names of specific elements in the optimization
-output.
-}}
+- \code{"all"}, all elements,
+- \code{"basic"}, the elements
+  - \code{"value"}, the \code{numeric} value of the found optimum,
+  - \code{"parameter"}, the parameter \code{vector} at which the optimum value
+    is obtained,
+- \code{"default"}, the elements that are saved for all optimization runs by
+  default, i.e.
+  - \code{"run"}, the run id,
+  - \code{"optimizer"}, the label for the optimizer,
+  - \code{"value"} and \code{"parameter"} (see above),
+  - \code{"seconds"}, the optimization time in seconds,
+  - \code{"label"}, the label for the optimization run,
+- a \code{character} (vector), names of specific elements in the optimization
+  output.}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{digits}}{An \code{integer}, the number of shown decimal places.
 The default is \code{2}.}
@@ -1022,28 +957,22 @@ Provides an overview of the identified optimum values.
 The default is \code{2}.}
 
 \item{\code{sort_by}}{Either:
-\itemize{
-\item \code{"frequency"} (default) to sort rows by frequency,
-\item \code{"value"} to sort by value.
-}}
+- \code{"frequency"} (default) to sort rows by frequency,
+- \code{"value"} to sort by value.}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -1077,39 +1006,31 @@ Visualizes the optimization time or value.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_element}}{Either:
-\itemize{
-\item \code{"seconds"} to plot the optimization times (default)
-\item \code{"value"} to plot the optimization values
-}}
+- \code{"seconds"} to plot the optimization times (default)
+- \code{"value"} to plot the optimization values}
 
 \item{\code{by}}{Either:
-\itemize{
-\item \code{"label"} to group by optimization label
-\item \code{"optimizer"} to group by optimizer
-\item \code{NULL} to not group (default)
-}}
+- \code{"label"} to group by optimization label
+- \code{"optimizer"} to group by optimizer
+- \code{NULL} to not group (default)}
 
 \item{\code{relative}}{Only if \code{which_element = "seconds"}.
 In this case, set to \code{TRUE} to plot relative time differences with
 respect to the overall median.}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -1149,28 +1070,22 @@ Visualizes deviation of parameters.
 \item{\code{reference}}{A \code{numeric} of length \code{self$npar}, the reference parameters.}
 
 \item{\code{which_element}}{Either:
-\itemize{
-\item \code{"initial"} to compute deviations to the initial values (default)
-\item \code{"parameter"} to compute deviations to the estimated parameters
-}}
+- \code{"initial"} to compute deviations to the initial values (default)
+- \code{"parameter"} to compute deviations to the estimated parameters}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -1207,22 +1122,18 @@ Returns the best found \code{numeric} value of \code{f}.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -1236,12 +1147,10 @@ The default is \code{2}.}
 \subsection{Returns}{
 A \code{numeric}, the best found \code{numeric} value of \code{f}.
 The output has two attributes:
-\itemize{
-\item \code{run}, the run id that led to the best value,
-\item \code{optimizer}, the optimizer that led to the best value.
+- \code{run}, the run id that led to the best value,
+- \code{optimizer}, the optimizer that led to the best value.
 In the case that multiple optimization runs led to the best value, the
 first one of them is returned.
-}
 }
 }
 \if{html}{\out{<hr>}}
@@ -1262,22 +1171,18 @@ Returns the best found \code{numeric} parameter vector.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -1291,11 +1196,9 @@ The default is \code{2}.}
 \subsection{Returns}{
 A \code{numeric} of length \code{self$npar}.
 The output has two attributes:
-\itemize{
-\item \code{run}, the run id that led to the best parameter vector,
-\item \code{optimizer}, the optimizer that led to the best parameter vector.
+- \code{run}, the run id that led to the best parameter vector,
+- \code{optimizer}, the optimizer that led to the best parameter vector.
 Note that this parameter vector is not necessarily unique.
-}
 }
 }
 \if{html}{\out{<hr>}}
@@ -1321,22 +1224,18 @@ Note that this parameter vector is not necessarily unique.
 \item{\code{value}}{A single \code{numeric}.}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
-\itemize{
-\item \code{"all"}, all results,
-\item \code{"last"}, the results from the last optimization,
-\item \code{"failed"}, the results from failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()},
-\item a \code{numeric} (vector) of run ids.
-}}
+- \code{"all"}, all results,
+- \code{"last"}, the results from the last optimization,
+- \code{"failed"}, the results from failed optimization runs,
+- a \code{character} (vector) of labels specified in \code{$optimize()},
+- a \code{numeric} (vector) of run ids.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
+- \code{"all"}, all specified optimizers,
+- \code{"removed"}, all removed optimizers,
+- \code{"active"}, all active optimizers (i.e., not removed),
+- a \code{character} (vector) of specified optimizer labels,
+- a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
 for the original optimization problem), or \code{FALSE} to
@@ -1350,10 +1249,8 @@ The default is \code{2}.}
 \subsection{Returns}{
 A \code{numeric} vector of length \code{self$npar}.
 The output has two attributes:
-\itemize{
-\item \code{run}, the run id that led to this parameter vector,
-\item \code{optimizer}, the optimizer that led to this parameter vector.
-}
+- \code{run}, the run id that led to this parameter vector,
+- \code{optimizer}, the optimizer that led to this parameter vector.
 }
 }
 \if{html}{\out{<hr>}}
