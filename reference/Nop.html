@@ -22,6 +22,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/example_hmm.html">Example: Hidden Markov Model</a>
+    <a class="dropdown-item" href="../articles/example_probit.html">Example: Probit Model</a>
     <a class="dropdown-item" href="../articles/introduction.html">Introduction</a>
   </div>
 </li>
@@ -185,6 +186,7 @@ not been used yet.</p></dd>
 <li><p><a href="#method-Nop-summary"><code>Nop$summary()</code></a></p></li>
 <li><p><a href="#method-Nop-optima"><code>Nop$optima()</code></a></p></li>
 <li><p><a href="#method-Nop-plot"><code>Nop$plot()</code></a></p></li>
+<li><p><a href="#method-Nop-deviation"><code>Nop$deviation()</code></a></p></li>
 <li><p><a href="#method-Nop-best_value"><code>Nop$best_value()</code></a></p></li>
 <li><p><a href="#method-Nop-best_parameter"><code>Nop$best_parameter()</code></a></p></li>
 <li><p><a href="#method-Nop-closest_parameter"><code>Nop$closest_parameter()</code></a></p></li>
@@ -409,7 +411,8 @@ Set to <code>TRUE</code> (<code>FALSE</code>) to hide (show) warning messages.</
 <span>  verbose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"ino_verbose"</span>, default <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  simplify <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  time_limit <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  hide_warnings <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  hide_warnings <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  fail_bad_initial <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -464,7 +467,8 @@ By default, <code>save_results = TRUE</code>.</p></dd>
 
 <dt><code>label</code></dt>
 <dd><p>Only relevant if <code>save_results = TRUE</code>.
-In this case, an optional <code>character</code> to specify a custom label of the optimization.
+In this case, an optional <code>character</code> to specify a custom label of
+the optimization.
 By default, <code>label = self$new_label</code> creates a new label.
 Labels can be useful to distinguish optimization runs later.</p></dd>
 
@@ -500,15 +504,21 @@ This currently only works reliably under Windows.</p></dd>
 Set to <code>TRUE</code> (<code>FALSE</code>) to hide (show) warning messages.</p></dd>
 
 
+<dt><code>fail_bad_initial</code></dt>
+<dd><p>Either <code>TRUE</code> to immediately fail if <code>initial</code> contains any
+misspecifications (default), or <code>FALSE</code> to include the failed runs
+in the results.</p></dd>
+
+
 </dl><p></p></div>
 </div>
 <div class="section">
 <h4 id="returns-8">Returns<a class="anchor" aria-label="anchor" href="#returns-8"></a></h4>
 <p>The return value depends on the value of <code>return_results</code>:</p><ul><li><p>if <code>return_results = FALSE</code>, invisibly the <code>Nop</code> object,</p></li>
-<li><p>if <code>return_results = TRUE</code>, a nested <code>list</code> of optimization
-results.
-Each element corresponds to one optimization run and is a <code>list</code>
-of results for each optimizer.
+<li><p>if <code>return_results = TRUE</code>, a nested <code>list</code> of
+optimization results.
+Each element corresponds to one optimization run
+and is a <code>list</code> of results for each optimizer.
 The results for each optimizer is a <code>list</code>, the output of
 <code><a href="https://rdrr.io/pkg/optimizeR/man/apply_optimizer.html" class="external-link">apply_optimizer</a></code>.
 If <code>simplify = TRUE</code>, the output is flattened if possible.</p></li>
@@ -532,7 +542,8 @@ If <code>simplify = TRUE</code>, the output is flattened if possible.</p></li>
 <p></p><div class="arguments"><dl><dt><code>at</code></dt>
 <dd><p>A <code>numeric</code> of length <code>npar</code>, the point at which the
 function <code>f</code> and the specified optimizer are tested.
-Per default, <code>at = rnorm(self$npar)</code>, i.e., random values drawn from a standard normal distribution.</p></dd>
+Per default, <code>at = rnorm(self$npar)</code>, i.e., random values drawn
+from a standard normal distribution.</p></dd>
 
 
 <dt><code>which_optimizer</code></dt>
@@ -1241,21 +1252,35 @@ include all optimization results.</p></dd>
 <p>A <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></code> object.</p>
 </div>
 
-</div><p></p><hr><a id="method-Nop-best_value"></a><div class="section">
-<h3 id="method-best-value-">Method <code>best_value()</code><a class="anchor" aria-label="anchor" href="#method-best-value-"></a></h3>
-<p>Returns the best found <code>numeric</code> value of <code>f</code>.</p><div class="section">
+</div><p></p><hr><a id="method-Nop-deviation"></a><div class="section">
+<h3 id="method-deviation-">Method <code>deviation()</code><a class="anchor" aria-label="anchor" href="#method-deviation-"></a></h3>
+<p>Visualizes deviation of parameters.</p><div class="section">
 <h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">best_value</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">deviation</span><span class="op">(</span></span>
+<span>  reference <span class="op">=</span> <span class="va">self</span><span class="op">$</span><span class="va">true_parameter</span>,</span>
+<span>  which_element <span class="op">=</span> <span class="st">"initial"</span>,</span>
 <span>  which_run <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  which_optimizer <span class="op">=</span> <span class="st">"all"</span>,</span>
-<span>  only_comparable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"ino_digits"</span>, default <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>  only_comparable <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Parameter deviation"</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  parameter_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"theta"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">self</span><span class="op">$</span><span class="va">npar</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>which_run</code></dt>
+<p></p><div class="arguments"><dl><dt><code>reference</code></dt>
+<dd><p>A <code>numeric</code> of length <code>self$npar</code>, the reference parameters.</p></dd>
+
+
+<dt><code>which_element</code></dt>
+<dd><p>Either:</p><ul><li><p><code>"initial"</code> to compute deviations to the initial values (default)</p></li>
+<li><p><code>"parameter"</code> to compute deviations to the estimated parameters</p></li>
+</ul></dd>
+
+
+<dt><code>which_run</code></dt>
 <dd><p>Select saved results of optimization runs. Either:</p><ul><li><p><code>"all"</code>, all results,</p></li>
 <li><p><code>"last"</code>, the results from the last optimization,</p></li>
 <li><p><code>"failed"</code>, the results from failed optimization runs,</p></li>
@@ -1279,27 +1304,31 @@ for the original optimization problem), or <code>FALSE</code> to
 include all optimization results.</p></dd>
 
 
-<dt><code>digits</code></dt>
-<dd><p>An <code>integer</code>, the number of shown decimal places.
-The default is <code>2</code>.</p></dd>
+<dt><code>title</code></dt>
+<dd><p>A <code>character</code>, the plot title.</p></dd>
+
+
+<dt><code>ylim</code></dt>
+<dd><p>Passed on to <code><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html" class="external-link">coord_cartesian</a></code>.</p></dd>
+
+
+<dt><code>parameter_labels</code></dt>
+<dd><p>A <code>character</code> of length <code>length(reference)</code> with labels for the
+parameters.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
 <h4 id="returns-21">Returns<a class="anchor" aria-label="anchor" href="#returns-21"></a></h4>
-<p>A <code>numeric</code>, the best found <code>numeric</code> value of <code>f</code>.
-The output has two attributes:</p><ul><li><p><code>run</code>, the run id that led to the best value,</p></li>
-<li><p><code>optimizer</code>, the optimizer that led to the best value.
-In the case that multiple optimization runs led to the best value, the
-first one of them is returned.</p></li>
-</ul></div>
+<p>A <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></code> object.</p>
+</div>
 
-</div><p></p><hr><a id="method-Nop-best_parameter"></a><div class="section">
-<h3 id="method-best-parameter-">Method <code>best_parameter()</code><a class="anchor" aria-label="anchor" href="#method-best-parameter-"></a></h3>
-<p>Returns the best found <code>numeric</code> parameter vector.</p><div class="section">
+</div><p></p><hr><a id="method-Nop-best_value"></a><div class="section">
+<h3 id="method-best-value-">Method <code>best_value()</code><a class="anchor" aria-label="anchor" href="#method-best-value-"></a></h3>
+<p>Returns the best found <code>numeric</code> value of <code>f</code>.</p><div class="section">
 <h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">best_parameter</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">best_value</span><span class="op">(</span></span>
 <span>  which_run <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  which_optimizer <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  only_comparable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -1342,6 +1371,60 @@ The default is <code>2</code>.</p></dd>
 </div>
 <div class="section">
 <h4 id="returns-22">Returns<a class="anchor" aria-label="anchor" href="#returns-22"></a></h4>
+<p>A <code>numeric</code>, the best found <code>numeric</code> value of <code>f</code>.
+The output has two attributes:</p><ul><li><p><code>run</code>, the run id that led to the best value,</p></li>
+<li><p><code>optimizer</code>, the optimizer that led to the best value.
+In the case that multiple optimization runs led to the best value, the
+first one of them is returned.</p></li>
+</ul></div>
+
+</div><p></p><hr><a id="method-Nop-best_parameter"></a><div class="section">
+<h3 id="method-best-parameter-">Method <code>best_parameter()</code><a class="anchor" aria-label="anchor" href="#method-best-parameter-"></a></h3>
+<p>Returns the best found <code>numeric</code> parameter vector.</p><div class="section">
+<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">best_parameter</span><span class="op">(</span></span>
+<span>  which_run <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  which_optimizer <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  only_comparable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"ino_digits"</span>, default <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>which_run</code></dt>
+<dd><p>Select saved results of optimization runs. Either:</p><ul><li><p><code>"all"</code>, all results,</p></li>
+<li><p><code>"last"</code>, the results from the last optimization,</p></li>
+<li><p><code>"failed"</code>, the results from failed optimization runs,</p></li>
+<li><p>a <code>character</code> (vector) of labels specified in <code>$optimize()</code>,</p></li>
+<li><p>a <code>numeric</code> (vector) of run ids.</p></li>
+</ul></dd>
+
+
+<dt><code>which_optimizer</code></dt>
+<dd><p>Select specified numerical optimizers. Either:</p><ul><li><p><code>"all"</code>, all specified optimizers,</p></li>
+<li><p><code>"removed"</code>, all removed optimizers,</p></li>
+<li><p><code>"active"</code>, all active optimizers (i.e., not removed),</p></li>
+<li><p>a <code>character</code> (vector) of specified optimizer labels,</p></li>
+<li><p>a <code>numeric</code> (vector) of optimizer ids (see <code>$print()</code> output).</p></li>
+</ul></dd>
+
+
+<dt><code>only_comparable</code></dt>
+<dd><p>Either <code>TRUE</code> to show only comparable results (i.e., results obtained
+for the original optimization problem), or <code>FALSE</code> to
+include all optimization results.</p></dd>
+
+
+<dt><code>digits</code></dt>
+<dd><p>An <code>integer</code>, the number of shown decimal places.
+The default is <code>2</code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-23">Returns<a class="anchor" aria-label="anchor" href="#returns-23"></a></h4>
 <p>A <code>numeric</code> of length <code>self$npar</code>.
 The output has two attributes:</p><ul><li><p><code>run</code>, the run id that led to the best parameter vector,</p></li>
 <li><p><code>optimizer</code>, the optimizer that led to the best parameter vector.
@@ -1353,7 +1436,7 @@ Note that this parameter vector is not necessarily unique.</p></li>
 <p>Extracts the parameter vector that led to a function value closest
 (in absolute value) to <code>value</code>.
 Note that this parameter vector is not necessarily unique.</p><div class="section">
-<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
+<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">closest_parameter</span><span class="op">(</span></span>
 <span>  <span class="va">value</span>,</span>
 <span>  which_run <span class="op">=</span> <span class="st">"all"</span>,</span>
@@ -1364,7 +1447,7 @@ Note that this parameter vector is not necessarily unique.</p><div class="sectio
 </div>
 
 <div class="section">
-<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
+<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
 <dd><p>A single <code>numeric</code>.</p></dd>
 
@@ -1401,7 +1484,7 @@ The default is <code>2</code>.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-23">Returns<a class="anchor" aria-label="anchor" href="#returns-23"></a></h4>
+<h4 id="returns-24">Returns<a class="anchor" aria-label="anchor" href="#returns-24"></a></h4>
 <p>A <code>numeric</code> vector of length <code>self$npar</code>.
 The output has two attributes:</p><ul><li><p><code>run</code>, the run id that led to this parameter vector,</p></li>
 <li><p><code>optimizer</code>, the optimizer that led to this parameter vector.</p></li>
@@ -1410,12 +1493,12 @@ The output has two attributes:</p><ul><li><p><code>run</code>, the run id that l
 </div><p></p><hr><a id="method-Nop-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
+<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Nop</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
+<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

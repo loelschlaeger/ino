@@ -10,6 +10,9 @@
     <loc>https://loelschlaeger.de/ino/articles/example_hmm.html</loc>
   </url>
   <url>
+    <loc>https://loelschlaeger.de/ino/articles/example_probit.html</loc>
+  </url>
+  <url>
     <loc>https://loelschlaeger.de/ino/articles/index.html</loc>
   </url>
   <url>
@@ -86,6 +89,9 @@
   </url>
   <url>
     <loc>https://loelschlaeger.de/ino/reference/is_time_limit.html</loc>
+  </url>
+  <url>
+    <loc>https://loelschlaeger.de/ino/reference/probit_ino.html</loc>
   </url>
   <url>
     <loc>https://loelschlaeger.de/ino/reference/sim_hmm.html</loc>
