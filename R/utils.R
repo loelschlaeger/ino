@@ -275,4 +275,3 @@ is_index_vector <- function(x, error = TRUE) {
   }
   invisible(check)
 }
-

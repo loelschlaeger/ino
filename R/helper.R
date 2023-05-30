@@ -117,9 +117,7 @@ build_initial <- function(initial, npar, fail_bad_initial = TRUE) {
 
 filter_results <- function(
     results, run_ids, optimizer_ids, which_element, only_comparable,
-    keep_empty = FALSE
-  ) {
-
+    keep_empty = FALSE) {
   ### input checks
   stopifnot(
     is.list(results), is_index_vector(run_ids), is_index_vector(optimizer_ids),
@@ -142,8 +140,8 @@ filter_results <- function(
 
   ### filter elements
   results <- lapply(results, function(x) {
-    lapply(x, function(y) y[intersect(which_element, names(y))]
-  )})
+    lapply(x, function(y) y[intersect(which_element, names(y))])
+  })
 
   ### discard empty entries
   results <- results[sapply(results, length) > 0]
@@ -183,7 +181,8 @@ simplify_results <- function(results, simplify) {
         results <- lapply(results, unlist, recursive = FALSE, use.names = TRUE)
         if (all(sapply(results, length) == 1)) {
           results <- lapply(
-            results, unlist, recursive = FALSE, use.names = TRUE
+            results, unlist,
+            recursive = FALSE, use.names = TRUE
           )
         }
       } else {
@@ -216,27 +215,28 @@ simplify_results <- function(results, simplify) {
 #' @keywords internal
 
 test_nop <- function(
-    x, at, optimizer_ids, time_limit, verbose, digits
-  ) {
-
+    x, at, optimizer_ids, time_limit, verbose, digits) {
   ### input checks
   is_TRUE_FALSE(verbose)
 
   ### test configurations
   ino_status("Test configuration", verbose = verbose)
   ino_success(
-    glue::glue("Function specified: {x$f_name}"), verbose = verbose
+    glue::glue("Function specified: {x$f_name}"),
+    verbose = verbose
   )
   ino_success(
     glue::glue(
       "Target argument specified: {x$f_target} (length {x$npar})"
-    ), verbose = verbose
+    ),
+    verbose = verbose
   )
   ino_success(
     glue::glue(
       "Test initial values specified: ",
-      paste(round(at, digits = digits), collapse = ' ')
-    ), verbose = verbose
+      paste(round(at, digits = digits), collapse = " ")
+    ),
+    verbose = verbose
   )
 
   ### test function call
@@ -333,11 +333,12 @@ test_nop <- function(
                 glue::glue("Output does not contain the element '{value}'.")
               )
             } else {
-              ino_success(glue::glue(
-                "Return {value}: ",
-                "{paste(round(out[[value]], digits = digits), collapse = ' ')}"
-              ),
-              verbose = verbose
+              ino_success(
+                glue::glue(
+                  "Return {value}: ",
+                  "{paste(round(out[[value]], digits = digits), collapse = ' ')}"
+                ),
+                verbose = verbose
               )
             }
           }
@@ -364,7 +365,6 @@ test_nop <- function(
 #' @keywords internal
 
 standardize_argument <- function(argument, by_column, center, scale, ignore) {
-
   ### input checks
   attr_argument <- attributes(argument)
   vector_flag <- FALSE
@@ -392,11 +392,13 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
   if (length(ignore) > 0) {
     if (vector_flag) {
       argument[-ignore, ] <- scale(
-        argument[-ignore, ], center = center, scale = scale
+        argument[-ignore, ],
+        center = center, scale = scale
       )
     } else {
       argument[, -ignore] <- scale(
-        argument[, -ignore], center = center, scale = scale
+        argument[, -ignore],
+        center = center, scale = scale
       )
     }
   } else {
@@ -441,9 +443,7 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #' @importFrom utils tail
 
 subset_argument <- function(
-    argument, by_row, how, proportion, centers, ignore, seed = NULL
-  ) {
-
+    argument, by_row, how, proportion, centers, ignore, seed = NULL) {
   ### input checks
   is_name(how)
   if (!how %in% c("random", "first", "last", "similar", "dissimilar")) {
