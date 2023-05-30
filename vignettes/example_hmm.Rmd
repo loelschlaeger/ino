@@ -1,5 +1,7 @@
 ---
 title: "Example: Hidden Markov Model"
+description: >
+  See the {ino} package in action for the HMM likelihood optimization.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEncoding{UTF-8}

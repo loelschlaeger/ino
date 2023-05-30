@@ -1,5 +1,7 @@
 ---
 title: "Example: Probit Model"
+description: >
+  See the {ino} package in action for the probit likelihood optimization.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEncoding{UTF-8}
