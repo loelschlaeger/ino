@@ -17,12 +17,4 @@ The standardized \code{argument}.
 \description{
 This helper function standardizes a \code{numeric} argument.
 }
-\examples{
-\dontrun{
-standardize_argument(
-  argument = diag(3), by_column = TRUE, center = TRUE, scale = TRUE,
-  ignore = 1:2
-)
-}
-}
 \keyword{internal}

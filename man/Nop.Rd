@@ -3,6 +3,11 @@
 \name{Nop}
 \alias{Nop}
 \title{Nop Object (R6 Class)}
+\value{
+A \code{Nop} object, which is an R6 class that specifies the numerical
+optimization problem, stores optimization results, and provides methods
+for analyzing the results, see the details.
+}
 \description{
 A \code{Nop} object defines a \emph{N}umerical \emph{O}ptimization \emph{P}roblem.
 }
@@ -272,7 +277,10 @@ Invisibly the \code{Nop} object.
 \subsection{Method \code{remove_optimizer()}}{
 Removes numerical optimizer.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_optimizer(which_optimizer)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_optimizer(
+  which_optimizer,
+  verbose = getOption("ino_verbose", default = TRUE)
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -286,6 +294,10 @@ Removes numerical optimizer.
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }

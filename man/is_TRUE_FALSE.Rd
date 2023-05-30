@@ -20,11 +20,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is proper boolean, i.e., either
 \code{TRUE} or \code{FALSE}.
 }
-\examples{
-\dontrun{
-is_TRUE_FALSE(TRUE)
-is_TRUE_FALSE(1)
-is_TRUE_FALSE("TRUE")
-}
-}
 \keyword{utils}

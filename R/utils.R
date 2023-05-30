@@ -15,13 +15,6 @@
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_number(1)
-#' is_number(pi)
-#' is_number("1")
-#' }
 
 is_number <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -56,13 +49,6 @@ is_number <- function(x, error = TRUE) {
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_proportion(0.5)
-#' is_proportion(pi)
-#' is_proportion("1")
-#' }
 
 is_proportion <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -99,14 +85,6 @@ is_proportion <- function(x, error = TRUE) {
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_count(1)
-#' is_count(0, allow_zero = TRUE)
-#' is_count(pi)
-#' is_count("1")
-#' }
 
 is_count <- function(x, allow_zero = FALSE, error = TRUE) {
   is_TRUE_FALSE(allow_zero)
@@ -143,14 +121,6 @@ is_count <- function(x, allow_zero = FALSE, error = TRUE) {
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_name("one")
-#' is_name(1)
-#' is_name(LETTERS[1:2])
-#' is_name("")
-#' }
 
 is_name <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -185,14 +155,6 @@ is_name <- function(x, error = TRUE) {
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_name_vector("one")
-#' is_name_vector(1)
-#' is_name_vector(LETTERS[1:2])
-#' is_name_vector("")
-#' }
 
 is_name_vector <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -227,14 +189,6 @@ is_name_vector <- function(x, error = TRUE) {
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_time_limit(1)
-#' is_time_limit(pi)
-#' is_time_limit(-1)
-#' is_time_limit("1")
-#' }
 
 is_time_limit <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -271,13 +225,6 @@ is_time_limit <- function(x, error = TRUE) {
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_TRUE_FALSE(TRUE)
-#' is_TRUE_FALSE(1)
-#' is_TRUE_FALSE("TRUE")
-#' }
 
 is_TRUE_FALSE <- function(x, error = TRUE) {
   stopifnot(isTRUE(error) || isFALSE(error))
@@ -312,14 +259,6 @@ is_TRUE_FALSE <- function(x, error = TRUE) {
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
 #' @keywords utils
-#'
-#' @examples
-#' \dontrun{
-#' is_index_vector(1:10)
-#' is_index_vector(-3:3)
-#' is_index_vector(LETTERS)
-#' is_index_vector(c(1, 2, pi))
-#' }
 
 is_index_vector <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)

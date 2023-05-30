@@ -20,12 +20,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is proper time limit, i.e., a single,
 positive \code{numeric}.
 }
-\examples{
-\dontrun{
-is_time_limit(1)
-is_time_limit(pi)
-is_time_limit(-1)
-is_time_limit("1")
-}
-}
 \keyword{utils}

@@ -22,7 +22,8 @@ sim_mnp(
 \item{T}{An \code{integer}, the number of choice occasions.
 By default, \code{T = 1}.}
 
-\item{J}{An \code{integer}, the number of alternatives.}
+\item{J}{An \code{integer}, the number of alternatives.
+Must be greater of equal \code{2}.}
 
 \item{P}{An \code{integer}, the number of choice covariates.}
 

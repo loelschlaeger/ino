@@ -20,12 +20,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is proper index vector, i.e., a
 \code{vector} of positive \code{integer} values.
 }
-\examples{
-\dontrun{
-is_index_vector(1:10)
-is_index_vector(-3:3)
-is_index_vector(LETTERS)
-is_index_vector(c(1, 2, pi))
-}
-}
 \keyword{utils}

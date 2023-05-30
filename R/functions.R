@@ -142,7 +142,11 @@ f_easom <- function(x) {
 #' @export
 
 sim_hmm <- function(T, N, theta) {
-  stopifnot(is.numeric(theta), length(theta) == N*(N-1)+2*N)
+  stopifnot(
+    is.numeric(T), length(T) == 1, T > 0, T %% 1 == 0, is.numeric(N),
+    length(N) == 1, N > 0, N %% 1 == 0, is.numeric(theta),
+    length(theta) == N * (N - 1) + 2 * N
+  )
   tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
   tpm <- tpm / rowSums(tpm)
@@ -190,8 +194,10 @@ sim_hmm <- function(T, N, theta) {
 #' @export
 
 f_ll_hmm <- function(theta, data, N, neg = FALSE) {
-  stopifnot(is.numeric(theta), is.vector(data), is.numeric(data), N%%1==0)
-  stopifnot(length(theta) == N * (N - 1) + 2*N)
+  stopifnot(
+    is.numeric(theta), is.vector(data), is.numeric(data), is.numeric(N),
+    length(N) == 1, N > 0, N %% 1 == 0, length(theta) == N * (N - 1) + 2 * N
+  )
   T <- length(data)
   tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
@@ -228,6 +234,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #' By default, \code{T = 1}.
 #' @param J
 #' An \code{integer}, the number of alternatives.
+#' Must be greater of equal \code{2}.
 #' @param P
 #' An \code{integer}, the number of choice covariates.
 #' @param b
@@ -276,9 +283,14 @@ sim_mnp <- function(
     X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P),
     seed = NULL
 ) {
-  set.seed(seed)
-  stopifnot(b[1] == 1)
-  stopifnot(is.function(X), names(formals(X)) == c("n", "t"))
+  if (!is.null(seed)) set.seed(seed)
+  stopifnot(
+    b[1] == 1, is.function(X), names(formals(X)) == c("n", "t"),
+    is.numeric(N), length(N) == 1, N > 0, N %% 1 == 0,
+    is.numeric(T), length(T) == 1, T > 0, T %% 1 == 0,
+    is.numeric(J), length(J) == 1, J > 1, J %% 1 == 0,
+    is.numeric(P), length(P) == 1, P > 0, P %% 1 == 0
+  )
   b <- matrix(b)
   mix <- !(is.null(Omega) || all(Omega == 0))
   if(mix) {
@@ -394,18 +406,14 @@ f_ll_mnp <- function(
     theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm, threshold = 1e-6
   ) {
   stopifnot(
-    is.numeric(threshold), length(threshold) == 1, threshold > 0, threshold < 1
-  )
-  stopifnot(
+    is.numeric(threshold), length(threshold) == 1, threshold > 0, threshold < 1,
     is.data.frame(data), c("P", "mix", "J") %in% names(attributes(data))
   )
   P <- attr(data, "P")
   mix <- attr(data, "mix")
   J <- attr(data, "J")
   stopifnot(
-    is.numeric(theta), length(theta) == (P-1) + mix *(P*(P+1)/2) + (J-1)*J/2
-  )
-  stopifnot(
+    is.numeric(theta), length(theta) == (P-1) + mix *(P*(P+1)/2) + (J-1)*J/2,
     is.function(normal_cdf),
     c("lower", "upper", "mean", "sigma") %in% names(formals(normal_cdf))
   )

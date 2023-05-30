@@ -81,6 +81,11 @@
 #' @param ylim
 #' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
 #'
+#' @return
+#' A \code{Nop} object, which is an R6 class that specifies the numerical
+#' optimization problem, stores optimization results, and provides methods
+#' for analyzing the results, see the details.
+#'
 #' @details
 #' # Getting Started
 #'
@@ -308,7 +313,9 @@ Nop <- R6::R6Class(
     #' Removes numerical optimizer.
     #' @return
     #' Invisibly the \code{Nop} object.
-    remove_optimizer = function(which_optimizer) {
+    remove_optimizer = function(
+      which_optimizer, verbose = getOption("ino_verbose", default = TRUE)
+    ) {
       if (missing(which_optimizer)) {
         ino_stop("Please specify {.var which_optimizer}.")
       }
@@ -316,7 +323,10 @@ Nop <- R6::R6Class(
       for (id in ids) {
         if (attr(private$.optimizer[[id]], "active")) {
           attr(private$.optimizer[[id]], "active") <- FALSE
-          ino_status(glue::glue("Removed optimizer {id}."))
+          ino_status(
+            glue::glue("Removed optimizer {id}."),
+            verbose = verbose
+          )
         } else {
           ino_warn(glue::glue("Optimizer {id} has already been removed."))
         }
@@ -1468,7 +1478,8 @@ Nop <- R6::R6Class(
           private$.true_value <- NULL
           private$.true_parameter <- NULL
           ino_status(
-            "Removed {.var true_value} and {.var true_parameter}."
+            "Removed {.var true_value} and {.var true_parameter}.",
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         } else {
           if (!(is.vector(value) && is.numeric(value) && length(value) == 1)) {
@@ -1500,7 +1511,8 @@ Nop <- R6::R6Class(
         if (is.null(value)) {
           private$.true_parameter <- NULL
           ino_status(
-            "Removed {.var true_parameter}."
+            "Removed {.var true_parameter}.",
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         } else {
           private$.check_target_argument(value)
@@ -1511,7 +1523,8 @@ Nop <- R6::R6Class(
               "Set true optimum value to",
               "{round(private$.true_value, digits = digits)}.",
               .sep = " "
-            )
+            ),
+            verbose = getOption("ino_verbose", default = FALSE)
           )
           private$.true_parameter <- value
         }

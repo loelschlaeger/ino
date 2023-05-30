@@ -22,19 +22,4 @@ A \code{list}.
 \description{
 This helper function simplifies optimization results (if possible).
 }
-\examples{
-\dontrun{
-simplify_results(
-  results = list("run" = list(
-    "optimizer1" = list(
-      "value" = 1, "comparable" = FALSE
-    ),
-    "optimizer2" = list(
-      "value" = 2, "comparable" = TRUE
-     )
-  )),
-  simplify = TRUE
-)
-}
-}
 \keyword{internal}

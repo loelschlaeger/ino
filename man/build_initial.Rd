@@ -21,14 +21,4 @@ The \code{function} has two \code{integer} arguments:
 This helper function turns various formats of initial parameter
 specifications into a unified function call.
 }
-\examples{
-\dontrun{
-build_initial("random", 2)(1, 1)
-build_initial(1:3, 3)(1, 2)
-build_initial(list(1:3, 2:4), 3)(2, 1)
-build_initial(function() stats::rnorm(4), 4)(3, 1)
-build_initial(function(run, optimizer) c(run, optimizer), 2)(2, 3)
-}
-
-}
 \keyword{internal}
