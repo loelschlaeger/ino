@@ -14,4 +14,4 @@ data(probit_ino)
 See the vignette about the probit likelihood for details:
 \code{vignette("example_probit", package = "ino")}
 }
-\keyword{dataset}
+\keyword{demo}

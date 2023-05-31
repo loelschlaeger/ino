@@ -12,7 +12,7 @@
 #' A \code{\link{Nop}} object.
 #'
 #' @keywords
-#' dataset
+#' demo
 "hmm_ino"
 
 #' Example application of to probit likelihood
@@ -29,5 +29,5 @@
 #' A \code{\link{Nop}} object.
 #'
 #' @keywords
-#' dataset
+#' demo
 "probit_ino"

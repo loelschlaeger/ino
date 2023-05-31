@@ -14,4 +14,4 @@ data("hmm_ino")
 See the vignette about the HMM likelihood for details:
 \code{vignette("example_hmm", package = "ino")}
 }
-\keyword{dataset}
+\keyword{demo}
