@@ -111,7 +111,7 @@ f_easom <- function(x) {
 #' [f_ll_hmm()] for computing the log-likelihood of a Gaussian-hidden Markov
 #' model
 #'
-#' @param T
+#' @param Tp
 #' An \code{integer}, the number of observations.
 #' @param N
 #' An \code{integer}, the number of states.
@@ -128,11 +128,11 @@ f_easom <- function(x) {
 #' A \code{numeric} vector, the simulated time series.
 #'
 #' @examples
-#' tpm <- matrix(c(0.8,0.1,0.2,0.9), nrow = 2)
-#' mu <- c(-2,2)
-#' sigma <- c(0.5,1)
+#' tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+#' mu <- c(-2, 2)
+#' sigma <- c(0.5, 1)
 #' theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-#' data <- sim_hmm(T = 100, N = 2, theta = theta)
+#' data <- sim_hmm(Tp = 100, N = 2, theta = theta)
 #' plot(data, type = "l")
 #'
 #' @importFrom stats rnorm
@@ -141,9 +141,9 @@ f_easom <- function(x) {
 #'
 #' @export
 
-sim_hmm <- function(T, N, theta) {
+sim_hmm <- function(Tp, N, theta) {
   stopifnot(
-    is.numeric(T), length(T) == 1, T > 0, T %% 1 == 0, is.numeric(N),
+    is.numeric(Tp), length(Tp) == 1, Tp > 0, Tp %% 1 == 0, is.numeric(N),
     length(N) == 1, N > 0, N %% 1 == 0, is.numeric(theta),
     length(theta) == N * (N - 1) + 2 * N
   )
@@ -154,11 +154,11 @@ sim_hmm <- function(T, N, theta) {
   sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
   delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
   if (inherits(delta, "try-error")) delta <- rep(1, N) / N
-  s <- numeric(T)
+  s <- numeric(Tp)
   s[1] <- sample(1:N, size = 1, prob = delta)
-  x <- numeric(T)
+  x <- numeric(Tp)
   x[1] <- stats::rnorm(1, mean = mu[s[1]], sd = sigma[s[1]])
-  for(t in 2:T){
+  for(t in 2:Tp){
     s[t] <- sample(1:N, size = 1, prob = tpm[s[t-1],])
     x[t] <- stats::rnorm(1, mean = mu[s[t-1]], sd = sigma[s[t-1]])
   }
@@ -178,7 +178,7 @@ sim_hmm <- function(T, N, theta) {
 #'
 #' @examples
 #' theta <- c(-1, -1, -2, 2, 0.5, 0.5)
-#' data <- sim_hmm(T = 1000, N = 2, theta = theta)
+#' data <- sim_hmm(Tp = 1000, N = 2, theta = theta)
 #' f_ll_hmm(theta = theta, data = data, N = 2)
 #' \donttest{
 #' nlm(f_ll_hmm, p = theta, data = data, N = 2, neg = TRUE)$estimate
@@ -198,7 +198,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
     is.numeric(theta), is.vector(data), is.numeric(data), is.numeric(N),
     length(N) == 1, N > 0, N %% 1 == 0, length(theta) == N * (N - 1) + 2 * N
   )
-  T <- length(data)
+  Tp <- length(data)
   tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
   tpm <- tpm / rowSums(tpm)
@@ -206,14 +206,14 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
   sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
   delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
   if (inherits(delta, "try-error")) delta <- rep(1, N) / N
-  allprobs <- matrix(1, T, N)
+  allprobs <- matrix(1, Tp, N)
   for(n in 1:N){
     allprobs[, n] <- stats::dnorm(data, mean = mu[n], sd = sigma[n])
   }
   foo <- delta %*% diag(allprobs[1,])
   llk <- log(sum(foo))
   phi <- foo/sum(foo)
-  for(t in 2:T){
+  for(t in 2:Tp){
     foo <- phi %*% tpm %*% diag(allprobs[t, ])
     llk <- llk + log(sum(foo))
     phi <- foo/sum(foo)
@@ -229,9 +229,9 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #'
 #' @param N
 #' An \code{integer}, the number of observations.
-#' @param T
+#' @param Tp
 #' An \code{integer}, the number of choice occasions.
-#' By default, \code{T = 1}.
+#' By default, \code{Tp = 1}.
 #' @param J
 #' An \code{integer}, the number of alternatives.
 #' Must be greater of equal \code{2}.
@@ -279,7 +279,7 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #' @export
 
 sim_mnp <- function(
-    N, T = 1, J, P, b = stats::rnorm(P), Omega = NULL, Sigma = diag(J),
+    N, Tp = 1, J, P, b = stats::rnorm(P), Omega = NULL, Sigma = diag(J),
     X = function(n, t) matrix(stats::rnorm(J * P), nrow = J, ncol = P),
     seed = NULL
 ) {
@@ -287,7 +287,7 @@ sim_mnp <- function(
   stopifnot(
     b[1] == 1, is.function(X), names(formals(X)) == c("n", "t"),
     is.numeric(N), length(N) == 1, N > 0, N %% 1 == 0,
-    is.numeric(T), length(T) == 1, T > 0, T %% 1 == 0,
+    is.numeric(Tp), length(Tp) == 1, Tp > 0, Tp %% 1 == 0,
     is.numeric(J), length(J) == 1, J > 1, J %% 1 == 0,
     is.numeric(P), length(P) == 1, P > 0, P %% 1 == 0
   )
@@ -311,7 +311,7 @@ sim_mnp <- function(
   L <- t(chol(Sigma))
   beta <- lapply(1:N, function(x) if(mix) b + O %*% stats::rnorm(P) else b)
   data <- lapply(1:N, function(n) {
-    out <- lapply(1:T, function(t) {
+    out <- lapply(1:Tp, function(t) {
       X_nt <- X(n, t)
       U_nt <- X_nt %*% beta[[n]] + L %*% stats::rnorm(J)
       y_nt <- which.max(U_nt)
@@ -336,7 +336,7 @@ sim_mnp <- function(
   )
   structure(
     cbind(
-      data.frame(n = rep(1:N, each = T), t = rep(1:T, times = N), y = data_y),
+      data.frame(n = rep(1:N, each = Tp), t = rep(1:Tp, times = N), y = data_y),
       data_X
     ),
     "true" = true, "J" = J, "P" = P, "mix" = mix

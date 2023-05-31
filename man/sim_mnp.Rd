@@ -6,7 +6,7 @@
 \usage{
 sim_mnp(
   N,
-  T = 1,
+  Tp = 1,
   J,
   P,
   b = stats::rnorm(P),
@@ -19,8 +19,8 @@ sim_mnp(
 \arguments{
 \item{N}{An \code{integer}, the number of observations.}
 
-\item{T}{An \code{integer}, the number of choice occasions.
-By default, \code{T = 1}.}
+\item{Tp}{An \code{integer}, the number of choice occasions.
+By default, \code{Tp = 1}.}
 
 \item{J}{An \code{integer}, the number of alternatives.
 Must be greater of equal \code{2}.}

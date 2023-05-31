@@ -19,11 +19,11 @@ X(n = 1, t = 1)
 
 ## ---- simulate data, eval = TRUE----------------------------------------------------
 N <- 100
-T <- 20
+Tp <- 20
 b <- c(1, -10)
 Omega <- matrix(c(0.2, 0.5, 0.5, 2), 2, 2)
 Sigma <- matrix(c(1, -0.5, 0.2, -0.5, 1, 0.2, 0.2, 0.2, 1), 3, 3)
-probit_data <- sim_mnp(N, T, J = 3, P = 2, b, Omega, Sigma, X, seed = 1)
+probit_data <- sim_mnp(N, Tp, J = 3, P = 2, b, Omega, Sigma, X, seed = 1)
 
 
 ## ---- head of data, eval = TRUE-----------------------------------------------------

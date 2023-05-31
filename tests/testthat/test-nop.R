@@ -44,21 +44,31 @@ test_that("Nop object can be printed", {
 })
 
 test_that("Parameters for Nop object can be set", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = earthquakes)
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data)
   expect_s3_class(hmm, c("Nop", "R6"), exact = TRUE)
   expect_error(
-    hmm$set_argument(earthquakes),
+    hmm$set_argument(data),
     "Please name argument 1."
   )
   expect_error(
-    hmm$set_argument("data" = earthquakes),
+    hmm$set_argument("data" = data),
     "already exists"
   )
   expect_snapshot(print(hmm))
 })
 
 test_that("Parameters for Nop object can be get", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = earthquakes, test_arg = 6)
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data, test_arg = 6)
   expect_error(
     hmm$get_argument(),
     "Please specify"
@@ -75,7 +85,12 @@ test_that("Parameters for Nop object can be get", {
 })
 
 test_that("Parameters for Nop object can be removed", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = earthquakes)
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data)
   expect_error(
     hmm$remove_argument("arg_does_not_exist"),
     "is not yet specified"
@@ -206,7 +221,12 @@ test_that("errors in function evaluation can be returned", {
 })
 
 test_that("HMM likelihood function can be evaluated", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, "data" = earthquakes$obs)
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6, "data" = data)
   at <- rnorm(6)
   expect_error(
     hmm$evaluate(),
@@ -215,12 +235,12 @@ test_that("HMM likelihood function can be evaluated", {
   hmm$set_argument("N" = 2, "neg" = TRUE)
   expect_equal(
     hmm$evaluate(at = at),
-    f_ll_hmm(theta = at, data = earthquakes$obs, N = 2, neg = TRUE)
+    f_ll_hmm(theta = at, data = data, N = 2, neg = TRUE)
   )
   hmm$remove_argument("neg")
   expect_equal(
     hmm$evaluate(at = at),
-    f_ll_hmm(theta = at, data = earthquakes$obs, N = 2)
+    f_ll_hmm(theta = at, data = data, N = 2)
   )
 })
 
@@ -303,8 +323,13 @@ test_that("Nop object can be tested", {
 })
 
 test_that("standardization works", {
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = earthquakes$obs, "N" = 2, "neg" = TRUE
+    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
   )
   expect_error(
     hmm$standardize(),
@@ -318,8 +343,13 @@ test_that("standardization works", {
 })
 
 test_that("reduction works", {
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = earthquakes$obs, "N" = 2, "neg" = TRUE
+    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
   )
   expect_error(
     hmm$reduce(),
@@ -333,7 +363,11 @@ test_that("reduction works", {
 })
 
 test_that("argument can be reset", {
-  data <- earthquakes
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(
     f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
   )
@@ -350,8 +384,13 @@ test_that("argument can be reset", {
 })
 
 test_that("continue optimization works", {
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = earthquakes$obs, "N" = 2, "neg" = TRUE
+    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
   )$set_optimizer(optimizer_nlm())$
     standardize("data")$
     optimize(runs = 2)$
@@ -506,13 +545,18 @@ test_that("closest parameter can be extracted", {
 })
 
 test_that("existence of additional argument can be checked", {
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(f = f_ll_hmm, npar = 6)
   private <- hmm$.__enclos_env__$private
   expect_error(
     private$.check_additional_argument_exists("data"),
     "is not yet specified"
   )
-  hmm$set_argument("data" = earthquakes)
+  hmm$set_argument("data" = data)
 })
 
 test_that("run ids can be extracted", {
@@ -587,15 +631,20 @@ test_that("npar can be extracted", {
 })
 
 test_that("arguments can be extracted", {
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2,2)
+  sigma <- c(0.5,1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(f = f_ll_hmm, npar = 6)
   expect_warning(
     hmm$arguments,
     "No function arguments have been specified yet"
   )
-  hmm$set_argument("data" = earthquakes)
+  hmm$set_argument("data" = data)
   expect_equal(
     hmm$arguments,
-    list(data = earthquakes)
+    list(data = data)
   )
   expect_error(
     {
