@@ -12,6 +12,7 @@ numerical optimization.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://loelschlaeger.de/ino}
   \item \url{https://github.com/loelschlaeger/ino}
   \item Report bugs at \url{https://github.com/loelschlaeger/ino/issues}
 }
