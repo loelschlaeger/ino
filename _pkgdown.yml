@@ -16,7 +16,7 @@ authors:
 
 reference:
 - title: Numerical optimization problem object
-  desc: Users of {ino} mainly work with this R6 object.
+  desc: The central object when working with {ino}.
   contents:
   - Nop
 - title: Functions
@@ -24,11 +24,11 @@ reference:
   contents:
   - has_keyword("function")
 - title: Applications
-  desc: The following pre-computed applications are included in the package.
+  desc: The following pre-computed applications are included in the package, see the vignettes.
   contents:
   - has_keyword("demo")
 - title: Small utils
-  desc: These functions may be useful beyond {ino}.
+  desc: These helper functions may be useful beyond {ino}.
   contents:
   - has_keyword("utils")
 - title: Internal
