@@ -16,6 +16,7 @@ Authors@R: c(
            ))
 Description: Analysis of the initialization for numerical optimization of 
     real-valued functions, including likelihood functions of statistical models.
+    See <https://loelschlaeger.de/ino> for more details.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
