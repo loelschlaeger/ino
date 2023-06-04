@@ -909,7 +909,7 @@ Nop <- R6::R6Class(
       plot.Nop(
         x = self, which_element = which_element, by = by, relative = relative,
         which_run = which_run, which_optimizer = which_optimizer,
-        only_comparable = only_comparable
+        only_comparable = only_comparable, xlim = xlim
       )
     },
 
