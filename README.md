@@ -14,7 +14,7 @@ downloads](https://cranlogs.r-pkg.org/badges/last-month/ino)](https://CRAN.R-pro
 coverage](https://codecov.io/gh/loelschlaeger/ino/branch/master/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ino?branch=master)
 <!-- badges: end -->
 
-The `{ino}` R package provides tools designed for the analysis of the
+The `{ino}` R package provides tools for the analysis of the
 initialization for numerical optimization. For detailed examples and
 usage instructions, please refer to the
 [vignettes](https://loelschlaeger.de/ino/articles/) accompanying the
@@ -39,8 +39,19 @@ devtools::install_github("loelschlaeger/ino")
 ## Example
 
 The [Ackley function](https://en.wikipedia.org/wiki/Ackley_function) has
-multiple local minima and one global minimum in the origin. The
-optimization result depends on the initial value:
+multiple local minima and one global minimum in the origin.
+
+``` r
+f_ackley <- function(x) {
+  stopifnot(is.numeric(x), length(x) == 2)
+  -20 * exp(-0.2 * sqrt(0.5 * (x[1]^2 + x[2]^2))) -
+    exp(0.5 * (cos(2 * pi * x[1]) + cos(2 * pi * x[2]))) + exp(1) + 20
+}
+f_ackley(c(0, 0))
+#> [1] 0
+```
+
+The optimization result depends on the initial value:
 
 ``` r
 library("ino")
