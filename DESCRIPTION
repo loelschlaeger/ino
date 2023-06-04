@@ -1,6 +1,6 @@
 Package: ino
 Title: Initialization of Numerical Optimization
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
