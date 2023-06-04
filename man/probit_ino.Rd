@@ -12,6 +12,6 @@ data(probit_ino)
 }
 \description{
 See the vignette about the probit likelihood for details:
-\code{vignette("example_probit", package = "ino")}
+\url{https://loelschlaeger.de/ino/articles/example_probit.html}
 }
 \keyword{demo}

@@ -12,6 +12,6 @@ data("hmm_ino")
 }
 \description{
 See the vignette about the HMM likelihood for details:
-\code{vignette("example_hmm", package = "ino")}
+\url{https://loelschlaeger.de/ino/articles/example_hmm.html}
 }
 \keyword{demo}
