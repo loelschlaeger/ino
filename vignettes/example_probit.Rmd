@@ -20,15 +20,18 @@ knitr::opts_chunk$set(
   fig.align = "center",
   fig.path = "figures/probit-",
   fig.dim = c(8, 6), 
-  out.width = "75%"
+  out.width = "75%",
+  # all optimizations are pre-computed to save building time
+  eval = FALSE
 )
 library("ino")
 options("ino_verbose" = TRUE) 
+data("probit_ino")
 set.seed(1)
 ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
-The probit model is a widely employed statistical tool for analyzing discrete choice behavior in various fields, including transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. The estimation of probit model parameters typically involves the numerical maximization of the likelihood function. However, this approach can be computationally expensive and may encounter problems in reaching the global optimum, especially when dealing with complex models. In this vignette, we utilize the `{ino}` package to investigate the influence of initialization on the numerical maximization of the probit likelihood function.
+The probit model is a widely employed statistical tool for analyzing discrete choice behavior in various fields, including transportation [@Bolduc:1999; @Shin:2015] and marketing [@Allenby:1998; @Haaijer:1998; @Paap:2000]. The estimation of probit model parameters typically involves the numerical maximization of the likelihood function. However, this approach can be computationally expensive and may encounter problems in reaching the global optimum, especially when dealing with complex models. In this vignette^[The vignette was build using R `r paste(R.Version()[c("major","minor")], collapse = ".")` with the `{ino}` `r utils::packageVersion("ino")` package.], we utilize the `{ino}` package to investigate the influence of initialization on the numerical maximization of the probit likelihood function.
 
 ## Model formulation
 
@@ -94,14 +97,14 @@ To analyze the outcome of the numerical likelihood optimization for the multinom
 - We first define a `Nop` object by setting the target function `f = f_ll_mnp`, the number of parameters to `npar = 7`, and `data = probit_data`. 
 - Then, we apply the `stats::nlm` optimizer with a limit of 1000 iterations. Since this optimizer minimizes the objective function instead of maximizing it, we set `neg = TRUE` to compute the negative log-likelihood value.
 
-```{r, define Nop, eval = FALSE}
+```{r, define Nop}
 probit_ino <- Nop$new(f = f_ll_mnp, npar = 7, data = probit_data, neg = TRUE)$
   set_optimizer(optimizer_nlm(iterlim = 1000))
 ```
 
 The true parameter vector `theta` is saved to assess the convergence of the optimization runs to the global optimum:
 
-```{r, set true parameter, eval = FALSE}
+```{r, set true parameter}
 probit_ino$true_parameter <- theta
 ```
 
@@ -115,7 +118,7 @@ print(probit_ino)
 
 As a benchmark, we optimize `runs = 100` times using random initial values drawn from a standard normal distribution:
 
-```{r, optimize with random initial values, eval = FALSE}
+```{r, optimize with random initial values}
 probit_ino$optimize(initial = "random", runs = 100, label = "random")
 ```
 
@@ -123,7 +126,7 @@ probit_ino$optimize(initial = "random", runs = 100, label = "random")
 
 Next, we obtain starting values by estimating a probit model on a subset of the data. In this example, we randomly select 20\% of the data points for the subset. Our aim is to initialize the full model close to its global optimum by investing a small computational effort in estimating the reduced model:
 
-```{r, optimize on subset, eval = FALSE}
+```{r, optimize on subset}
 probit_ino$
   reduce("data", how = "random", proportion = 0.2)$
   optimize(initial = "random", runs = 100, label = "subset")$
@@ -149,7 +152,7 @@ probit_ino$deviation(
 
 In choice settings, covariates can have varying scales, which can result in differences in the magnitudes of model parameters. To enhance numerical stability during estimation, a common strategy is to standardize the covariates prior to the estimation. Here, we evaluate the effectiveness of standardizing covariates using the `$standardize()` method. By setting `ignore = 1:3`, we exclude the first columns containing indices from the standardization.
 
-```{r, optimize with standardized data, eval = FALSE}
+```{r, optimize with standardized data}
 probit_ino$
   standardize("data", by_column = TRUE, ignore = 1:3)$
   optimize(initial = "random", runs = 100, label = "standardized")$
@@ -158,7 +161,7 @@ probit_ino$
 
 We also combine standardization and subsampling:
 
-```{r, optimize with standardize and subset, eval = FALSE}
+```{r, optimize with standardize and subset}
 probit_ino$
   standardize("data", by_column = TRUE, ignore = 1:3)$
   reduce("data", how = "random", proportion = 0.2)$
