@@ -1,8 +1,25 @@
+#' Example application to mixture likelihood
+#'
+#' @description
+#' See the introduction vignette for details:
+#' <https://loelschlaeger.de/ino/articles/ino.html>
+#'
+#' @docType data
+#'
+#' @usage data("mixture_ino")
+#'
+#' @format
+#' A \code{\link{Nop}} object.
+#'
+#' @keywords
+#' demo
+"mixture_ino"
+
 #' Example application to HMM likelihood
 #'
 #' @description
 #' See the vignette about the HMM likelihood for details:
-#' \code{vignette("example_hmm", package = "ino")}
+#' <https://loelschlaeger.de/ino/articles/example_hmm.html>
 #'
 #' @docType data
 #'
