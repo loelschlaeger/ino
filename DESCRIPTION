@@ -48,7 +48,7 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://loelschlaeger.de/ino, https://github.com/loelschlaeger/ino
+URL: https://loelschlaeger.de/ino/, https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Depends:
