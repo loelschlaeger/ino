@@ -15,15 +15,6 @@
 #'
 #' @keywords internal
 #'
-#' @examples
-#' \dontrun{
-#' build_initial("random", 2)(1, 1)
-#' build_initial(1:3, 3)(1, 2)
-#' build_initial(list(1:3, 2:4), 3)(2, 1)
-#' build_initial(function() stats::rnorm(4), 4)(3, 1)
-#' build_initial(function(run, optimizer) c(run, optimizer), 2)(2, 3)
-#' }
-#'
 #' @importFrom glue glue
 
 build_initial <- function(initial, npar, fail_bad_initial = TRUE) {
@@ -123,30 +114,10 @@ build_initial <- function(initial, npar, fail_bad_initial = TRUE) {
 #' A \code{list}.
 #'
 #' @keywords internal
-#'
-#' @examples
-#' \dontrun{
-#' filter_results(
-#'   results = list("run" = list(
-#'     "optimizer1" = list(
-#'       "value" = 1, "comparable" = FALSE
-#'     ),
-#'     "optimizer2" = list(
-#'       "value" = 2, "comparable" = TRUE
-#'      )
-#'   )),
-#'   run_ids = 1,
-#'   optimizer_id = 2,
-#'   which_element = "value",
-#'   only_comparable = TRUE
-#' )
-#' }
 
 filter_results <- function(
     results, run_ids, optimizer_ids, which_element, only_comparable,
-    keep_empty = FALSE
-  ) {
-
+    keep_empty = FALSE) {
   ### input checks
   stopifnot(
     is.list(results), is_index_vector(run_ids), is_index_vector(optimizer_ids),
@@ -169,8 +140,8 @@ filter_results <- function(
 
   ### filter elements
   results <- lapply(results, function(x) {
-    lapply(x, function(y) y[intersect(which_element, names(y))]
-  )})
+    lapply(x, function(y) y[intersect(which_element, names(y))])
+  })
 
   ### discard empty entries
   results <- results[sapply(results, length) > 0]
@@ -192,21 +163,6 @@ filter_results <- function(
 #' A \code{list}.
 #'
 #' @keywords internal
-#'
-#' @examples
-#' \dontrun{
-#' simplify_results(
-#'   results = list("run" = list(
-#'     "optimizer1" = list(
-#'       "value" = 1, "comparable" = FALSE
-#'     ),
-#'     "optimizer2" = list(
-#'       "value" = 2, "comparable" = TRUE
-#'      )
-#'   )),
-#'   simplify = TRUE
-#' )
-#' }
 
 simplify_results <- function(results, simplify) {
   stopifnot(is.list(results))
@@ -225,7 +181,8 @@ simplify_results <- function(results, simplify) {
         results <- lapply(results, unlist, recursive = FALSE, use.names = TRUE)
         if (all(sapply(results, length) == 1)) {
           results <- lapply(
-            results, unlist, recursive = FALSE, use.names = TRUE
+            results, unlist,
+            recursive = FALSE, use.names = TRUE
           )
         }
       } else {
@@ -256,34 +213,30 @@ simplify_results <- function(results, simplify) {
 #' Invisibly \code{TRUE} if the tests are successful.
 #'
 #' @keywords internal
-#'
-#' @examples
-#' \dontrun{
-#' TODO
-#' }
 
 test_nop <- function(
-    x, at, optimizer_ids, time_limit, verbose, digits
-  ) {
-
+    x, at, optimizer_ids, time_limit, verbose, digits) {
   ### input checks
   is_TRUE_FALSE(verbose)
 
   ### test configurations
   ino_status("Test configuration", verbose = verbose)
   ino_success(
-    glue::glue("Function specified: {x$f_name}"), verbose = verbose
+    glue::glue("Function specified: {x$f_name}"),
+    verbose = verbose
   )
   ino_success(
     glue::glue(
       "Target argument specified: {x$f_target} (length {x$npar})"
-    ), verbose = verbose
+    ),
+    verbose = verbose
   )
   ino_success(
     glue::glue(
       "Test initial values specified: ",
-      paste(round(at, digits = digits), collapse = ' ')
-    ), verbose = verbose
+      paste(round(at, digits = digits), collapse = " ")
+    ),
+    verbose = verbose
   )
 
   ### test function call
@@ -380,11 +333,12 @@ test_nop <- function(
                 glue::glue("Output does not contain the element '{value}'.")
               )
             } else {
-              ino_success(glue::glue(
-                "Return {value}: ",
-                "{paste(round(out[[value]], digits = digits), collapse = ' ')}"
-              ),
-              verbose = verbose
+              ino_success(
+                glue::glue(
+                  "Return {value}: ",
+                  "{paste(round(out[[value]], digits = digits), collapse = ' ')}"
+                ),
+                verbose = verbose
               )
             }
           }
@@ -409,17 +363,8 @@ test_nop <- function(
 #' The standardized \code{argument}.
 #'
 #' @keywords internal
-#'
-#' @examples
-#' \dontrun{
-#' standardize_argument(
-#'   argument = diag(3), by_column = TRUE, center = TRUE, scale = TRUE,
-#'   ignore = 1:2
-#' )
-#' }
 
 standardize_argument <- function(argument, by_column, center, scale, ignore) {
-
   ### input checks
   attr_argument <- attributes(argument)
   vector_flag <- FALSE
@@ -447,11 +392,13 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
   if (length(ignore) > 0) {
     if (vector_flag) {
       argument[-ignore, ] <- scale(
-        argument[-ignore, ], center = center, scale = scale
+        argument[-ignore, ],
+        center = center, scale = scale
       )
     } else {
       argument[, -ignore] <- scale(
-        argument[, -ignore], center = center, scale = scale
+        argument[, -ignore],
+        center = center, scale = scale
       )
     }
   } else {
@@ -494,19 +441,9 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #' @keywords internal
 #'
 #' @importFrom utils tail
-#'
-#' @examples
-#' \dontrun{
-#' subset_argument(
-#'   argument = 1:6, by_row = TRUE, how = "dissimilar", proportion = 0.5,
-#'   centers = 3, ignore = integer(), seed = 1
-#' )
-#' }
 
 subset_argument <- function(
-    argument, by_row, how, proportion, centers, ignore, seed = NULL
-  ) {
-
+    argument, by_row, how, proportion, centers, ignore, seed = NULL) {
   ### input checks
   is_name(how)
   if (!how %in% c("random", "first", "last", "similar", "dissimilar")) {
@@ -600,11 +537,27 @@ subset_argument <- function(
 
   ### check for NAs
   if (anyNA(argument)) {
-    ino_warn("Reduction produced NAs.")
+    ino_warn("Reduction produced NA's.")
   }
 
   ### return argument
   return(argument)
 }
 
-
+# transfer_nop <- function(
+#     x, var = data.frame(
+#       "old" = c(".f_name", ".arguments", ".original_arguments",
+#                 ".true_parameter", ".true_value", ".show_minimum", ".optimizer",
+#                 ".results", ".runs_last", ".optimization_labels"),
+#       "new" = c(".f_name", ".arguments", ".original_arguments",
+#                 ".true_parameter", ".true_value", ".minimized", ".optimizer",
+#                 ".results", ".runs_last", ".optimization_labels"))
+#   ) {
+#   stopifnot(inherits(x, "Nop"))
+#   private <- x$.__enclos_env__$private
+#   y <- Nop$new(f = private$.f, npar = private$.npar)
+#   for (i in seq_len(nrow(var))) {
+#     y$.__enclos_env__$private[[var[i, "new"]]] <- private[[var[i, "old"]]]
+#   }
+#   return(y)
+# }

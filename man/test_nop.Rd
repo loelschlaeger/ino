@@ -19,9 +19,4 @@ Invisibly \code{TRUE} if the tests are successful.
 \description{
 This helper function validates the configuration of a \code{Nop} object.
 }
-\examples{
-\dontrun{
-TODO
-}
-}
 \keyword{internal}

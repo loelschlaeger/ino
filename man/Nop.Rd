@@ -3,6 +3,11 @@
 \name{Nop}
 \alias{Nop}
 \title{Nop Object (R6 Class)}
+\value{
+A \code{Nop} object, which is an R6 class that specifies the numerical
+optimization problem, stores optimization results, and provides methods
+for analyzing the results, see the details.
+}
 \description{
 A \code{Nop} object defines a \emph{N}umerical \emph{O}ptimization \emph{P}roblem.
 }
@@ -51,7 +56,7 @@ different filter options for optimization runs, optimizers, and elements:
 \item \code{$results()} returns all saved optimization results,
 \item \code{$summary()} summarizes the results,
 \item \code{$optima()} returns a frequency table of identified optima,
-\item \code{$plot()} visualizes the optimization times,
+\item \code{$plot()} visualizes the optimization time or value,
 \item \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
 \item \code{$best_value()} returns the found optimum value of \code{f},
 \item \code{$closest_parameter()} returns parameter closest to a specified value.
@@ -88,7 +93,7 @@ which \code{f} is optimized.}
 of length \code{npar} (if available), i.e., the point where \code{f}
 obtains its optimum.}
 
-\item{\code{show_minimum}}{A \code{logical}, set to \code{TRUE} (default) to
+\item{\code{minimized}}{A \code{logical}, set to \code{TRUE} (default) to
 show best minimum in \code{$best_value()}, \code{$best_parameter()}, and
 \code{$optima()}.}
 
@@ -123,6 +128,7 @@ not been used yet.}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
+\item \href{#method-Nop-deviation}{\code{Nop$deviation()}}
 \item \href{#method-Nop-best_value}{\code{Nop$best_value()}}
 \item \href{#method-Nop-best_parameter}{\code{Nop$best_parameter()}}
 \item \href{#method-Nop-closest_parameter}{\code{Nop$closest_parameter()}}
@@ -271,7 +277,10 @@ Invisibly the \code{Nop} object.
 \subsection{Method \code{remove_optimizer()}}{
 Removes numerical optimizer.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_optimizer(which_optimizer)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_optimizer(
+  which_optimizer,
+  verbose = getOption("ino_verbose", default = TRUE)
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -285,6 +294,10 @@ Removes numerical optimizer.
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
+
+\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
+Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
+The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -987,8 +1000,8 @@ include all optimization results.}
 
 \item{\code{...}}{Optionally named expressions of elements.
 See \code{$elements_available()} for the names of all available elements.
-In addition, \code{"true_value"} and \code{"true_parameter"} are
-available (if specified).
+In addition, \code{"true_value"}, \code{"true_parameter"},
+\code{"best_value"}, and \code{"best_parameter"} can be accessed
 As an example, you could add
 \code{distance = "sqrt(sum((parameter - true_parameter) ^ 2))"} for the
 euclidean distance between the estimated and true parameter vector.}
@@ -1058,14 +1071,29 @@ A \code{data.frame}.
 \if{html}{\out{<a id="method-Nop-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-plot}{}}}
 \subsection{Method \code{plot()}}{
-Visualizes the optimization times.
+Visualizes the optimization time or value.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(by = NULL, relative = FALSE, log = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$plot(
+  which_element = "seconds",
+  by = NULL,
+  relative = FALSE,
+  which_run = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE,
+  title = paste("Optimization of", x$f_name),
+  xlim = c(NA, NA)
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{which_element}}{Either:
+\itemize{
+\item \code{"seconds"} to plot the optimization times (default)
+\item \code{"value"} to plot the optimization values
+}}
+
 \item{\code{by}}{Either:
 \itemize{
 \item \code{"label"} to group by optimization label
@@ -1073,15 +1101,104 @@ Visualizes the optimization times.
 \item \code{NULL} to not group (default)
 }}
 
-\item{\code{relative}}{Set to \code{TRUE} to plot relative time differences with
-respect to the median of the top boxplot.}
+\item{\code{relative}}{Only if \code{which_element = "seconds"}.
+In this case, set to \code{TRUE} to plot relative time differences with
+respect to the overall median.}
 
-\item{\code{log}}{Set to \code{TRUE} to plot a log10-x-axis.}
+\item{\code{which_run}}{Select saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"}, all results,
+\item \code{"last"}, the results from the last optimization,
+\item \code{"failed"}, the results from failed optimization runs,
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"}, all specified optimizers,
+\item \code{"removed"}, all removed optimizers,
+\item \code{"active"}, all active optimizers (i.e., not removed),
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
+}}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} to
+include all optimization results.}
+
+\item{\code{title}}{A \code{character}, the plot title.}
+
+\item{\code{xlim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-NO return value. Draws a plot to the current device.
+A \code{\link[ggplot2]{ggplot}} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-deviation"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
+\subsection{Method \code{deviation()}}{
+Visualizes deviation of parameters.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
+  reference = self$true_parameter,
+  which_element = "initial",
+  which_run = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE,
+  title = "Parameter deviation",
+  ylim = c(NA, NA),
+  parameter_labels = paste0("theta", 1:self$npar)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{reference}}{A \code{numeric} of length \code{self$npar}, the reference parameters.}
+
+\item{\code{which_element}}{Either:
+\itemize{
+\item \code{"initial"} to compute deviations to the initial values (default)
+\item \code{"parameter"} to compute deviations to the estimated parameters
+}}
+
+\item{\code{which_run}}{Select saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"}, all results,
+\item \code{"last"}, the results from the last optimization,
+\item \code{"failed"}, the results from failed optimization runs,
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"}, all specified optimizers,
+\item \code{"removed"}, all removed optimizers,
+\item \code{"active"}, all active optimizers (i.e., not removed),
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
+}}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem), or \code{FALSE} to
+include all optimization results.}
+
+\item{\code{title}}{A \code{character}, the plot title.}
+
+\item{\code{ylim}}{Passed on to \code{\link[ggplot2]{coord_cartesian}}.}
+
+\item{\code{parameter_labels}}{A \code{character} of length \code{length(reference)} with labels for the
+parameters.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{\link[ggplot2]{ggplot}} object.
 }
 }
 \if{html}{\out{<hr>}}

@@ -38,22 +38,4 @@ A \code{list}.
 \description{
 This helper function filters optimization results.
 }
-\examples{
-\dontrun{
-filter_results(
-  results = list("run" = list(
-    "optimizer1" = list(
-      "value" = 1, "comparable" = FALSE
-    ),
-    "optimizer2" = list(
-      "value" = 2, "comparable" = TRUE
-     )
-  )),
-  run_ids = 1,
-  optimizer_id = 2,
-  which_element = "value",
-  only_comparable = TRUE
-)
-}
-}
 \keyword{internal}

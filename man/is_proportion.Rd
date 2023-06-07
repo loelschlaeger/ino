@@ -20,11 +20,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is proper proportion, i.e., a single
 \code{numeric} between 0 and 1.
 }
-\examples{
-\dontrun{
-is_proportion(0.5)
-is_proportion(pi)
-is_proportion("1")
-}
-}
 \keyword{utils}

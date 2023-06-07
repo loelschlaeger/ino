@@ -1,31 +1,25 @@
-#' Earthquake data
+#' Example application to mixture likelihood
 #'
 #' @description
-#' This data set includes the number of yearly measured earthquakes from 1900
-#' to 2006.
+#' See the introduction vignette for details:
+#' <https://loelschlaeger.de/ino/articles/ino.html>
 #'
 #' @docType data
 #'
-#' @usage data(earthquakes)
+#' @usage data("mixture_ino")
 #'
 #' @format
-#' A \code{data.frame} with two integer columns, \code{year} for
-#' the year and \code{obs} for the number of measured earthquakes.
-#'
-#' @source
-#' The data was obtained from
-#' \url{http://hmms-for-time-series.de/second/data/earthquakes.txt}
-#' on 2022-03-25.
+#' A \code{\link{Nop}} object.
 #'
 #' @keywords
-#' dataset
-"earthquakes"
+#' demo
+"mixture_ino"
 
-#' Example application of \{ino\} to HMM likelihood
+#' Example application to HMM likelihood
 #'
 #' @description
 #' See the vignette about the HMM likelihood for details:
-#' \code{vignette("example_hmm", package = "ino")}
+#' <https://loelschlaeger.de/ino/articles/example_hmm.html>
 #'
 #' @docType data
 #'
@@ -35,14 +29,14 @@
 #' A \code{\link{Nop}} object.
 #'
 #' @keywords
-#' dataset
+#' demo
 "hmm_ino"
 
-#' Example application of \{ino\} to probit likelihood
+#' Example application of to probit likelihood
 #'
 #' @description
 #' See the vignette about the probit likelihood for details:
-#' \code{vignette("example_probit", package = "ino")}
+#' <https://loelschlaeger.de/ino/articles/example_probit.html>
 #'
 #' @docType data
 #'
@@ -52,5 +46,5 @@
 #' A \code{\link{Nop}} object.
 #'
 #' @keywords
-#' dataset
+#' demo
 "probit_ino"

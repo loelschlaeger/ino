@@ -3,7 +3,7 @@
 \docType{data}
 \name{probit_ino}
 \alias{probit_ino}
-\title{Example application of \{ino\} to probit likelihood}
+\title{Example application of to probit likelihood}
 \format{
 A \code{\link{Nop}} object.
 }
@@ -12,6 +12,6 @@ data(probit_ino)
 }
 \description{
 See the vignette about the probit likelihood for details:
-\code{vignette("example_probit", package = "ino")}
+\url{https://loelschlaeger.de/ino/articles/example_probit.html}
 }
-\keyword{dataset}
+\keyword{demo}

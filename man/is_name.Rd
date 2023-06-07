@@ -20,12 +20,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is a proper name, i.e., a single
 (non-trivial) \code{character}.
 }
-\examples{
-\dontrun{
-is_name("one")
-is_name(1)
-is_name(LETTERS[1:2])
-is_name("")
-}
-}
 \keyword{utils}

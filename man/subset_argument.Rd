@@ -26,12 +26,4 @@ The subsetted \code{argument}.
 \description{
 This helper function subsets an argument.
 }
-\examples{
-\dontrun{
-subset_argument(
-  argument = 1:6, by_row = TRUE, how = "dissimilar", proportion = 0.5,
-  centers = 3, ignore = integer(), seed = 1
-)
-}
-}
 \keyword{internal}

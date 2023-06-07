@@ -1,0 +1,37 @@
+template:
+  bootstrap: 5
+
+url: https://loelschlaeger.de/ino/
+
+home:
+  title: Initialization of Numerical Optimization
+
+authors:
+  Lennart Oelschläger:
+    href: https://loelschlaeger.de
+  Marius Ötting:
+    href: https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc.)/
+  Dietmar Bauer:
+    href: https://de.wikipedia.org/wiki/Dietmar_Bauer
+
+reference:
+- title: Numerical optimization problem object
+  desc: The central object when working with {ino}.
+  contents:
+  - Nop
+- title: Functions
+  desc: The following functions to demonstrate numerical optimization are included in the package.
+  contents:
+  - has_keyword("function")
+- title: Applications
+  desc: The following pre-computed applications are included in the package, see the vignettes.
+  contents:
+  - has_keyword("demo")
+- title: Small utils
+  desc: These helper functions may be useful beyond {ino}.
+  contents:
+  - has_keyword("utils")
+- title: Internal
+  desc: These functions are not user-level.
+  contents:
+  - has_keyword("internal")

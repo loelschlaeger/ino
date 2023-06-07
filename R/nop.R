@@ -74,6 +74,17 @@
 #' An \code{integer}, the time limit in seconds for computations.
 #' No time limit if \code{time_limit = NULL} (the default).
 #' This currently only works reliably under Windows.
+#' @param title
+#' A \code{character}, the plot title.
+#' @param xlim
+#' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
+#' @param ylim
+#' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
+#'
+#' @return
+#' A \code{Nop} object, which is an R6 class that specifies the numerical
+#' optimization problem, stores optimization results, and provides methods
+#' for analyzing the results, see the details.
 #'
 #' @details
 #' # Getting Started
@@ -109,7 +120,7 @@
 #' - \code{$results()} returns all saved optimization results,
 #' - \code{$summary()} summarizes the results,
 #' - \code{$optima()} returns a frequency table of identified optima,
-#' - \code{$plot()} visualizes the optimization times,
+#' - \code{$plot()} visualizes the optimization time or value,
 #' - \code{$best_parameter()} returns the parameter vector at which the optimum value is obtained,
 #' - \code{$best_value()} returns the found optimum value of \code{f},
 #' - \code{$closest_parameter()} returns parameter closest to a specified value.
@@ -302,7 +313,9 @@ Nop <- R6::R6Class(
     #' Removes numerical optimizer.
     #' @return
     #' Invisibly the \code{Nop} object.
-    remove_optimizer = function(which_optimizer) {
+    remove_optimizer = function(
+      which_optimizer, verbose = getOption("ino_verbose", default = TRUE)
+    ) {
       if (missing(which_optimizer)) {
         ino_stop("Please specify {.var which_optimizer}.")
       }
@@ -310,7 +323,10 @@ Nop <- R6::R6Class(
       for (id in ids) {
         if (attr(private$.optimizer[[id]], "active")) {
           attr(private$.optimizer[[id]], "active") <- FALSE
-          ino_status(glue::glue("Removed optimizer {id}."))
+          ino_status(
+            glue::glue("Removed optimizer {id}."),
+            verbose = verbose
+          )
         } else {
           ino_warn(glue::glue("Optimizer {id} has already been removed."))
         }
@@ -780,14 +796,19 @@ Nop <- R6::R6Class(
     clear = function(
       which_run, which_optimizer = "all", which_element = "all"
     ) {
+      if (missing(which_run)) {
+        ino_stop("Please specify {.var which_run}.")
+      }
       run_ids <- private$.get_run_ids(which_run)
       if (length(run_ids) == 0) {
         return(invisible(self))
       }
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      which_element <- private$.check_which_element(
-        which_element = which_element, optimizer_ids = optimizer_ids,
-        protected_elements = c("run", "optimizer", "label")
+      which_element <- suppressWarnings(
+        private$.check_which_element(
+          which_element = which_element, optimizer_ids = optimizer_ids,
+          protected_elements = c("run", "optimizer", "label")
+        )
       )
       for (i in run_ids) {
         for (j in optimizer_ids) {
@@ -802,8 +823,8 @@ Nop <- R6::R6Class(
     #' @param ...
     #' Optionally named expressions of elements.
     #' See \code{$elements_available()} for the names of all available elements.
-    #' In addition, \code{"true_value"} and \code{"true_parameter"} are
-    #' available (if specified).
+    #' In addition, \code{"true_value"}, \code{"true_parameter"},
+    #' \code{"best_value"}, and \code{"best_parameter"} can be accessed
     #' As an example, you could add
     #' \code{distance = "sqrt(sum((parameter - true_parameter) ^ 2))"} for the
     #' euclidean distance between the estimated and true parameter vector.
@@ -855,7 +876,7 @@ Nop <- R6::R6Class(
       colnames(optima) <- c("value", "frequency")
 
       ### sort rows
-      decreasing <- ifelse(sort_by == "value" && self$show_minimum, FALSE, TRUE)
+      decreasing <- ifelse(sort_by == "value" && self$minimized, FALSE, TRUE)
       optima <- optima[order(optima[[sort_by]], decreasing = decreasing), ]
       rownames(optima) <- NULL
 
@@ -864,21 +885,75 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Visualizes the optimization times.
+    #' Visualizes the optimization time or value.
+    #' @param which_element
+    #' Either:
+    #' - \code{"seconds"} to plot the optimization times (default)
+    #' - \code{"value"} to plot the optimization values
     #' @param by
     #' Either:
     #' - \code{"label"} to group by optimization label
     #' - \code{"optimizer"} to group by optimizer
     #' - \code{NULL} to not group (default)
     #' @param relative
-    #' Set to \code{TRUE} to plot relative time differences with
-    #' respect to the median of the top boxplot.
-    #' @param log
-    #' Set to \code{TRUE} to plot a log10-x-axis.
+    #' Only if \code{which_element = "seconds"}.
+    #' In this case, set to \code{TRUE} to plot relative time differences with
+    #' respect to the overall median.
     #' @return
-    #' NO return value. Draws a plot to the current device.
-    plot = function(by = NULL, relative = FALSE, log = FALSE) {
-      plot.Nop(x = self, by = by, relative = relative, log = log)
+    #' A \code{\link[ggplot2]{ggplot}} object.
+    plot = function(
+      which_element = "seconds", by = NULL, relative = FALSE,
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+      title = paste("Optimization of", x$f_name), xlim = c(NA, NA)
+    ) {
+      plot.Nop(
+        x = self, which_element = which_element, by = by, relative = relative,
+        which_run = which_run, which_optimizer = which_optimizer,
+        only_comparable = only_comparable, xlim = xlim
+      )
+    },
+
+    #' @description
+    #' Visualizes deviation of parameters.
+    #' @param reference
+    #' A \code{numeric} of length \code{self$npar}, the reference parameters.
+    #' @param which_element
+    #' Either:
+    #' - \code{"initial"} to compute deviations to the initial values (default)
+    #' - \code{"parameter"} to compute deviations to the estimated parameters
+    #' @param parameter_labels
+    #' A \code{character} of length \code{length(reference)} with labels for the
+    #' parameters.
+    #' @return
+    #' A \code{\link[ggplot2]{ggplot}} object.
+    #' @importFrom ggplot2 ggplot aes geom_point scale_x_discrete
+    #' @importFrom ggplot2 scale_y_continuous geom_hline coord_cartesian
+    #' @importFrom reshape2 melt
+    deviation = function(
+      reference = self$true_parameter, which_element = "initial",
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+      title = "Parameter deviation", ylim = c(NA, NA),
+      parameter_labels = paste0("theta", 1:self$npar)
+    ) {
+      data <- self$summary(
+        which_run = which_run, which_element = c(which_element, "label")
+      )
+      data <- data.frame(
+        "label" = data[["label"]],
+        t(sapply(data[[which_element]], function(x) x - reference))
+      ) |>
+        reshape2::melt(id.vars = "label")
+      data |> ggplot2::ggplot(ggplot2::aes(x = variable, y = value)) +
+        ggplot2::geom_point(ggplot2::aes(color = label), position = "jitter") +
+        ggplot2::scale_x_discrete(
+          labels = parameter_labels,
+          name = which_element
+        ) +
+        ggplot2::scale_y_continuous(
+          name = "deviation"
+        ) +
+        ggplot2::geom_hline(yintercept = 0) +
+        ggplot2::coord_cartesian(ylim = ylim)
     },
 
     #' @description
@@ -907,7 +982,7 @@ Nop <- R6::R6Class(
         only_comparable = only_comparable, digits = Inf
       )
       best <- do.call(
-        what = ifelse(self$show_minimum, which.min, which.max),
+        what = ifelse(self$minimized, which.min, which.max),
         args = list(summary$value)
       )
       structure(
@@ -999,7 +1074,7 @@ Nop <- R6::R6Class(
     .original_arguments = list(),
     .true_parameter = NULL,
     .true_value = NULL,
-    .show_minimum = TRUE,
+    .minimized = TRUE,
     .optimizer = list(),
     .results = list(),
     .runs_last = integer(),
@@ -1071,7 +1146,7 @@ Nop <- R6::R6Class(
         self$elements_available(which_optimizer = optimizer_ids)
       ))
       if (identical(which_element, "all")) {
-        return(all_elements)
+        which_element <- all_elements
       }
       if (identical(which_element, "basic")) {
         which_element <- c("value", "parameter")
@@ -1092,7 +1167,7 @@ Nop <- R6::R6Class(
       protect <- intersect(which_element, protected_elements)
       if (length(protect) > 0) {
         ino_warn(
-          "The following elements can not be selected:",
+          "The following elements cannot be selected:",
           glue::glue("{protect}")
         )
         which_element <- setdiff(which_element, protected_elements)
@@ -1397,19 +1472,14 @@ Nop <- R6::R6Class(
     #' (if available).
     true_value = function(value) {
       if (missing(value)) {
-        out <- private$.true_value
-        if (is.null(out)) {
-          ino_warn(
-            "The true optimum function value has not been specified yet."
-          )
-        }
-        return(out)
+        private$.true_value
       } else {
         if (is.null(value)) {
           private$.true_value <- NULL
           private$.true_parameter <- NULL
           ino_status(
-            "Removed {.var true_value} and {.var true_parameter}."
+            "Removed {.var true_value} and {.var true_parameter}.",
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         } else {
           if (!(is.vector(value) && is.numeric(value) && length(value) == 1)) {
@@ -1436,18 +1506,13 @@ Nop <- R6::R6Class(
     #' obtains its optimum.
     true_parameter = function(value) {
       if (missing(value)) {
-        out <- private$.true_parameter
-        if (is.null(out)) {
-          ino_warn(
-            "The true optimum parameter vector has not been specified yet."
-          )
-        }
-        return(out)
+        private$.true_parameter
       } else {
         if (is.null(value)) {
           private$.true_parameter <- NULL
           ino_status(
-            "Removed {.var true_parameter}."
+            "Removed {.var true_parameter}.",
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         } else {
           private$.check_target_argument(value)
@@ -1458,24 +1523,25 @@ Nop <- R6::R6Class(
               "Set true optimum value to",
               "{round(private$.true_value, digits = digits)}.",
               .sep = " "
-            )
+            ),
+            verbose = getOption("ino_verbose", default = FALSE)
           )
           private$.true_parameter <- value
         }
       }
     },
 
-    #' @field show_minimum A \code{logical}, set to \code{TRUE} (default) to
+    #' @field minimized A \code{logical}, set to \code{TRUE} (default) to
     #' show best minimum in \code{$best_value()}, \code{$best_parameter()}, and
     #' \code{$optima()}.
-    show_minimum = function(value) {
+    minimized = function(value) {
       if (missing(value)) {
-        private$.show_minimum
+        private$.minimized
       } else {
         if (!isTRUE(value) && !isFALSE(value)) {
-          ino_stop("{.var show_minimum} must be {.val TRUE} or {.val FALSE}.")
+          ino_stop("{.var minimized} must be {.val TRUE} or {.val FALSE}.")
         }
-        private$.show_minimum <- value
+        private$.minimized <- value
       }
     },
 

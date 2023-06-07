@@ -1,6 +1,6 @@
 Package: ino
 Title: Initialization of Numerical Optimization
-Version: 0.2.0.9000
+Version: 1.0.1
 Authors@R: c(
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
@@ -9,41 +9,46 @@ Authors@R: c(
     person("Marius", "\u00d6tting", 
            email = "marius.oetting@uni-bielefeld.de", 
            role = c("aut"),
-           comment = c(ORCID = "0000-0002-9373-0365"))
-           )
-Description: Implementation of initialization strategies for the 
-    numerical optimization of real-valued functions, in particular likelihood
-    functions of statistical models.
+           comment = c(ORCID = "0000-0002-9373-0365")),
+    person("Dietmar", "Bauer", 
+           email = "dietmar.bauer@uni-bielefeld.de", 
+           role = c("ctb")
+           ))
+Description: Analysis of the initialization for numerical optimization of 
+    real-valued functions, including likelihood functions of statistical models.
+    See <https://loelschlaeger.de/ino/> for more details.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Imports: 
-    ggplot2,
-    mvtnorm,
-    crayon,
+Imports:
     cli,
-    dplyr,
-    foreach,
+    crayon,
     doSNOW,
-    ao (>= 0.2.3),
+    dplyr,
+    forcats,
+    foreach,
+    ggplot2,
     glue,
+    mvtnorm,
+    reshape2,
     rlang,
     scales
-Suggests: 
-    knitr,
-    rmarkdown,
-    testthat (>= 3.0.0),
-    purrr,
-    pracma,
-    fHMM,
+Suggests:
     covr,
     devtools,
-    DT
+    DT,
+    fHMM,
+    knitr,
+    markdown,
+    purrr,
+    pracma,
+    rmarkdown,
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://github.com/loelschlaeger/ino
+URL: https://loelschlaeger.de/ino/, https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Depends:

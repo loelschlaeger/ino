@@ -20,12 +20,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is a proper name vector, i.e., a
 \code{vector} of (non-trivial) \code{character} values.
 }
-\examples{
-\dontrun{
-is_name_vector("one")
-is_name_vector(1)
-is_name_vector(LETTERS[1:2])
-is_name_vector("")
-}
-}
 \keyword{utils}

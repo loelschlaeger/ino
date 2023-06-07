@@ -12,6 +12,7 @@ numerical optimization.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://loelschlaeger.de/ino/}
   \item \url{https://github.com/loelschlaeger/ino}
   \item Report bugs at \url{https://github.com/loelschlaeger/ino/issues}
 }
@@ -23,6 +24,11 @@ Useful links:
 Authors:
 \itemize{
   \item Marius Ötting \email{marius.oetting@uni-bielefeld.de} (\href{https://orcid.org/0000-0002-9373-0365}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Dietmar Bauer \email{dietmar.bauer@uni-bielefeld.de} [contributor]
 }
 
 }

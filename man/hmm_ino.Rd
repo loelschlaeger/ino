@@ -3,7 +3,7 @@
 \docType{data}
 \name{hmm_ino}
 \alias{hmm_ino}
-\title{Example application of \{ino\} to HMM likelihood}
+\title{Example application to HMM likelihood}
 \format{
 A \code{\link{Nop}} object.
 }
@@ -12,6 +12,6 @@ data("hmm_ino")
 }
 \description{
 See the vignette about the HMM likelihood for details:
-\code{vignette("example_hmm", package = "ino")}
+\url{https://loelschlaeger.de/ino/articles/example_hmm.html}
 }
-\keyword{dataset}
+\keyword{demo}

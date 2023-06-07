@@ -15,19 +15,9 @@ is_index_vector(x, error = TRUE)
 \value{
 If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
-
-Either invisibly \code{TRUE} or an error is thrown.
 }
 \description{
 This function checks whether the input is proper index vector, i.e., a
 \code{vector} of positive \code{integer} values.
-}
-\examples{
-\dontrun{
-is_index_vector(1:10)
-is_index_vector(-3:3)
-is_index_vector(LETTERS)
-is_index_vector(c(1, 2, pi))
-}
 }
 \keyword{utils}

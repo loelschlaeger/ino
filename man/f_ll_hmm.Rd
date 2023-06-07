@@ -31,7 +31,7 @@ Log-likelihood function of a Gaussian-hidden Markov model
 }
 \examples{
 theta <- c(-1, -1, -2, 2, 0.5, 0.5)
-data <- sim_hmm(T = 1000, N = 2, theta = theta)
+data <- sim_hmm(Tp = 1000, N = 2, theta = theta)
 f_ll_hmm(theta = theta, data = data, N = 2)
 \donttest{
 nlm(f_ll_hmm, p = theta, data = data, N = 2, neg = TRUE)$estimate

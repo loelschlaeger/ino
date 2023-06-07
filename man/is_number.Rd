@@ -20,11 +20,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is proper number, i.e., a single
 \code{numeric}.
 }
-\examples{
-\dontrun{
-is_number(1)
-is_number(pi)
-is_number("1")
-}
-}
 \keyword{utils}

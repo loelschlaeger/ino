@@ -22,12 +22,4 @@ If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 This function checks whether the input is proper count, i.e., a single,
 positive \code{integer}.
 }
-\examples{
-\dontrun{
-is_count(1)
-is_count(0, allow_zero = TRUE)
-is_count(pi)
-is_count("1")
-}
-}
 \keyword{utils}
