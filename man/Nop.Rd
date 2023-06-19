@@ -129,6 +129,7 @@ not been used yet.}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
 \item \href{#method-Nop-deviation}{\code{Nop$deviation()}}
+\item \href{#method-Nop-trace}{\code{Nop$trace()}}
 \item \href{#method-Nop-best_value}{\code{Nop$best_value()}}
 \item \href{#method-Nop-best_parameter}{\code{Nop$best_parameter()}}
 \item \href{#method-Nop-closest_parameter}{\code{Nop$closest_parameter()}}
@@ -1199,6 +1200,57 @@ parameters.}
 }
 \subsection{Returns}{
 A \code{\link[ggplot2]{ggplot}} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-trace"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-trace}{}}}
+\subsection{Method \code{trace()}}{
+Capture trace of optimization with \code{stats::nlm()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$trace(
+  initial = stats::rnorm(self$npar),
+  iterations = 100,
+  tolerance = 1e-06,
+  which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{initial}}{A \code{numeric} vector of length \code{npar}, the starting point for
+the optimization.
+By default, \code{initial = stats::rnorm(self$npar)}, i.e., random
+initial values drawn from a standard normal distribution.}
+
+\item{\code{iterations}}{A positive \code{integer}, the maximum number of iterations before
+termination.
+By default, \code{interations = 100}.}
+
+\item{\code{tolerance}}{A \code{numeric}, the minimum allowable absolute change in the
+function value before termination.
+By default, \code{tolerance = 1e-6}.}
+
+\item{\code{which_element}}{A \code{character} (vector) of elements to provide in the output, can be
+one or more of:
+\itemize{
+\item \code{value} (the current function value)
+\item \code{parameter} (the current value of each parameter)
+\item \code{gradient} (the current gradient value)
+\item \code{hessian} (the current Hessian value)
+\item \code{seconds} (the number of seconds for the current iteration)
+}}
+
+\item{\code{...}}{Additional arguments passed on to \code{\link[stats]{nlm}}.
+The arguments \code{iterlim} and \code{hessian} cannot be specified.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{data.frame} with iterations in rows, the columns depend on the
+specification of \code{which_element}.
 }
 }
 \if{html}{\out{<hr>}}
