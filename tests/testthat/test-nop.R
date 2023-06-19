@@ -506,6 +506,11 @@ test_that("optimization times and values can be plotted", {
   }
 })
 
+test_that("optimization trace can be extracted", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_s3_class(ackley$trace(), "data.frame")
+})
+
 test_that("best value can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$

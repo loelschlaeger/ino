@@ -957,6 +957,92 @@ Nop <- R6::R6Class(
     },
 
     #' @description
+    #' Capture trace of optimization with \code{stats::nlm()}.
+    #' @param initial
+    #' A \code{numeric} vector of length \code{npar}, the starting point for
+    #' the optimization.
+    #' By default, \code{initial = stats::rnorm(self$npar)}, i.e., random
+    #' initial values drawn from a standard normal distribution.
+    #' @param iterations
+    #' A positive \code{integer}, the maximum number of iterations before
+    #' termination.
+    #' By default, \code{interations = 100}.
+    #' @param tolerance
+    #' A \code{numeric}, the minimum allowable absolute change in the
+    #' function value before termination.
+    #' By default, \code{tolerance = 1e-6}.
+    #' @param which_element
+    #' A \code{character} (vector) of elements to provide in the output, can be
+    #' one or more of:
+    #' - \code{value} (the current function value)
+    #' - \code{parameter} (the current value of each parameter)
+    #' - \code{gradient} (the current gradient value)
+    #' - \code{hessian} (the current Hessian value)
+    #' - \code{seconds} (the number of seconds for the current iteration)
+    #' @param ...
+    #' Additional arguments passed on to \code{\link[stats]{nlm}}.
+    #' The arguments \code{iterlim} and \code{hessian} cannot be specified.
+    #' @return
+    #' A \code{data.frame} with iterations in rows, the columns depend on the
+    #' specification of \code{which_element}.
+    #' @importFrom stats rnorm nlm
+    #' @importFrom optimizeR optimizer_nlm apply_optimizer
+    trace = function(
+      initial = stats::rnorm(self$npar), iterations = 100, tolerance = 1e-6,
+      which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
+      ...
+    ) {
+      is_count(iterations)
+      is_number(tolerance)
+      which_element <- match.arg(which_element, several.ok = TRUE)
+      args <- list(...)
+      args[["iterlim"]] <- 1
+      args[["hessian"]] <- "hessian" %in% which_element
+      nlm_opt <- do.call(optimizer_nlm, args)
+      out_colnames <- c(
+        if ("value" %in% which_element) "v",
+        if ("parameter" %in% which_element) paste0("p", 1:self$npar),
+        if ("gradient" %in% which_element) paste0("g", 1:self$npar),
+        if ("hessian" %in% which_element)
+          paste0(
+            "h", rep(1:self$npar, times = self$npar),
+            rep(1:self$npar, each = self$npar)
+          ),
+        if ("seconds" %in% which_element) "s"
+      )
+      out <- matrix(NA_real_, nrow = 0, ncol = length(out_colnames))
+      colnames(out) <- out_colnames
+      current_value <- self$evaluate(at = initial)
+      current_initial <- initial
+      for (i in 1:iterations) {
+        step <- do.call(
+          what = optimizeR::apply_optimizer,
+          args = c(
+            list(
+              "optimizer" = nlm_opt,
+              "objective" = private$.f,
+              "initial" = current_initial
+            ),
+            private$.arguments
+          )
+        )
+        step_pars <- c(
+          if ("value" %in% which_element) step$value,
+          if ("parameter" %in% which_element) step$parameter,
+          if ("gradient" %in% which_element) step$gradient,
+          if ("hessian" %in% which_element) as.numeric(step$hessian),
+          if ("seconds" %in% which_element) step$seconds
+        )
+        out <- rbind(out, step_pars, deparse.level = 0)
+        deviation <- abs(current_value - step$value)
+        if (deviation < tolerance) break
+        current_value <- step$value
+        current_initial <- step$parameter
+      }
+      as.data.frame(out)
+    },
+
+    #' @description
     #' Returns the best found \code{numeric} value of \code{f}.
     #' @return
     #' A \code{numeric}, the best found \code{numeric} value of \code{f}.
