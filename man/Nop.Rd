@@ -113,7 +113,6 @@ not been used yet.}
 \item \href{#method-Nop-get_argument}{\code{Nop$get_argument()}}
 \item \href{#method-Nop-remove_argument}{\code{Nop$remove_argument()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
-\item \href{#method-Nop-remove_optimizer}{\code{Nop$remove_optimizer()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-test}{\code{Nop$test()}}
@@ -258,47 +257,13 @@ Sets a numerical optimizer.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{optimizer}}{An object of class \code{optimizer}, which can be created with the
+\item{\code{optimizer}}{An object of class \code{optimizer}, which can be created with
 \code{\link[optimizeR]{define_optimizer}} function from the \{optimizeR\}
 package.}
 
 \item{\code{label}}{A \code{character}, a unique label for the optimizer.
 By default \code{label = NULL}, in which case the default label saved
 inside \code{optimizer} is used.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly the \code{Nop} object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-remove_optimizer"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-remove_optimizer}{}}}
-\subsection{Method \code{remove_optimizer()}}{
-Removes numerical optimizer.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_optimizer(
-  which_optimizer,
-  verbose = getOption("ino_verbose", default = TRUE)
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
-}}
-
-\item{\code{verbose}}{A \code{logical}, which indicates whether progress/details should be printed.
-Set to \code{TRUE} (\code{FALSE}) to print (hide) such messages.
-The default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -320,7 +285,8 @@ Evaluates the function.
 \describe{
 \item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
 function is evaluated.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.}
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+from a standard normal distribution.}
 
 \item{\code{time_limit}}{An \code{integer}, the time limit in seconds for computations.
 No time limit if \code{time_limit = NULL} (the default).
@@ -388,8 +354,6 @@ By default, \code{runs = 1}.}
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -460,7 +424,7 @@ Validates the configuration of a \code{Nop} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$test(
   at = rnorm(self$npar),
-  which_optimizer = "active",
+  which_optimizer = "all",
   time_limit = 10,
   verbose = getOption("ino_verbose", default = TRUE),
   digits = getOption("ino_digits", default = 2)
@@ -478,8 +442,6 @@ from a standard normal distribution.}
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -651,7 +613,7 @@ Continues optimization runs, e.g., with a transformed parameter.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$continue(
   which_run = "last",
-  which_optimizer = "active",
+  which_optimizer = "all",
   seed = NULL,
   return_results = FALSE,
   save_results = TRUE,
@@ -678,8 +640,6 @@ Continues optimization runs, e.g., with a transformed parameter.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -752,8 +712,6 @@ Returns saved optimization results.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -762,24 +720,18 @@ Returns saved optimization results.
 See \code{$elements_available()} for the names of all available elements.
 Either:
 \itemize{
-\item \code{"all"}, all elements,
-\item \code{"basic"}, the elements
-\itemize{
-\item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
-is obtained,
-}
+\item \code{"all"}, all available elements,
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
 \item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
-\item \code{"value"} and \code{"parameter"} (see above),
+\item \code{"value"}, the value of the found optimum,
+\item \code{"parameter"}, the parameter at which the optimum value is obtained,
 \item \code{"seconds"}, the optimization time in seconds,
 \item \code{"label"}, the label for the optimization run,
 }
-\item a \code{character} (vector), names of specific elements in the optimization
-output.
+\item a \code{character} (vector), names of specific elements.
 }}
 
 \item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
@@ -828,8 +780,6 @@ Returns the number of saved optimization runs.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -859,8 +809,6 @@ Returns names of available elements per optimizer.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -895,8 +843,6 @@ Deletes optimization results.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -905,24 +851,18 @@ Deletes optimization results.
 See \code{$elements_available()} for the names of all available elements.
 Either:
 \itemize{
-\item \code{"all"}, all elements,
-\item \code{"basic"}, the elements
-\itemize{
-\item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
-is obtained,
-}
+\item \code{"all"}, all available elements,
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
 \item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
-\item \code{"value"} and \code{"parameter"} (see above),
+\item \code{"value"}, the value of the found optimum,
+\item \code{"parameter"}, the parameter at which the optimum value is obtained,
 \item \code{"seconds"}, the optimization time in seconds,
 \item \code{"label"}, the label for the optimization run,
 }
-\item a \code{character} (vector), names of specific elements in the optimization
-output.
+\item a \code{character} (vector), names of specific elements.
 }}
 }
 \if{html}{\out{</div>}}
@@ -938,7 +878,7 @@ Invisibly the \code{Nop} object.
 Provides an overview of the optimization runs.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$summary(
-  which_element = "basic",
+  which_element = c("value", "parameter"),
   which_run = "all",
   which_optimizer = "all",
   digits = getOption("ino_digits", default = 2),
@@ -954,24 +894,18 @@ Provides an overview of the optimization runs.
 See \code{$elements_available()} for the names of all available elements.
 Either:
 \itemize{
-\item \code{"all"}, all elements,
-\item \code{"basic"}, the elements
-\itemize{
-\item \code{"value"}, the \code{numeric} value of the found optimum,
-\item \code{"parameter"}, the parameter \code{vector} at which the optimum value
-is obtained,
-}
+\item \code{"all"}, all available elements,
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
 \item \code{"run"}, the run id,
 \item \code{"optimizer"}, the label for the optimizer,
-\item \code{"value"} and \code{"parameter"} (see above),
+\item \code{"value"}, the value of the found optimum,
+\item \code{"parameter"}, the parameter at which the optimum value is obtained,
 \item \code{"seconds"}, the optimization time in seconds,
 \item \code{"label"}, the label for the optimization run,
 }
-\item a \code{character} (vector), names of specific elements in the optimization
-output.
+\item a \code{character} (vector), names of specific elements.
 }}
 
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
@@ -986,8 +920,6 @@ output.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -1052,8 +984,6 @@ The default is \code{2}.}
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -1118,8 +1048,6 @@ respect to the overall median.}
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -1179,8 +1107,6 @@ Visualizes deviation of parameters.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -1282,8 +1208,6 @@ Returns the best found \code{numeric} value of \code{f}.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -1337,8 +1261,6 @@ Returns the best found \code{numeric} parameter vector.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}
@@ -1396,8 +1318,6 @@ Note that this parameter vector is not necessarily unique.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"}, all specified optimizers,
-\item \code{"removed"}, all removed optimizers,
-\item \code{"active"}, all active optimizers (i.e., not removed),
 \item a \code{character} (vector) of specified optimizer labels,
 \item a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 }}

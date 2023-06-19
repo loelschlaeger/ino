@@ -132,34 +132,6 @@ test_that("optimizer can be set", {
   expect_snapshot(ackley)
 })
 
-test_that("optimizer can be removed", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm(), label = "A")
-  ackley$set_optimizer(optimizer_nlm(), label = "B")
-  ackley$set_optimizer(optimizer_nlm(), label = "C")
-  ackley$set_optimizer(optimizer_nlm())
-  expect_snapshot(ackley)
-  expect_error(
-    ackley$remove_optimizer(),
-    "Please specify"
-  )
-  ackley2 <- ackley$clone()
-  ackley2$remove_optimizer("all")
-  expect_snapshot(ackley2)
-  ackley$remove_optimizer(2)
-  expect_warning(
-    ackley$remove_optimizer(2),
-    "has already been removed"
-  )
-  expect_snapshot(ackley)
-  ackley$remove_optimizer(c("stats::nlm", "A"))
-  expect_snapshot(ackley)
-  expect_warning(
-    ackley$remove_optimizer("does_not_exist"),
-    "No optimizer selected."
-  )
-})
-
 test_that("ackley function can be evaluated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
@@ -282,16 +254,15 @@ test_that("ackley function can be optimized", {
   expect_type(out, "list")
   expect_length(out, 5)
   expect_true(all(sapply(out, length) == 2))
-  ackley$remove_optimizer(2)
   out <- ackley$optimize(
-    runs = 1, return_results = TRUE, save_results = FALSE
+    runs = 1, which_optimizer = 1, return_results = TRUE, save_results = FALSE
   )
   expect_type(out, "list")
   out <- ackley$optimize(
-    runs = 1, return_results = TRUE, save_results = FALSE, simplify = FALSE
+    runs = 1, which_optimizer = 1, return_results = TRUE, save_results = FALSE,
+    simplify = FALSE
   )
   expect_type(out, "list")
-  ackley
 })
 
 test_that("parallel optimization works", {
@@ -576,19 +547,6 @@ test_that("run ids can be extracted", {
   )
 })
 
-test_that("optimizer ids can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm(), "nlm")
-  ackley$set_optimizer(optimizer_optim(), "optim")
-  ackley$remove_optimizer("optim")
-  private <- ackley$.__enclos_env__$private
-  expect_equal(private$.get_optimizer_ids(which_optimizer = "removed"), 2)
-  expect_error(
-    private$.get_optimizer_ids(which_optimizer = list()),
-    "is misspecified"
-  )
-})
-
 test_that("f can be extracted", {
   hmm <- Nop$new(f = f_ll_hmm, npar = 6)
   expect_equal(hmm$f, f_ll_hmm)
@@ -713,7 +671,7 @@ test_that("optimizer can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_warning(
     ackley$optimizer,
-    "No optimizer specified yet"
+    "No optimizer specified"
   )
   ackley$
     set_optimizer(optimizer_nlm())$
@@ -724,7 +682,7 @@ test_that("optimizer can be extracted", {
     {
       ackley$optimizer <- "optimizer"
     },
-    "read only"
+    "must be"
   )
 })
 

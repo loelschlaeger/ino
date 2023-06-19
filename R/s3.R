@@ -59,15 +59,7 @@ print_optimizers <- function(x) {
   } else {
     for (id in seq_along(optimizer)) {
       optimizer_label <- names(optimizer)[id]
-      if (attr(optimizer[[id]], "active")) {
-        cat(glue::glue("- {id}: {optimizer_label}"), "\n")
-      } else {
-        cat(
-          glue::glue("- {id}:"),
-          cli::style_italic(glue::glue("{optimizer_label} has been removed.")),
-          "\n"
-        )
-      }
+      cat(glue::glue("- {id}: {optimizer_label}"), "\n")
     }
   }
 }
@@ -103,8 +95,10 @@ print_optimization_results <- function(x, digits) {
 #' @exportS3Method
 
 summary.Nop <- function(
-    object, which_element = "basic", which_run = "all", which_optimizer = "all",
-    digits = getOption("ino_digits", default = 2), only_comparable = FALSE, ...) {
+    object, which_element = c("value", "parameter"), which_run = "all",
+    which_optimizer = "all", digits = getOption("ino_digits", default = 2),
+    only_comparable = FALSE, ...
+  ) {
   ### extract results and combine in data.frame
   out <- data.frame()
   results <- object$results(

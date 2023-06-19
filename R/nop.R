@@ -6,8 +6,6 @@
 #' @param which_optimizer
 #' Select specified numerical optimizers. Either:
 #' - \code{"all"}, all specified optimizers,
-#' - \code{"removed"}, all removed optimizers,
-#' - \code{"active"}, all active optimizers (i.e., not removed),
 #' - a \code{character} (vector) of specified optimizer labels,
 #' - a \code{numeric} (vector) of optimizer ids (see \code{$print()} output).
 #' @param which_run
@@ -21,20 +19,16 @@
 #' Select elements of saved optimization results.
 #' See \code{$elements_available()} for the names of all available elements.
 #' Either:
-#' - \code{"all"}, all elements,
-#' - \code{"basic"}, the elements
-#'   - \code{"value"}, the \code{numeric} value of the found optimum,
-#'   - \code{"parameter"}, the parameter \code{vector} at which the optimum value
-#'     is obtained,
+#' - \code{"all"}, all available elements,
 #' - \code{"default"}, the elements that are saved for all optimization runs by
 #'   default, i.e.
 #'   - \code{"run"}, the run id,
 #'   - \code{"optimizer"}, the label for the optimizer,
-#'   - \code{"value"} and \code{"parameter"} (see above),
+#'   - \code{"value"}, the value of the found optimum,
+#'   - \code{"parameter"}, the parameter at which the optimum value is obtained,
 #'   - \code{"seconds"}, the optimization time in seconds,
 #'   - \code{"label"}, the label for the optimization run,
-#' - a \code{character} (vector), names of specific elements in the optimization
-#'   output.
+#' - a \code{character} (vector), names of specific elements.
 #' @param only_comparable
 #' Either \code{TRUE} to show only comparable results (i.e., results obtained
 #' for the original optimization problem), or \code{FALSE} to
@@ -219,13 +213,11 @@ Nop <- R6::R6Class(
           ino_stop(
             glue::glue(
               "Argument {.var <argument_names[i]>} already exists.",
-              .open = "<",
-              .close = ">"
+              .open = "<", .close = ">"
             ),
             glue::glue(
               "Call {.var $remove_argument({.val <argument_names[i]>})} first.",
-              .open = "<",
-              .close = ">"
+              .open = "<", .close = ">"
             )
           )
         }
@@ -271,7 +263,7 @@ Nop <- R6::R6Class(
     #' @description
     #' Sets a numerical optimizer.
     #' @param optimizer
-    #' An object of class \code{optimizer}, which can be created with the
+    #' An object of class \code{optimizer}, which can be created with
     #' \code{\link[optimizeR]{define_optimizer}} function from the \{optimizeR\}
     #' package.
     #' @param label
@@ -287,8 +279,7 @@ Nop <- R6::R6Class(
       if (!inherits(optimizer, "optimizer")) {
         ino_stop(
           "Argument {.var optimizer} must be an {.cls optimizer} object.",
-          "See {.help optimizeR::define_optimizer} to create such an object.",
-          "You can also use {.fun optimizer_nlm} or {.fun optimizer_optim}."
+          "See {.help optimizeR::define_optimizer} to create such an object."
         )
       }
       if (is.null(label)) {
@@ -299,38 +290,12 @@ Nop <- R6::R6Class(
         ino_stop(
           glue::glue(
             "Label {.val <label>} already exists, please choose another one.",
-            .open = "<",
-            .close = ">"
+            .open = "<", .close = ">"
           ),
-          "Note that labels for optimizers must be unique for identification."
+          "Labels for optimizers must be unique for identification."
         )
       }
-      private$.optimizer[[label]] <- structure(optimizer, "active" = TRUE)
-      invisible(self)
-    },
-
-    #' @description
-    #' Removes numerical optimizer.
-    #' @return
-    #' Invisibly the \code{Nop} object.
-    remove_optimizer = function(
-      which_optimizer, verbose = getOption("ino_verbose", default = TRUE)
-    ) {
-      if (missing(which_optimizer)) {
-        ino_stop("Please specify {.var which_optimizer}.")
-      }
-      ids <- private$.get_optimizer_ids(which_optimizer)
-      for (id in ids) {
-        if (attr(private$.optimizer[[id]], "active")) {
-          attr(private$.optimizer[[id]], "active") <- FALSE
-          ino_status(
-            glue::glue("Removed optimizer {id}."),
-            verbose = verbose
-          )
-        } else {
-          ino_warn(glue::glue("Optimizer {id} has already been removed."))
-        }
-      }
+      private$.optimizer[[label]] <- optimizer
       invisible(self)
     },
 
@@ -339,7 +304,8 @@ Nop <- R6::R6Class(
     #' @param at
     #' A \code{numeric} vector of length \code{npar}, the point where the
     #' function is evaluated.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn from a standard normal distribution.
+    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+    #' from a standard normal distribution.
     #' @return
     #' Either:
     #' - a \code{numeric} value, the function value at \code{at},
@@ -438,7 +404,7 @@ Nop <- R6::R6Class(
 
       ### optimization
       optimizer_ids <- private$.get_optimizer_ids(
-        which_optimizer = which_optimizer, only_active = TRUE
+        which_optimizer = which_optimizer
       )
       if (length(optimizer_ids) == 0) {
         return(invisible(self))
@@ -522,14 +488,14 @@ Nop <- R6::R6Class(
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function(
-      at = rnorm(self$npar), which_optimizer = "active", time_limit = 10,
+      at = rnorm(self$npar), which_optimizer = "all", time_limit = 10,
       verbose = getOption("ino_verbose", default = TRUE),
       digits = getOption("ino_digits", default = 2)
     ) {
       private$.check_target_argument(at)
       optimizer_ids <- suppressWarnings(
         private$.get_optimizer_ids(
-          which_optimizer = which_optimizer, only_active = TRUE
+          which_optimizer = which_optimizer
         )
       )
       test_nop(
@@ -677,7 +643,7 @@ Nop <- R6::R6Class(
     #' @return
     #' The same as the return value of \code{$optimize()}.
     continue = function(
-      which_run = "last", which_optimizer = "active", seed = NULL,
+      which_run = "last", which_optimizer = "all", seed = NULL,
       return_results = FALSE, save_results = TRUE,
       ncores = getOption("ino_ncores", default = 1),
       verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
@@ -771,7 +737,7 @@ Nop <- R6::R6Class(
     #' A \code{list}.
     elements_available = function(which_optimizer = "all") {
       optimizer_ids <- private$.get_optimizer_ids(
-        which_optimizer = which_optimizer, only_active = FALSE
+        which_optimizer = which_optimizer
       )
       elements <- list()
       if (length(private$.results) == 0) {
@@ -832,8 +798,9 @@ Nop <- R6::R6Class(
     #' A \code{data.frame} with optimization results.
     #' @importFrom dplyr bind_rows
     summary = function(
-      which_element = "basic", which_run = "all", which_optimizer = "all",
-      digits = getOption("ino_digits", default = 2), only_comparable = FALSE,
+      which_element = c("value", "parameter"), which_run = "all",
+      which_optimizer = "all", digits = getOption("ino_digits", default = 2),
+      only_comparable = FALSE,
       ...
     ) {
       summary.Nop(
@@ -1234,9 +1201,6 @@ Nop <- R6::R6Class(
       if (identical(which_element, "all")) {
         which_element <- all_elements
       }
-      if (identical(which_element, "basic")) {
-        which_element <- c("value", "parameter")
-      }
       if (identical(which_element, "default")) {
         which_element <- c(
           "run", "optimizer", "value", "parameter", "seconds", "label"
@@ -1245,7 +1209,7 @@ Nop <- R6::R6Class(
       if (!all(sapply(which_element, is_name, error = FALSE))) {
         ino_stop(
           "Input {.var which_element} is misspecified.",
-          "It can be {.val all}, {.val basic}, or {.val default}.",
+          "It can be {.val all} or {.val default}.",
           "It can also be a {.cls character} vector of specific element names."
         )
       }
@@ -1447,8 +1411,7 @@ Nop <- R6::R6Class(
     },
 
     ### get ids of optimizers
-    .get_optimizer_ids = function(which_optimizer, only_active = FALSE) {
-      stopifnot(isTRUE(only_active) || isFALSE(only_active))
+    .get_optimizer_ids = function(which_optimizer) {
       optimizer <- private$.optimizer
       ids <- seq_along(optimizer)
       if (length(ids) == 0) {
@@ -1458,17 +1421,8 @@ Nop <- R6::R6Class(
         )
         return(integer(0))
       }
-      optimizer_active <- which(sapply(optimizer, attr, "active"))
-      if (only_active) {
-        ids <- intersect(ids, optimizer_active)
-      }
       if (identical(which_optimizer, "all")) {
         return(ids)
-      }
-      if (identical(which_optimizer, "active")) {
-        ids <- optimizer_active
-      } else if (identical(which_optimizer, "removed")) {
-        ids <- setdiff(ids, optimizer_active)
       } else if (is.character(which_optimizer)) {
         ids <- which(names(private$.optimizer) %in% which_optimizer)
       } else if (is.numeric(which_optimizer)) {
@@ -1637,24 +1591,13 @@ Nop <- R6::R6Class(
         out <- private$.optimizer
         if (length(out) == 0) {
           ino_warn(
-            "No optimizer specified yet.",
+            "No optimizer specified.",
             "Please use {.fun $set_optimizer} to specify an optimizer."
           )
-        } else {
-          active <- suppressWarnings(
-            private$.get_optimizer_ids(which_optimizer = "active")
-          )
-          if (length(active) == 0) {
-            ino_warn("No optimizer currently active.")
-          }
         }
         return(out)
       } else {
-        ino_stop(
-          "{.var $optimizer} is read only.",
-          "To set an optimizer, use {.fun $set_optimizer}.",
-          "To remove an optimizer, use {.fun $remove_optimizer}."
-        )
+        self$set_optimizer(value)
       }
     },
 
