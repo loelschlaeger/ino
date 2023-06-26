@@ -11,11 +11,25 @@ optimization runs, see the details.
 A \code{Runs} object stores results of numerical optimization runs. It is
 typically contained inside a \code{\link{Nop}} object.
 }
+\details{
+TODO
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{optimization_labels}}{All unique optimization labels.}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Runs-new}{\code{Runs$new()}}
 \item \href{#method-Runs-print}{\code{Runs$print()}}
+\item \href{#method-Runs-summary}{\code{Runs$summary()}}
+\item \href{#method-Runs-plot}{\code{Runs$plot()}}
+\item \href{#method-Runs-clear}{\code{Runs$clear()}}
+\item \href{#method-Runs-elements_available}{\code{Runs$elements_available()}}
 \item \href{#method-Runs-clone}{\code{Runs$clone()}}
 }
 }
@@ -53,6 +67,50 @@ The default is \code{2}.}
 }
 \subsection{Returns}{
 Invisibly the \code{Results} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-summary}{}}}
+\subsection{Method \code{summary()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$summary()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-plot}{}}}
+\subsection{Method \code{plot()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$plot()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-clear"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-clear}{}}}
+\subsection{Method \code{clear()}}{
+Deletes optimization results.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$clear(which_run, which_optimizer = "all", which_element = "all")}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisibly the \code{Runs} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-elements_available"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-elements_available}{}}}
+\subsection{Method \code{elements_available()}}{
+Returns names of available elements per optimizer.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$elements_available(which_optimizer = "all")}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A \code{list}.
 }
 }
 \if{html}{\out{<hr>}}

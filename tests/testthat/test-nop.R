@@ -33,7 +33,7 @@ test_that("Nop object can be initialized", {
   )
   expect_error(
     Nop$new(f = function() 1, npar = 0),
-    "should have at least one argument"
+    "must have at least one argument"
   )
 })
 
@@ -106,7 +106,7 @@ test_that("Parameters for Nop object can be removed", {
   )
 })
 
-test_that("optimizer can be set", {
+test_that("Optimizer can be set", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
     ackley$set_optimizer(),
@@ -132,7 +132,7 @@ test_that("optimizer can be set", {
   expect_snapshot(ackley)
 })
 
-test_that("ackley function can be evaluated", {
+test_that("Ackley function can be evaluated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
     ackley$evaluate(1),
@@ -141,7 +141,7 @@ test_that("ackley function can be evaluated", {
   expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
 })
 
-test_that("long function evaluations can be interrupted", {
+test_that("Long function evaluation can be interrupted", {
   skip_if_not(.Platform$OS.type == "windows")
   expect_warning(
     long_f <- Nop$new(f = function(x) {
@@ -160,7 +160,7 @@ test_that("long function evaluations can be interrupted", {
   )
 })
 
-test_that("warnings in function evaluation can be hidden", {
+test_that("Warnings in function evaluation can be hidden", {
   expect_warning(
     warning_f <- Nop$new(f = function(x) {
       warning("huhu")
@@ -178,7 +178,7 @@ test_that("warnings in function evaluation can be hidden", {
   )
 })
 
-test_that("errors in function evaluation can be returned", {
+test_that("Errors in function evaluation can be returned", {
   expect_warning(
     error_f <- Nop$new(f = function(x) {
       stop("shit")
@@ -216,7 +216,7 @@ test_that("HMM likelihood function can be evaluated", {
   )
 })
 
-test_that("ackley function can be optimized", {
+test_that("Ackley function can be optimized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
