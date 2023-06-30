@@ -424,9 +424,8 @@ Nop <- R6::R6Class(
     #' By default, \code{label = self$new_label} creates a new label.
     #' Labels can be useful to distinguish optimization runs later.
     #' @param fail_bad_initial
-    #' Either \code{TRUE} to immediately fail if \code{initial} contains any
-    #' misspecifications (default), or \code{FALSE} to include the failed runs
-    #' in the results.
+    #' Either \code{TRUE} to immediately fail if \code{initial} is misspecified
+    #' (default), or \code{FALSE} to include the failed runs in the results.
     #' @return
     #' The return value depends on the value of \code{return_results}:
     #' - if \code{return_results = FALSE}, invisibly the \code{Nop} object,
@@ -461,6 +460,7 @@ Nop <- R6::R6Class(
       is_TRUE_FALSE(verbose)
       is_time_limit(time_limit)
       is_TRUE_FALSE(hide_warnings)
+      self$runs$is_new_label(label) # TODO check label
 
       ### build progress bar
       format <- "Finished run :current of :total [elapsed :elapsed, to go :eta]"
@@ -475,64 +475,46 @@ Nop <- R6::R6Class(
       )
 
       ### optimization
-      optimizer_ids <- private$.get_optimizer_ids(
-        which_optimizer = which_optimizer
-      )
-      if (length(optimizer_ids) == 0) {
-        return(invisible(self))
-      }
+      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
+      if (length(optimizer_ids) == 0) return(invisible(self))
       ino_seed(seed)
       parallel <- ncores > 1 && runs >= 2 * ncores
       if (parallel) {
         cluster <- parallel::makeCluster(ncores)
         on.exit(parallel::stopCluster(cluster))
         doSNOW::registerDoSNOW(cluster)
-        if (verbose) pb$tick(0)
-        results <- foreach::foreach(
-          run_id = 1:runs, .packages = "ino", .export = "private",
-          .inorder = TRUE, .options.snow = opts
-        ) %dopar% {
-          lapply(optimizer_ids, function(optimizer_id) {
-            private$.optimize(
-              initial = initial(run_id = run_id, optimizer_id = optimizer_id),
-              optimizer_id = optimizer_id,
-              time_limit = time_limit,
-              hide_warnings = hide_warnings
-            )
-          })
-        }
-        ### results must be saved outside the loop when parallelized
-        if (save_results) {
-          for (run in results) {
-            run <- private$.label_run(run = run, label = label)
-            private$.save_optimization_run(
-              run = run, optimizer_ids = optimizer_ids
-            )
-          }
-        }
-      } else {
-        if (verbose) pb$tick(0)
-        results <- foreach::foreach(run_id = 1:runs) %do% {
-          run <- lapply(optimizer_ids, function(optimizer_id) {
-            private$.optimize(
-              initial = initial(run_id = run_id, optimizer_id = optimizer_id),
-              optimizer_id = optimizer_id,
-              time_limit = time_limit,
-              hide_warnings = hide_warnings
-            )
-          })
-          ### results are saved inside the loop
-          if (save_results) {
-            run <- private$.label_run(run = run, label = label)
-            private$.save_optimization_run(
-              run = run, optimizer_ids = optimizer_ids
-            )
-          }
-          if (verbose) pb$tick()
-          return(run)
+        ino_status(
+          glue::glue("Parallel optimization with {ncores} cores."),
+          verbose = verbose
+        )
+      }
+      `%switch%` <- ifelse(parallel, `%dopar%`, `%do%`)
+      if (verbose) pb$tick(0)
+      results <- foreach::foreach(
+        run_id = 1:runs, .packages = "ino", .export = "private",
+        .inorder = TRUE, .options.snow = opts
+      ) %switch% {
+        lapply(optimizer_ids, function(optimizer_id) {
+          private$.optimize(
+            initial = initial(run_id = run_id, optimizer_id = optimizer_id),
+            optimizer_id = optimizer_id,
+            time_limit = time_limit,
+            hide_warnings = hide_warnings
+          )
+        })
+      }
+      if (save_results) {
+        for (result in results) {
+          self$runs$new_result(
+            result = result,
+            optimizer_ids = optimizer_ids,
+            label = label,
+            comparable = length(private$.original_arguments) == 0
+          )
         }
       }
 
+      ### return
       if (return_results) {
         simplify_results(results = results, simplify = simplify)
       } else {
@@ -1266,49 +1248,22 @@ Nop <- R6::R6Class(
           )
         },
         error = function(e) {
-          msg <- e$message
-          tl <- grepl("reached elapsed time limit|reached CPU time limit", msg)
+          error_message <- e$message
+          time_limit_reached <- grepl(
+            "reached elapsed time limit|reached CPU time limit", error_message
+          )
+          if (time_limit_reached) {
+            error_message <- "time limit reached"
+          }
           return(
             list(
-              "value" = NA_real_,
-              "parameter" = NA_real_,
-              "seconds" = NA_real_,
               "initial" = initial,
-              "error" = if (tl) "time limit reached" else msg
+              "error" = TRUE,
+              "error_message" = error_message
             )
           )
         }
       )
-    },
-
-    ### label one optimization run
-    .label_run = function(run, label) {
-      lapply(
-        X = run,
-        FUN = function(x) {
-          x[["label"]] <- label
-          return(x)
-        }
-      )
-    },
-
-    ### save results of one optimization run inside `Nop` object
-    .save_optimization_run = function(
-      run, optimizer_ids, run_id = length(private$.results) + 1
-    ) {
-      comparable <- length(private$.original_arguments) == 0
-      optimizer <- private$.optimizer
-      optimizer_labels <- names(optimizer)
-      for (i in seq_along(optimizer_ids)) {
-        run[[i]][["run"]] <- run_id
-        run[[i]][["optimizer"]] <- optimizer_labels[optimizer_ids[i]]
-        run[[i]][["comparable"]] <- comparable
-      }
-      full_run <- replicate(length(optimizer), list())
-      for (i in seq_along(optimizer_ids)) {
-        full_run[[optimizer_ids[i]]] <- run[[i]]
-      }
-      private$.results[[run_id]] <- full_run
     },
 
     ### merge continued with previous optimization results

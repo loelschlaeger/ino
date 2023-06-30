@@ -34,6 +34,39 @@ Runs <- R6::R6Class(
     },
 
     #' @description
+    #' Saves a new optimization result.
+    #' @param result
+    #' TODO
+    #' @param optimizer_ids
+    #' TODO
+    #' @param label
+    #' TODO
+    #' @param comparable
+    #' TODO
+    #' @return
+    #' Invisibly the \code{Results} object.
+    new_result = function(
+      result = list(), optimizer_ids = numeric(), label = character(),
+      comparable = logical()
+    ) {
+
+      # comparable <- length(private$.original_arguments) == 0
+      # optimizer <- private$.optimizer
+      # optimizer_labels <- names(optimizer)
+      # for (i in seq_along(optimizer_ids)) {
+      #   run[[i]][["run"]] <- run_id
+      #   run[[i]][["optimizer"]] <- optimizer_labels[optimizer_ids[i]]
+      #   run[[i]][["comparable"]] <- comparable
+      # }
+      # full_run <- replicate(length(optimizer), list())
+      # for (i in seq_along(optimizer_ids)) {
+      #   full_run[[optimizer_ids[i]]] <- run[[i]]
+      # }
+      # private$.results[[run_id]] <- full_run
+
+    },
+
+    #' @description
     #' Prints details of the stored numerical optimization results.
     #' @param ...
     #' Currently not used.
@@ -146,6 +179,7 @@ Runs <- R6::R6Class(
 
     .ids_last = numeric(),
 
+    .runs_references = list(),
     .optimizer_references = list(),
 
     .optimization_labels = character(),
