@@ -1163,7 +1163,7 @@ Nop <- R6::R6Class(
       }
     },
 
-    ### checks if all required arguments for function are specified
+    ### checks if all required arguments for target function are specified
     .check_additional_arguments_complete = function() {
       args_all <- formals(private$.f)
       args_all[private$.f_target] <- NULL

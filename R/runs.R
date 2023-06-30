@@ -27,6 +27,12 @@ Runs <- R6::R6Class(
 
     },
 
+    new_result = function(
+      run_id, optimizer_id,
+    ) {
+
+    },
+
     #' @description
     #' Prints details of the stored numerical optimization results.
     #' @param ...
