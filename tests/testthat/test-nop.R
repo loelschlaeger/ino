@@ -32,7 +32,7 @@ test_that("Nop object can be initialized", {
     "is read only"
   )
   expect_error(
-    Nop$new(f = function() 1, npar = 0),
+    Nop$new(f = function() 1, npar = 2),
     "must have at least one argument"
   )
 })
@@ -43,7 +43,7 @@ test_that("Nop object can be printed", {
   expect_snapshot(ackley$print())
 })
 
-test_that("Parameters for Nop object can be set", {
+test_that("Arguments for Nop object can be set", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -62,7 +62,7 @@ test_that("Parameters for Nop object can be set", {
   expect_snapshot(print(hmm))
 })
 
-test_that("Parameters for Nop object can be get", {
+test_that("Arguments for Nop object can be get", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -84,7 +84,7 @@ test_that("Parameters for Nop object can be get", {
   )
 })
 
-test_that("Parameters for Nop object can be removed", {
+test_that("Arguments for Nop object can be removed", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -119,14 +119,14 @@ test_that("Optimizer can be set", {
     "must be an"
   )
   expect_error(
-    ackley$set_optimizer(optimizer_nlm(), label = 1),
+    ackley$set_optimizer(optimizer_nlm(), optimizer_label = 1),
     "must be a"
   )
-  ackley$set_optimizer(optimizer_nlm(), label = "nlm")
+  ackley$set_optimizer(optimizer_nlm(), optimizer_label = "nlm")
   expect_snapshot(ackley)
   expect_error(
-    ackley$set_optimizer(optimizer_nlm(), label = "nlm"),
-    "already exists, please choose another one"
+    ackley$set_optimizer(optimizer_nlm(), optimizer_label = "nlm"),
+    "already exists, use another one"
   )
   ackley$set_optimizer(optimizer_optim())
   expect_snapshot(ackley)
@@ -216,12 +216,24 @@ test_that("HMM likelihood function can be evaluated", {
   )
 })
 
-test_that("Ackley function can be optimized", {
+test_that("Input checks for optimization method work", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
   expect_error(
     ackley$optimize(runs = -1),
+    "must be a single, positive"
+  )
+  expect_error(
+    ackley$optimize(save_results = "TRUE"),
+    "must be"
+  )
+  expect_error(
+    ackley$optimize(return_results = "TRUE"),
+    "must be"
+  )
+  expect_error(
+    ackley$optimize(ncores = 1.4),
     "must be a single, positive"
   )
   expect_error(
@@ -232,24 +244,26 @@ test_that("Ackley function can be optimized", {
     ackley$optimize(hide_warnings = "bad"),
     "must be"
   )
+  expect_error(
+    ackley$optimize(return_results = TRUE, simplify = "TRUE"),
+    "must be"
+  )
+  expect_error(
+    ackley$optimize(optimization_label = 1),
+    "must be"
+  )
+})
+
+test_that("Ackley function can be optimized", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
   ackley$optimize(runs = 5)
   ackley$optimize(runs = 1, initial = runif(2))
   ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)
   ackley$optimize(initial = c(0, 0))
   ackley$optimize(initial = list(1:2, 2:3, 3:4))
   expect_snapshot(ackley)
-  expect_error(
-    ackley$optimize(save_results = "TRUE"),
-    "must be"
-  )
-  expect_error(
-    ackley$optimize(return_results = "TRUE"),
-    "must be"
-  )
-  expect_error(
-    ackley$optimize(return_results = TRUE, simplify = "TRUE"),
-    "must be"
-  )
   out <- ackley$optimize(runs = 5, return_results = TRUE, save_results = FALSE)
   expect_type(out, "list")
   expect_length(out, 5)
@@ -263,16 +277,6 @@ test_that("Ackley function can be optimized", {
     simplify = FALSE
   )
   expect_type(out, "list")
-})
-
-test_that("parallel optimization works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_error(
-    ackley$optimize(ncores = 1.4),
-    "must be a single, positive"
-  )
   skip_on_cran()
   ackley$optimize(
     runs = 40, ncores = 2, save_results = FALSE
@@ -290,10 +294,10 @@ test_that("Nop object can be tested", {
     "No optimizer specified, testing optimizer is skipped."
   )
   ackley$set_optimizer(optimizer_nlm())
-  expect_true(ackley$test(verbose = FALSE))
+  expect_true(ackley$test())
 })
 
-test_that("standardization works", {
+test_that("Standardization works", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -313,7 +317,7 @@ test_that("standardization works", {
   expect_s3_class(hmm$standardize("data"), c("Nop", "R6"), exact = TRUE)
 })
 
-test_that("reduction works", {
+test_that("Subsetting works", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)

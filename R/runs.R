@@ -5,8 +5,32 @@
 #' typically contained inside a \code{\link{Nop}} object.
 #'
 #' @details
-#' TODO
+#' A \code{Runs} object can be created via \code{Runs$new()}.
 #'
+#' @param which_optimizer
+#' Select specified numerical optimizers. Either:
+#' - \code{"all"} for all specified optimizers,
+#' - a \code{character} (vector) of specified optimizer labels.
+#' @param which_run
+#' Select saved results of optimization runs. Either:
+#' - \code{"all"} for all results,
+#' - \code{"failed"}, the results from all failed optimization runs,
+#' - a \code{character} (vector) of labels specified in \code{$optimize()}.
+#' @param which_element
+#' Select elements of saved optimization results. Either:
+#' - \code{"all"} for all available elements,
+#' - \code{"default"}, the elements that are saved for all optimization runs by
+#'   default, i.e.
+#'   - \code{"optimization_label"}, the label for the optimization run,
+#'   - \code{"optimizer_label"}, the label for the optimizer,
+#'   - \code{"value"}, the function value at the found optimum,
+#'   - \code{"parameter"}, the parameter at which the optimum value is obtained,
+#'   - \code{"seconds"}, the optimization time in seconds,
+#'   - \code{"initial"}, the initial parameter,
+#'   - \code{"error"}, indicating whether an error occurred,
+#'   - \code{"error_message"}, the error message (if any).
+#' - a \code{character} (vector) with names of specific elements (see
+#'   \code{$elements_available()} for the names of all available elements).
 #' @param digits
 #' An \code{integer}, the number of shown decimal places.
 #' The default is \code{2}.
@@ -20,50 +44,97 @@ Runs <- R6::R6Class(
   public = list(
 
     #' @description
-    #' Creates a new \code{Runs} object.
-    #' @return
-    #' A new \code{Runs} object.
-    initialize = function() {
-
-    },
-
-    new_result = function(
-      run_id, optimizer_id,
-    ) {
-
-    },
-
-    #' @description
     #' Saves a new optimization result.
     #' @param result
-    #' TODO
-    #' @param optimizer_ids
-    #' TODO
-    #' @param label
-    #' TODO
+    #' A \code{list} with outputs of a numerical optimization, typically
+    #' containing
+    #' - \code{"value"}, the function value at the found optimum,
+    #' - \code{"parameter"}, the parameter at which the optimum value is obtained,
+    #' - \code{"seconds"}, the optimization time in seconds,
+    #' - \code{"initial"}, the initial parameter,
+    #' - \code{"error"}, indicating whether an error occurred,
+    #' - \code{"error_message"}, the error message (if any),
+    #' and other elements that are optimizer-specific.
+    #' @param optimizer_label
+    #' A \code{character}, a label for the optimizer.
+    #' @param optimization_label
+    #' A \code{character}, a label for the optimization.
     #' @param comparable
-    #' TODO
+    #' Either \code{TRUE} if the optimization result was obtained
+    #' for the original optimization problem without any transformations,
+    #' or \code{FALSE} else.
     #' @return
     #' Invisibly the \code{Results} object.
     new_result = function(
-      result = list(), optimizer_ids = numeric(), label = character(),
-      comparable = logical()
+      result, optimizer_label, optimization_label, comparable
     ) {
-
-      # comparable <- length(private$.original_arguments) == 0
-      # optimizer <- private$.optimizer
-      # optimizer_labels <- names(optimizer)
-      # for (i in seq_along(optimizer_ids)) {
-      #   run[[i]][["run"]] <- run_id
-      #   run[[i]][["optimizer"]] <- optimizer_labels[optimizer_ids[i]]
-      #   run[[i]][["comparable"]] <- comparable
-      # }
-      # full_run <- replicate(length(optimizer), list())
-      # for (i in seq_along(optimizer_ids)) {
-      #   full_run[[optimizer_ids[i]]] <- run[[i]]
-      # }
-      # private$.results[[run_id]] <- full_run
-
+      if (missing(result)) {
+        ino_stop("Please specify {.var result}.")
+      }
+      if (!is.list(result)) {
+        ino_stop("Argument {.var result} is not a {.cls list}.")
+      }
+      if (missing(optimizer_label)) {
+        ino_stop("Please specify {.var optimizer_label}.")
+      }
+      is_name(optimizer_label)
+      if (missing(optimization_label)) {
+        ino_stop("Please specify {.var optimization_label}.")
+      }
+      is_name(optimization_label)
+      if (missing(comparable)) {
+        ino_stop("Please specify {.var comparable}.")
+      }
+      is_TRUE_FALSE(comparable)
+      result_names <- names(result)
+      if ("value" %in% result_names) {
+        is_number(result[["value"]])
+      } else {
+        result[["value"]] <- NA_real_
+      }
+      if ("parameter" %in% result_names) {
+        is_number_vector(result[["parameter"]])
+      } else {
+        result[["parameter"]] <- NA_real_
+      }
+      if ("seconds" %in% result_names) {
+        is_time(result[["seconds"]])
+      } else {
+        result[["seconds"]] <- NA_real_
+      }
+      if ("initial" %in% result_names) {
+        is_number_vector(result[["initial"]])
+      } else {
+        result[["initial"]] <- NA_real_
+      }
+      if ("error" %in% result_names) {
+        is_TRUE_FALSE(result[["error"]])
+      } else {
+        result[["error"]] <- FALSE
+      }
+      if ("error_message" %in% result_names) {
+        is_name(result[["error_message"]])
+      } else {
+        result[["error_message"]] <- ""
+      }
+      result[["optimization_label"]] <- optimization_label
+      result[["optimizer_label"]] <- optimizer_label
+      result[["comparable"]] <- comparable
+      result_id <- self$number_results + 1
+      private$.results[[result_id]] <- result
+      private$.add_optimization_label_reference(
+        optimization_label = optimization_label, result_id = result_id
+      )
+      private$.add_optimizer_label_reference(
+        optimizer_label = optimizer_label, result_id = result_id
+      )
+      private$.add_optimization_label(optimization_label)
+      private$.add_failed_runs_reference(
+        error = result[["error"]], result_id = result_id
+      )
+      private$.add_comparable_runs_reference(
+        comparable = result[["comparable"]], result_id = result_id
+      )
     },
 
     #' @description
@@ -72,35 +143,31 @@ Runs <- R6::R6Class(
     #' Currently not used.
     #' @return
     #' Invisibly the \code{Results} object.
+    #' @importFrom crayon underline
+    #' @importFrom cli style_italic
+    #' @importFrom glue glue
     print = function(digits = getOption("ino_digits", default = 2), ...) {
-      cat(crayon::underline("Optimization results:\n"))
-      # suppressWarnings({
-      #   results <- x$results()
-      #   nruns <- x$number_runs()
-      #   nruns_comparable <- x$number_runs(only_comparable = TRUE)
-      # })
-      # if (nruns == 0) {
-      #   cat(cli::style_italic("No results saved yet.\n"))
-      # } else if (nruns_comparable == 0) {
-      #   cat(glue::glue(
-      #     "- Total runs (comparable): {nruns} (0)"
-      #   ))
-      # } else {
-      #   best_parameter <- round(x$best_parameter(), digits = digits)
-      #   best_value <- round(x$best_value(), digits = digits)
-      #   cat(glue::glue(
-      #     "- Total runs (comparable): {nruns} ({nruns_comparable})",
-      #     "- Best parameter: {paste(best_parameter, collapse = ' ')}",
-      #     "- Best value: {best_value}",
-      #     .sep = "\n"
-      #   ), "\n")
-      # }
+      cat(crayon::underline("Optimization runs:\n"))
+      if (length(private$.results) == 0) {
+        cat(cli::style_italic("No results saved yet.\n"))
+      } else {
+        cat(glue::glue(
+          "- Total runs: {length(private$.results)}",
+          "- Comparable runs: {length(private$.comparable_runs_references)}",
+          "- Failed runs: {length(private$.failed_runs_references)}",
+          .sep = "\n"
+        ), "\n")
+      }
     },
 
+    #' @description
+    #' TODO
     summary = function() {
 
     },
 
+    #' @description
+    #' TODO
     plot = function() {
 
     },
@@ -169,6 +236,15 @@ Runs <- R6::R6Class(
       } else {
         ino_stop("{.var $optimization_labels} is read only.")
       }
+    },
+
+    #' @field number_results The number of saved optimization results.
+    number_results = function(value) {
+      if (missing(value)) {
+        length(private$.results)
+      } else {
+        ino_stop("{.var $number_results} is read only.")
+      }
     }
 
   ),
@@ -177,20 +253,47 @@ Runs <- R6::R6Class(
 
     .results = list(),
 
-    .ids_last = numeric(),
+    .comparable_runs_references = integer(),
+    .add_comparable_runs_reference = function(comparable, result_id) {
+      if (comparable) private$.comparable_runs_references <- c(
+        private$.comparable_runs_references, result_id
+      )
+    },
 
-    .runs_references = list(),
-    .optimizer_references = list(),
+    .failed_runs_references = integer(),
+    .add_failed_runs_reference = function(error, result_id) {
+      if (error) private$.failed_runs_references <- c(
+        private$.failed_runs_references, result_id
+      )
+    },
 
     .optimization_labels = character(),
+    .add_optimization_label = function(optimization_label) {
+      private$.optimization_labels <- unique(
+        c(private$.optimization_labels, optimization_label)
+      )
+    },
 
-
-    .add_optimization_label = function(new_label) {
-      is_name(new_label)
-      if (new_label %in% private$.optimization_labels) {
-        ino_stop("Label {.val new_label} already exists.")
+    .optimization_label_references = list(),
+    .add_optimization_label_reference = function(optimization_label, result_id) {
+      if (is.null(private$.optimization_label_references[[optimization_label]])) {
+        private$.optimization_label_references[[optimization_label]] <- result_id
+      } else {
+        private$.optimizer_label_references[[optimization_label]] <- c(
+          private$.optimizer_label_references[[optimization_label]], result_id
+        )
       }
-      private$.optimization_labels <- c(private$.optimization_labels, new_label)
+    },
+
+    .optimizer_label_references = list(),
+    .add_optimizer_label_reference = function(optimizer_label, result_id) {
+      if (is.null(private$.optimizer_label_references[[optimizer_label]])) {
+        private$.optimizer_label_references[[optimizer_label]] <- result_id
+      } else {
+        private$.optimizer_label_references[[optimizer_label]] <- c(
+          private$.optimizer_label_references[[optimizer_label]], result_id
+        )
+      }
     }
 
   )

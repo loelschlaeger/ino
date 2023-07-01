@@ -1,7 +1,41 @@
+#' Check for proper number vector
+#'
+#' @description
+#' This function checks whether the input is a proper number vector, i.e., a
+#' \code{numeric}.
+#'
+#' @param x
+#' Any object.
+#' @param error
+#' In the case that \code{x} is not a proper number vector, either \code{TRUE}
+#' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
+#'
+#' @return
+#' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
+#' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
+#'
+#' @keywords checks
+
+is_number_vector <- function(x, error = TRUE) {
+  is_TRUE_FALSE(error)
+  check <- is.vector(x) && is.numeric(x)
+  if (!check && error) {
+    x_name <- deparse(substitute(x))
+    ino_stop(
+      glue::glue(
+        "Argument {.var <x_name>} must be a {.cls numeric}.",
+        .open = "<",
+        .close = ">"
+      )
+    )
+  }
+  invisible(check)
+}
+
 #' Check for proper number
 #'
 #' @description
-#' This function checks whether the input is proper number, i.e., a single
+#' This function checks whether the input is a proper number, i.e., a single
 #' \code{numeric}.
 #'
 #' @param x
@@ -14,11 +48,11 @@
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_number <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is.vector(x) && is.numeric(x) && length(x) == 1
+  check <- is_number_vector(x = x, error = error) && length(x) == 1
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -35,7 +69,7 @@ is_number <- function(x, error = TRUE) {
 #' Check for proper proportion
 #'
 #' @description
-#' This function checks whether the input is proper proportion, i.e., a single
+#' This function checks whether the input is a proper proportion, i.e., a single
 #' \code{numeric} between 0 and 1.
 #'
 #' @param x
@@ -48,7 +82,7 @@ is_number <- function(x, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_proportion <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -69,7 +103,7 @@ is_proportion <- function(x, error = TRUE) {
 #' Check for proper count
 #'
 #' @description
-#' This function checks whether the input is proper count, i.e., a single,
+#' This function checks whether the input is a proper count, i.e., a single,
 #' positive \code{integer}.
 #'
 #' @param x
@@ -84,7 +118,7 @@ is_proportion <- function(x, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_count <- function(x, allow_zero = FALSE, error = TRUE) {
   is_TRUE_FALSE(allow_zero)
@@ -120,7 +154,7 @@ is_count <- function(x, allow_zero = FALSE, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_name <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -154,7 +188,7 @@ is_name <- function(x, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_name_vector <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
@@ -172,11 +206,45 @@ is_name_vector <- function(x, error = TRUE) {
   invisible(check)
 }
 
+#' Check for proper time
+#'
+#' @description
+#' This function checks whether the input is a proper time, i.e., a single,
+#' non-negative \code{numeric}.
+#'
+#' @param x
+#' Any object.
+#' @param error
+#' In the case that \code{x} is not a proper time, either \code{TRUE}
+#' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
+#'
+#' @return
+#' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
+#' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
+#'
+#' @keywords checks
+
+is_time <- function(x, error = TRUE) {
+  is_TRUE_FALSE(error)
+  check <- is_number(x, error = error) && x >= 0
+  if (!check && error) {
+    x_name <- deparse(substitute(x))
+    ino_stop(
+      glue::glue(
+        "Argument {.var <x_name>} is not a non-negative {.cls numeric}.",
+        .open = "<",
+        .close = ">"
+      )
+    )
+  }
+  invisible(check)
+}
+
 #' Check for proper time limit
 #'
 #' @description
-#' This function checks whether the input is proper time limit, i.e., a single,
-#' positive \code{numeric}.
+#' This function checks whether the input is a proper time limit, i.e., a
+#' single, positive \code{numeric} or \code{NULL}.
 #'
 #' @param x
 #' Any object.
@@ -188,11 +256,11 @@ is_name_vector <- function(x, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_time_limit <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is.null(x) || (is_number(x, error = error) && x > 0)
+  check <- is.null(x) || (is_time(x = x, error = error) && x > 0)
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -211,7 +279,7 @@ is_time_limit <- function(x, error = TRUE) {
 #' Check for proper boolean
 #'
 #' @description
-#' This function checks whether the input is proper boolean, i.e., either
+#' This function checks whether the input is a proper boolean, i.e., either
 #' \code{TRUE} or \code{FALSE}.
 #'
 #' @param x
@@ -224,7 +292,7 @@ is_time_limit <- function(x, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_TRUE_FALSE <- function(x, error = TRUE) {
   stopifnot(isTRUE(error) || isFALSE(error))
@@ -245,7 +313,7 @@ is_TRUE_FALSE <- function(x, error = TRUE) {
 #' Check for proper index vector
 #'
 #' @description
-#' This function checks whether the input is proper index vector, i.e., a
+#' This function checks whether the input is a proper index vector, i.e., a
 #' \code{vector} of positive \code{integer} values.
 #'
 #' @param x
@@ -258,7 +326,7 @@ is_TRUE_FALSE <- function(x, error = TRUE) {
 #' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
 #' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
 #'
-#' @keywords utils
+#' @keywords checks
 
 is_index_vector <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)

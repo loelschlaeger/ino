@@ -22,7 +22,7 @@
       No optimizer specified.
       Optimization results:
 
-# Parameters for Nop object can be set
+# Arguments for Nop object can be set
 
     Code
       print(hmm)

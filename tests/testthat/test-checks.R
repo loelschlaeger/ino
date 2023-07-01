@@ -1,20 +1,27 @@
+test_that("checks for proper number vector work", {
+  expect_true(is_number_vector(1))
+  expect_true(is_number_vector(c(-pi, 0, pi)))
+  expect_error(is_number_vector("1"), "must be a")
+  expect_error(is_number(LETTERS), "must be a")
+})
+
 test_that("checks for proper number work", {
   expect_true(is_number(1))
   expect_true(is_number(pi))
-  expect_error(is_number("1"), "must be a single")
+  expect_error(is_number("1"), "must be a")
   expect_error(is_number(1:2), "must be a single")
 })
 
 test_that("checks for proper proportion work", {
   expect_true(is_proportion(0.5))
   expect_error(is_proportion(pi), "between 0 and 1")
-  expect_error(is_proportion("1"), "must be a single")
+  expect_error(is_proportion("1"), "must be a")
 })
 
 test_that("checks for proper count work", {
   expect_true(is_count(1))
   expect_error(is_count(pi), "must be a single, positive")
-  expect_error(is_count("1"), "must be a single")
+  expect_error(is_count("1"), "must be a")
   expect_error(is_count(-1), "must be a single, positive")
 })
 
@@ -32,11 +39,18 @@ test_that("checks for proper name vector work", {
   expect_error(is_name_vector(""), "must be a")
 })
 
+test_that("checks for proper time work", {
+  expect_true(is_time(1))
+  expect_true(is_time(0))
+  expect_error(is_time(-1), "is not a non-negative")
+  expect_error(is_time_limit("1"), "must be a")
+})
+
 test_that("checks for proper time limit work", {
   expect_true(is_time_limit(1))
   expect_true(is_time_limit(pi))
-  expect_error(is_time_limit(-1), "is not a positive")
-  expect_error(is_time_limit("1"), "must be a single")
+  expect_error(is_time_limit(0), "is not a positive")
+  expect_error(is_time_limit("1"), "must be a")
 })
 
 test_that("checks for proper boolean work", {
