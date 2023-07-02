@@ -18,8 +18,6 @@ A \code{Runs} object can be created via \code{Runs$new()}.
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{optimization_labels}}{All unique optimization labels.}
-
-\item{\code{number_results}}{The number of saved optimization results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -32,6 +30,7 @@ A \code{Runs} object can be created via \code{Runs$new()}.
 \item \href{#method-Runs-plot}{\code{Runs$plot()}}
 \item \href{#method-Runs-clear}{\code{Runs$clear()}}
 \item \href{#method-Runs-elements_available}{\code{Runs$elements_available()}}
+\item \href{#method-Runs-number_results}{\code{Runs$number_results()}}
 \item \href{#method-Runs-clone}{\code{Runs$clone()}}
 }
 }
@@ -138,7 +137,8 @@ Deletes optimization results.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of specified optimizer labels.
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids.
 }}
 
 \item{\code{which_element}}{Select elements of saved optimization results. Either:
@@ -181,13 +181,50 @@ Returns names of available elements per optimizer.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of specified optimizer labels.
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids.
 }}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 A \code{list}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-number_results"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-number_results}{}}}
+\subsection{Method \code{number_results()}}{
+Returns the number of saved optimization results
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$number_results(
+  which_run = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_run}}{Select saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"} for all results,
+\item \code{"failed"}, the results from all failed optimization runs,
+\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"} for all specified optimizers,
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids.
+}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+An \code{integer}.
 }
 }
 \if{html}{\out{<hr>}}

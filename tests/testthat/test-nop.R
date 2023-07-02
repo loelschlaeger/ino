@@ -132,6 +132,20 @@ test_that("Optimizer can be set", {
   expect_snapshot(ackley)
 })
 
+test_that("Nop object can be tested", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_error(
+    ackley$test(at = 1),
+    "must be of length 2"
+  )
+  expect_warning(
+    ackley$test(),
+    "No optimizer specified, testing optimizers is skipped."
+  )
+  ackley$set_optimizer(optimizer_nlm())
+  expect_true(ackley$test())
+})
+
 test_that("Ackley function can be evaluated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
@@ -254,6 +268,72 @@ test_that("Input checks for optimization method work", {
   )
 })
 
+test_that("List of initial values can be created", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  private <- ackley$.__enclos_env__$private
+  initial_options <- list(
+    "random",
+    1:2,
+    list(1:2, 2:3, 4:5),
+    function() runif(2),
+    function(a, b) c(a, b)
+  )
+  for (initial_option in initial_options) {
+    initial_values <- private$.build_initial(
+      initial = "random",
+      npar = ackley$npar,
+      fail_bad_initial = TRUE,
+      runs = 3,
+      optimizer_ids = 2
+    )
+    expect_type(initial_values, "list")
+    expect_length(initial_values, 3)
+    expect_length(initial_values[[1]], 2)
+  }
+  expect_error(
+    private$.build_initial(
+      initial = list(1, 1:2, "bad"),
+      npar = 2,
+      fail_bad_initial = TRUE,
+      runs = 3,
+      optimizer_ids = 2
+    ),
+    "Each of them should be of length 2."
+  )
+  expect_error(
+    private$.build_initial(
+      initial = 1:3,
+      npar = 2,
+      fail_bad_initial = TRUE,
+      runs = 3,
+      optimizer_ids = 2
+    ),
+    "It should be of length 2."
+  )
+  expect_error(
+    private$.build_initial(
+      initial = function(run) rep(run, 4),
+      npar = 2,
+      fail_bad_initial = TRUE,
+      runs = 3,
+      optimizer_ids = 2
+    ),
+    "It can have 0 or 2 arguments, but not 1."
+  )
+  expect_error(
+    private$.build_initial(
+      initial = diag(2),
+      npar = 2,
+      fail_bad_initial = TRUE,
+      runs = 3,
+      optimizer_ids = 2
+    ),
+    "Please see the documentation for possible inputs."
+  )
+})
+
 test_that("Ackley function can be optimized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
@@ -283,79 +363,222 @@ test_that("Ackley function can be optimized", {
   )
 })
 
-test_that("Nop object can be tested", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
+test_that("Bad function specifications can be detected in tests", {
+  error_f <- Nop$new(f = function(x) stop("error message"), 1)
   expect_error(
-    ackley$test(at = 1),
-    "must be of length 2"
+    error_f$test(),
+    "Function call threw an error"
   )
+  lengthy_f <- Nop$new(f = function(x) 1:2, 1)
+  expect_error(
+    lengthy_f$test(),
+    "Test function call is of length 2."
+  )
+  character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
+  expect_error(
+    character_f$test(),
+    "Function call threw an error"
+  )
+  list_f <- Nop$new(f = function(x) list(), 1)
+  expect_error(
+    list_f$test(),
+    "Test function call did not return a"
+  )
+})
+
+test_that("Bad optimizer specifications can be detected in tests", {
+  error_optimizer_fun <- function(f, p) {
+    if (identical(p, 1:2)) stop("error message")
+    list(v = f(p), z = 1:2)
+  }
+  error_optimizer <- optimizeR::define_optimizer(
+    error_optimizer_fun,
+    objective = "f", initial = "p", value = "v",
+    parameter = "z"
+  )
+  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(error_optimizer)
+  expect_error(
+    ackley$test(at = 1:2),
+    "Optimization threw an error"
+  )
+})
+
+test_that("Nop tests can be interrupted", {
+  skip_if_not(.Platform$OS.type == "windows")
+  slow_f <- function(x) {
+    Sys.sleep(2)
+    1
+  }
+  slow_f <- Nop$new(slow_f, 1)
   expect_warning(
-    ackley$test(),
-    "No optimizer specified, testing optimizer is skipped."
+    expect_warning(
+      slow_f$test(time_limit = 1),
+      "Time limit of 1s was reached"
+    ),
+    "No optimizer specified, testing optimizers is skipped."
   )
-  ackley$set_optimizer(optimizer_nlm())
-  expect_true(ackley$test())
+  slow_optimizer_fun <- function(f, p) {
+    Sys.sleep(2)
+    stats::nlm(f = f, p = p)
+  }
+  slow_optimizer <- optimizeR::define_optimizer(
+    slow_optimizer_fun,
+    objective = "f", initial = "p", value = "minimum",
+    parameter = "estimate"
+  )
+  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(slow_optimizer)
+  expect_warning(
+    ackley$test(at = 1:2, time_limit = 1),
+    "Time limit of 1s was reached in the optimization"
+  )
 })
 
 test_that("Standardization works", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_argument(
+      "arg1" = diag(3), "arg2" = list(), "arg3" = 1,
+      "arg4" = 1:5, "arg5" = matrix(1:12, 3, 4),
+      "arg6" = data.frame(matrix(1:12, 3, 4))
+    )
   expect_error(
-    hmm$standardize(),
+    ackley$standardize(),
     "Please specify"
   )
   expect_error(
-    hmm$standardize(1),
+    ackley$standardize(1),
     "must be a single"
   )
-  expect_s3_class(hmm$standardize("data"), c("Nop", "R6"), exact = TRUE)
+  expect_error(
+    ackley$standardize(
+      argument_name = "arg1", by_column = "not_a_boolean",
+      center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
+    ),
+    "must be"
+  )
+  expect_error(
+    ackley$standardize(
+      argument_name = "arg1", by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = pi, jointly = list()
+    ),
+    "must be an"
+  )
+  expect_error(
+    ackley$standardize(
+      argument_name = "arg2", by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
+    ),
+    "Argument cannot be standardized."
+  )
+  expect_warning(
+    ackley$standardize(
+      argument_name = "arg3", by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
+    ),
+    "Argument has NAs after standardization."
+  )
+  combinations <- expand.grid(
+    argument_name = c("arg4", "arg5", "arg6"),
+    by_column = c(TRUE, FALSE),
+    center = c(TRUE, FALSE),
+    scale = c(TRUE, FALSE),
+    ignore = list(integer(), 3),
+    jointly = list(list(), list(1:2)),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    ackley$standardize(
+      argument_name = combinations[i, "argument_name"],
+      by_column = combinations[i, "by_column"],
+      center = combinations[i, "center"],
+      scale = combinations[i, "scale"],
+      ignore = combinations[[i, "ignore"]],
+      jointly = combinations[[i, "jointly"]]
+    )$reset_argument(argument_name = combinations[i, "argument_name"])
+  }
 })
 
 test_that("Subsetting works", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_argument(
+      "arg1" = diag(3), "arg2" = list(), "arg3" = 1,
+      "arg4" = 1:5, "arg5" = matrix(1:12, 3, 4),
+      "arg6" = data.frame(matrix(1:12, 3, 4))
+    )
   expect_error(
-    hmm$reduce(),
+    ackley$subset(),
     "Please specify"
   )
   expect_error(
-    hmm$reduce(1),
+    ackley$subset(1),
     "must be a single"
   )
-  expect_s3_class(hmm$reduce("data"), c("Nop", "R6"), exact = TRUE)
-})
-
-test_that("argument can be reset", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )
-  hmm$standardize("data")
   expect_error(
-    hmm$reset_argument(),
-    "Please specify"
+    ackley$subset(
+      argument_name = "arg1", by_row = TRUE,
+      how = TRUE, proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "must be a single"
   )
-  hmm$reset_argument("data")
-  expect_equal(data, hmm$get_argument("data"))
-  hmm$reduce("data")
-  hmm$reset_argument("data")
-  expect_equal(data, hmm$get_argument("data"))
+  expect_error(
+    ackley$subset(
+      argument_name = "arg1", by_row = TRUE,
+      how = "bad", proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "is misspecified"
+  )
+  expect_error(
+    ackley$subset(
+      argument_name = "arg1", by_row = "bad",
+      how = "random", proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "must be"
+  )
+  expect_error(
+    ackley$subset(
+      argument_name = "arg1", by_row = FALSE,
+      how = "similar", proportion = 0.5, centers = 2, ignore = pi
+    ),
+    "must be an index"
+  )
+  expect_error(
+    ackley$subset(
+      argument_name = "arg2", by_row = FALSE,
+      how = "random", proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "Argument cannot be subsetted."
+  )
+  expect_error(
+    ackley$subset(
+      argument_name = "arg3", by_row = FALSE,
+      how = "random", proportion = 0.5, centers = 2, ignore = integer()
+    ),
+    "Argument cannot be subsetted."
+  )
+  expect_error(
+    ackley$subset(
+      argument_name = "arg1", by_row = FALSE,
+      how = "random", proportion = -0.5, centers = 2, ignore = integer()
+    ),
+    "between 0 and 1"
+  )
+  combinations <- expand.grid(
+    argument_name = c("arg4", "arg5", "arg6"),
+    by_row = c(TRUE, FALSE),
+    how = c("random", "first", "last", "similar", "dissimilar"),
+    proportion = c(0.2, 0.8),
+    ignore = list(list(), 2),
+    stringsAsFactors = FALSE
+  )
+  for (i in 1:nrow(combinations)) {
+    ackley$subset(
+      argument_name = combinations[i, "argument_name"],
+      by_row = combinations[i, "by_row"],
+      how = combinations[i, "how"],
+      proportion = combinations[i, "proportion"],
+      centers = 2,
+      ignore = combinations[[i, "ignore"]]
+    )$reset_argument(argument_name = combinations[i, "argument_name"])
+  }
 })
 
 test_that("continue optimization works", {
@@ -383,15 +606,6 @@ test_that("results can be accessed", {
   results <- ackley$results()
   expect_type(results, "list")
   expect_length(results, runs)
-})
-
-test_that("number of results can be accessed", {
-  runs <- 10
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = runs, save_results = TRUE, return_results = FALSE)
-  expect_equal(ackley$number_runs(), runs)
 })
 
 test_that("overview of available elements can be created", {
@@ -514,16 +728,6 @@ test_that("best parameter can be extracted", {
   )
 })
 
-test_that("closest parameter can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = 10)
-  expect_length(
-    ackley$closest_parameter(0), 2
-  )
-})
-
 test_that("existence of additional argument can be checked", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
@@ -537,18 +741,6 @@ test_that("existence of additional argument can be checked", {
     "is not yet specified"
   )
   hmm$set_argument("data" = data)
-})
-
-test_that("run ids can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm(), "nlm")$
-    optimize(runs = 10, label = "label")
-  private <- ackley$.__enclos_env__$private
-  expect_equal(private$.get_run_ids(which_run = "label"), 1:10)
-  expect_warning(
-    private$.get_run_ids(which_run = "label_does_not_exist"),
-    "Please check argument"
-  )
 })
 
 test_that("f can be extracted", {

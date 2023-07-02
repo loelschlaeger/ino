@@ -10,7 +10,8 @@
 #' @param which_optimizer
 #' Select specified numerical optimizers. Either:
 #' - \code{"all"} for all specified optimizers,
-#' - a \code{character} (vector) of specified optimizer labels.
+#' - a \code{character} (vector) of specified optimizer labels,
+#' - a \code{numeric} (vector) of optimizer ids.
 #' @param which_run
 #' Select saved results of optimization runs. Either:
 #' - \code{"all"} for all results,
@@ -120,7 +121,7 @@ Runs <- R6::R6Class(
       result[["optimization_label"]] <- optimization_label
       result[["optimizer_label"]] <- optimizer_label
       result[["comparable"]] <- comparable
-      result_id <- self$number_results + 1
+      result_id <- self$number_results() + 1
       private$.results[[result_id]] <- result
       private$.add_optimization_label_reference(
         optimization_label = optimization_label, result_id = result_id
@@ -148,13 +149,13 @@ Runs <- R6::R6Class(
     #' @importFrom glue glue
     print = function(digits = getOption("ino_digits", default = 2), ...) {
       cat(crayon::underline("Optimization runs:\n"))
-      if (length(private$.results) == 0) {
+      if (self$number_results() == 0) {
         cat(cli::style_italic("No results saved yet.\n"))
       } else {
         cat(glue::glue(
-          "- Total runs: {length(private$.results)}",
-          "- Comparable runs: {length(private$.comparable_runs_references)}",
-          "- Failed runs: {length(private$.failed_runs_references)}",
+          "- Total runs: {self$number_results()}",
+          "- Comparable runs: {self$number_results(only_comparable = TRUE)}",
+          "- Failed runs: {self$number_runs(which_run = 'failed')}",
           .sep = "\n"
         ), "\n")
       }
@@ -223,6 +224,24 @@ Runs <- R6::R6Class(
         elements[[optimizer_label]] <- unique(names)
       }
       return(elements)
+    },
+
+    #' @description
+    #' Returns the number of saved optimization results
+    #' @return
+    #' An \code{integer}.
+    number_results = function(
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE
+    ) {
+
+
+
+      results <- self$results(
+        which_run = which_run, which_optimizer = which_optimizer,
+        which_element = "all", only_comparable = only_comparable,
+        simplify = FALSE
+      )
+      sum(sapply(results, length) > 0)
     }
 
   ),
@@ -235,15 +254,6 @@ Runs <- R6::R6Class(
         private$.optimization_labels
       } else {
         ino_stop("{.var $optimization_labels} is read only.")
-      }
-    },
-
-    #' @field number_results The number of saved optimization results.
-    number_results = function(value) {
-      if (missing(value)) {
-        length(private$.results)
-      } else {
-        ino_stop("{.var $number_results} is read only.")
       }
     }
 
@@ -295,6 +305,41 @@ Runs <- R6::R6Class(
         )
       }
     }
+
+    # TODO
+
+    # ### get ids of optimization runs
+    # .get_run_ids = function(which_run) {
+    #   if (length(private$.results) == 0) {
+    #     ino_warn(
+    #       "No optimization results saved yet.",
+    #       "Please call {.var $optimize(save_results = TRUE)}."
+    #     )
+    #     return(integer(0))
+    #   }
+    #   if (is.character(which_run)) {
+    #     if (identical(which_run, "all")) {
+    #       ids <- seq_along(private$.results)
+    #     } else if (identical(which_run, "last")) {
+    #       # TODO
+    #     } else {
+    #       ids <- which(sapply(lapply(private$.results, `[[`, 1), `[[`, "label") %in% which_run)
+    #     }
+    #   } else if (is.numeric(which_run)) {
+    #     ids <- which(seq_along(private$.results) %in% which_run)
+    #   } else {
+    #     ids <- integer(0)
+    #   }
+    #   if (length(ids) == 0) {
+    #     ino_warn(
+    #       "Please check argument {.var which_run}.",
+    #       "Your input selects no saved result."
+    #     )
+    #     return(integer(0))
+    #   }
+    #   return(ids)
+    # },
+
 
   )
 )
