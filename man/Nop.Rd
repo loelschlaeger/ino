@@ -4,8 +4,7 @@
 \alias{Nop}
 \title{Nop Object (R6 Class)}
 \value{
-A \code{Nop} object that specifies the numerical optimization problem and
-provides methods for analyzing the optimization results.
+A \code{Nop} object that specifies the numerical optimization problem.
 }
 \description{
 A \code{Nop} object defines a \emph{N}umerical \emph{O}ptimization \emph{P}roblem.
@@ -47,7 +46,7 @@ Call \code{object$optimize()} for optimization. Furthermore,
 \itemize{
 \item \code{object$standardize()} standardizes a function argument,
 \item \code{object$subset()} subsets a function argument,
-\item \code{object$continue()}: continues optimization runs.
+\item \code{object$continue()} continues optimization runs.
 }
 }
 
@@ -118,8 +117,8 @@ not been used yet.}
 \item \href{#method-Nop-remove_argument}{\code{Nop$remove_argument()}}
 \item \href{#method-Nop-reset_argument}{\code{Nop$reset_argument()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
-\item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-test}{\code{Nop$test()}}
+\item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-results}{\code{Nop$results()}}
 \item \href{#method-Nop-elements_available}{\code{Nop$elements_available()}}
@@ -299,43 +298,6 @@ Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-evaluate"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
-\subsection{Method \code{evaluate()}}{
-Evaluates the function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(at = rnorm(self$npar), time_limit = NULL, hide_warnings = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
-function is evaluated.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
-from a standard normal distribution.}
-
-\item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
-prematurely if \code{time_limit} is exceeded.
-This currently only works reliably under Windows OS.
-No time limit if \code{time_limit = NULL} (the default).}
-
-\item{\code{hide_warnings}}{Either \code{TRUE} or \code{FALSE} to hide (show) warning messages.
-If \code{hide_warnings = FALSE}, warning messages are printed even if
-\code{verbose = FALSE}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Either:
-\itemize{
-\item a \code{numeric} value, the function value at \code{at},
-\item \code{"time limit reached"} if the time limit was reached,
-\item the error message if the evaluation failed.
-}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-test"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-test}{}}}
 \subsection{Method \code{test()}}{
@@ -383,6 +345,43 @@ Invisibly \code{TRUE} if the tests are successful.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-evaluate"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
+\subsection{Method \code{evaluate()}}{
+Evaluates the function.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(at = rnorm(self$npar), time_limit = NULL, hide_warnings = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
+function is evaluated.
+Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+from a standard normal distribution.}
+
+\item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
+prematurely if \code{time_limit} is exceeded.
+This currently only works reliably under Windows OS.
+No time limit if \code{time_limit = NULL} (the default).}
+
+\item{\code{hide_warnings}}{Either \code{TRUE} or \code{FALSE} to hide (show) warning messages.
+If \code{hide_warnings = FALSE}, warning messages are printed even if
+\code{verbose = FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Either:
+\itemize{
+\item a \code{numeric} value, the function value at \code{at},
+\item \code{"time limit reached"} if the time limit was reached,
+\item the error message if the evaluation failed.
+}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optimize"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optimize}{}}}
 \subsection{Method \code{optimize()}}{
@@ -402,7 +401,7 @@ Optimizes the function.
   simplify = TRUE,
   time_limit = NULL,
   hide_warnings = TRUE,
-  fail_bad_initial = TRUE
+  check_initial = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -424,13 +423,14 @@ In all these cases, the same initial values are used across optimizers.
 
 For more flexibility, a \code{funtion} input for \code{initial} can have
 two arguments, where the first argument specifies the optimization run,
-and the second argument specifies the optimizer, i.e.,
+and the second argument specifies the optimizer, e.g.,
 \code{initial <- function(run, optimizer) ...} for the
 \code{run}-th optimization run and the \code{optimizer}-th optimizer
 listed in the \code{$print()} output.}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization runs.
-Ignored if \code{initial} is a \code{list}.
+If \code{initial} is a \code{list}, \code{runs} is set to
+\code{length(initial)}.
 By default, \code{runs = 1}.}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -483,8 +483,8 @@ No time limit if \code{time_limit = NULL} (the default).}
 If \code{hide_warnings = FALSE}, warning messages are printed even if
 \code{verbose = FALSE}.}
 
-\item{\code{fail_bad_initial}}{Either \code{TRUE} to immediately fail if \code{initial} is misspecified
-(default), or \code{FALSE} to include the failed runs in the results.}
+\item{\code{check_initial}}{Either \code{TRUE} (default) to check the initial values and fail on
+misspecification, or \code{FALSE} to accept misspecifications.}
 }
 \if{html}{\out{</div>}}
 }
@@ -641,7 +641,7 @@ those messages.}
 }
 \subsection{Returns}{
 Invisibly the \code{Nop} object.
-The \code{numeric} centering and scalings used are added as
+The \code{numeric} centering and scalings used (if any) are added as
 attributes \code{"standardized:center"} and \code{"standardized:scale"}
 to the argument specified via \code{argument_name}.
 }

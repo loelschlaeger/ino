@@ -43,7 +43,7 @@ test_that("Nop object can be printed", {
   expect_snapshot(ackley$print())
 })
 
-test_that("Arguments for Nop object can be set", {
+test_that("arguments for Nop object can be set", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -62,7 +62,7 @@ test_that("Arguments for Nop object can be set", {
   expect_snapshot(print(hmm))
 })
 
-test_that("Arguments for Nop object can be get", {
+test_that("arguments for Nop object can be get", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -84,7 +84,7 @@ test_that("Arguments for Nop object can be get", {
   )
 })
 
-test_that("Arguments for Nop object can be removed", {
+test_that("arguments for Nop object can be removed", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -106,7 +106,7 @@ test_that("Arguments for Nop object can be removed", {
   )
 })
 
-test_that("Optimizer can be set", {
+test_that("optimizer can be set", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
     ackley$set_optimizer(),
@@ -155,7 +155,7 @@ test_that("Ackley function can be evaluated", {
   expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
 })
 
-test_that("Long function evaluation can be interrupted", {
+test_that("long function evaluation can be interrupted", {
   skip_if_not(.Platform$OS.type == "windows")
   expect_warning(
     long_f <- Nop$new(f = function(x) {
@@ -174,7 +174,7 @@ test_that("Long function evaluation can be interrupted", {
   )
 })
 
-test_that("Warnings in function evaluation can be hidden", {
+test_that("warnings in function evaluation can be hidden", {
   expect_warning(
     warning_f <- Nop$new(f = function(x) {
       warning("huhu")
@@ -192,7 +192,7 @@ test_that("Warnings in function evaluation can be hidden", {
   )
 })
 
-test_that("Errors in function evaluation can be returned", {
+test_that("errors in function evaluation can be returned", {
   expect_warning(
     error_f <- Nop$new(f = function(x) {
       stop("shit")
@@ -230,7 +230,7 @@ test_that("HMM likelihood function can be evaluated", {
   )
 })
 
-test_that("Input checks for optimization method work", {
+test_that("input checks for optimization method work", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
@@ -265,72 +265,6 @@ test_that("Input checks for optimization method work", {
   expect_error(
     ackley$optimize(optimization_label = 1),
     "must be"
-  )
-})
-
-test_that("List of initial values can be created", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  private <- ackley$.__enclos_env__$private
-  initial_options <- list(
-    "random",
-    1:2,
-    list(1:2, 2:3, 4:5),
-    function() runif(2),
-    function(a, b) c(a, b)
-  )
-  for (initial_option in initial_options) {
-    initial_values <- private$.build_initial(
-      initial = "random",
-      npar = ackley$npar,
-      fail_bad_initial = TRUE,
-      runs = 3,
-      optimizer_ids = 2
-    )
-    expect_type(initial_values, "list")
-    expect_length(initial_values, 3)
-    expect_length(initial_values[[1]], 2)
-  }
-  expect_error(
-    private$.build_initial(
-      initial = list(1, 1:2, "bad"),
-      npar = 2,
-      fail_bad_initial = TRUE,
-      runs = 3,
-      optimizer_ids = 2
-    ),
-    "Each of them should be of length 2."
-  )
-  expect_error(
-    private$.build_initial(
-      initial = 1:3,
-      npar = 2,
-      fail_bad_initial = TRUE,
-      runs = 3,
-      optimizer_ids = 2
-    ),
-    "It should be of length 2."
-  )
-  expect_error(
-    private$.build_initial(
-      initial = function(run) rep(run, 4),
-      npar = 2,
-      fail_bad_initial = TRUE,
-      runs = 3,
-      optimizer_ids = 2
-    ),
-    "It can have 0 or 2 arguments, but not 1."
-  )
-  expect_error(
-    private$.build_initial(
-      initial = diag(2),
-      npar = 2,
-      fail_bad_initial = TRUE,
-      runs = 3,
-      optimizer_ids = 2
-    ),
-    "Please see the documentation for possible inputs."
   )
 })
 

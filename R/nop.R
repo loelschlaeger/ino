@@ -77,8 +77,7 @@
 #' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
 #'
 #' @return
-#' A \code{Nop} object that specifies the numerical optimization problem and
-#' provides methods for analyzing the optimization results.
+#' A \code{Nop} object that specifies the numerical optimization problem.
 #'
 #' @details
 #' # Getting Started
@@ -107,7 +106,7 @@
 #' Call \code{object$optimize()} for optimization. Furthermore,
 #' - \code{object$standardize()} standardizes a function argument,
 #' - \code{object$subset()} subsets a function argument,
-#' - \code{object$continue()}: continues optimization runs.
+#' - \code{object$continue()} continues optimization runs.
 #'
 #' # Analysis of the results
 #' The \code{Nop} object provides methods for the analysis of the optimization
@@ -580,13 +579,14 @@ Nop <- R6::R6Class(
     #'
     #' For more flexibility, a \code{funtion} input for \code{initial} can have
     #' two arguments, where the first argument specifies the optimization run,
-    #' and the second argument specifies the optimizer, i.e.,
+    #' and the second argument specifies the optimizer, e.g.,
     #' \code{initial <- function(run, optimizer) ...} for the
     #' \code{run}-th optimization run and the \code{optimizer}-th optimizer
     #' listed in the \code{$print()} output.
     #' @param runs
     #' An \code{integer}, the number of optimization runs.
-    #' Ignored if \code{initial} is a \code{list}.
+    #' If \code{initial} is a \code{list}, \code{runs} is set to
+    #' \code{length(initial)}.
     #' By default, \code{runs = 1}.
     #' @param optimization_label
     #' Only relevant if \code{save_results = TRUE}.
@@ -597,9 +597,9 @@ Nop <- R6::R6Class(
     #' @param unique_label
     #' Either \code{TRUE} to ensure that \code{optimization_label} has not been
     #' used before (the default) or \code{FALSE} else.
-    #' @param fail_bad_initial
-    #' Either \code{TRUE} to immediately fail if \code{initial} is misspecified
-    #' (default), or \code{FALSE} to include the failed runs in the results.
+    #' @param check_initial
+    #' Either \code{TRUE} (default) to check the initial values and fail on
+    #' misspecification, or \code{FALSE} to accept misspecifications.
     #' @return
     #' The return value depends on the value of \code{return_results}:
     #' - if \code{return_results = FALSE}, invisibly the \code{Nop} object,
@@ -618,7 +618,7 @@ Nop <- R6::R6Class(
       optimization_label = self$new_label, unique_label = TRUE,
       ncores = getOption("ino_ncores", default = 1),
       verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
-      time_limit = NULL, hide_warnings = TRUE, fail_bad_initial = TRUE
+      time_limit = NULL, hide_warnings = TRUE, check_initial = TRUE
     ) {
 
       ### input checks
@@ -639,7 +639,7 @@ Nop <- R6::R6Class(
       is_TRUE_FALSE(simplify)
       is_time_limit(time_limit)
       is_TRUE_FALSE(hide_warnings)
-      is_TRUE_FALSE(fail_bad_initial)
+      is_TRUE_FALSE(check_initial)
 
       ### build progress bar
       format <- "Finished run :current of :total [elapsed :elapsed, to go :eta]"
@@ -661,9 +661,9 @@ Nop <- R6::R6Class(
       if (length(optimizer_ids) == 0) return(invisible(self))
 
       ### build initial values
-      initial_values <- private$.build_initial(
+      initial_values <- initial_values_helper(
         initial = initial, npar = private$.npar,
-        fail_bad_initial = fail_bad_initial,
+        check_initial = check_initial,
         runs = runs, optimizer_ids = optimizer_ids
       )
 
@@ -771,7 +771,7 @@ Nop <- R6::R6Class(
     #' indices if \code{by_column = FALSE}) to standardize jointly.
     #' @return
     #' Invisibly the \code{Nop} object.
-    #' The \code{numeric} centering and scalings used are added as
+    #' The \code{numeric} centering and scalings used (if any) are added as
     #' attributes \code{"standardized:center"} and \code{"standardized:scale"}
     #' to the argument specified via \code{argument_name}.
     standardize = function(
@@ -779,80 +779,12 @@ Nop <- R6::R6Class(
       ignore = integer(), jointly = list(),
       verbose = getOption("ino_verbose", default = TRUE)
     ) {
-      argument <- original_argument <- self$get_argument(argument_name)
-      vector_flag <- is.atomic(argument) && is.null(dim(argument))
-      if (vector_flag) {
-        argument <- as.data.frame(argument)
-        by_column <- TRUE
-        ignore <- integer()
-        jointly <- list()
-      } else if (is.data.frame(argument) || is.matrix(argument)) {
-        is_TRUE_FALSE(by_column)
-        indices <- if (by_column) {
-          seq_len(ncol(argument))
-        } else {
-          seq_len(nrow(argument))
-        }
-        is_index_vector(ignore)
-        if (!all(ignore %in% indices)) {
-          ino_stop("Argument {.var ignore} is out of bound.")
-        }
-        if (!is.list(jointly)) {
-          ino_stop("Argument {.var jointly} must be a {.cls list}.")
-        }
-        if (length(jointly) > 0) {
-          for (joint in jointly) {
-            if (!is_index_vector(joint, error = FALSE)) {
-              ino_stop("Argument {.var jointly} must contain index vectors.")
-            }
-            if (!all(joint %in% indices)) {
-              ino_stop("Argument {.var jointly} is out of bound.")
-            }
-          }
-          if (length(unlist(jointly)) != length(unique(unlist(jointly)))) {
-            ino_stop("Elements in {.var jointly} must be exclusive.")
-          }
-          if (length(intersect(unlist(jointly), ignore)) > 0) {
-            ino_stop(
-              "Cannot have same elements in {.var jointly} and {.var ignored}."
-            )
-          }
-        }
-      } else {
-        ino_stop("Argument cannot be standardized.")
-      }
-      margin <- ifelse(by_column, 2, 1)
-      center_values <- rep(0, dim(argument)[margin])
-      scale_values <- rep(1, dim(argument)[margin])
-      if (center) {
-        center_values <- apply(
-          argument, margin, mean, na.rm = TRUE, simplify = TRUE
-        )
-        center_values[ignore] <- 0
-        for (join in jointly) {
-          center_values[join] <- mean(center_values[join], na.rm = TRUE)
-        }
-        argument <- sweep(argument, margin, center_values, "-")
-      }
-      if (scale) {
-        scale_values <- apply(
-          argument, margin, sd, na.rm = TRUE, simplify = TRUE
-        )
-        scale_values[ignore] <- 1
-        for (join in jointly) {
-          scale_values[join] <- sqrt(mean(scale_values[join]^2, na.rm = TRUE))
-        }
-        argument <- sweep(argument, margin, scale_values, "/")
-      }
-      if (anyNA(argument)) {
-        ino_warn("Argument has NAs after standardization.")
-      }
-      if (vector_flag) {
-        argument <- argument[, 1, drop = TRUE]
-      }
-      attr(argument, "standardized:center") <- as.numeric(center_values)
-      attr(argument, "standardized:scale") <- as.numeric(scale_values)
-      private$.arguments[[argument_name]] <- argument
+      original_argument <- self$get_argument(argument_name)
+      standardized_argument <- standardize_helper(
+        argument = original_argument, by_column = by_column, center = center,
+        scale = scale, ignore = ignore, jointly = jointly
+      )
+      private$.arguments[[argument_name]] <- standardized_argument
       if (is.null(private$.original_arguments[[argument_name]])) {
         private$.original_arguments[[argument_name]] <- original_argument
       }
@@ -901,112 +833,29 @@ Nop <- R6::R6Class(
       centers = 2, ignore = integer(), seed = NULL,
       verbose = getOption("ino_verbose", default = TRUE)
     ) {
-      argument <- original_argument <- self$get_argument(argument_name)
-      is_name(how)
-      if (!how %in% c("random", "first", "last", "similar", "dissimilar")) {
-        ino_stop(
-          "Argument {.var how} is misspecified.",
-          paste(
-            "It must be one of {.val random}, {.val first}, {.val last},",
-            "{.val similar} or {.val dissimilar}."
-          )
-        )
-      }
-      is_proportion(proportion)
+      original_argument <- self$get_argument(argument_name)
       ino_seed(seed, verbose = verbose)
-      if (is.vector(argument) && length(argument) > 1) {
-        argument <- as.data.frame(argument)
-        vector_flag <- TRUE
-        by_row <- TRUE
-        ignore <- integer()
-      } else if (is.data.frame(argument) || is.matrix(argument)) {
-        is_TRUE_FALSE(by_row)
-        if (!by_row) {
-          argument <- t(argument)
-        }
-        if (how %in% c("similar", "dissimilar")) {
-          is_index_vector(ignore)
-        }
-        vector_flag <- FALSE
-      } else {
-        ino_stop("Argument cannot be subsetted.")
-      }
-      n <- nrow(argument)
-      m <- ceiling(n * proportion)
-      if (how == "random") {
-        ind <- sort(sample.int(n, m))
-      } else if (how == "first") {
-        ind <- seq_len(m)
-      } else if (how == "last") {
-        ind <- utils::tail(seq_len(n), m)
-      } else {
-        argument_ign <- argument
-        if (length(ignore) > 0) {
-          argument_ign <- argument_ign[, -ignore, drop = FALSE]
-        }
-        cluster <- tryCatch(
-          stats::kmeans(argument_ign, centers = centers)$cluster,
-          error = function(e) {
-            ino_stop(
-              "Clustering with {.fun stats::kmeans} failed:",
-              e$message
-            )
-          },
-          warning = function(w) {
-            ino_stop(
-              "Clustering with {.fun stats::kmeans} failed:",
-              w$message
-            )
-          }
-        )
-        ind <- integer(0)
-        if (how == "similar") {
-          i <- 1
-          while (length(ind) < m && i <= centers) {
-            ind_i <- which(cluster == i)
-            ind <- c(ind, ind_i[seq_len(min(m - length(ind), length(ind_i)))])
-            i <- i + 1
-          }
-        } else if (how == "dissimilar") {
-          ind_cluster <- split(1:n, cluster)
-          i <- 0
-          while (length(ind) < m) {
-            i_mod <- i %% centers + 1
-            i <- i + 1
-            if (length(ind_cluster[[i_mod]]) == 0) next
-            ind <- c(ind, ind_cluster[[i_mod]][1])
-            ind_cluster[[i_mod]] <- ind_cluster[[i_mod]][-1]
-          }
-        }
-        ind <- sort(ind)
-      }
-      argument <- argument[ind, , drop = FALSE]
-      if (vector_flag) {
-        argument <- argument[, 1]
-      }
-      if (!by_row) {
-        argument <- t(argument)
-      }
-      if (anyNA(argument)) {
-        ino_warn("Argument has NAs after subsetting.")
-      }
+      subsetted_argument <- subset_helper(
+        argument = original_argument, by_row = by_row, how = how,
+        proportion = proportion, centers = centers, ignore = ignore
+      )
       ino_status(
         glue::glue(
           "Reduced '{argument_name}' from ",
           if (is.vector(original_argument)) {
             length_old <- length(original_argument)
-            length_new <- length(argument)
+            length_new <- length(subsetted_argument)
             "{length_old} to {length_new} {how} element(s)."
           } else {
             if (by_row) {
               nrow_old <- nrow(original_argument)
-              nrow_new <- nrow(argument)
+              nrow_new <- nrow(subsetted_argument)
               glue::glue(
                 "{nrow_old} to {nrow_new} {how} row(s).",
               )
             } else {
               ncol_old <- ncol(original_argument)
-              ncol_new <- ncol(argument)
+              ncol_new <- ncol(subsetted_argument)
               glue::glue(
                 "{ncol_old} to {ncol_new} {how} column(s).",
               )
@@ -1015,7 +864,7 @@ Nop <- R6::R6Class(
         ),
         verbose = verbose
       )
-      private$.arguments[[argument_name]] <- argument
+      private$.arguments[[argument_name]] <- subsetted_argument
       if (is.null(private$.original_arguments[[argument_name]])) {
         private$.original_arguments[[argument_name]] <- original_argument
       }
@@ -1053,7 +902,7 @@ Nop <- R6::R6Class(
         which_optimizer = optimizer_ids, seed = seed, return_results = TRUE,
         save_results = FALSE, label = "continued", ncores = ncores,
         verbose = verbose, simplify = FALSE, time_limit = time_limit,
-        hide_warnings = hide_warnings, fail_bad_initial = FALSE
+        hide_warnings = hide_warnings, check_initial = FALSE
       )
       results <- private$.merge_continued_previous_results(
         continued_results = continued_results,
@@ -1370,112 +1219,6 @@ Nop <- R6::R6Class(
     .true_parameter = NULL,
     .true_value = NULL,
     .optimizer = list(),
-
-    ### build list of initial values
-    .build_initial = function(
-      initial, npar, fail_bad_initial, runs, optimizer_ids
-    ) {
-      is_count(npar)
-      is_TRUE_FALSE(fail_bad_initial)
-      is_count(runs)
-      is_index_vector(optimizer_ids)
-      initial_values <- list()
-      if (identical(initial, "random")) {
-        for (run in 1:runs) {
-          initial_values[[run]] <- list()
-          random_initial_value <- stats::rnorm(n = npar)
-          for (optimizer_id in optimizer_ids) {
-            initial_values[[run]][[optimizer_id]] <- random_initial_value
-          }
-        }
-      } else if (is.list(initial)) {
-        if (
-          !fail_bad_initial ||
-          all(sapply(initial, is_number_vector, error = FALSE) &
-              sapply(initial, length) == npar)
-        ) {
-          for (run in 1:runs) {
-            initial_values[[run]] <- list()
-            for (optimizer_id in optimizer_ids) {
-              initial_values[[run]][[optimizer_id]] <- initial[[run]]
-            }
-          }
-        } else {
-          ino_stop(
-            "You specified a {.cls list} as input {.var initial}.",
-            "It should only contain {.cls numeric} vectors.",
-            glue::glue("Each of them should be of length {npar}.")
-          )
-        }
-      } else if (is_number_vector(initial, error = FALSE)) {
-        if (!fail_bad_initial || length(initial) == npar) {
-          for (run in 1:runs) {
-            initial_values[[run]] <- list()
-            for (optimizer_id in optimizer_ids) {
-              initial_values[[run]][[optimizer_id]] <- initial
-            }
-          }
-        } else {
-          ino_stop(
-            "The {.cls numeric} input {.var initial} is misspecified.",
-            glue::glue("It should be of length {npar}."),
-            glue::glue("Instead, it is of length {length(initial)}.")
-          )
-        }
-      } else if (is.function(initial)) {
-        nargs <- length(formals(initial))
-        if (fail_bad_initial && !nargs %in% c(0, 2)) {
-          ino_stop(
-            "The {.cls function} input {.var initial} is misspecified.",
-            glue::glue("It can have 0 or 2 arguments, but not {nargs}.")
-          )
-        }
-        if (nargs == 0) {
-          for (run in 1:runs) {
-            initial_values[[run]] <- list()
-            function_initial_value <- try(initial(), silent = TRUE)
-            if (!fail_bad_initial ||
-                (is_number_vector(function_initial_value, error = FALSE) &
-                 length(function_initial_value) == npar)) {
-              for (optimizer_id in optimizer_ids) {
-                initial_values[[run]][[optimizer_id]] <- function_initial_value
-              }
-            } else {
-              ino_stop(
-                "The {.cls function} input {.var initial} is misspecified.",
-                glue::glue("It should return initial values of length {npar}.")
-              )
-            }
-          }
-        }
-        if (nargs == 2) {
-          for (run in 1:runs) {
-            initial_values[[run]] <- list()
-            for (optimizer_id in optimizer_ids) {
-              function_initial_value <- try(
-                initial(run, optimizer_id), silent = TRUE
-              )
-              if (!fail_bad_initial ||
-                  (is_number_vector(function_initial_value, error = FALSE) &
-                   length(function_initial_value) == npar)) {
-                initial_values[[run]][[optimizer_id]] <- function_initial_value
-              } else {
-                ino_stop(
-                  "The {.cls function} input {.var initial} is misspecified.",
-                  glue::glue("It should return initial values of length {npar}.")
-                )
-              }
-            }
-          }
-        }
-      } else {
-        ino_stop(
-          "The input specification {.var initial} is unexpected.",
-          "Please see the documentation for possible inputs."
-        )
-      }
-      return(initial_values)
-    },
 
     ### check if argument for target function exists
     .check_additional_argument_exists = function(argument_name) {
