@@ -1,7 +1,7 @@
 #' Nop Object (R6 Class)
 #'
 #' @description
-#' A \code{Nop} object defines a *N*umerical *O*ptimization *P*roblem.
+#' A \code{Nop} object defines a **n**umerical **o**ptimization **p**roblem.
 #'
 #' @param which_optimizer
 #' Select specified numerical optimizers. Either:

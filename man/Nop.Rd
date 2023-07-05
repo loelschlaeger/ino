@@ -7,7 +7,7 @@
 A \code{Nop} object that specifies the numerical optimization problem.
 }
 \description{
-A \code{Nop} object defines a \emph{N}umerical \emph{O}ptimization \emph{P}roblem.
+A \code{Nop} object defines a \strong{n}umerical \strong{o}ptimization \strong{p}roblem.
 }
 \section{Getting Started}{
 \subsection{Step 1: Create a new \code{Nop} object:}{
