@@ -1,0 +1,67 @@
+---
+title: "Developer Guide"
+description: >
+  Details on the implementation of the {ino} package, how to contribute, and
+  how to integrate {ino} in other R packages.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Developer Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+bibliography: ref.bib
+link-citations: true
+---
+
+This document gives technical details on the implementation of the `{ino}` package.
+
+## Objects
+
+The `{ino}` package uses an object-oriented framework based on the `{R6}` package [@Chang:2021]. 
+
+### `Nop` object
+
+A `Nop` object is an `R6` object. It is the only object that a user of `{ino}` will interact with. The code is in the `R/nop.R` file. The purpose of this object is to
+
+- contain everything that defines the numerical optimization problem,
+
+- provide methods for evaluating and optimizing the target function,
+
+- ...
+
+### `Runs` object
+
+A `Runs` object is an `R6` object. It is contained inside a `Nop` object. The code is in the `R/runs.R` file. The purpose of this object is 
+
+- contain the results of optimization runs,
+
+- provide methods for summarizing, extracting, and filtering the results,
+
+- ...
+
+### `S3` methods
+
+The `R/s3.R` file implements `S3` methods for convenience.
+
+## Helper and check functions
+
+The `R/helper.R` file implements helper functions, `R/checks.R` implements check functions.
+
+## Demos
+
+The `R/demo.R` file documents demonstrations of the `{ino}` package, `R/functions.R` implements functions for demonstrations.
+
+## Contributions
+
+...
+
+## How to integrate `{ino}` in other R packages
+
+...
+
+## Contact
+
+...
+
+## References
