@@ -545,6 +545,126 @@ test_that("subsetting of matrix works (with clusters)", {
   }
 })
 
+# TODO
+
+test_that("results with one run can be simplified", {
+  results <- list(
+    list( # run 1
+      list( # optimizer 1
+        "value" = 11, "message" = "a"
+      ),
+      list( # optimizer 2
+        "value" = 12, "message" = "b"
+      )
+    )
+  )
+  out <- helper_flatten_list(results)
+  expect_identical(
+    out, list(list(value = 11, message = "a"), list(value = 12, message = "b"))
+  )
+  results <- list(
+    list( # run 1
+      list( # optimizer 1
+        "value" = 11, "message" = "a"
+      )
+    )
+  )
+  out <- helper_flatten_list(results)
+  expect_identical(
+    out, list(value = 11, message = "a")
+  )
+  results <- list(
+    list( # run 1
+      list( # optimizer 1
+        "value" = 11
+      )
+    )
+  )
+  out <- helper_flatten_list(results)
+  expect_identical(
+    out, 11
+  )
+})
+
+test_that("results with one optimizer can be simplified", {
+  results <- list(
+    list( # run 1
+      list( # optimizer 1
+        "value" = 11, "message" = "a"
+      )
+    ),
+    list( # run 2
+      list( # optimizer 1
+        "value" = 21, "message" = "b"
+      )
+    )
+  )
+  out <- helper_flatten_list(
+    results = results,
+    simplify = TRUE
+  )
+  expect_identical(
+    out, list(list(value = 11, message = "a"), list(value = 21, message = "b"))
+  )
+  results <- list(
+    list( # run 1
+      list( # optimizer 1
+        "value" = 11
+      )
+    ),
+    list( # run 2
+      list( # optimizer 1
+        "value" = 21
+      )
+    )
+  )
+  out <- helper_flatten_list(
+    results = results,
+    simplify = TRUE
+  )
+  expect_identical(
+    out, list(c(value = 11), c(value = 21))
+  )
+})
+
+test_that("results with one element can be simplified", {
+  results <- list(
+    list( # run 1
+      list( # optimizer 1
+        "value" = 11
+      ),
+      list( # optimizer 2
+        "value" = 12
+      )
+    ),
+    list( # run 2
+      list( # optimizer 1
+        "value" = 21
+      ),
+      list( # optimizer 2
+        "value" = 22
+      )
+    )
+  )
+  out <- helper_flatten_list(
+    results = results,
+    simplify = TRUE
+  )
+  expect_identical(
+    out, list(
+      list(c(value = 11), c(value = 12)),
+      list(c(value = 21), c(value = 22))
+    )
+  )
+})
+
+
+
+
+# TODO
+
+
+
 test_that("input checks for result filtering work", {
   expect_error(
     filter_results(
@@ -593,16 +713,13 @@ test_that("input checks for result filtering work", {
     "must be"
   )
   expect_error(
-    simplify_results(
+    helper_flatten_list(
       results = list(),
       simplify = "not_a_boolean"
     ),
     "must be"
   )
 })
-
-
-# TODO
 
 test_that("results can be filtered by run", {
   results <- list(
@@ -736,123 +853,4 @@ test_that("results can be filtered by comparable", {
   )
 })
 
-test_that("results with one run can be simplified", {
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11, "message" = "a"
-      ),
-      list( # optimizer 2
-        "value" = 12, "message" = "b"
-      )
-    )
-  )
-  out <- simplify_results(
-    results = results,
-    simplify = TRUE
-  )
-  expect_identical(
-    out, list(list(value = 11, message = "a"), list(value = 12, message = "b"))
-  )
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11, "message" = "a"
-      )
-    )
-  )
-  out <- simplify_results(
-    results = results,
-    simplify = TRUE
-  )
-  expect_identical(
-    out, list(value = 11, message = "a")
-  )
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11
-      )
-    )
-  )
-  out <- simplify_results(
-    results = results,
-    simplify = TRUE
-  )
-  expect_identical(
-    out, 11
-  )
-})
-
-test_that("results with one optimizer can be simplified", {
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11, "message" = "a"
-      )
-    ),
-    list( # run 2
-      list( # optimizer 1
-        "value" = 21, "message" = "b"
-      )
-    )
-  )
-  out <- simplify_results(
-    results = results,
-    simplify = TRUE
-  )
-  expect_identical(
-    out, list(list(value = 11, message = "a"), list(value = 21, message = "b"))
-  )
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11
-      )
-    ),
-    list( # run 2
-      list( # optimizer 1
-        "value" = 21
-      )
-    )
-  )
-  out <- simplify_results(
-    results = results,
-    simplify = TRUE
-  )
-  expect_identical(
-    out, list(c(value = 11), c(value = 21))
-  )
-})
-
-test_that("results with one element can be simplified", {
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11
-      ),
-      list( # optimizer 2
-        "value" = 12
-      )
-    ),
-    list( # run 2
-      list( # optimizer 1
-        "value" = 21
-      ),
-      list( # optimizer 2
-        "value" = 22
-      )
-    )
-  )
-  out <- simplify_results(
-    results = results,
-    simplify = TRUE
-  )
-  expect_identical(
-    out, list(
-      list(c(value = 11), c(value = 12)),
-      list(c(value = 21), c(value = 22))
-    )
-  )
-})
 

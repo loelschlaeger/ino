@@ -44,6 +44,20 @@ Runs <- R6::R6Class(
   classname = "Runs",
   public = list(
 
+    #'
+    prepare_results = function(
+      results = list(), optimizer_label = character(), simplify = logical()
+    ) {
+
+    },
+
+    save_results = function(
+      results = list(), optimizer_label = character(),
+      optimization_label = character(), comparable = logical()
+    ) {
+
+    },
+
     #' @description
     #' Saves a new optimization result.
     #' @param result

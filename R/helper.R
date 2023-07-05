@@ -401,6 +401,55 @@ subset_helper <- function(
   return(argument)
 }
 
+#' Helper function for flattening a list
+#'
+#' @description
+#' This function flattens a nested \code{list} (if possible), see the details.
+#'
+#' @details
+#' The input \code{list} \code{x} is transformed in the following ways:
+#' -
+#'
+#' @param x
+#' A \code{list}.
+#'
+#' @return
+#' A \code{list}.
+#'
+#' @keywords internal
+
+helper_flatten_list <- function(x) {
+  stopifnot(is.list(x))
+  if (length(x) == 1) {
+    x <- unlist(x, recursive = FALSE, use.names = TRUE)
+    if (length(x) == 1) {
+      x <- unlist(x, recursive = FALSE, use.names = TRUE)
+    }
+    if (length(x) == 1) {
+      x <- unlist(x, recursive = FALSE, use.names = FALSE)
+    }
+  } else {
+    if (all(sapply(x, length) == 1)) {
+      x <- lapply(x, unlist, recursive = FALSE, use.names = TRUE)
+      if (all(sapply(x, length) == 1)) {
+        x <- lapply(x, unlist, recursive = FALSE, use.names = TRUE)
+      }
+    } else {
+      if (all(sapply(x, function(x) sapply(x, length)) == 1)) {
+        x <- lapply(x, function(x) {
+          lapply(x, unlist, recursive = FALSE, use.names = TRUE)
+        })
+      }
+    }
+  }
+  return(x)
+}
+
+
+
+# TODO
+
+
 #' Filter optimization results
 #'
 #' @description
@@ -465,51 +514,5 @@ filter_results <- function(
   return(results)
 }
 
-#' Simplify optimization results
-#'
-#' @description
-#' This helper function simplifies optimization results (if possible).
-#'
-#' @inheritParams filter_results
-#' @param simplify
-#' See documentation of method \code{$results()} from \code{Nop} object.
-#'
-#' @return
-#' A \code{list}.
-#'
-#' @keywords internal
-
-simplify_results <- function(results, simplify) {
-  stopifnot(is.list(results))
-  is_TRUE_FALSE(simplify)
-  if (simplify) {
-    if (length(results) == 1) {
-      results <- unlist(results, recursive = FALSE, use.names = TRUE)
-      if (length(results) == 1) {
-        results <- unlist(results, recursive = FALSE, use.names = TRUE)
-      }
-      if (length(results) == 1) {
-        results <- unlist(results, recursive = FALSE, use.names = FALSE)
-      }
-    } else {
-      if (all(sapply(results, length) == 1)) {
-        results <- lapply(results, unlist, recursive = FALSE, use.names = TRUE)
-        if (all(sapply(results, length) == 1)) {
-          results <- lapply(
-            results, unlist,
-            recursive = FALSE, use.names = TRUE
-          )
-        }
-      } else {
-        if (all(sapply(results, function(x) sapply(x, length)) == 1)) {
-          results <- lapply(results, function(x) {
-            lapply(x, unlist, recursive = FALSE, use.names = TRUE)
-          })
-        }
-      }
-    }
-  }
-  return(results)
-}
 
 
