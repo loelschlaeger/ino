@@ -175,33 +175,29 @@ test_that("long function evaluation can be interrupted", {
 })
 
 test_that("warnings in function evaluation can be hidden", {
+  warning_f <- function(x) {
+    warning("huhu")
+    x
+  }
+  warning_nop <- Nop$new(f = warning_f, npar = 1)
   expect_warning(
-    warning_f <- Nop$new(f = function(x) {
-      warning("huhu")
-      x
-    }, npar = 1),
-    "is unnamed"
-  )
-  expect_warning(
-    warning_f$evaluate(at = 1),
+    warning_nop$evaluate(at = 1),
     "huhu"
   )
   expect_warning(
-    warning_f$evaluate(at = 1, hide_warnings = TRUE),
+    warning_nop$evaluate(at = 1, hide_warnings = TRUE),
     regexp = NA
   )
 })
 
 test_that("errors in function evaluation can be returned", {
-  expect_warning(
-    error_f <- Nop$new(f = function(x) {
-      stop("shit")
-      x
-    }, npar = 1),
-    "is unnamed"
-  )
+  error_f <- function(x) {
+    stop("shit")
+    x
+  }
+  error_nop <- Nop$new(f = error_f, npar = 1)
   expect_equal(
-    error_f$evaluate(at = 1),
+    error_nop$evaluate(at = 1),
     "shit"
   )
 })

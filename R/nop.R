@@ -12,7 +12,8 @@
 #' Select saved results of optimization runs. Either:
 #' - \code{"all"} for all results,
 #' - \code{"failed"}, the results from all failed optimization runs,
-#' - a \code{character} (vector) of labels specified in \code{$optimize()}.
+#' - a \code{character} (vector) of labels specified in \code{$optimize()},
+#' - a \code{numeric} (vector) of run ids.
 #' @param which_element
 #' Select elements of saved optimization results. Either:
 #' - \code{"all"} for all available elements,
@@ -34,7 +35,7 @@
 #' or \code{FALSE} to include all optimization results.
 #' @param verbose
 #' Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-#' those messages.
+#' such messages.
 #' @param ncores
 #' An \code{integer}, setting the number of CPU cores for parallel computation.
 #' The default is \code{1}.
@@ -99,7 +100,7 @@
 #'
 #' ## Step 3: Test your configuration:
 #' Call \code{object$test()} to validate your configuration. The \code{$print()}
-#' method yields an overview of the configuration.
+#' method yields an overview.
 #'
 #' # Function evaluation and optimization
 #' Call \code{object$evaluate()} to evaluate the target function at some point.
@@ -130,7 +131,7 @@ Nop <- R6::R6Class(
   classname = "Nop",
   public = list(
 
-    #' @field runs A \code{\link{Runs}} object.
+    #' @field runs A \code{\link{Runs}} object that saves the optimization runs.
     runs = NULL,
 
     #' @description
@@ -159,7 +160,7 @@ Nop <- R6::R6Class(
       if (missing(npar)) {
         ino_stop("Please specify argument {.var npar}.")
       }
-      is_count(npar)
+      is_count(npar, error = TRUE)
       private$.f <- f
       f_name <- deparse(substitute(f))
       if (!is_name(f_name, error = FALSE)) {
@@ -172,9 +173,7 @@ Nop <- R6::R6Class(
       private$.f_name <- f_name
       private$.f_target <- names(formals(f))[1]
       private$.npar <- as.integer(npar)
-      if (length(list(...)) > 0) {
-        self$set_argument(...)
-      }
+      if (length(list(...)) > 0) self$set_argument(...)
       self$runs <- Runs$new()
     },
 
@@ -678,12 +677,12 @@ Nop <- R6::R6Class(
           verbose = verbose
         )
       }
-      `%switch%` <- ifelse(parallel, `%dopar%`, `%do%`)
+      `%par_seq%` <- ifelse(parallel, `%dopar%`, `%do%`)
       if (verbose) pb$tick(0)
       results <- foreach::foreach(
         run = 1:runs, .packages = "ino", .export = "private",
         .inorder = TRUE, .options.snow = opts
-      ) %switch% {
+      ) %par_seq% {
         lapply(optimizer_ids, function(optimizer_id) {
           private$.optimize(
             initial = initial_values[[run]][[optimizer_id]],
@@ -704,11 +703,11 @@ Nop <- R6::R6Class(
         )
       }
       if (return_results) {
-        self$runs$prepare_results(
-          results = results,
-          optimizer_label = names(self$optimizer),
-          simplify = simplify
-        )
+        if (simplify) {
+          helper_flatten_list(results)
+        } else {
+          results
+        }
       } else {
         invisible(self)
       }
