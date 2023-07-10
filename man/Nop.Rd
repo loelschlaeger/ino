@@ -36,7 +36,7 @@ Two \code{optimizer} objects are already available:
 \subsection{Step 3: Test your configuration:}{
 
 Call \code{object$test()} to validate your configuration. The \code{$print()}
-method yields an overview of the configuration.
+method yields an overview.
 }
 }
 
@@ -73,7 +73,7 @@ Nop$new(f = f_ackley, npar = 2)$
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{runs}}{A \code{\link{Runs}} object.}
+\item{\code{runs}}{A \code{\link{Runs}} object that saves the optimization runs.}
 }
 \if{html}{\out{</div>}}
 }
@@ -264,7 +264,7 @@ Resets an additional argument for \code{f} after transformation with
 \item{\code{argument_name}}{A \code{character}, the name of the argument to reset.}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-those messages.}
+such messages.}
 }
 \if{html}{\out{</div>}}
 }
@@ -333,7 +333,7 @@ This currently only works reliably under Windows OS.
 No time limit if \code{time_limit = NULL} (the default).}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-those messages.}
+such messages.}
 
 \item{\code{digits}}{An \code{integer}, the number of shown decimal places.
 The default is \code{2}.}
@@ -467,7 +467,7 @@ You can use \code{parallel::detectCores()} to detect the number of available
 CPU cores.}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-those messages.}
+such messages.}
 
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
@@ -523,7 +523,8 @@ Returns saved optimization results.
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -635,7 +636,7 @@ In that case, either \code{TRUE} to standardize column-wise (default) or
 indices if \code{by_column = FALSE}) to standardize jointly.}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-those messages.}
+such messages.}
 }
 \if{html}{\out{</div>}}
 }
@@ -702,7 +703,7 @@ if \code{by_row = FALSE}) to ignore for clustering.}
 Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-those messages.}
+such messages.}
 }
 \if{html}{\out{</div>}}
 }
@@ -737,7 +738,8 @@ Continues optimization runs, e.g., with a transformed parameter.
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -765,7 +767,7 @@ You can use \code{parallel::detectCores()} to detect the number of available
 CPU cores.}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-those messages.}
+such messages.}
 
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
@@ -829,7 +831,8 @@ default, i.e.
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -891,7 +894,8 @@ The default is \code{2}.}
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -953,7 +957,8 @@ respect to the overall median.}
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -1010,7 +1015,8 @@ Visualizes deviation of parameters.
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -1109,7 +1115,8 @@ Returns the best found \code{numeric} value of \code{f}.
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
@@ -1160,7 +1167,8 @@ Returns the best found \code{numeric} parameter vector.
 \itemize{
 \item \code{"all"} for all results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of labels specified in \code{$optimize()},
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:

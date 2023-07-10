@@ -243,7 +243,11 @@ standardize_helper <- function(
     )
     scale_values[ignore] <- 1
     for (join in jointly) {
-      scale_values[join] <- sqrt(mean(scale_values[join]^2, na.rm = TRUE))
+      scale_values[join] <- if (by_column) {
+        sd(as.matrix(argument[, join]), na.rm = TRUE)
+      } else {
+        sd(as.matrix(argument[join, ]), na.rm = TRUE)
+      }
     }
     argument <- sweep(argument, margin, scale_values, "/")
   }
@@ -395,20 +399,27 @@ subset_helper <- function(
   if (df_flag) {
     argument <- as.data.frame(argument)
   }
-  if (anyNA(argument)) {
-    ino_warn("Argument has NAs after subsetting.")
-  }
   return(argument)
 }
 
-#' Helper function for flattening a list
+#' Helper function for list flattening
 #'
 #' @description
-#' This function flattens a nested \code{list} (if possible), see the details.
+#' This function flattens a nested \code{list}, see the details.
 #'
 #' @details
 #' The input \code{list} \code{x} is transformed in the following ways:
-#' -
+#' - If \code{x} has only one element, it becomes the new \code{x}. This is
+#'   repeated twice. E.g., \code{list(list(1))} becomes \code{1}.
+#' - Else, if all elements of \code{x} have only one element, these elements
+#'   become the elements of \code{x}. E.g., \code{list(list(1), list(2))}
+#'   becomes \code{list(1:2)}. This is repeated once.
+#' - Else, if each element of \code{x} is a \code{list} where each element is a
+#'   \code{list} with one element, the lowest-level \code{list} is replaced by
+#'   the one element.
+#'   E.g., \code{list(list(list(1), list(2)), list(list(3), list(4)))}
+#'   becomes \code{list(list(1, 2), list(3, 4))}.
+#' - Else, \code{x} remains unchanged.
 #'
 #' @param x
 #' A \code{list}.
@@ -419,100 +430,36 @@ subset_helper <- function(
 #' @keywords internal
 
 helper_flatten_list <- function(x) {
-  stopifnot(is.list(x))
+  stopifnot("'x' must be a list" = is.list(x))
   if (length(x) == 1) {
+    names(x) <- NULL
     x <- unlist(x, recursive = FALSE, use.names = TRUE)
     if (length(x) == 1) {
+      names(x) <- NULL
       x <- unlist(x, recursive = FALSE, use.names = TRUE)
+      if (length(x) == 1) {
+        x <- unlist(x, recursive = FALSE, use.names = FALSE)
+      }
     }
-    if (length(x) == 1) {
-      x <- unlist(x, recursive = FALSE, use.names = FALSE)
-    }
-  } else {
+  } else if (all(sapply(x, length) == 1)) {
+    x <- lapply(x, function(x) {
+      names(x) <- NULL
+      unlist(x, recursive = FALSE, use.names = TRUE)
+    })
     if (all(sapply(x, length) == 1)) {
-      x <- lapply(x, unlist, recursive = FALSE, use.names = TRUE)
-      if (all(sapply(x, length) == 1)) {
-        x <- lapply(x, unlist, recursive = FALSE, use.names = TRUE)
-      }
-    } else {
-      if (all(sapply(x, function(x) sapply(x, length)) == 1)) {
-        x <- lapply(x, function(x) {
-          lapply(x, unlist, recursive = FALSE, use.names = TRUE)
-        })
-      }
+      x <- lapply(x, function(x) {
+        names(x) <- NULL
+        unlist(x, recursive = FALSE, use.names = TRUE)
+      })
     }
+  } else if (all(sapply(x, function(x) sapply(x, length)) == 1)) {
+    x <- lapply(x, function(x) {
+      lapply(x, function(x) {
+        names(x) <- NULL
+        unlist(x, recursive = FALSE, use.names = TRUE)
+      })
+    })
   }
   return(x)
 }
-
-
-
-# TODO
-
-
-#' Filter optimization results
-#'
-#' @description
-#' This helper function filters optimization results.
-#'
-#' @param results
-#' A nested \code{list} of optimization results.
-#' Each element corresponds to one optimization run.
-#' It is either \code{list()} if the run has been removed or a \code{list}
-#' of results for each optimizer.
-#' The results for each optimizer is a \code{list}, the output of
-#' \code{\link[optimizeR]{apply_optimizer}}.
-#' @param run_ids
-#' A \code{vector} of indices. Selects the first layer of \code{results}.
-#' @param optimizer_ids
-#' A \code{vector} of indices. Selects the second layer of \code{results}.
-#' @param which_element
-#' A \code{character} (vector). Selects the third layer of \code{results}.
-#' @param only_comparable
-#' See documentation of method \code{$results()} from \code{Nop} object.
-#' @param keep_empty
-#' Set to \code{TRUE} (\code{FALSE}, the default) to keep (discard) empty
-#' entries.
-#'
-#' @return
-#' A \code{list}.
-#'
-#' @keywords internal
-
-filter_results <- function(
-    results, run_ids, optimizer_ids, which_element, only_comparable,
-    keep_empty = FALSE) {
-  ### input checks
-  stopifnot(
-    is.list(results), is_index_vector(run_ids), is_index_vector(optimizer_ids),
-    is_name_vector(which_element), is_TRUE_FALSE(only_comparable),
-    is_TRUE_FALSE(keep_empty)
-  )
-
-  ### filter runs
-  results <- results[run_ids]
-
-  ### filter optimizers
-  results <- lapply(results, `[`, optimizer_ids)
-
-  ### filter comparable
-  if (only_comparable) {
-    results <- lapply(results, function(x) {
-      Filter(function(y) y["comparable"], x)
-    })
-  }
-
-  ### filter elements
-  results <- lapply(results, function(x) {
-    lapply(x, function(y) y[intersect(which_element, names(y))])
-  })
-
-  ### discard empty entries
-  results <- results[sapply(results, length) > 0]
-
-  ### return
-  return(results)
-}
-
-
 

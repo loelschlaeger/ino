@@ -24,6 +24,8 @@ A \code{Runs} object can be created via \code{Runs$new()}.
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
+\item \href{#method-Runs-prepare_results}{\code{Runs$prepare_results()}}
+\item \href{#method-Runs-save_results}{\code{Runs$save_results()}}
 \item \href{#method-Runs-new_result}{\code{Runs$new_result()}}
 \item \href{#method-Runs-print}{\code{Runs$print()}}
 \item \href{#method-Runs-summary}{\code{Runs$summary()}}
@@ -33,6 +35,33 @@ A \code{Runs} object can be created via \code{Runs$new()}.
 \item \href{#method-Runs-number_results}{\code{Runs$number_results()}}
 \item \href{#method-Runs-clone}{\code{Runs$clone()}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-prepare_results"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-prepare_results}{}}}
+\subsection{Method \code{prepare_results()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$prepare_results(
+  results = list(),
+  optimizer_label = character(),
+  simplify = logical()
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-save_results"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-save_results}{}}}
+\subsection{Method \code{save_results()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$save_results(
+  results = list(),
+  optimizer_label = character(),
+  optimization_label = character(),
+  comparable = logical()
+)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Runs-new_result"></a>}}

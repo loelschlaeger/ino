@@ -51,6 +51,26 @@ test_that("initial values can be created", {
   )
   expect_error(
     initial_values_helper(
+      initial = function() 1:3,
+      npar = 2,
+      check_initial = TRUE,
+      runs = 3,
+      optimizer_ids = 2
+    ),
+    "It should return initial values of length 2."
+  )
+  expect_error(
+    initial_values_helper(
+      initial = function(run, optimizer) 1:3,
+      npar = 2,
+      check_initial = TRUE,
+      runs = 3,
+      optimizer_ids = 2
+    ),
+    "It should return initial values of length 2."
+  )
+  expect_error(
+    initial_values_helper(
       initial = diag(2),
       npar = 2,
       check_initial = TRUE,
@@ -74,21 +94,67 @@ test_that("input checks for standardization work", {
       argument = diag(3), by_column = TRUE,
       center = TRUE, scale = TRUE, ignore = pi, jointly = list()
     ),
-    "must be an"
+    "must be"
   )
   expect_error(
     standardize_helper(
       argument = list(), by_column = TRUE,
       center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
     ),
-    "Argument cannot be standardized."
+    "cannot be standardized"
   )
   expect_warning(
     standardize_helper(
       argument = 1, by_column = TRUE,
       center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
     ),
-    "Argument has NAs after standardization."
+    "NAs after standardization"
+  )
+  expect_error(
+    standardize_helper(
+      argument = diag(3), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = 4, jointly = list()
+    ),
+    "is out of bound"
+  )
+  expect_error(
+    standardize_helper(
+      argument = diag(3), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer(), jointly = "not_a_list"
+    ),
+    "must be"
+  )
+  expect_error(
+    standardize_helper(
+      argument = diag(3), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer(),
+      jointly = list("not_an_index_vector")
+    ),
+    "must contain index vectors"
+  )
+  expect_error(
+    standardize_helper(
+      argument = diag(3), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer(),
+      jointly = list(3:4)
+    ),
+    "out of bound"
+  )
+  expect_error(
+    standardize_helper(
+      argument = diag(3), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = integer(),
+      jointly = list(1:2, 2:3)
+    ),
+    "must be exclusive"
+  )
+  expect_error(
+    standardize_helper(
+      argument = diag(3), by_column = TRUE,
+      center = TRUE, scale = TRUE, ignore = 3,
+      jointly = list(2:3)
+    ),
+    "same elements"
   )
 })
 
@@ -307,6 +373,27 @@ test_that("standardization of matrix works", {
   }
 })
 
+test_that("standardization jointly works", {
+  argument <- matrix(1:3, ncol = 3, nrow = 3)
+  expect_equal(
+    standardize_helper(
+      argument = argument, jointly = as.list(1:3)
+    ),
+    standardize_helper(
+      argument = argument, jointly = list()
+    )
+  )
+  argument <- matrix(1:3, ncol = 3, nrow = 3, byrow = TRUE)
+  expect_equal(
+    standardize_helper(
+      argument = argument, jointly = as.list(1:3), by_column = FALSE
+    ),
+    standardize_helper(
+      argument = argument, jointly = list(), by_column = FALSE
+    )
+  )
+})
+
 test_that("input checks for subsetting work", {
   expect_error(
     subset_helper(
@@ -395,6 +482,12 @@ test_that("subsetting of vector works (with clusters)", {
     expect_length(out, expected_length)
     expect_true(all(out %in% argument))
   }
+  expect_error(
+    subset_helper(
+      argument = rep(1, 10), how = "similar", centers = 2
+    ),
+    "failed"
+  )
 })
 
 test_that("subsetting of data.frame works (without clusters)", {
@@ -545,312 +638,134 @@ test_that("subsetting of matrix works (with clusters)", {
   }
 })
 
-# TODO
-
-test_that("results with one run can be simplified", {
+test_that("flattening of list works", {
+  expect_error(
+    helper_flatten_list("not_a_list"),
+    "'x' must be a list"
+  )
   results <- list(
-    list( # run 1
-      list( # optimizer 1
+    "run_1" = list(
+      "optimizer_1" = list(
         "value" = 11, "message" = "a"
       ),
-      list( # optimizer 2
+      "optimizer_2" = list(
         "value" = 12, "message" = "b"
       )
     )
   )
-  out <- helper_flatten_list(results)
   expect_identical(
-    out, list(list(value = 11, message = "a"), list(value = 12, message = "b"))
+    helper_flatten_list(results),
+    list(
+      "optimizer_1" = list("value" = 11, "message" = "a"),
+      "optimizer_2" = list("value" = 12, "message" = "b")
+    )
   )
   results <- list(
-    list( # run 1
-      list( # optimizer 1
+    "run_1" = list(
+      "optimizer_1" = list(
         "value" = 11, "message" = "a"
       )
     )
   )
-  out <- helper_flatten_list(results)
   expect_identical(
-    out, list(value = 11, message = "a")
+    helper_flatten_list(results),
+    list("value" = 11, "message" = "a")
   )
   results <- list(
-    list( # run 1
-      list( # optimizer 1
+    "run_1" = list(
+      "optimizer_1" = list(
         "value" = 11
       )
     )
   )
-  out <- helper_flatten_list(results)
   expect_identical(
-    out, 11
+    helper_flatten_list(results),
+    11
   )
-})
-
-test_that("results with one optimizer can be simplified", {
   results <- list(
-    list( # run 1
-      list( # optimizer 1
+    "run_1" = list(
+      "optimizer_1" = list(
         "value" = 11, "message" = "a"
       )
     ),
-    list( # run 2
-      list( # optimizer 1
+    "run_2" = list(
+      "optimizer_1" = list(
         "value" = 21, "message" = "b"
       )
     )
   )
-  out <- helper_flatten_list(
-    results = results,
-    simplify = TRUE
-  )
   expect_identical(
-    out, list(list(value = 11, message = "a"), list(value = 21, message = "b"))
+    helper_flatten_list(results),
+    list(
+      "run_1" = list("value" = 11, "message" = "a"),
+      "run_2" = list("value" = 21, "message" = "b")
+    )
   )
   results <- list(
-    list( # run 1
-      list( # optimizer 1
+    "run_1" = list(
+      "optimizer_1" = list(
         "value" = 11
       )
     ),
-    list( # run 2
-      list( # optimizer 1
+    "run_2" = list(
+      "optimizer_1" = list(
         "value" = 21
       )
     )
   )
-  out <- helper_flatten_list(
-    results = results,
-    simplify = TRUE
-  )
   expect_identical(
-    out, list(c(value = 11), c(value = 21))
+    helper_flatten_list(results),
+    list("run_1" = 11, "run_2" = 21)
   )
-})
-
-test_that("results with one element can be simplified", {
   results <- list(
-    list( # run 1
-      list( # optimizer 1
+    "run_1" = list(
+      "optimizer_1" = list(
         "value" = 11
       ),
-      list( # optimizer 2
+      "optimizer_2" = list(
         "value" = 12
       )
     ),
-    list( # run 2
-      list( # optimizer 1
+    "run_2" = list(
+      "optimizer_1" = list(
         "value" = 21
       ),
-      list( # optimizer 2
+      "optimizer_2" = list(
         "value" = 22
       )
     )
   )
-  out <- helper_flatten_list(
-    results = results,
-    simplify = TRUE
-  )
   expect_identical(
-    out, list(
-      list(c(value = 11), c(value = 12)),
-      list(c(value = 21), c(value = 22))
+    helper_flatten_list(results),
+    list(
+      "run_1" = list("optimizer_1" = 11, "optimizer_2" = 12),
+      "run_2" = list("optimizer_1" = 21, "optimizer_2" = 22)
     )
   )
-})
-
-
-
-
-# TODO
-
-
-
-test_that("input checks for result filtering work", {
-  expect_error(
-    filter_results(
-      results = "not_a_list",
-      run_ids = 1,
-      optimizer_ids = 1,
-      which_element = "character",
-      only_comparable = FALSE
-    )
-  )
-  expect_error(
-    filter_results(
-      results = list(),
-      run_ids = "not_a_number",
-      optimizer_ids = 1,
-      which_element = "character",
-      only_comparable = FALSE
-    )
-  )
-  expect_error(
-    filter_results(
-      results = list(),
-      run_ids = 1,
-      optimizer_ids = "not_a_number",
-      which_element = "character",
-      only_comparable = FALSE
-    )
-  )
-  expect_error(
-    filter_results(
-      results = list(),
-      run_ids = 1,
-      optimizer_ids = 1,
-      which_element = "",
-      only_comparable = FALSE
-    )
-  )
-  expect_error(
-    filter_results(
-      results = list(),
-      run_ids = 1,
-      optimizer_ids = 1,
-      which_element = "character",
-      only_comparable = "not_a_boolean"
-    ),
-    "must be"
-  )
-  expect_error(
-    helper_flatten_list(
-      results = list(),
-      simplify = "not_a_boolean"
-    ),
-    "must be"
-  )
-})
-
-test_that("results can be filtered by run", {
   results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11
+    "run_1" = list(
+      "optimizer_1" = list(
+        "value" = 11,
+        "message" = "aa"
       ),
-      list( # optimizer 2
-        "value" = 12
+      "optimizer_2" = list(
+        "value" = 12,
+        "message" = "ab"
       )
     ),
-    list( # run 2
-      list( # optimizer 1
-        "value" = 21
+    "run_2" = list(
+      "optimizer_1" = list(
+        "value" = 21,
+        "message" = "ba"
       ),
-      list( # optimizer 2
-        "value" = 22
+      "optimizer_2" = list(
+        "value" = 22,
+        "message" = "bb"
       )
     )
-  )
-  out <- filter_results(
-    results = results,
-    run_ids = 2,
-    optimizer_ids = 1:2,
-    which_element = "value",
-    only_comparable = FALSE
   )
   expect_identical(
-    out, list(list(list(value = 21), list(value = 22)))
+    helper_flatten_list(results),
+    results
   )
 })
-
-test_that("results can be filtered by optimizer", {
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11
-      ),
-      list( # optimizer 2
-        "value" = 12
-      )
-    ),
-    list( # run 2
-      list( # optimizer 1
-        "value" = 21
-      ),
-      list( # optimizer 2
-        "value" = 22
-      )
-    )
-  )
-  out <- filter_results(
-    results = results,
-    run_ids = 1:2,
-    optimizer_ids = 2,
-    which_element = "value",
-    only_comparable = FALSE
-  )
-  expect_identical(
-    out, list(list(list(value = 12)), list(list(value = 22)))
-  )
-})
-
-test_that("results can be filtered by element", {
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11, "comparable" = TRUE
-      ),
-      list( # optimizer 2
-        "value" = 12, "comparable" = FALSE
-      )
-    ),
-    list( # run 2
-      list( # optimizer 1
-        "value" = 21, "comparable" = TRUE
-      ),
-      list( # optimizer 2
-        "value" = 22, "comparable" = FALSE
-      )
-    )
-  )
-  out <- filter_results(
-    results = results,
-    run_ids = 1:2,
-    optimizer_ids = 1:2,
-    which_element = "value",
-    only_comparable = FALSE
-  )
-  expect_identical(
-    out, list(
-      list(list(value = 11), list(value = 12)), list(
-        list(value = 21),
-        list(value = 22)
-      )
-    )
-  )
-})
-
-test_that("results can be filtered by comparable", {
-  results <- list(
-    list( # run 1
-      list( # optimizer 1
-        "value" = 11, "comparable" = TRUE
-      ),
-      list( # optimizer 2
-        "value" = 12, "comparable" = FALSE
-      )
-    ),
-    list( # run 2
-      list( # optimizer 1
-        "value" = 21, "comparable" = TRUE
-      ),
-      list( # optimizer 2
-        "value" = 22, "comparable" = FALSE
-      )
-    )
-  )
-  out <- filter_results(
-    results = results,
-    run_ids = 1:2,
-    optimizer_ids = 1:2,
-    which_element = c("value", "comparable"),
-    only_comparable = TRUE
-  )
-  expect_identical(
-    out, list(
-      list(list(value = 11, comparable = TRUE)),
-      list(list(value = 21, comparable = TRUE))
-    )
-  )
-})
-
-
