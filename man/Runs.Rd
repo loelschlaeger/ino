@@ -5,14 +5,11 @@
 \title{Runs Object (R6 Class)}
 \value{
 A \code{Runs} object, which is an R6 class that stores results of numerical
-optimization runs, see the details.
+optimization runs.
 }
 \description{
 A \code{Runs} object stores results of numerical optimization runs. It is
 typically contained inside a \code{\link{Nop}} object.
-}
-\details{
-A \code{Runs} object can be created via \code{Runs$new()}.
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
@@ -24,9 +21,10 @@ A \code{Runs} object can be created via \code{Runs$new()}.
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-Runs-prepare_results}{\code{Runs$prepare_results()}}
+\item \href{#method-Runs-new}{\code{Runs$new()}}
 \item \href{#method-Runs-save_results}{\code{Runs$save_results()}}
-\item \href{#method-Runs-new_result}{\code{Runs$new_result()}}
+\item \href{#method-Runs-save_run}{\code{Runs$save_run()}}
+\item \href{#method-Runs-save_optimization}{\code{Runs$save_optimization()}}
 \item \href{#method-Runs-print}{\code{Runs$print()}}
 \item \href{#method-Runs-summary}{\code{Runs$summary()}}
 \item \href{#method-Runs-plot}{\code{Runs$plot()}}
@@ -37,49 +35,116 @@ A \code{Runs} object can be created via \code{Runs$new()}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Runs-prepare_results"></a>}}
-\if{latex}{\out{\hypertarget{method-Runs-prepare_results}{}}}
-\subsection{Method \code{prepare_results()}}{
+\if{html}{\out{<a id="method-Runs-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-new}{}}}
+\subsection{Method \code{new()}}{
+Creates a new \code{Runs} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Runs$prepare_results(
-  results = list(),
-  optimizer_label = character(),
-  simplify = logical()
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Runs$new()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A new \code{Runs} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Runs-save_results"></a>}}
 \if{latex}{\out{\hypertarget{method-Runs-save_results}{}}}
 \subsection{Method \code{save_results()}}{
+Saves (multiple) optimization results.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Runs$save_results(
-  results = list(),
-  optimizer_label = character(),
-  optimization_label = character(),
-  comparable = logical()
-)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Runs-new_result"></a>}}
-\if{latex}{\out{\hypertarget{method-Runs-new_result}{}}}
-\subsection{Method \code{new_result()}}{
-Saves a new optimization result.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Runs$new_result(result, optimizer_label, optimization_label, comparable)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Runs$save_results(results, optimizer_label, optimization_label, comparable)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{result}}{A \code{list} with outputs of a numerical optimization, typically
-containing
+\item{\code{results}}{A \code{list}, each element contains the results of one optimization run
+and is a \code{list}, where each element is a \code{list} of results from
+one optimizer, typically containing
 \itemize{
 \item \code{"value"}, the function value at the found optimum,
-\item \code{"parameter"}, the parameter at which the optimum value is obtained,
+\item \code{"parameter"}, the parameter value at the optimum,
+\item \code{"seconds"}, the optimization time in seconds,
+\item \code{"initial"}, the initial parameter,
+\item \code{"error"}, indicating whether an error occurred,
+\item \code{"error_message"}, the error message (if any),
+and other elements that are optimizer-specific.
+}}
+
+\item{\code{optimizer_label}}{A \code{character} (vector), a label for each optimizer.}
+
+\item{\code{optimization_label}}{A \code{character}, a label for the optimization runs.}
+
+\item{\code{comparable}}{Either \code{TRUE} if the optimization results are obtained
+for the original optimization problem without any transformations,
+or \code{FALSE} else.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Runs} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-save_run"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-save_run}{}}}
+\subsection{Method \code{save_run()}}{
+Saves a single optimization run.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$save_run(run, optimizer_label, optimization_label, comparable)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{run}}{A \code{list}, each element is a \code{list} of results from
+one optimizer, typically containing
+\itemize{
+\item \code{"value"}, the function value at the found optimum,
+\item \code{"parameter"}, the parameter value at the optimum,
+\item \code{"seconds"}, the optimization time in seconds,
+\item \code{"initial"}, the initial parameter,
+\item \code{"error"}, indicating whether an error occurred,
+\item \code{"error_message"}, the error message (if any),
+and other elements that are optimizer-specific.
+}}
+
+\item{\code{optimizer_label}}{A \code{character} (vector), a label for each optimizer.}
+
+\item{\code{optimization_label}}{A \code{character}, a label for the optimization runs.}
+
+\item{\code{comparable}}{Either \code{TRUE} if the optimization results are obtained
+for the original optimization problem without any transformations,
+or \code{FALSE} else.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Runs} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Runs-save_optimization"></a>}}
+\if{latex}{\out{\hypertarget{method-Runs-save_optimization}{}}}
+\subsection{Method \code{save_optimization()}}{
+Saves a single optimization.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Runs$save_optimization(
+  optimization,
+  optimizer_label,
+  optimization_label,
+  comparable
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{optimization}}{A \code{list} of results from an optimization, typically containing
+\itemize{
+\item \code{"value"}, the function value at the found optimum,
+\item \code{"parameter"}, the parameter value at the optimum,
 \item \code{"seconds"}, the optimization time in seconds,
 \item \code{"initial"}, the initial parameter,
 \item \code{"error"}, indicating whether an error occurred,
@@ -89,16 +154,16 @@ and other elements that are optimizer-specific.
 
 \item{\code{optimizer_label}}{A \code{character}, a label for the optimizer.}
 
-\item{\code{optimization_label}}{A \code{character}, a label for the optimization.}
+\item{\code{optimization_label}}{A \code{character}, a label for the optimization run.}
 
-\item{\code{comparable}}{Either \code{TRUE} if the optimization result was obtained
+\item{\code{comparable}}{Either \code{TRUE} if the optimization result is obtained
 for the original optimization problem without any transformations,
 or \code{FALSE} else.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Invisibly the \code{Results} object.
+Invisibly the \code{Runs} object.
 }
 }
 \if{html}{\out{<hr>}}
@@ -159,15 +224,16 @@ Deletes optimization results.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the last saved results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of optimization labels,
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids.
+\item a \code{character} (vector) of optimizer labels.
 }}
 
 \item{\code{which_element}}{Select elements of saved optimization results. Either:
@@ -210,8 +276,7 @@ Returns names of available elements per optimizer.
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids.
+\item a \code{character} (vector) of optimizer labels.
 }}
 }
 \if{html}{\out{</div>}}
@@ -239,15 +304,16 @@ Returns the number of saved optimization results
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the last saved results,
 \item \code{"failed"}, the results from all failed optimization runs,
-\item a \code{character} (vector) of labels specified in \code{$optimize()}.
+\item a \code{character} (vector) of optimization labels,
+\item a \code{numeric} (vector) of run ids.
 }}
 
 \item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids.
+\item a \code{character} (vector) of optimizer labels.
 }}
 }
 \if{html}{\out{</div>}}

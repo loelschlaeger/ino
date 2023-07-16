@@ -1,13 +1,6 @@
 #' @noRd
 #' @exportS3Method
 
-print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
-  x$print()
-}
-
-#' @noRd
-#' @exportS3Method
-
 summary.Nop <- function(
     object, which_element = c("value", "parameter"), which_run = "all",
     which_optimizer = "all", digits = getOption("ino_digits", default = 2),

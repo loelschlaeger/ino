@@ -4,10 +4,10 @@
 \name{ino}
 \alias{ino}
 \alias{ino-package}
-\title{ino: Analysis of Initialization for Numerical Optimization}
+\title{ino: Initial Values for Numerical Optimization}
 \description{
 This package implements tools for analyzing the initialization of
-numerical optimization.
+numerical optimization, i.e., the impact of the initial value on the outcome.
 }
 \seealso{
 Useful links:

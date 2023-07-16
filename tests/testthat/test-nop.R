@@ -39,8 +39,8 @@ test_that("Nop object can be initialized", {
 
 test_that("Nop object can be printed", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_snapshot(print(ackley))
   expect_snapshot(ackley$print())
+  expect_snapshot(print(ackley))
 })
 
 test_that("arguments for Nop object can be set", {

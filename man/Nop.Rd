@@ -70,13 +70,6 @@ Nop$new(f = f_ackley, npar = 2)$
   optima()
 
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{runs}}{A \code{\link{Runs}} object that saves the optimization runs.}
-}
-\if{html}{\out{</div>}}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -444,9 +437,9 @@ By default, \code{runs = 1}.}
 Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{Set to \code{TRUE} to return the optimization results as a \code{list}.
-Note that by default, \code{return_results = FALSE}, in which case
+By default \code{return_results = FALSE}, in which case
 optimization results are saved inside the \code{Nop} object and can be
-obtained via other methods.}
+accessed via methods.}
 
 \item{\code{save_results}}{Set to \code{TRUE} to save the optimization results inside the \code{Nop}
 object.
@@ -472,7 +465,7 @@ such messages.}
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
 In this case, if \code{simplify = TRUE}, the nested list output
-of optimization results is flattened if possible.}
+of optimization results is flattened.}
 
 \item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
 prematurely if \code{time_limit} is exceeded.
@@ -522,6 +515,7 @@ Returns saved optimization results.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.
@@ -560,7 +554,7 @@ or \code{FALSE} to include all optimization results.}
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
 In this case, if \code{simplify = TRUE}, the nested list output
-of optimization results is flattened if possible.}
+of optimization results is flattened.}
 }
 \if{html}{\out{</div>}}
 }
@@ -737,6 +731,7 @@ Continues optimization runs, e.g., with a transformed parameter.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.
@@ -753,9 +748,9 @@ Continues optimization runs, e.g., with a transformed parameter.
 Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{Set to \code{TRUE} to return the optimization results as a \code{list}.
-Note that by default, \code{return_results = FALSE}, in which case
+By default \code{return_results = FALSE}, in which case
 optimization results are saved inside the \code{Nop} object and can be
-obtained via other methods.}
+accessed via methods.}
 
 \item{\code{save_results}}{Set to \code{TRUE} to save the optimization results inside the \code{Nop}
 object.
@@ -772,7 +767,7 @@ such messages.}
 \item{\code{simplify}}{Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 only one optimizer is specified.
 In this case, if \code{simplify = TRUE}, the nested list output
-of optimization results is flattened if possible.}
+of optimization results is flattened.}
 
 \item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
 prematurely if \code{time_limit} is exceeded.
@@ -830,6 +825,7 @@ default, i.e.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.
@@ -893,6 +889,7 @@ The default is \code{2}.}
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.
@@ -956,6 +953,7 @@ respect to the overall median.}
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.
@@ -1014,6 +1012,7 @@ Visualizes deviation of parameters.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.
@@ -1114,6 +1113,7 @@ Returns the best found \code{numeric} value of \code{f}.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.
@@ -1166,6 +1166,7 @@ Returns the best found \code{numeric} parameter vector.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"}, the results from the last \code{$optimize()} call,
 \item \code{"failed"}, the results from all failed optimization runs,
 \item a \code{character} (vector) of labels specified in \code{$optimize()},
 \item a \code{numeric} (vector) of run ids.

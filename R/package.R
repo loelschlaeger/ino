@@ -1,8 +1,8 @@
-#' ino: Analysis of Initialization for Numerical Optimization
+#' ino: Initial Values for Numerical Optimization
 #'
 #' @description
 #' This package implements tools for analyzing the initialization of
-#' numerical optimization.
+#' numerical optimization, i.e., the impact of the initial value on the outcome.
 #'
 #' @docType package
 #'
@@ -29,7 +29,9 @@
 #' @importFrom glue glue
 #' @keywords internal
 
-ino_status <- function(msg, verbose = getOption("ino_verbose", default = TRUE)) {
+ino_status <- function(
+    msg, verbose = getOption("ino_verbose", default = TRUE)
+  ) {
   if (verbose) {
     cli::cli_alert_info(msg)
   }
@@ -40,7 +42,9 @@ ino_status <- function(msg, verbose = getOption("ino_verbose", default = TRUE)) 
 #' @importFrom glue glue
 #' @keywords internal
 
-ino_success <- function(msg, verbose = getOption("ino_verbose", default = TRUE), delay = 0.05) {
+ino_success <- function(
+    msg, verbose = getOption("ino_verbose", default = TRUE), delay = 0.05
+  ) {
   if (verbose) {
     cli::cli_alert_success(msg)
     Sys.sleep(delay)
@@ -72,7 +76,9 @@ ino_warn <- function(msg, ...) {
 #' @noRd
 #' @keywords internal
 
-ino_seed <- function(seed, verbose = getOption("ino_verbose", default = FALSE)) {
+ino_seed <- function(
+    seed, verbose = getOption("ino_verbose", default = FALSE)
+  ) {
   if (!is.null(seed)) {
     is_count(seed)
     set.seed(seed)

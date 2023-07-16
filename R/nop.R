@@ -11,6 +11,7 @@
 #' @param which_run
 #' Select saved results of optimization runs. Either:
 #' - \code{"all"} for all results,
+#' - \code{"last"}, the results from the last \code{$optimize()} call,
 #' - \code{"failed"}, the results from all failed optimization runs,
 #' - a \code{character} (vector) of labels specified in \code{$optimize()},
 #' - a \code{numeric} (vector) of run ids.
@@ -29,6 +30,9 @@
 #'   - \code{"error_message"}, the error message (if any).
 #' - a \code{character} (vector) with names of specific elements (see
 #'   \code{$elements_available()} for the names of all available elements).
+#' @param digits
+#' An \code{integer}, the number of shown decimal places.
+#' The default is \code{2}.
 #' @param only_comparable
 #' Either \code{TRUE} to show only comparable results (i.e., results obtained
 #' for the original optimization problem without any transformations),
@@ -41,22 +45,19 @@
 #' The default is \code{1}.
 #' You can use \code{parallel::detectCores()} to detect the number of available
 #' CPU cores.
-#' @param digits
-#' An \code{integer}, the number of shown decimal places.
-#' The default is \code{2}.
 #' @param seed
 #' An \code{integer}, passed on to \code{\link{set.seed}} for reproducibility.
 #' Can be \code{NULL} for no seed, which is the default.
 #' @param return_results
 #' Set to \code{TRUE} to return the optimization results as a \code{list}.
-#' Note that by default, \code{return_results = FALSE}, in which case
+#' By default \code{return_results = FALSE}, in which case
 #' optimization results are saved inside the \code{Nop} object and can be
-#' obtained via other methods.
+#' accessed via methods.
 #' @param simplify
 #' Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
 #' only one optimizer is specified.
 #' In this case, if \code{simplify = TRUE}, the nested list output
-#' of optimization results is flattened if possible.
+#' of optimization results is flattened.
 #' @param save_results
 #' Set to \code{TRUE} to save the optimization results inside the \code{Nop}
 #' object.
@@ -131,9 +132,6 @@ Nop <- R6::R6Class(
   classname = "Nop",
   public = list(
 
-    #' @field runs A \code{\link{Runs}} object that saves the optimization runs.
-    runs = NULL,
-
     #' @description
     #' Creates a new \code{Nop} object.
     #' @param f
@@ -174,7 +172,7 @@ Nop <- R6::R6Class(
       private$.f_target <- names(formals(f))[1]
       private$.npar <- as.integer(npar)
       if (length(list(...)) > 0) self$set_argument(...)
-      self$runs <- Runs$new()
+      private$.runs <- Runs$new()
     },
 
     #' @description
@@ -239,7 +237,7 @@ Nop <- R6::R6Class(
           cat(glue::glue("- {optimizer_id}: {optimizer_label}"), "\n")
         }
       }
-      self$runs$print(digits = digits, ...)
+      private$.runs$print(digits = digits, ...)
       invisible(self)
     },
 
@@ -629,7 +627,7 @@ Nop <- R6::R6Class(
       is_name(optimization_label)
       is_TRUE_FALSE(unique_label)
       if (unique_label) {
-        if (optimization_label %in% self$runs$optimization_labels) {
+        if (optimization_label %in% private$.runs$optimization_labels) {
           ino_stop("Label {.val optimization_label} already exists.")
         }
       }
@@ -695,9 +693,9 @@ Nop <- R6::R6Class(
 
       ### return
       if (save_results) {
-        self$runs$save_results(
+        private$.runs$save_results(
           results = results,
-          optimizer_label = names(self$optimizer),
+          optimizer_label = names(self$optimizer)[optimizer_ids],
           optimization_label = optimization_label,
           comparable = length(private$.original_arguments) == 0
         )
@@ -1209,6 +1207,7 @@ Nop <- R6::R6Class(
   ),
   private = list(
 
+    .runs = NULL,
     .f = NULL,
     .f_name = NULL,
     .f_target = NULL,
@@ -1482,7 +1481,11 @@ Nop <- R6::R6Class(
     #' (if available).
     true_value = function(value) {
       if (missing(value)) {
-        private$.true_value
+        out <- private$.true_value
+        if (is.null(out)) {
+          ino_warn("The true value has not been specified yet.")
+        }
+        return(out)
       } else {
         if (is.null(value)) {
           private$.true_value <- NULL
@@ -1516,7 +1519,11 @@ Nop <- R6::R6Class(
     #' obtains its optimum.
     true_parameter = function(value) {
       if (missing(value)) {
-        private$.true_parameter
+        out <- private$.true_parameter
+        if (is.null(out)) {
+          ino_warn("The true parameters have not been specified yet.")
+        }
+        return(out)
       } else {
         if (is.null(value)) {
           private$.true_parameter <- NULL
@@ -1547,7 +1554,7 @@ Nop <- R6::R6Class(
         out <- private$.optimizer
         if (length(out) == 0) {
           ino_warn(
-            "No optimizer specified.",
+            "No optimizer specified yet.",
             "Please use {.fun $set_optimizer} to specify an optimizer."
           )
         }
@@ -1565,7 +1572,7 @@ Nop <- R6::R6Class(
         n <- 1
         while (TRUE) {
           label <- glue::glue("{default_label}_{n}")
-          if (!label %in% self$runs$optimization_labels) {
+          if (!label %in% private$.runs$optimization_labels) {
             return(as.character(label))
           } else {
             n <- n + 1
@@ -1578,4 +1585,11 @@ Nop <- R6::R6Class(
 
   )
 )
+
+#' @noRd
+#' @exportS3Method
+
+print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
+  x$print()
+}
 
