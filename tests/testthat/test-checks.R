@@ -1,15 +1,20 @@
 test_that("checks for proper number vector work", {
   expect_true(is_number_vector(1))
   expect_true(is_number_vector(c(-pi, 0, pi)))
-  expect_error(is_number_vector("1"), "must be a")
-  expect_error(is_number(LETTERS), "must be a")
+  expect_error(is_number_vector("1"), "must be")
+  expect_error(is_number_vector(LETTERS), "must be")
+  expect_true(is_number_vector(c(NA, 1, 2)))
+  expect_error(is_number_vector(c(NA, 1, 2), allow_na = FALSE), "must be")
 })
 
 test_that("checks for proper number work", {
   expect_true(is_number(1))
   expect_true(is_number(pi))
-  expect_error(is_number("1"), "must be a")
-  expect_error(is_number(1:2), "must be a single")
+  expect_true(is_number(NA_real_))
+  expect_error(is_number("1"), "must be")
+  expect_error(is_number(1:2), "must be")
+  expect_error(is_number(NA), "must be")
+  expect_error(is_number(NA_real_, allow_na = FALSE), "must be")
 })
 
 test_that("checks for proper proportion work", {
@@ -21,7 +26,7 @@ test_that("checks for proper proportion work", {
 test_that("checks for proper count work", {
   expect_true(is_count(1))
   expect_error(is_count(pi), "must be a single, positive")
-  expect_error(is_count("1"), "must be a")
+  expect_error(is_count("1"), "must be")
   expect_error(is_count(-1), "must be a single, positive")
 })
 

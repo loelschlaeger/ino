@@ -6,6 +6,9 @@
 #'
 #' @param x
 #' Any object.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} in \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper number vector, either \code{TRUE}
 #' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -16,14 +19,15 @@
 #'
 #' @keywords checks
 
-is_number_vector <- function(x, error = TRUE) {
+is_number_vector <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is.vector(x) && is.numeric(x)
+  is_TRUE_FALSE(allow_na)
+  check <- is.vector(x) && is.numeric(x) && (allow_na || !any(is.na(x)))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
       glue::glue(
-        "Argument {.var <x_name>} must be a {.cls numeric}.",
+        "Argument {.var <x_name>} must be {.cls numeric}.",
         .open = "<",
         .close = ">"
       )
@@ -40,6 +44,9 @@ is_number_vector <- function(x, error = TRUE) {
 #'
 #' @param x
 #' Any object.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper number, either \code{TRUE}
 #' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -50,9 +57,10 @@ is_number_vector <- function(x, error = TRUE) {
 #'
 #' @keywords checks
 
-is_number <- function(x, error = TRUE) {
+is_number <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is_number_vector(x = x, error = error) && length(x) == 1
+  check <- is_number_vector(x = x, error = error, allow_na = allow_na) &&
+    length(x) == 1
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -74,6 +82,9 @@ is_number <- function(x, error = TRUE) {
 #'
 #' @param x
 #' Any object.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper proportion, either \code{TRUE}
 #' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -84,9 +95,10 @@ is_number <- function(x, error = TRUE) {
 #'
 #' @keywords checks
 
-is_proportion <- function(x, error = TRUE) {
+is_proportion <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is_number(x = x, error = error) && x > 0 && x < 1
+  check <- is_number(x = x, error = error, allow_na = allow_na) &&
+    x > 0 && x < 1
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -109,7 +121,10 @@ is_proportion <- function(x, error = TRUE) {
 #' @param x
 #' Any object.
 #' @param allow_zero
-#' Either \code{TRUE} to allow a zero value, or \code{FALSE} (default) if not.
+#' Either \code{TRUE} to allow a zero value (default), or \code{FALSE} if not.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper count, either \code{TRUE} (default)
 #' to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -120,11 +135,11 @@ is_proportion <- function(x, error = TRUE) {
 #'
 #' @keywords checks
 
-is_count <- function(x, allow_zero = FALSE, error = TRUE) {
+is_count <- function(x, allow_zero = TRUE, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(allow_zero)
   is_TRUE_FALSE(error)
-  check <- is_number(x = x, error = error) && x %% 1 == 0 &&
-    ifelse(allow_zero, x >= 0, x > 0)
+  check <- is_number(x = x, error = error, allow_na = allow_na) &&
+    x %% 1 == 0 && ifelse(allow_zero, x >= 0, x > 0)
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -146,6 +161,9 @@ is_count <- function(x, allow_zero = FALSE, error = TRUE) {
 #'
 #' @param x
 #' Any object.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper name, either \code{TRUE} (default)
 #' to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -156,9 +174,11 @@ is_count <- function(x, allow_zero = FALSE, error = TRUE) {
 #'
 #' @keywords checks
 
-is_name <- function(x, error = TRUE) {
+is_name <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is.vector(x) && is.character(x) && length(x) == 1 && nchar(x) > 0
+  is_TRUE_FALSE(allow_na)
+  check <- is.vector(x) && is.character(x) && length(x) == 1 &&
+    (allow_na || (!is.na(x) && nchar(x) > 0))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -180,6 +200,9 @@ is_name <- function(x, error = TRUE) {
 #'
 #' @param x
 #' Any object.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} in \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper name vector, either \code{TRUE}
 #' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -190,9 +213,10 @@ is_name <- function(x, error = TRUE) {
 #'
 #' @keywords checks
 
-is_name_vector <- function(x, error = TRUE) {
+is_name_vector <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is.vector(x) && all(sapply(x, is_name, error = FALSE))
+  check <- is.vector(x) &&
+    all(sapply(x, is_name, allow_na = allow_na, error = FALSE))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -214,6 +238,9 @@ is_name_vector <- function(x, error = TRUE) {
 #'
 #' @param x
 #' Any object.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper time, either \code{TRUE}
 #' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -224,9 +251,9 @@ is_name_vector <- function(x, error = TRUE) {
 #'
 #' @keywords checks
 
-is_time <- function(x, error = TRUE) {
+is_time <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is_number(x, error = error) && x >= 0
+  check <- is_number(x, error = error) && (allow_na || (!is.na(x) && x >= 0))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(

@@ -230,43 +230,46 @@ Runs <- R6::R6Class(
         ino_stop("Please specify {.var comparable}.")
       }
       is_TRUE_FALSE(comparable)
+      parts <- names(optimization)
+      if ("value" %in% parts) {
+        is_number(optimization[["value"]])
+      } else {
+        optimization[["value"]] <- NA_real_
+      }
+      if ("parameter" %in% parts) {
+        is_number_vector(optimization[["parameter"]])
+      } else {
+        optimization[["parameter"]] <- NA_real_
+      }
+      if ("seconds" %in% parts) {
+        is_time(optimization[["seconds"]])
+      } else {
+        optimization[["seconds"]] <- NA_real_
+      }
+      if ("initial" %in% parts) {
+        is_number_vector(optimization[["initial"]])
+      } else {
+        optimization[["initial"]] <- NA_real_
+      }
+      if ("error" %in% parts) {
+        is_TRUE_FALSE(optimization[["error"]])
+      } else {
+        optimization[["error"]] <- FALSE
+      }
+      if ("error_message" %in% parts) {
+        is_name(optimization[["error_message"]])
+      } else {
+        optimization[["error_message"]] <- character()
+      }
+      optimization[["optimization_label"]] <- optimization_label
+      optimization[["optimizer_label"]] <- optimizer_label
+      optimization[["comparable"]] <- comparable
 
-      # TODO: continue here
 
-      result_names <- names(result)
-      if ("value" %in% result_names) {
-        is_number(result[["value"]])
-      } else {
-        result[["value"]] <- NA_real_
-      }
-      if ("parameter" %in% result_names) {
-        is_number_vector(result[["parameter"]])
-      } else {
-        result[["parameter"]] <- NA_real_
-      }
-      if ("seconds" %in% result_names) {
-        is_time(result[["seconds"]])
-      } else {
-        result[["seconds"]] <- NA_real_
-      }
-      if ("initial" %in% result_names) {
-        is_number_vector(result[["initial"]])
-      } else {
-        result[["initial"]] <- NA_real_
-      }
-      if ("error" %in% result_names) {
-        is_TRUE_FALSE(result[["error"]])
-      } else {
-        result[["error"]] <- FALSE
-      }
-      if ("error_message" %in% result_names) {
-        is_name(result[["error_message"]])
-      } else {
-        result[["error_message"]] <- ""
-      }
-      result[["optimization_label"]] <- optimization_label
-      result[["optimizer_label"]] <- optimizer_label
-      result[["comparable"]] <- comparable
+
+
+
+
       result_id <- self$number_results() + 1
       private$.results[[result_id]] <- result
       private$.add_optimization_label_reference(
