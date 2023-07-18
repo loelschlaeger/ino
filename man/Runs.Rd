@@ -59,22 +59,12 @@ Saves (multiple) optimization results.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{results}}{A \code{list}, each element contains the results of one optimization run
-and is a \code{list}, where each element is a \code{list} of results from
-one optimizer, typically containing
-\itemize{
-\item \code{"value"}, the function value at the found optimum,
-\item \code{"parameter"}, the parameter value at the optimum,
-\item \code{"seconds"}, the optimization time in seconds,
-\item \code{"initial"}, the initial parameter,
-\item \code{"error"}, indicating whether an error occurred,
-\item \code{"error_message"}, the error message (if any),
-and other elements that are optimizer-specific.
-}}
+\item{\code{results}}{A \code{list}, each element contains the results of one optimization run,
+see the argument \code{run}.}
 
-\item{\code{optimizer_label}}{A \code{character} (vector), a label for each optimizer.}
+\item{\code{optimizer_label}}{A \code{character}, the label(s) for the optimizer(s).}
 
-\item{\code{optimization_label}}{A \code{character}, a label for the optimization runs.}
+\item{\code{optimization_label}}{A \code{character}, a label for the optimization.}
 
 \item{\code{comparable}}{Either \code{TRUE} if the optimization results are obtained
 for the original optimization problem without any transformations,
@@ -99,20 +89,11 @@ Saves a single optimization run.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{run}}{A \code{list}, each element is a \code{list} of results from
-one optimizer, typically containing
-\itemize{
-\item \code{"value"}, the function value at the found optimum,
-\item \code{"parameter"}, the parameter value at the optimum,
-\item \code{"seconds"}, the optimization time in seconds,
-\item \code{"initial"}, the initial parameter,
-\item \code{"error"}, indicating whether an error occurred,
-\item \code{"error_message"}, the error message (if any),
-and other elements that are optimizer-specific.
-}}
+one optimizer, see the argument \code{optimization}.}
 
-\item{\code{optimizer_label}}{A \code{character} (vector), a label for each optimizer.}
+\item{\code{optimizer_label}}{A \code{character}, the label(s) for the optimizer(s).}
 
-\item{\code{optimization_label}}{A \code{character}, a label for the optimization runs.}
+\item{\code{optimization_label}}{A \code{character}, a label for the optimization.}
 
 \item{\code{comparable}}{Either \code{TRUE} if the optimization results are obtained
 for the original optimization problem without any transformations,
@@ -141,22 +122,22 @@ Saves a single optimization.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{optimization}}{A \code{list} of results from an optimization, typically containing
+\item{\code{optimization}}{A \code{list} of results from a single optimization, typically containing
 \itemize{
 \item \code{"value"}, the function value at the found optimum,
-\item \code{"parameter"}, the parameter value at the optimum,
+\item \code{"parameter"}, the parameters at the optimum,
 \item \code{"seconds"}, the optimization time in seconds,
 \item \code{"initial"}, the initial parameter,
 \item \code{"error"}, indicating whether an error occurred,
 \item \code{"error_message"}, the error message (if any),
-and other elements that are optimizer-specific.
+and optionally other elements that are optimizer-specific.
 }}
 
-\item{\code{optimizer_label}}{A \code{character}, a label for the optimizer.}
+\item{\code{optimizer_label}}{A \code{character}, the label(s) for the optimizer(s).}
 
-\item{\code{optimization_label}}{A \code{character}, a label for the optimization run.}
+\item{\code{optimization_label}}{A \code{character}, a label for the optimization.}
 
-\item{\code{comparable}}{Either \code{TRUE} if the optimization result is obtained
+\item{\code{comparable}}{Either \code{TRUE} if the optimization results are obtained
 for the original optimization problem without any transformations,
 or \code{FALSE} else.}
 }
@@ -215,7 +196,7 @@ TODO
 \subsection{Method \code{clear()}}{
 Deletes optimization results.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Runs$clear(which_run, which_optimizer = "all", which_element = "all")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Runs$clear(which_run, which_optimizer, which_element)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -230,11 +211,7 @@ Deletes optimization results.
 \item a \code{numeric} (vector) of run ids.
 }}
 
-\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of optimizer labels.
-}}
+\item{\code{which_optimizer}}{Select optimizers, a \code{character} (vector) of optimizer labels.}
 
 \item{\code{which_element}}{Select elements of saved optimization results. Either:
 \itemize{
@@ -267,17 +244,13 @@ Invisibly the \code{Runs} object.
 \subsection{Method \code{elements_available()}}{
 Returns names of available elements per optimizer.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Runs$elements_available(which_optimizer = "all")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Runs$elements_available(which_optimizer)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of optimizer labels.
-}}
+\item{\code{which_optimizer}}{Select optimizers, a \code{character} (vector) of optimizer labels.}
 }
 \if{html}{\out{</div>}}
 }
@@ -310,11 +283,11 @@ Returns the number of saved optimization results
 \item a \code{numeric} (vector) of run ids.
 }}
 
-\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of optimizer labels.
-}}
+\item{\code{which_optimizer}}{Select optimizers, a \code{character} (vector) of optimizer labels.}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem without any transformations),
+or \code{FALSE} to include all optimization results.}
 }
 \if{html}{\out{</div>}}
 }

@@ -4,10 +4,13 @@
 \alias{is_number_vector}
 \title{Check for proper number vector}
 \usage{
-is_number_vector(x, error = TRUE)
+is_number_vector(x, allow_na = TRUE, error = TRUE)
 }
 \arguments{
 \item{x}{Any object.}
+
+\item{allow_na}{Either \code{TRUE} to allow \code{NA} in \code{x} (default) or \code{FALSE}
+to not allow \code{NA}.}
 
 \item{error}{In the case that \code{x} is not a proper number vector, either \code{TRUE}
 (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.}

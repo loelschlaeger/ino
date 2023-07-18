@@ -4,10 +4,31 @@
 #' A \code{Runs} object stores results of numerical optimization runs. It is
 #' typically contained inside a \code{\link{Nop}} object.
 #'
+#' @param results
+#' A \code{list}, each element contains the results of one optimization run,
+#' see the argument \code{run}.
+#' @param run
+#' A \code{list}, each element is a \code{list} of results from
+#' one optimizer, see the argument \code{optimization}.
+#' @param optimization
+#' A \code{list} of results from a single optimization, typically containing
+#' - \code{"value"}, the function value at the found optimum,
+#' - \code{"parameter"}, the parameters at the optimum,
+#' - \code{"seconds"}, the optimization time in seconds,
+#' - \code{"initial"}, the initial parameter,
+#' - \code{"error"}, indicating whether an error occurred,
+#' - \code{"error_message"}, the error message (if any),
+#' and optionally other elements that are optimizer-specific.
+#' @param optimizer_label
+#' A \code{character}, the label(s) for the optimizer(s).
+#' @param optimization_label
+#' A \code{character}, a label for the optimization.
+#' @param comparable
+#' Either \code{TRUE} if the optimization results are obtained
+#' for the original optimization problem without any transformations,
+#' or \code{FALSE} else.
 #' @param which_optimizer
-#' Select specified numerical optimizers. Either:
-#' - \code{"all"} for all specified optimizers,
-#' - a \code{character} (vector) of optimizer labels.
+#' Select optimizers, a \code{character} (vector) of optimizer labels.
 #' @param which_run
 #' Select saved results of optimization runs. Either:
 #' - \code{"all"} for all results,
@@ -30,9 +51,15 @@
 #'   - \code{"error_message"}, the error message (if any).
 #' - a \code{character} (vector) with names of specific elements (see
 #'   \code{$elements_available()} for the names of all available elements).
+#' @param only_comparable
+#' Either \code{TRUE} to show only comparable results (i.e., results obtained
+#' for the original optimization problem without any transformations),
+#' or \code{FALSE} to include all optimization results.
 #' @param digits
 #' An \code{integer}, the number of shown decimal places.
 #' The default is \code{2}.
+#' @param ...
+#' Currently not used.
 #'
 #' @return
 #' A \code{Runs} object, which is an R6 class that stores results of numerical
@@ -47,30 +74,11 @@ Runs <- R6::R6Class(
     #' @return
     #' A new \code{Runs} object.
     initialize = function() {
-
+      private$.results <- list()
     },
 
     #' @description
     #' Saves (multiple) optimization results.
-    #' @param results
-    #' A \code{list}, each element contains the results of one optimization run
-    #' and is a \code{list}, where each element is a \code{list} of results from
-    #' one optimizer, typically containing
-    #' - \code{"value"}, the function value at the found optimum,
-    #' - \code{"parameter"}, the parameter value at the optimum,
-    #' - \code{"seconds"}, the optimization time in seconds,
-    #' - \code{"initial"}, the initial parameter,
-    #' - \code{"error"}, indicating whether an error occurred,
-    #' - \code{"error_message"}, the error message (if any),
-    #' and other elements that are optimizer-specific.
-    #' @param optimizer_label
-    #' A \code{character} (vector), a label for each optimizer.
-    #' @param optimization_label
-    #' A \code{character}, a label for the optimization runs.
-    #' @param comparable
-    #' Either \code{TRUE} if the optimization results are obtained
-    #' for the original optimization problem without any transformations,
-    #' or \code{FALSE} else.
     #' @return
     #' Invisibly the \code{Runs} object.
     save_results = function(
@@ -121,24 +129,6 @@ Runs <- R6::R6Class(
 
     #' @description
     #' Saves a single optimization run.
-    #' @param run
-    #' A \code{list}, each element is a \code{list} of results from
-    #' one optimizer, typically containing
-    #' - \code{"value"}, the function value at the found optimum,
-    #' - \code{"parameter"}, the parameter value at the optimum,
-    #' - \code{"seconds"}, the optimization time in seconds,
-    #' - \code{"initial"}, the initial parameter,
-    #' - \code{"error"}, indicating whether an error occurred,
-    #' - \code{"error_message"}, the error message (if any),
-    #' and other elements that are optimizer-specific.
-    #' @param optimizer_label
-    #' A \code{character} (vector), a label for each optimizer.
-    #' @param optimization_label
-    #' A \code{character}, a label for the optimization runs.
-    #' @param comparable
-    #' Either \code{TRUE} if the optimization results are obtained
-    #' for the original optimization problem without any transformations,
-    #' or \code{FALSE} else.
     #' @return
     #' Invisibly the \code{Runs} object.
     save_run = function(
@@ -186,23 +176,6 @@ Runs <- R6::R6Class(
 
     #' @description
     #' Saves a single optimization.
-    #' @param optimization
-    #' A \code{list} of results from an optimization, typically containing
-    #' - \code{"value"}, the function value at the found optimum,
-    #' - \code{"parameter"}, the parameter value at the optimum,
-    #' - \code{"seconds"}, the optimization time in seconds,
-    #' - \code{"initial"}, the initial parameter,
-    #' - \code{"error"}, indicating whether an error occurred,
-    #' - \code{"error_message"}, the error message (if any),
-    #' and other elements that are optimizer-specific.
-    #' @param optimizer_label
-    #' A \code{character}, a label for the optimizer.
-    #' @param optimization_label
-    #' A \code{character}, a label for the optimization run.
-    #' @param comparable
-    #' Either \code{TRUE} if the optimization result is obtained
-    #' for the original optimization problem without any transformations,
-    #' or \code{FALSE} else.
     #' @return
     #' Invisibly the \code{Runs} object.
     save_optimization = function(
@@ -225,51 +198,50 @@ Runs <- R6::R6Class(
       if (missing(optimization_label)) {
         ino_stop("Please specify {.var optimization_label}.")
       }
-      is_name(optimization_label)
+      is_name(optimization_label, allow_na = FALSE)
       if (missing(comparable)) {
         ino_stop("Please specify {.var comparable}.")
       }
-      is_TRUE_FALSE(comparable)
+      is_TRUE_FALSE(comparable, allow_na = FALSE)
       parts <- names(optimization)
       if ("value" %in% parts) {
-        is_number(optimization[["value"]])
+        is_number(optimization[["value"]], allow_na = TRUE)
       } else {
         optimization[["value"]] <- NA_real_
       }
       if ("parameter" %in% parts) {
-        is_number_vector(optimization[["parameter"]])
+        is_number_vector(optimization[["parameter"]], allow_na = TRUE)
       } else {
         optimization[["parameter"]] <- NA_real_
       }
       if ("seconds" %in% parts) {
-        is_time(optimization[["seconds"]])
+        is_time(optimization[["seconds"]], allow_na = TRUE)
       } else {
         optimization[["seconds"]] <- NA_real_
       }
       if ("initial" %in% parts) {
-        is_number_vector(optimization[["initial"]])
+        is_number_vector(optimization[["initial"]], allow_na = TRUE)
       } else {
         optimization[["initial"]] <- NA_real_
       }
       if ("error" %in% parts) {
-        is_TRUE_FALSE(optimization[["error"]])
+        is_TRUE_FALSE(optimization[["error"]], allow_na = TRUE)
       } else {
         optimization[["error"]] <- FALSE
       }
       if ("error_message" %in% parts) {
-        is_name(optimization[["error_message"]])
+        is_name(optimization[["error_message"]], allow_na = TRUE)
       } else {
-        optimization[["error_message"]] <- character()
+        optimization[["error_message"]] <- NA_character_
       }
+
+      ### TODO: do not add them
       optimization[["optimization_label"]] <- optimization_label
       optimization[["optimizer_label"]] <- optimizer_label
       optimization[["comparable"]] <- comparable
 
 
-
-
-
-
+      # TODO: continue here
       result_id <- self$number_results() + 1
       private$.results[[result_id]] <- result
       private$.add_optimization_label_reference(
@@ -289,8 +261,6 @@ Runs <- R6::R6Class(
 
     #' @description
     #' Prints details of the stored numerical optimization results.
-    #' @param ...
-    #' Currently not used.
     #' @return
     #' Invisibly the \code{Results} object.
     #' @importFrom crayon underline
@@ -327,7 +297,7 @@ Runs <- R6::R6Class(
     #' @return
     #' Invisibly the \code{Runs} object.
     clear = function(
-      which_run, which_optimizer = "all", which_element = "all"
+      which_run, which_optimizer, which_element
     ) {
       if (missing(which_run)) {
         ino_stop("Please specify {.var which_run}.")
@@ -355,7 +325,7 @@ Runs <- R6::R6Class(
     #' Returns names of available elements per optimizer.
     #' @return
     #' A \code{list}.
-    elements_available = function(which_optimizer = "all") {
+    elements_available = function(which_optimizer) {
       optimizer_ids <- private$.get_optimizer_ids(
         which_optimizer = which_optimizer
       )
@@ -410,6 +380,7 @@ Runs <- R6::R6Class(
 
   private = list(
 
+    ### each element corresponds to a single optimization
     .results = list(),
 
     .comparable_runs_references = integer(),

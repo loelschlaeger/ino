@@ -4,10 +4,13 @@
 \alias{is_name_vector}
 \title{Check for proper name vector}
 \usage{
-is_name_vector(x, error = TRUE)
+is_name_vector(x, allow_na = TRUE, error = TRUE)
 }
 \arguments{
 \item{x}{Any object.}
+
+\item{allow_na}{Either \code{TRUE} to allow \code{NA} in \code{x} (default) or \code{FALSE}
+to not allow \code{NA}.}
 
 \item{error}{In the case that \code{x} is not a proper name vector, either \code{TRUE}
 (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.}

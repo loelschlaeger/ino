@@ -4,12 +4,12 @@
 \alias{is_count}
 \title{Check for proper count}
 \usage{
-is_count(x, allow_zero = FALSE, error = TRUE)
+is_count(x, allow_zero = TRUE, error = TRUE)
 }
 \arguments{
 \item{x}{Any object.}
 
-\item{allow_zero}{Either \code{TRUE} to allow a zero value, or \code{FALSE} (default) if not.}
+\item{allow_zero}{Either \code{TRUE} to allow a zero value (default), or \code{FALSE} if not.}
 
 \item{error}{In the case that \code{x} is not a proper count, either \code{TRUE} (default)
 to throw an error or \code{FALSE} to return invisibly \code{FALSE}.}

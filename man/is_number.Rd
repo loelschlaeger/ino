@@ -4,10 +4,13 @@
 \alias{is_number}
 \title{Check for proper number}
 \usage{
-is_number(x, error = TRUE)
+is_number(x, allow_na = TRUE, error = TRUE)
 }
 \arguments{
 \item{x}{Any object.}
+
+\item{allow_na}{Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+to not allow \code{NA}.}
 
 \item{error}{In the case that \code{x} is not a proper number, either \code{TRUE}
 (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.}

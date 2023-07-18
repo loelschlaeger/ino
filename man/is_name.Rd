@@ -4,10 +4,13 @@
 \alias{is_name}
 \title{Check for proper name}
 \usage{
-is_name(x, error = TRUE)
+is_name(x, allow_na = TRUE, error = TRUE)
 }
 \arguments{
 \item{x}{Any object.}
+
+\item{allow_na}{Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+to not allow \code{NA}.}
 
 \item{error}{In the case that \code{x} is not a proper name, either \code{TRUE} (default)
 to throw an error or \code{FALSE} to return invisibly \code{FALSE}.}

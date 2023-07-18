@@ -60,7 +60,7 @@ is_number_vector <- function(x, allow_na = TRUE, error = TRUE) {
 is_number <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
   check <- is_number_vector(x = x, error = error, allow_na = allow_na) &&
-    length(x) == 1
+    length(x) == 1L
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -82,9 +82,6 @@ is_number <- function(x, allow_na = TRUE, error = TRUE) {
 #'
 #' @param x
 #' Any object.
-#' @param allow_na
-#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
-#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper proportion, either \code{TRUE}
 #' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -95,9 +92,9 @@ is_number <- function(x, allow_na = TRUE, error = TRUE) {
 #'
 #' @keywords checks
 
-is_proportion <- function(x, allow_na = TRUE, error = TRUE) {
+is_proportion <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is_number(x = x, error = error, allow_na = allow_na) &&
+  check <- is_number(x = x, error = error, allow_na = FALSE) &&
     x > 0 && x < 1
   if (!check && error) {
     x_name <- deparse(substitute(x))
@@ -122,9 +119,6 @@ is_proportion <- function(x, allow_na = TRUE, error = TRUE) {
 #' Any object.
 #' @param allow_zero
 #' Either \code{TRUE} to allow a zero value (default), or \code{FALSE} if not.
-#' @param allow_na
-#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
-#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper count, either \code{TRUE} (default)
 #' to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -135,10 +129,10 @@ is_proportion <- function(x, allow_na = TRUE, error = TRUE) {
 #'
 #' @keywords checks
 
-is_count <- function(x, allow_zero = TRUE, allow_na = TRUE, error = TRUE) {
+is_count <- function(x, allow_zero = TRUE, error = TRUE) {
   is_TRUE_FALSE(allow_zero)
   is_TRUE_FALSE(error)
-  check <- is_number(x = x, error = error, allow_na = allow_na) &&
+  check <- is_number(x = x, error = error, allow_na = FALSE) &&
     x %% 1 == 0 && ifelse(allow_zero, x >= 0, x > 0)
   if (!check && error) {
     x_name <- deparse(substitute(x))
@@ -177,8 +171,8 @@ is_count <- function(x, allow_zero = TRUE, allow_na = TRUE, error = TRUE) {
 is_name <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
   is_TRUE_FALSE(allow_na)
-  check <- is.vector(x) && is.character(x) && length(x) == 1 &&
-    (allow_na || (!is.na(x) && nchar(x) > 0))
+  check <- is.vector(x) && is.character(x) && length(x) == 1L &&
+    (is.na(x) || nchar(x) > 0) && (allow_na || !is.na(x))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -253,7 +247,7 @@ is_name_vector <- function(x, allow_na = TRUE, error = TRUE) {
 
 is_time <- function(x, allow_na = TRUE, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is_number(x, error = error) && (allow_na || (!is.na(x) && x >= 0))
+  check <- is_number(x, allow_na = allow_na, error = error) && x >= 0
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -311,6 +305,9 @@ is_time_limit <- function(x, error = TRUE) {
 #'
 #' @param x
 #' Any object.
+#' @param allow_na
+#' Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+#' to not allow \code{NA}.
 #' @param error
 #' In the case that \code{x} is not a proper boolean, either \code{TRUE}
 #' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
@@ -321,9 +318,10 @@ is_time_limit <- function(x, error = TRUE) {
 #'
 #' @keywords checks
 
-is_TRUE_FALSE <- function(x, error = TRUE) {
+is_TRUE_FALSE <- function(x, allow_na = TRUE, error = TRUE) {
+  stopifnot(isTRUE(allow_na) || isFALSE(allow_na))
   stopifnot(isTRUE(error) || isFALSE(error))
-  check <- isTRUE(x) || isFALSE(x)
+  check <- is.logical(x) && length(x) == 1L && (allow_na || !is.na(x))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -357,7 +355,8 @@ is_TRUE_FALSE <- function(x, error = TRUE) {
 
 is_index_vector <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is.vector(x) && all(sapply(x, is_count, error = FALSE))
+  check <- is.vector(x) &&
+    all(sapply(x, is_count, allow_zero = FALSE, error = FALSE))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(

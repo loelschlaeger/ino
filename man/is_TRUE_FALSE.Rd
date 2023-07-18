@@ -4,10 +4,13 @@
 \alias{is_TRUE_FALSE}
 \title{Check for proper boolean}
 \usage{
-is_TRUE_FALSE(x, error = TRUE)
+is_TRUE_FALSE(x, allow_na = TRUE, error = TRUE)
 }
 \arguments{
 \item{x}{Any object.}
+
+\item{allow_na}{Either \code{TRUE} to allow \code{NA} for \code{x} (default) or \code{FALSE}
+to not allow \code{NA}.}
 
 \item{error}{In the case that \code{x} is not a proper boolean, either \code{TRUE}
 (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.}
