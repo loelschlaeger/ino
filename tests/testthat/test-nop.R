@@ -7,7 +7,7 @@ test_that("Nop object can be initialized", {
   )
   expect_error(
     Nop$new(f = 1),
-    "is not a"
+    "must be"
   )
   expect_error(
     Nop$new(f = f_ackley),
@@ -268,6 +268,34 @@ test_that("Ackley function can be optimized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
+
+
+  self <- ackley
+  private <- self$.__enclos_env__$private
+  initial = "random"
+  runs = 5
+  which_optimizer = "all"
+  seed = NULL
+  return_results = FALSE
+  save_results = TRUE
+  optimization_label = self$new_label
+  unique_label = TRUE
+  ncores = getOption("ino_ncores", default = 1)
+  verbose = getOption("ino_verbose", default = TRUE)
+  simplify = TRUE
+  time_limit = NULL
+  hide_warnings = TRUE
+  check_initial = TRUE
+
+  results = results
+  results_depth = 3
+  optimizer_label = names(self$optimizer)[optimizer_ids]
+  optimization_label = optimization_label
+  comparable = length(private$.original_arguments) == 0
+  self <- private$.runs
+  private <- self$.__enclos_env__$private
+
+
   ackley$optimize(runs = 5)
   ackley$optimize(runs = 1, initial = runif(2))
   ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)

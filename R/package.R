@@ -19,8 +19,8 @@
 #' @keywords internal
 
 .onAttach <- function(lib, pkg) {
-  msg <- glue::glue("Thanks for using {{ino}} {utils::packageVersion('ino')}.")
-  packageStartupMessage(msg)
+  # msg <- glue::glue("Thanks for using {{ino}} {utils::packageVersion('ino')}.")
+  # packageStartupMessage(msg)
   invisible()
 }
 

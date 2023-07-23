@@ -360,12 +360,6 @@ subset_helper <- function(
           "Clustering with {.fun stats::kmeans} failed:",
           e$message
         )
-      },
-      warning = function(w) {
-        ino_stop(
-          "Clustering with {.fun stats::kmeans} failed:",
-          w$message
-        )
       }
     )
     ind <- integer(0)

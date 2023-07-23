@@ -1,7 +1,7 @@
-#' Nop Object (R6 Class)
+#' Nop Object
 #'
 #' @description
-#' A \code{Nop} object defines a **n**umerical **o**ptimization **p**roblem.
+#' A \code{Nop} object defines a numerical optimization problem.
 #'
 #' @param which_optimizer
 #' Select specified numerical optimizers. Either:
@@ -11,10 +11,10 @@
 #' @param which_run
 #' Select saved results of optimization runs. Either:
 #' - \code{"all"} for all results,
-#' - \code{"last"}, the results from the last \code{$optimize()} call,
-#' - \code{"failed"}, the results from all failed optimization runs,
-#' - a \code{character} (vector) of labels specified in \code{$optimize()},
-#' - a \code{numeric} (vector) of run ids.
+#' - \code{"last"}, the last saved results,
+#' - \code{"failed"}, the results from failed optimization runs,
+#' - a \code{character} (vector) of optimization labels,
+#' - a \code{numeric} (vector) of optimization run ids.
 #' @param which_element
 #' Select elements of saved optimization results. Either:
 #' - \code{"all"} for all available elements,
@@ -29,10 +29,9 @@
 #'   - \code{"error"}, indicating whether an error occurred,
 #'   - \code{"error_message"}, the error message (if any).
 #' - a \code{character} (vector) with names of specific elements (see
-#'   \code{$elements_available()} for the names of all available elements).
+#'   \code{$elements()} for the names of available elements).
 #' @param digits
 #' An \code{integer}, the number of shown decimal places.
-#' The default is \code{2}.
 #' @param only_comparable
 #' Either \code{TRUE} to show only comparable results (i.e., results obtained
 #' for the original optimization problem without any transformations),
@@ -54,10 +53,8 @@
 #' optimization results are saved inside the \code{Nop} object and can be
 #' accessed via methods.
 #' @param simplify
-#' Only relevant if \code{return_results = TRUE} and \code{runs = 1} and/or
-#' only one optimizer is specified.
-#' In this case, if \code{simplify = TRUE}, the nested list output
-#' of optimization results is flattened.
+#' If \code{simplify = TRUE}, the nested list output of optimization results is
+#' flattened if possible.
 #' @param save_results
 #' Set to \code{TRUE} to save the optimization results inside the \code{Nop}
 #' object.
@@ -150,7 +147,7 @@ Nop <- R6::R6Class(
         ino_stop("Please specify argument {.var f}.")
       }
       if (!is.function(f)) {
-        ino_stop("Argument {.var f} is not a {.cls function}.")
+        ino_stop("Argument {.var f} must be a {.cls function}.")
       }
       if (is.null(formals(f))) {
         ino_stop("{.var f} must have at least one argument.")
@@ -158,7 +155,7 @@ Nop <- R6::R6Class(
       if (missing(npar)) {
         ino_stop("Please specify argument {.var npar}.")
       }
-      is_count(npar, error = TRUE)
+      is_count(npar, error = TRUE, allow_zero = FALSE)
       private$.f <- f
       f_name <- deparse(substitute(f))
       if (!is_name(f_name, error = FALSE)) {
@@ -172,7 +169,7 @@ Nop <- R6::R6Class(
       private$.f_target <- names(formals(f))[1]
       private$.npar <- as.integer(npar)
       if (length(list(...)) > 0) self$set_argument(...)
-      private$.runs <- Runs$new()
+      private$.records <- Records$new()
     },
 
     #' @description
@@ -184,7 +181,7 @@ Nop <- R6::R6Class(
     #' @importFrom crayon underline
     #' @importFrom glue glue
     #' @importFrom cli style_italic
-    print = function(digits = getOption("ino_digits", default = 2), ...) {
+    print = function(digits = getOption("digits", default = 7), ...) {
       cat(
         glue::glue(
           crayon::underline("Optimization problem:"),
@@ -223,7 +220,7 @@ Nop <- R6::R6Class(
           "\n"
         )
       }
-      cat(crayon::underline("Numerical optimizers:\n"))
+      cat(crayon::underline("Optimizer functions:\n"))
       optimizer <- suppressWarnings(self$optimizer)
       if (length(optimizer) == 0) {
         cat(
@@ -237,7 +234,7 @@ Nop <- R6::R6Class(
           cat(glue::glue("- {optimizer_id}: {optimizer_label}"), "\n")
         }
       }
-      private$.runs$print(digits = digits, ...)
+      private$.records$print(digits = digits, ...)
       invisible(self)
     },
 
@@ -312,7 +309,7 @@ Nop <- R6::R6Class(
     #' @return
     #' Invisibly the \code{Nop} object.
     reset_argument = function(
-      argument_name, verbose = getOption("ino_verbose", default = TRUE)
+      argument_name, verbose = getOption("verbose", default = FALSE)
     ) {
       if (missing(argument_name)) {
         ino_stop("Please specify {.var argument_name}.")
@@ -380,8 +377,8 @@ Nop <- R6::R6Class(
     #' Invisibly \code{TRUE} if the tests are successful.
     test = function(
       at = rnorm(self$npar), which_optimizer = "all", time_limit = 10,
-      verbose = getOption("ino_verbose", default = TRUE),
-      digits = getOption("ino_digits", default = 2)
+      verbose = getOption("verbose", default = FALSE),
+      digits = getOption("digits", default = 7)
     ) {
       private$.check_target_argument(at)
       optimizer_ids <- suppressWarnings(
@@ -613,30 +610,30 @@ Nop <- R6::R6Class(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
       return_results = FALSE, save_results = TRUE,
       optimization_label = self$new_label, unique_label = TRUE,
-      ncores = getOption("ino_ncores", default = 1),
-      verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
-      time_limit = NULL, hide_warnings = TRUE, check_initial = TRUE
+      ncores = 1, verbose = getOption("verbose", default = FALSE),
+      simplify = TRUE, time_limit = NULL, hide_warnings = TRUE,
+      check_initial = TRUE
     ) {
 
       ### input checks
       private$.check_additional_arguments_complete()
       if (is.list(initial)) runs <- length(initial)
-      is_count(runs)
-      is_TRUE_FALSE(return_results)
-      is_TRUE_FALSE(save_results)
-      is_name(optimization_label)
-      is_TRUE_FALSE(unique_label)
+      is_count(runs, allow_zero = FALSE)
+      is_TRUE_FALSE(return_results, allow_na = FALSE)
+      is_TRUE_FALSE(save_results, allow_na = FALSE)
+      is_name(optimization_label, allow_na = FALSE)
+      is_TRUE_FALSE(unique_label, allow_na = FALSE)
       if (unique_label) {
-        if (optimization_label %in% private$.runs$optimization_labels) {
+        if (optimization_label %in% private$.records$optimization_labels) {
           ino_stop("Label {.val optimization_label} already exists.")
         }
       }
-      is_count(ncores)
-      is_TRUE_FALSE(verbose)
-      is_TRUE_FALSE(simplify)
+      is_count(ncores, allow_zero = FALSE)
+      is_TRUE_FALSE(verbose, allow_na = FALSE)
+      is_TRUE_FALSE(simplify, allow_na = FALSE)
       is_time_limit(time_limit)
-      is_TRUE_FALSE(hide_warnings)
-      is_TRUE_FALSE(check_initial)
+      is_TRUE_FALSE(hide_warnings, allow_na = FALSE)
+      is_TRUE_FALSE(check_initial, allow_na = FALSE)
 
       ### build progress bar
       format <- "Finished run :current of :total [elapsed :elapsed, to go :eta]"
@@ -693,8 +690,9 @@ Nop <- R6::R6Class(
 
       ### return
       if (save_results) {
-        private$.runs$save_results(
+        private$.records$save(
           results = results,
+          results_depth = 3,
           optimizer_label = names(self$optimizer)[optimizer_ids],
           optimization_label = optimization_label,
           comparable = length(private$.original_arguments) == 0
@@ -774,7 +772,7 @@ Nop <- R6::R6Class(
     standardize = function(
       argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
       ignore = integer(), jointly = list(),
-      verbose = getOption("ino_verbose", default = TRUE)
+      verbose = getOption("verbose", default = FALSE)
     ) {
       original_argument <- self$get_argument(argument_name)
       standardized_argument <- standardize_helper(
@@ -828,7 +826,7 @@ Nop <- R6::R6Class(
     subset = function(
       argument_name, by_row = TRUE, how = "random", proportion = 0.5,
       centers = 2, ignore = integer(), seed = NULL,
-      verbose = getOption("ino_verbose", default = TRUE)
+      verbose = getOption("verbose", default = FALSE)
     ) {
       original_argument <- self$get_argument(argument_name)
       ino_seed(seed, verbose = verbose)
@@ -875,9 +873,8 @@ Nop <- R6::R6Class(
     continue = function(
       which_run, which_optimizer = "all", seed = NULL,
       return_results = FALSE, save_results = TRUE,
-      ncores = getOption("ino_ncores", default = 1),
-      verbose = getOption("ino_verbose", default = TRUE), simplify = TRUE,
-      time_limit = NULL, hide_warnings = TRUE
+      ncores = 1, verbose = getOption("verbose", default = FALSE),
+      simplify = TRUE, time_limit = NULL, hide_warnings = TRUE
     ) {
       run_ids <- private$.get_run_ids(which_run = which_run)
       optimizer_ids <- private$.get_optimizer_ids(
@@ -935,7 +932,7 @@ Nop <- R6::R6Class(
     #' @importFrom dplyr bind_rows
     summary = function(
       which_element = c("value", "parameter"), which_run = "all",
-      which_optimizer = "all", digits = getOption("ino_digits", default = 2),
+      which_optimizer = "all", digits = getOption("digits", default = 7),
       only_comparable = FALSE,
       ...
     ) {
@@ -955,7 +952,7 @@ Nop <- R6::R6Class(
     #' @return
     #' A \code{data.frame}.
     optima = function(
-      digits = getOption("ino_digits", default = 2), sort_by = "frequency",
+      digits = getOption("digits", default = 7), sort_by = "frequency",
       which_run = "all", which_optimizer = "all",
       only_comparable = TRUE
     ) {
@@ -1156,7 +1153,7 @@ Nop <- R6::R6Class(
     #' first one of them is returned.
     best_value = function(
       which_run = "all", which_optimizer = "all", only_comparable = TRUE,
-      digits = getOption("ino_digits", default = 2)
+      digits = getOption("digits", default = 7)
     ) {
       summary <- self$summary(
         which_run = which_run, which_optimizer = which_optimizer,
@@ -1184,7 +1181,7 @@ Nop <- R6::R6Class(
     #' Note that this parameter vector is not necessarily unique.
     best_parameter = function(
       which_run = "all", which_optimizer = "all", only_comparable = TRUE,
-      digits = getOption("ino_digits", default = 2)
+      digits = getOption("digits", default = 7)
     ) {
       best_value <- self$best_value(
         which_run = which_run, which_optimizer = which_optimizer,
@@ -1207,7 +1204,7 @@ Nop <- R6::R6Class(
   ),
   private = list(
 
-    .runs = NULL,
+    .records = NULL,
     .f = NULL,
     .f_name = NULL,
     .f_target = NULL,
@@ -1267,49 +1264,6 @@ Nop <- R6::R6Class(
       }
     },
 
-    ### check selected elements
-    .check_which_element = function(
-      which_element, optimizer_ids, protected_elements = character()
-    ) {
-      stopifnot(sapply(optimizer_ids, is_count))
-      if (length(protected_elements) > 0) sapply(protected_elements, is_name)
-      all_elements <- unique(unlist(
-        self$elements_available(which_optimizer = optimizer_ids)
-      ))
-      if (identical(which_element, "all")) {
-        which_element <- all_elements
-      }
-      if (identical(which_element, "default")) {
-        which_element <- c(
-          "run", "optimizer", "value", "parameter", "seconds", "label"
-        )
-      }
-      if (!all(sapply(which_element, is_name, error = FALSE))) {
-        ino_stop(
-          "Input {.var which_element} is misspecified.",
-          "It can be {.val all} or {.val default}.",
-          "It can also be a {.cls character} vector of specific element names."
-        )
-      }
-      which_element <- unique(which_element)
-      protect <- intersect(which_element, protected_elements)
-      if (length(protect) > 0) {
-        ino_warn(
-          "The following elements cannot be selected:",
-          glue::glue("{protect}")
-        )
-        which_element <- setdiff(which_element, protected_elements)
-      }
-      unavailable <- setdiff(which_element, all_elements)
-      if (length(unavailable) > 0) {
-        ino_warn(
-          "The following elements are not available:",
-          glue::glue("{unavailable}")
-        )
-        which_element <- intersect(which_element, all_elements)
-      }
-      return(which_element)
-    },
 
     ### get ids of optimizers
     .get_optimizer_ids = function(which_optimizer) {
@@ -1492,7 +1446,7 @@ Nop <- R6::R6Class(
           private$.true_parameter <- NULL
           ino_status(
             "Removed {.var true_value} and {.var true_parameter}.",
-            verbose = getOption("ino_verbose", default = FALSE)
+            verbose = getOption("verbose", default = FALSE)
           )
         } else {
           if (!(is.vector(value) && is.numeric(value) && length(value) == 1)) {
@@ -1529,19 +1483,19 @@ Nop <- R6::R6Class(
           private$.true_parameter <- NULL
           ino_status(
             "Removed {.var true_parameter}.",
-            verbose = getOption("ino_verbose", default = FALSE)
+            verbose = getOption("verbose", default = FALSE)
           )
         } else {
           private$.check_target_argument(value)
           private$.true_value <- self$evaluate(at = value)
-          digits <- getOption('ino_digits', default = 2)
+          digits <- getOption('ino_digits', default = 7)
           ino_status(
             glue::glue(
               "Set true optimum value to",
               "{round(private$.true_value, digits = digits)}.",
               .sep = " "
             ),
-            verbose = getOption("ino_verbose", default = FALSE)
+            verbose = getOption("verbose", default = FALSE)
           )
           private$.true_parameter <- value
         }
@@ -1572,7 +1526,7 @@ Nop <- R6::R6Class(
         n <- 1
         while (TRUE) {
           label <- glue::glue("{default_label}_{n}")
-          if (!label %in% private$.runs$optimization_labels) {
+          if (!label %in% private$.records$optimization_labels) {
             return(as.character(label))
           } else {
             n <- n + 1
@@ -1589,7 +1543,7 @@ Nop <- R6::R6Class(
 #' @noRd
 #' @exportS3Method
 
-print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
+print.Nop <- function(x, digits = getOption("digits", default = 7), ...) {
   x$print()
 }
 
