@@ -15,8 +15,8 @@ Authors@R: c(
            role = c("ctb")
            ))
 Description: Analysis of the initialization for numerical optimization of 
-    real-valued functions, including likelihood functions of statistical models.
-    See <https://loelschlaeger.de/ino/> for more details.
+    real-valued functions, particularly likelihood functions of statistical 
+    models. See <https://loelschlaeger.de/ino/> for more details.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -25,27 +25,11 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports:
     cli,
-    crayon,
     doSNOW,
-    dplyr,
-    forcats,
     foreach,
     ggplot2,
-    glue,
-    mvtnorm,
-    reshape2,
-    rlang,
-    scales
+    glue
 Suggests:
-    covr,
-    devtools,
-    DT,
-    fHMM,
-    knitr,
-    markdown,
-    purrr,
-    pracma,
-    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://loelschlaeger.de/ino/, https://github.com/loelschlaeger/ino
