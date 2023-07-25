@@ -11,10 +11,9 @@
 #' @param which_run
 #' Select saved results of optimization runs. Either:
 #' - \code{"all"} for all results,
-#' - \code{"last"}, the last saved results,
 #' - \code{"failed"}, the results from failed optimization runs,
 #' - a \code{character} (vector) of optimization labels,
-#' - a \code{numeric} (vector) of optimization run ids.
+#' - a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
 #' @param which_element
 #' Select elements of saved optimization results. Either:
 #' - \code{"all"} for all available elements,
@@ -54,7 +53,7 @@
 #' accessed via methods.
 #' @param simplify
 #' If \code{simplify = TRUE}, the nested list output of optimization results is
-#' flattened if possible.
+#' flattened if only one element is selected.
 #' @param save_results
 #' Set to \code{TRUE} to save the optimization results inside the \code{Nop}
 #' object.
@@ -97,8 +96,8 @@
 #' - \code{\link[optimizeR]{optimizer_optim}}
 #'
 #' ## Step 3: Test your configuration:
-#' Call \code{object$test()} to validate your configuration. The \code{$print()}
-#' method yields an overview.
+#' Call \code{object$validate()} to validate your configuration.
+#' The \code{$print()} method yields an overview.
 #'
 #' # Function evaluation and optimization
 #' Call \code{object$evaluate()} to evaluate the target function at some point.
@@ -234,7 +233,22 @@ Nop <- R6::R6Class(
           cat(glue::glue("- {optimizer_id}: {optimizer_label}"), "\n")
         }
       }
-      private$.records$print(digits = digits, ...)
+      cat(crayon::underline("Optimization records:\n"))
+      if (suppressWarnings(self$number()) == 0) {
+        cat(cli::style_italic("No results saved yet.\n"))
+      } else {
+        suppressWarnings({
+          noptimizations <- self$number()
+          ncomparable <- self$number(only_comparable = TRUE)
+          nfailed <- self$number(which_run = 'failed')
+        })
+        cat(glue::glue(
+          "- Number optimizations: {noptimizations}",
+          "- Comparable optimizations: {ncomparable}",
+          "- Failed optimizations: {nfailed}",
+          .sep = "\n"
+        ), "\n")
+      }
       invisible(self)
     },
 
@@ -375,7 +389,7 @@ Nop <- R6::R6Class(
     #' from a standard normal distribution.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
-    test = function(
+    validate = function(
       at = rnorm(self$npar), which_optimizer = "all", time_limit = 10,
       verbose = getOption("verbose", default = FALSE),
       digits = getOption("digits", default = 7)
@@ -586,7 +600,7 @@ Nop <- R6::R6Class(
     #' Only relevant if \code{save_results = TRUE}.
     #' In this case, a \code{character} to specify a label for the optimization.
     #' Labels are useful to distinguish optimization runs later.
-    #' By default, \code{optimization_label = self$new_label} creates a new
+    #' By default, \code{optimization_label = self$fresh_label} creates a new
     #' label.
     #' @param unique_label
     #' Either \code{TRUE} to ensure that \code{optimization_label} has not been
@@ -609,7 +623,7 @@ Nop <- R6::R6Class(
     optimize = function(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
       return_results = FALSE, save_results = TRUE,
-      optimization_label = self$new_label, unique_label = TRUE,
+      optimization_label = self$fresh_label, unique_label = TRUE,
       ncores = 1, verbose = getOption("verbose", default = FALSE),
       simplify = TRUE, time_limit = NULL, hide_warnings = TRUE,
       check_initial = TRUE
@@ -736,11 +750,63 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Returns names of available elements per optimizer.
+    #' Deletes optimization results.
+    #' @return
+    #' Invisibly the \code{Records} object.
+    clear = function(which_run, which_optimizer, which_element) {
+      if (missing(which_run)) {
+        ino_stop("Please specify {.var which_run}.")
+      }
+      run_ids <- private$.get_run_ids(which_run)
+      if (length(run_ids) == 0) {
+        return(invisible(self))
+      }
+      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
+      which_element <- suppressWarnings(
+        private$.check_which_element(
+          which_element = which_element, optimizer_ids = optimizer_ids,
+          protected_elements = c("run", "optimizer", "label")
+        )
+      )
+      for (i in run_ids) {
+        for (j in optimizer_ids) {
+          private$.results[[i]][[j]][which_element] <- NULL
+        }
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Returns names of available elements by optimizer in the results.
     #' @return
     #' A \code{list}.
-    elements_available = function(which_optimizer = "all") {
-      runs$elements_available(which_optimizer = which_optimizer)
+    elements = function(
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE
+    ) {
+      which_optimizer <- private$.check_which_optimizer(
+        which_optimizer = which_optimizer
+      )
+
+
+      ids <- private$.get_ids(
+        which_run = which_run, which_optimizer = which_optimizer,
+        only_comparable = only_comparable
+      )
+      if (length(ids) == 0) return(list())
+      elements <- list()
+      if (length(private$.results) == 0) {
+        ino_warn(
+          "No optimization results saved yet.",
+          "Please call {.var $optimize(save_results = TRUE)}."
+        )
+      }
+      for (id in optimizer_ids) {
+        results <- sapply(private$.results, `[`, id)
+        names <- names(unlist(results, recursive = FALSE, use.names = TRUE))
+        optimizer_label <- names(self$optimizer)[id]
+        elements[[optimizer_label]] <- unique(names)
+      }
+      return(elements)
     },
 
     #' @description
@@ -1204,7 +1270,7 @@ Nop <- R6::R6Class(
   ),
   private = list(
 
-    .records = NULL,
+    ### definition of the optimization problem
     .f = NULL,
     .f_name = NULL,
     .f_target = NULL,
@@ -1215,7 +1281,7 @@ Nop <- R6::R6Class(
     .true_value = NULL,
     .optimizer = list(),
 
-    ### check if argument for target function exists
+    ### checks for the optimization problem
     .check_additional_argument_exists = function(argument_name) {
       stopifnot(is_name(argument_name))
       if (!argument_name %in% names(private$.arguments)) {
@@ -1230,20 +1296,15 @@ Nop <- R6::R6Class(
         invisible(TRUE)
       }
     },
-
-    ### check if all required arguments for target function are specified
     .check_additional_arguments_complete = function() {
       args_all <- formals(private$.f)
       args_all[private$.f_target] <- NULL
       for (arg in names(args_all)) {
-        ### checks if `arg` has default value in `f`
         if (!all(nzchar(args_all[[arg]])) && is.name(args_all[[arg]])) {
           private$.check_additional_argument_exists(arg)
         }
       }
     },
-
-    ### check supplied value for target argument
     .check_target_argument = function(target_arg) {
       arg_name <- deparse(substitute(target_arg))
       if (!is.vector(target_arg) || !is.numeric(target_arg)) {
@@ -1264,8 +1325,163 @@ Nop <- R6::R6Class(
       }
     },
 
+    ### storage of optimization results and ids
+    .results = list(),
+    .next_result_id = function() {
+      length(private$.results) + 1
+    },
+    .result_comparable = function() {
+      length(private$.original_arguments) == 0
+    },
+    .optimizer_id_ids = list(),
+    .optimization_label_ids = list(),
+    .comparable_ids = integer(),
+    .failed_ids = integer(),
+    .save_result = function(result, optimizer_id, optimization_label) {
+      result_id <- private$.next_result_id()
+      parts <- names(result)
+      if ("value" %in% parts) {
+        is_number(result[["value"]], allow_na = TRUE)
+      } else {
+        result[["value"]] <- NA_real_
+      }
+      if ("parameter" %in% parts) {
+        is_number_vector(result[["parameter"]], allow_na = TRUE)
+      } else {
+        result[["parameter"]] <- NA_real_
+      }
+      if ("seconds" %in% parts) {
+        is_time(result[["seconds"]], allow_na = TRUE)
+      } else {
+        result[["seconds"]] <- NA_real_
+      }
+      if ("initial" %in% parts) {
+        is_number_vector(result[["initial"]], allow_na = TRUE)
+      } else {
+        result[["initial"]] <- NA_real_
+      }
+      if ("error" %in% parts) {
+        is_TRUE_FALSE(result[["error"]], allow_na = TRUE)
+      } else {
+        result[["error"]] <- FALSE
+      }
+      if ("error_message" %in% parts) {
+        is_name(result[["error_message"]], allow_na = TRUE)
+      } else {
+        result[["error_message"]] <- NA_character_
+      }
+      attr(result, "optimization_label") <- optimization_label
+      attr(result, "optimizer_label") <- optimizer_label
+      attr(result, "comparable") <- comparable
+      attr(result, "optimizer_id") <- optimizer_id
+      attr(result, "result_id") <- result_id
+      private$.results[[result_id]] <- result
+      private$.last_runs_ids <- c(private$.last_runs_ids, result_id)
 
-    ### get ids of optimizers
+      if (is.null(private$.optimizer_id_ids[[optimizer_id]])) {
+        private$.optimizer_id_ids[[optimizer_id]] <- result_id
+      } else {
+        private$.optimizer_id_ids[[optimizer_id]] <- c(
+          private$.optimizer_id_ids[[optimizer_id]], result_id
+        )
+      }
+      if (is.null(private$.optimization_label_ids[[optimization_label]])) {
+        private$.optimization_label_ids[[optimization_label]] <- result_id
+      } else {
+        private$.optimization_label_ids[[optimization_label]] <- c(
+          private$.optimization_label_ids[[optimization_label]], result_id
+        )
+      }
+      if (private$.result_comparable()) {
+        private$.comparable_ids <- c(private$.comparable_ids, result_id)
+      }
+      if (result[["error"]]) {
+        private$.failed_ids <- c(private$.failed_ids, result_id)
+      }
+    },
+    .get_results = function(result_id) {
+      private$.results[result_id]
+    },
+    .modify_result = function(result_id) {
+      stopifnot(
+        is.list(continued_results), is.list(previous_results),
+        length(continued_results) == length(previous_results),
+        sapply(continued_results, length) == sapply(previous_results, length)
+      )
+      comparable <- length(private$.original_arguments) == 0
+      for (run_id in seq_along(continued_results)) {
+        for (optimizer_id in seq_along(continued_results[[run_id]])) {
+          previous_run <- previous_results[[run_id]][[optimizer_id]]
+          continued_run <- continued_results[[run_id]][[optimizer_id]]
+          seconds_previous <- previous_run[["seconds"]]
+          seconds_continued <- continued_run[["seconds"]]
+          continued_run[["seconds"]] <- seconds_previous + seconds_continued
+          continued_run[["label"]] <- previous_run[["label"]]
+          continued_run[["comparable"]] <- comparable
+          continued_run[["previous_run"]] <- previous_run
+          continued_results[[run_id]][[optimizer_id]] <- continued_run
+        }
+      }
+      return(continued_results)
+    },
+    .number_results = function() {
+
+    },
+
+    ### check selection of ids
+    .check_which_run = function(which_run) {
+
+    },
+    .check_which_optimizer = function(which_optimizer) {
+      is_name_vector(which_optimizer, allow_na = FALSE)
+      if (identical(which_optimizer, "all")) {
+        which_optimizer <- self$optimizer_labels
+      }
+
+      return(which_optimizer)
+    },
+    .check_which_element = function(which_element, which_optimizer) {
+      stopifnot(sapply(optimizer_ids, is_count))
+      if (length(protected_elements) > 0) sapply(protected_elements, is_name)
+      all_elements <- unique(unlist(
+        self$elements(which_optimizer = optimizer_ids)
+      ))
+      if (identical(which_element, "all")) {
+        which_element <- all_elements
+      }
+      if (identical(which_element, "default")) {
+        which_element <- c(
+          "run", "optimizer", "value", "parameter", "seconds", "label"
+        )
+      }
+      if (!all(sapply(which_element, is_name, error = FALSE))) {
+        ino_stop(
+          "Input {.var which_element} is misspecified.",
+          "It can be {.val all} or {.val default}.",
+          "It can also be a {.cls character} vector of specific element names."
+        )
+      }
+      which_element <- unique(which_element)
+      protect <- intersect(which_element, protected_elements)
+      if (length(protect) > 0) {
+        ino_warn(
+          "The following elements cannot be selected:",
+          glue::glue("{protect}")
+        )
+        which_element <- setdiff(which_element, protected_elements)
+      }
+      unavailable <- setdiff(which_element, all_elements)
+      if (length(unavailable) > 0) {
+        ino_warn(
+          "The following elements are not available:",
+          glue::glue("{unavailable}")
+        )
+        which_element <- intersect(which_element, all_elements)
+      }
+      return(which_element)
+    },
+
+    ### access of ids
     .get_optimizer_ids = function(which_optimizer) {
       ids <- seq_along(private$.optimizer)
       if (length(ids) == 0) {
@@ -1291,6 +1507,46 @@ Nop <- R6::R6Class(
           "No optimizer selected."
         )
         return(integer(0))
+      }
+      return(ids)
+    },
+    .get_result_ids = function(which_run, which_optimizer, only_comparable) {
+      if (length(private$.results) == 0) {
+        ino_warn("No optimization results saved yet.")
+        return(integer())
+      }
+      is_name_vector(which_optimizer, allow_na = FALSE)
+      is_TRUE_FALSE(only_comparable, allow_na = FALSE)
+      ids <- if (is_name(which_run, allow_na = FALSE, error = FALSE)) {
+        if (identical(which_run, "all")) {
+          seq_along(private$.results)
+        } else if (identical(which_run, "last")) {
+          private$.last_runs_ids
+        } else if (identical(which_run, "failed")) {
+          private$.failed_runs_ids
+        } else if (which_run %in% self$optimization_labels) {
+          private$.optimization_label_ids[[which_run]]
+        } else {
+          integer()
+        }
+      } else if (is_index_vector(which_run, error = FALSE)) {
+        which(seq_along(private$.results) %in% which_run)
+      } else {
+        ino_stop("Argument {.var which_run} is misspecified.")
+      }
+      if (!identical(which_optimizer, "all")) {
+        ids <- if (which_optimizer %in% names(private$.optimizer_label_ids)) {
+          intersect(ids, private$.optimizer_label_ids[[which_optimizer]])
+        } else {
+          integer()
+        }
+      }
+      if (only_comparable) {
+        ids <- intersect(ids, private$.comparable_runs_ids)
+      }
+      if (length(ids) == 0) {
+        ino_warn("Your input selects no saved result.")
+        return(integer())
       }
       return(ids)
     },
@@ -1337,46 +1593,11 @@ Nop <- R6::R6Class(
           )
         }
       )
-    },
-
-    ### merge continued with previous optimization results
-    .merge_continued_previous_results = function(
-      continued_results, previous_results
-    ) {
-      stopifnot(
-        is.list(continued_results), is.list(previous_results),
-        length(continued_results) == length(previous_results),
-        sapply(continued_results, length) == sapply(previous_results, length)
-      )
-      comparable <- length(private$.original_arguments) == 0
-      for (run_id in seq_along(continued_results)) {
-        for (optimizer_id in seq_along(continued_results[[run_id]])) {
-          previous_run <- previous_results[[run_id]][[optimizer_id]]
-          continued_run <- continued_results[[run_id]][[optimizer_id]]
-          seconds_previous <- previous_run[["seconds"]]
-          seconds_continued <- continued_run[["seconds"]]
-          continued_run[["seconds"]] <- seconds_previous + seconds_continued
-          continued_run[["label"]] <- previous_run[["label"]]
-          continued_run[["comparable"]] <- comparable
-          continued_run[["previous_run"]] <- previous_run
-          continued_results[[run_id]][[optimizer_id]] <- continued_run
-        }
-      }
-      return(continued_results)
     }
 
   ),
 
   active = list(
-
-    #' @field f The \code{function} to be optimized.
-    f = function(value) {
-      if (missing(value)) {
-        private$.f
-      } else {
-        ino_stop("{.var $f} is read only.")
-      }
-    },
 
     #' @field f_name The name of the \code{function} to be optimized.
     f_name = function(value) {
@@ -1391,16 +1612,6 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field f_target The name of the target argument, i.e., the argument over
-    #' which \code{f} is optimized.
-    f_target = function(value) {
-      if (missing(value)) {
-        private$.f_target
-      } else {
-        ino_stop("{.var $f_target} is read only.")
-      }
-    },
-
     #' @field npar The length of the target argument, i.e., the argument over
     #' which \code{f} is optimized.
     npar = function(value) {
@@ -1408,26 +1619,6 @@ Nop <- R6::R6Class(
         private$.npar
       } else {
         ino_stop("{.var $npar} is read only.")
-      }
-    },
-
-    #' @field arguments A \code{list} of specified additional arguments for
-    #' \code{f}.
-    arguments = function(value) {
-      if (missing(value)) {
-        out <- private$.arguments
-        if (length(out) == 0) {
-          ino_warn("No function arguments have been specified yet.")
-        }
-        return(out)
-      } else {
-        ino_stop(
-          "{.var $arguments} is read only.",
-          "To set an argument, use {.fun $set_argument}.",
-          "To get an argument, use {.fun $get_argument}.",
-          "To remove an argument, use {.fun $remove_argument}.",
-          "To reset an argument, use {.fun $reset_argument}."
-        )
       }
     },
 
@@ -1502,25 +1693,9 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field optimizer A \code{list} of specified optimizers.
-    optimizer = function(value) {
-      if (missing(value)) {
-        out <- private$.optimizer
-        if (length(out) == 0) {
-          ino_warn(
-            "No optimizer specified yet.",
-            "Please use {.fun $set_optimizer} to specify an optimizer."
-          )
-        }
-        return(out)
-      } else {
-        self$set_optimizer(value)
-      }
-    },
-
-    #' @field new_label A \code{character}, a new optimization label that has
+    #' @field fresh_label A \code{character}, an optimization label that has
     #' not been used yet.
-    new_label = function(value) {
+    fresh_label = function(value) {
       if (missing(value)) {
         default_label <- "unlabeled"
         n <- 1
@@ -1533,7 +1708,7 @@ Nop <- R6::R6Class(
           }
         }
       } else {
-        ino_stop("{.var $new_label} is read only.")
+        ino_stop("{.var $fresh_label} is read only.")
       }
     }
 
