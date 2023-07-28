@@ -4,25 +4,28 @@
 \alias{Nop}
 \title{Nop Object}
 \value{
-A \code{Nop} object that specifies the numerical optimization problem.
+The output of \code{Nop$new()} is a new \code{Nop} object. For the output of
+the different methods, please refer to their respective documentation.
 }
 \description{
 A \code{Nop} object defines a numerical optimization problem.
 }
-\section{Getting Started}{
-\subsection{Step 1: Create a new \code{Nop} object:}{
+\section{Getting started}{
+\subsection{Step 1: Create a new \code{Nop} object}{
 
 Call \code{object <- Nop$new(f, npar, ...)} where
 \itemize{
-\item \code{f} is the function to be optimized over its first argument,
+\item \code{f} is a single-valued function to be optimized for its first
+argument,
 \item \code{npar} is the length of the first argument of \code{f},
 \item and \code{...} are additional arguments for \code{f}.
+The additional arguments can also be managed via \code{$argument()}.
 }
 }
 
-\subsection{Step 2: Specify one or more numerical optimizers:}{
+\subsection{Step 2: Specify one or more numerical optimizers}{
 
-Call \code{object$set_optimizer(<optimizer object>)}, where
+Call \code{object$optimizer("set", <optimizer object>)}, where
 \code{<optimizer object>} is an object of class \code{optimizer}, which can
 be created with the \code{\link[optimizeR]{define_optimizer}} function from
 the \{optimizeR\} package.
@@ -33,50 +36,79 @@ Two \code{optimizer} objects are already available:
 }
 }
 
-\subsection{Step 3: Test your configuration:}{
+\subsection{Step 3: Check your settings}{
 
-Call \code{object$validate()} to validate your configuration.
-The \code{$print()} method yields an overview.
+Call \code{object$print()} for an overview, and \code{object$validate()} to
+validate the configurations.
 }
 }
 
 \section{Function evaluation and optimization}{
-Call \code{object$evaluate()} to evaluate the target function at some point.
-Call \code{object$optimize()} for optimization. Furthermore,
+Call \code{object$evaluate()} to evaluate the target function at some point,
+and \code{object$optimize()} for optimization.
+}
+
+\section{Initialization strategies}{
+You can define custom initial values in
+\code{object$optimize(initial = ...)}.
+If \code{f} has additional arguments, you can modify them favorably (e.g.,
+subset or standardize) via \code{object$argument("modify", <argument name>)},
+then optimize to obtain good initial values, reset the argument via
+\code{object$argument("reset", <argument name>)}, and continue the
+optimization with these initial values via
+\code{object$optimize(initial = self$continue()}. These and more strategies
+are illustrated in detail in the package vignettes.
+}
+
+\section{Methods for analyzing the results}{
+A \code{Nop} object provides methods for the analysis of the saved
+optimization results, with filter options for optimization runs, optimizers,
+and elements (parts of the optimizer outputs):
 \itemize{
-\item \code{object$standardize()} standardizes a function argument,
-\item \code{object$subset()} subsets a function argument,
-\item \code{object$continue()} continues optimization runs.
+\item \code{$results()} returns a \code{list} of the saved optimization results,
+\item \code{$summary()} summarizes the results in a \code{data.frame},
+\item \code{$optima()} returns a frequency table of the identified optima,
+\item \code{$plot()} visualizes the optimization time or value,
+\item \code{$best()} returns the best found parameter vector or function value.
 }
 }
 
-\section{Analysis of the results}{
-The \code{Nop} object provides methods for the analysis of the optimization
-results, with filter options for optimization runs, optimizers, and elements:
+\section{Other methods and fields}{
+A \code{Nop} object also provides the following methods and fields for
+convenience:
 \itemize{
-\item \code{$results()} returns the saved optimization results,
-\item \code{$summary()} summarizes the results,
-\item \code{$optima()} returns a frequency table of identified optima,
-\item \code{$plot()} visualizes the optimization time or value,
-\item \code{$best_parameter()} returns the best parameter vector,
-\item \code{$best_value()} returns the best function value.
+\item \code{$clear()} deletes optimization results,
+\item \code{$elements()} returns the names of the available elements in the
+optimizer outputs,
+\item \code{$number()} returns the number of saved optimization results,
+\item \code{$deviation()} calculates and plots deviations of parameters to a
+reference parameter (i.e., the true parameter vector
+\code{self$true_parameter}),
+\item \code{$trace()} calculates and plots the trace of an optimization,
+\item \code{$f_name} stores the function name,
+\item \code{$npar} stores the length of the target argument,
+\item \code{$true_value} stores the true function value at the optimum
+(if available),
+\item \code{$true_parameter} stores the true parameter vector at the optimum
+(if available),
+\item \code{$fresh_label} generates a new label for the optimization.
 }
 }
 
 \examples{
 Nop$new(f = f_ackley, npar = 2)$
-  set_optimizer(optimizer_nlm())$
-  optimize(initial = "random", runs = 100, verbose = FALSE)$
+  optimizer(optimizer_nlm())$
+  optimize("random", runs = 100, verbose = FALSE)$
   optima()
 
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{f_name}}{The name of the \code{function} to be optimized.}
+\item{\code{f_name}}{A \code{character}, the name of the function \code{f}.}
 
-\item{\code{npar}}{The length of the target argument, i.e., the argument over
-which \code{f} is optimized.}
+\item{\code{npar}}{An \code{integer}, the length of the target argument (i.e.,
+the argument over which \code{f} is optimized).}
 
 \item{\code{true_value}}{The true \code{numeric} optimum value of \code{f}
 (if available).}
@@ -94,20 +126,16 @@ not been used yet.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Nop-new}{\code{Nop$new()}}
+\item \href{#method-Nop-argument}{\code{Nop$argument()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
-\item \href{#method-Nop-set_argument}{\code{Nop$set_argument()}}
-\item \href{#method-Nop-get_argument}{\code{Nop$get_argument()}}
-\item \href{#method-Nop-remove_argument}{\code{Nop$remove_argument()}}
-\item \href{#method-Nop-reset_argument}{\code{Nop$reset_argument()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
 \item \href{#method-Nop-validate}{\code{Nop$validate()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-results}{\code{Nop$results()}}
+\item \href{#method-Nop-number}{\code{Nop$number()}}
 \item \href{#method-Nop-clear}{\code{Nop$clear()}}
 \item \href{#method-Nop-elements}{\code{Nop$elements()}}
-\item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
-\item \href{#method-Nop-subset}{\code{Nop$subset()}}
 \item \href{#method-Nop-continue}{\code{Nop$continue()}}
 \item \href{#method-Nop-summary}{\code{Nop$summary()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
@@ -132,18 +160,110 @@ Creates a new \code{Nop} object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{f}}{The \code{function} to be optimized.
-It is optimized over its first argument, which should be a \code{numeric}
-vector of length \code{npar}.}
+It should return a single \code{numeric} value and
+is optimized over its first argument (the target argument), which should
+be a \code{numeric} vector of length \code{npar}.}
 
-\item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (the
-argument over which \code{f} is optimized).}
+\item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (i.e.,
+the first argument over which \code{f} is optimized).}
 
-\item{\code{...}}{Optionally additional and named arguments for \code{f}.}
+\item{\code{...}}{Optionally additional (i.e., in addition to the target argument)
+arguments for \code{f}. They must be named. They can be managed via
+the \code{$argument()} method.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 A new \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-argument}{}}}
+\subsection{Method \code{argument()}}{
+Manages additional (i.e., in addition to the target argument) arguments
+for \code{f}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$argument(
+  action = "set",
+  ...,
+  verbose = getOption("verbose", default = FALSE)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{action}}{One of:
+\itemize{
+\item \code{"set"} to set an argument,
+\item \code{"get"} to extract an argument value,
+\item \code{"remove"} to remove an argument,
+\item \code{"reset"} to reset an argument to the original value,
+\item \code{"modify"} to modify an argument to a new value (the original
+value is saved and can be recovered via \code{"reset"}),
+\item \code{"subset"} to subset an argument,
+\item \code{"standardize"} to standardize a \code{numeric} argument.
+}}
+
+\item{\code{...}}{Additional parameters depending on the \code{action}:
+\itemize{
+\item if \code{action = "set"} or \code{"modify"}, one or more named
+elements,
+\item if \code{action = "get"}, \code{"remove"}, or \code{"reset"},
+the argument \code{name},
+\item if \code{action = "subset"},
+\itemize{
+\item the argument \code{name},
+\item \code{byrow}, either \code{TRUE} to subset
+row-wise (default) or \code{FALSE} to subset column-wise,
+\item \code{how}, a \code{character}, specifying how to subset, either
+\itemize{
+\item \code{"random"} (default), subset at random,
+\item \code{"first"}, subset to the first elements,
+\item \code{"last"}, subset to the last elements,
+\item \code{"similar"}, subset to similar elements,
+\item \code{"dissimilar"}, subset to dissimilar elements,
+(the options \code{"similar"} and \code{"dissimilar"} apply k-means
+clustering via \code{\link[stats]{kmeans}} and require that
+the argument is \code{numeric}),
+}
+\item \code{proportion}, a \code{numeric} between \code{0} and \code{1},
+specifying the subset proportion,
+\item \code{centers}, passed on to \code{\link[stats]{kmeans}}
+if \code{how = "(dis)similar"} (by default, \code{centers = 2}),
+\item \code{ignore}, an \code{integer} vector of row indices (or column
+indices if \code{byrow = FALSE}) to ignore for clustering if
+\code{how = "(dis)similar"},
+}
+\item if \code{action = "standardize"},
+\itemize{
+\item the argument \code{name},
+\item \code{byrow}, either \code{TRUE} to standardize
+row-wise or \code{FALSE} to standardize column-wise (default),
+\item \code{center}, set to \code{TRUE} (default) for centering, resulting
+in zero mean,
+\item \code{scale}, set to \code{TRUE} (default) for scaling, resulting in
+unit variance,
+\item \code{ignore}, an \code{integer} vector of column indices (or row
+indices if \code{byrow = TRUE}) to not standardize,
+\item \code{jointly}, a \code{list} of \code{integer} vectors with column
+indices (or row indices if \code{byrow = TRUE}) to standardize
+jointly.
+}
+}}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The argument value if \code{action = "get"} and invisibly the \code{Nop}
+object, else. If \code{action = "standardize"}, the \code{numeric}
+centering and scaling used (if any) are added as
+attributes \code{"standardized:center"} and \code{"standardized:scale"}
+to the argument.
 }
 }
 \if{html}{\out{<hr>}}
@@ -161,93 +281,6 @@ Prints details of the numerical optimization problem.
 \item{\code{digits}}{An \code{integer}, the number of shown decimal places.}
 
 \item{\code{...}}{Currently not used.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly the \code{Nop} object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-set_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-set_argument}{}}}
-\subsection{Method \code{set_argument()}}{
-Sets additional arguments for \code{f}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$set_argument(...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Optionally additional named arguments for \code{f}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly the \code{Nop} object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-get_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-get_argument}{}}}
-\subsection{Method \code{get_argument()}}{
-Gets an argument value of \code{f}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$get_argument(argument_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{argument_name}}{A \code{character}, the argument to extract.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The argument.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-remove_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-remove_argument}{}}}
-\subsection{Method \code{remove_argument()}}{
-Removes an additional argument for \code{f}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$remove_argument(argument_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{argument_name}}{A \code{character}, the argument to remove.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly the \code{Nop} object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-reset_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-reset_argument}{}}}
-\subsection{Method \code{reset_argument()}}{
-Resets an additional argument for \code{f} after transformation with
-\code{$standardize()} or \code{$subset()}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$reset_argument(
-  argument_name,
-  verbose = getOption("verbose", default = FALSE)
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{argument_name}}{A \code{character}, the name of the argument to reset.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.}
 }
 \if{html}{\out{</div>}}
 }
@@ -426,12 +459,10 @@ By default, \code{runs = 1}.}
 Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{Set to \code{TRUE} to return the optimization results as a \code{list}.
-By default \code{return_results = FALSE}, in which case
-optimization results are saved inside the \code{Nop} object and can be
-accessed via methods.}
+By default \code{return_results = FALSE}.}
 
 \item{\code{save_results}}{Set to \code{TRUE} to save the optimization results inside the \code{Nop}
-object.
+object. These results can be analyzed via different methods, see the details.
 By default, \code{save_results = TRUE}.}
 
 \item{\code{optimization_label}}{Only relevant if \code{save_results = TRUE}.
@@ -502,6 +533,7 @@ Returns saved optimization results.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -550,6 +582,68 @@ If \code{simplify = TRUE}, the output is flattened if possible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-number"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-number}{}}}
+\subsection{Method \code{number()}}{
+Returns the number of saved optimization results.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$number(
+  which_run = "all",
+  which_optimizer = "all",
+  which_element = "all",
+  only_comparable = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_run}}{Select saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
+\item \code{"failed"}, the results from failed optimization runs,
+\item a \code{character} (vector) of optimization labels,
+\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+}}
+
+\item{\code{which_optimizer}}{Select specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"} for all specified optimizers,
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids, see the \code{$print()} output.
+}}
+
+\item{\code{which_element}}{Select elements of saved optimization results. Either:
+\itemize{
+\item \code{"all"} for all available elements,
+\item \code{"default"}, the elements that are saved for all optimization runs by
+default, i.e.
+\itemize{
+\item \code{"optimization_label"}, the label for the optimization run,
+\item \code{"optimizer_label"}, the label for the optimizer,
+\item \code{"value"}, the function value at the found optimum,
+\item \code{"parameter"}, the parameter at which the optimum value is obtained,
+\item \code{"seconds"}, the optimization time in seconds,
+\item \code{"initial"}, the initial parameter,
+\item \code{"error"}, indicating whether an error occurred,
+\item \code{"error_message"}, the error message (if any).
+}
+\item a \code{character} (vector) with names of specific elements (see
+\code{$elements()} for the names of available elements).
+}}
+
+\item{\code{only_comparable}}{Either \code{TRUE} to show only comparable results (i.e., results obtained
+for the original optimization problem without any transformations),
+or \code{FALSE} to include all optimization results.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+An \code{integer}.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-clear"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-clear}{}}}
 \subsection{Method \code{clear()}}{
@@ -564,6 +658,7 @@ Deletes optimization results.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -620,6 +715,7 @@ Returns names of available elements by optimizer in the results.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -640,121 +736,6 @@ or \code{FALSE} to include all optimization results.}
 }
 \subsection{Returns}{
 A \code{list}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-standardize"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-standardize}{}}}
-\subsection{Method \code{standardize()}}{
-Standardizes the optimization problem.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize(
-  argument_name,
-  by_column = TRUE,
-  center = TRUE,
-  scale = TRUE,
-  ignore = integer(),
-  jointly = list(),
-  verbose = getOption("verbose", default = FALSE)
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be
-standardized. The argument must a \code{numeric} \code{vector},
-\code{matrix}, or \code{data.frame}.}
-
-\item{\code{by_column}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
-a \code{data.frame}.
-In that case, either \code{TRUE} to standardize column-wise (default) or
-\code{FALSE} to standardize row-wise.}
-
-\item{\code{center}}{Set to \code{TRUE} (default) for centering, resulting in zero mean.}
-
-\item{\code{scale}}{Set to \code{TRUE} (default) for scaling, resulting in unit variance.}
-
-\item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
-\code{by_column = FALSE}) to not standardize.}
-
-\item{\code{jointly}}{A \code{list} of \code{integer} vectors with column indices (or row
-indices if \code{by_column = FALSE}) to standardize jointly.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly the \code{Nop} object.
-The \code{numeric} centering and scalings used (if any) are added as
-attributes \code{"standardized:center"} and \code{"standardized:scale"}
-to the argument specified via \code{argument_name}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-subset"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-subset}{}}}
-\subsection{Method \code{subset()}}{
-Subsets the optimization problem.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$subset(
-  argument_name,
-  by_row = TRUE,
-  how = "random",
-  proportion = 0.5,
-  centers = 2,
-  ignore = integer(),
-  seed = NULL,
-  verbose = getOption("verbose", default = FALSE)
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be subsetted.}
-
-\item{\code{by_row}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
-a \code{data.frame}.
-In that case, either \code{TRUE} to subset row-wise (default) or
-\code{FALSE} to subset column-wise.}
-
-\item{\code{how}}{A \code{character}, specifying how to subset. Can be one of:
-\itemize{
-\item \code{"random"} (default), subset at random
-\item \code{"first"}, subset to the first elements
-\item \code{"last"}, subset to the last elements
-\item \code{"similar"}, subset to similar elements
-\item \code{"dissimilar"}, subset to dissimilar elements
-The options \code{"similar"} and \code{"dissimilar"} apply k-means
-clustering via \code{\link[stats]{kmeans}} and require that
-the argument \code{argument_name} is \code{numeric}.
-}}
-
-\item{\code{proportion}}{A \code{numeric} between \code{0} and \code{1}, specifying the
-subset proportion.
-By default, \code{proportion = 0.5}.}
-
-\item{\code{centers}}{Only relevant, if \code{how = "(dis)similar"}.
-In that case, passed to \code{\link[stats]{kmeans}}.
-By default, \code{centers = 2}.}
-
-\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"}.
-In that case, a \code{integer} (vector) of row indices (or column indices
-if \code{by_row = FALSE}) to ignore for clustering.}
-
-\item{\code{seed}}{An \code{integer}, passed on to \code{\link{set.seed}} for reproducibility.
-Can be \code{NULL} for no seed, which is the default.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
@@ -783,6 +764,7 @@ Continues optimization runs, e.g., with a transformed parameter.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -799,12 +781,10 @@ Continues optimization runs, e.g., with a transformed parameter.
 Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{return_results}}{Set to \code{TRUE} to return the optimization results as a \code{list}.
-By default \code{return_results = FALSE}, in which case
-optimization results are saved inside the \code{Nop} object and can be
-accessed via methods.}
+By default \code{return_results = FALSE}.}
 
 \item{\code{save_results}}{Set to \code{TRUE} to save the optimization results inside the \code{Nop}
-object.
+object. These results can be analyzed via different methods, see the details.
 By default, \code{save_results = TRUE}.}
 
 \item{\code{ncores}}{An \code{integer}, setting the number of CPU cores for parallel computation.
@@ -874,6 +854,7 @@ default, i.e.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -935,6 +916,7 @@ Provides an overview of the identified optimum values.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -998,6 +980,7 @@ respect to the overall median.}
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -1056,6 +1039,7 @@ Visualizes deviation of parameters.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -1156,6 +1140,7 @@ Returns the best found \code{numeric} value of \code{f}.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
@@ -1207,6 +1192,7 @@ Returns the best found \code{numeric} parameter vector.
 \item{\code{which_run}}{Select saved results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
 \item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
