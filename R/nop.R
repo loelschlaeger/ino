@@ -4,19 +4,19 @@
 #' A \code{Nop} object defines a numerical optimization problem.
 #'
 #' @param which_optimizer
-#' Select specified numerical optimizers. Either:
+#' Selects specified numerical optimizers. Either:
 #' - \code{"all"} for all specified optimizers,
 #' - a \code{character} (vector) of specified optimizer labels,
 #' - a \code{numeric} (vector) of optimizer ids, see the \code{$print()} output.
 #' @param which_run
-#' Select saved results of optimization runs. Either:
+#' Selects saved results of optimization runs. Either:
 #' - \code{"all"} for all results,
 #' - \code{"last"} for the results of the last \code{$optimize()} call,
 #' - \code{"failed"}, the results from failed optimization runs,
 #' - a \code{character} (vector) of optimization labels,
 #' - a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
 #' @param which_element
-#' Select elements of saved optimization results. Either:
+#' Selects elements of saved optimization results. Either:
 #' - \code{"all"} for all available elements,
 #' - \code{"default"}, the elements that are saved for all optimization runs by
 #'   default, i.e.
@@ -74,22 +74,22 @@
 #' Passed on to \code{\link[ggplot2]{coord_cartesian}}.
 #'
 #' @return
-#' The output of \code{Nop$new()} is a new \code{Nop} object. For the output of
-#' the different methods, please refer to their respective documentation.
+#' For the output of the different methods, please refer to their respective
+#' documentation.
 #'
 #' @details
 #' # Getting started
 #'
 #' ## Step 1: Create a new \code{Nop} object
 #' Call \code{object <- Nop$new(f, npar, ...)} where
-#' - \code{f} is a single-valued function to be optimized for its first
-#'   argument,
+#' - \code{f} is a single-valued function to be optimized with respect to its
+#'   first argument,
 #' - \code{npar} is the length of the first argument of \code{f},
-#' - and \code{...} are additional arguments for \code{f}.
-#' The additional arguments can also be managed via \code{$argument()}.
+#' - and \code{...} are additional arguments for \code{f}. The additional
+#'   arguments can also be managed via the \code{$argument()} method.
 #'
 #' ## Step 2: Specify one or more numerical optimizers
-#' Call \code{object$optimizer("set", <optimizer object>)}, where
+#' Call \code{object$set_optimizer(<optimizer object>)}, where
 #' \code{<optimizer object>} is an object of class \code{optimizer}, which can
 #' be created with the \code{\link[optimizeR]{define_optimizer}} function from
 #' the \{optimizeR\} package.
@@ -97,44 +97,37 @@
 #' - \code{\link[optimizeR]{optimizer_nlm}}
 #' - \code{\link[optimizeR]{optimizer_optim}}
 #'
-#' ## Step 3: Check your settings
-#' Call \code{object$print()} for an overview, and \code{object$validate()} to
-#' validate the configurations.
+#' ## Step 3: Initialize and optimize
+#' Call one of the following methods to initialize the optimization:
+#' - \code{object$initialize_fixed()} for fixed initial values,
+#' - \code{object$initialize_random()} for random initial values,
+#' - \code{object$initialize_continue()} for initial values based on parameter
+#'   estimates from previous optimization runs.
 #'
-#' # Function evaluation and optimization
-#' Call \code{object$evaluate()} to evaluate the target function at some point,
-#' and \code{object$optimize()} for optimization.
-#'
-#' # Initialization strategies
-#' You can define custom initial values in
-#' \code{object$optimize(initial = ...)}.
-#' If \code{f} has additional arguments, you can modify them favorably (e.g.,
-#' subset or standardize) via \code{object$argument("modify", <argument name>)},
-#' then optimize to obtain good initial values, reset the argument via
-#' \code{object$argument("reset", <argument name>)}, and continue the
-#' optimization with these initial values via
-#' \code{object$optimize(initial = self$continue()}. These and more strategies
-#' are illustrated in detail in the package vignettes.
+#' The different initialization strategies are illustrated in the package
+#' vignettes. Next, call \code{object$optimize()} for the optimization.
 #'
 #' # Methods for analyzing the results
 #' A \code{Nop} object provides methods for the analysis of the saved
 #' optimization results, with filter options for optimization runs, optimizers,
-#' and elements (parts of the optimizer outputs):
+#' and elements (i.e., parts of the optimizer outputs):
 #' - \code{$results()} returns a \code{list} of the saved optimization results,
 #' - \code{$summary()} summarizes the results in a \code{data.frame},
 #' - \code{$optima()} returns a frequency table of the identified optima,
-#' - \code{$plot()} visualizes the optimization time or value,
+#' - \code{$plot()} visualizes the optimization times or values,
 #' - \code{$best()} returns the best found parameter vector or function value.
 #'
 #' # Other methods and fields
 #' A \code{Nop} object also provides the following methods and fields for
 #' convenience:
+#' - \code{object$validate()} checks the configurations of a \code{Nop} object,
+#' - \code{object$evaluate()} evaluates the target function at some point,
 #' - \code{$clear()} deletes optimization results,
 #' - \code{$elements()} returns the names of the available elements in the
 #'   optimizer outputs,
 #' - \code{$number()} returns the number of saved optimization results,
 #' - \code{$deviation()} calculates and plots deviations of parameters to a
-#'   reference parameter (i.e., the true parameter vector
+#'   reference parameter (e.g., to the true parameter vector
 #'   \code{self$true_parameter}),
 #' - \code{$trace()} calculates and plots the trace of an optimization,
 #' - \code{$f_name} stores the function name,
@@ -146,10 +139,13 @@
 #' - \code{$fresh_label} generates a new label for the optimization.
 #'
 #' @examples
-#' Nop$new(f = f_ackley, npar = 2)$
-#'   optimizer(optimizer_nlm())$
-#'   optimize("random", runs = 100, verbose = FALSE)$
-#'   optima()
+#' # Optimization of the Ackley function
+#'
+#' Nop$new(f = f_ackley, npar = 2)$   # initialize the Nop object
+#'   set_optimizer(optimizer_nlm())$  # define the nlm optimizer
+#'   initialize_random(runs = 100)$   # initialize 100 times randomly
+#'   optimize(verbose = FALSE)$       # optimize
+#'   optima()                         # return overview of optima
 #'
 #' @export
 
@@ -200,139 +196,6 @@ Nop <- R6::R6Class(
       private$.f_target <- names(formals(f))[1]
       private$.npar <- as.integer(npar)
       if (length(list(...)) > 0) self$argument("set", ...)
-    },
-
-    #' @description
-    #' Manages additional (i.e., in addition to the target argument) arguments
-    #' for \code{f}.
-    #' @param action
-    #' One of:
-    #' - \code{"set"} to set an argument,
-    #' - \code{"get"} to extract an argument value,
-    #' - \code{"remove"} to remove an argument,
-    #' - \code{"reset"} to reset an argument to the original value,
-    #' - \code{"modify"} to modify an argument to a new value (the original
-    #'   value is saved and can be recovered via \code{"reset"}),
-    #' - \code{"subset"} to subset an argument,
-    #' - \code{"standardize"} to standardize a \code{numeric} argument.
-    #' @param ...
-    #' Additional parameters depending on the \code{action}:
-    #' - if \code{action = "set"} or \code{"modify"}, one or more named
-    #'   elements,
-    #' - if \code{action = "get"}, \code{"remove"}, or \code{"reset"},
-    #'   the argument \code{name},
-    #' - if \code{action = "subset"},
-    #'   - the argument \code{name},
-    #'   - \code{byrow}, either \code{TRUE} to subset
-    #'     row-wise (default) or \code{FALSE} to subset column-wise,
-    #'   - \code{how}, a \code{character}, specifying how to subset, either
-    #'     - \code{"random"} (default), subset at random,
-    #'     - \code{"first"}, subset to the first elements,
-    #'     - \code{"last"}, subset to the last elements,
-    #'     - \code{"similar"}, subset to similar elements,
-    #'     - \code{"dissimilar"}, subset to dissimilar elements,
-    #'     (the options \code{"similar"} and \code{"dissimilar"} apply k-means
-    #'     clustering via \code{\link[stats]{kmeans}} and require that
-    #'     the argument is \code{numeric}),
-    #'   - \code{proportion}, a \code{numeric} between \code{0} and \code{1},
-    #'     specifying the subset proportion,
-    #'   - \code{centers}, passed on to \code{\link[stats]{kmeans}}
-    #'     if \code{how = "(dis)similar"} (by default, \code{centers = 2}),
-    #'   - \code{ignore}, an \code{integer} vector of row indices (or column
-    #'     indices if \code{byrow = FALSE}) to ignore for clustering if
-    #'     \code{how = "(dis)similar"},
-    #' - if \code{action = "standardize"},
-    #'   - the argument \code{name},
-    #'   - \code{byrow}, either \code{TRUE} to standardize
-    #'     row-wise or \code{FALSE} to standardize column-wise (default),
-    #'   - \code{center}, set to \code{TRUE} (default) for centering, resulting
-    #'     in zero mean,
-    #'   - \code{scale}, set to \code{TRUE} (default) for scaling, resulting in
-    #'     unit variance,
-    #'   - \code{ignore}, an \code{integer} vector of column indices (or row
-    #'     indices if \code{byrow = TRUE}) to not standardize,
-    #'   - \code{jointly}, a \code{list} of \code{integer} vectors with column
-    #'     indices (or row indices if \code{byrow = TRUE}) to standardize
-    #'     jointly.
-    #' @return
-    #' The argument value if \code{action = "get"} and invisibly the \code{Nop}
-    #' object, else. If \code{action = "standardize"}, the \code{numeric}
-    #' centering and scaling used (if any) are added as
-    #' attributes \code{"standardized:center"} and \code{"standardized:scale"}
-    #' to the argument.
-    #' @importFrom ellipsis check_dots_used
-    argument = function(
-      action = "set", ..., verbose = getOption("verbose", default = FALSE)
-    ) {
-      is_name(action, allow_na = FALSE)
-      if (!action %in% c(
-        "set", "get", "remove", "reset", "modify", "subset", "standardize"
-      )) {
-        ino_stop(
-          "Argument {.var action} should be one of {.val set}, {.val get},
-          {.val remove}, {.val reset}, {.val modify}, {.val subset}, or
-          {.val standardize}."
-        )
-      }
-      ellipsis::check_dots_used()
-      is_TRUE_FALSE(verbose, allow_na = FALSE)
-      if (action == "set") {
-        args <- list(...)
-        arg_name <- names(args)
-        if (length(args) == 0) {
-          ino_warn("No argument to set.")
-        } else if (length(args) > 1) {
-          for (i in 1:length(args)) {
-            arg <- list("set", args[[i]])
-            names(arg) <- c("action", arg_name[i])
-            do.call(self$argument, arg)
-          }
-        } else {
-          if (!is_name(arg_name, error = FALSE)) {
-            ino_stop(
-              glue::glue(
-                "All arguments to be set must be named."
-              )
-            )
-          }
-          if (arg_name %in% names(private$.arguments)) {
-            ino_stop(
-              glue::glue(
-                "Argument {.var <arg_name>} already exists, ",
-                "call {.var $argument(\"remove\", {.val <arg_name>})} first.",
-                .open = "<", .close = ">"
-              )
-            )
-          }
-          private$.arguments <- c(private$.arguments, args)
-          ino_status(
-            glue::glue(
-              "Set argument {.var <arg_name>}.",
-              .open = "<", .close = ">"
-            ),
-            verbose = verbose
-          )
-        }
-      }
-      if (action == "get") {
-
-      }
-      if (action == "remove") {
-
-      }
-      if (action == "reset") {
-
-      }
-      if (action == "modify") {
-
-      }
-      if (action == "subset") {
-
-      }
-      if (action == "standardize") {
-
-      }
-      invisible(self)
     },
 
     #' @description
@@ -417,7 +280,320 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Sets a numerical optimizer.
+    #' Manages additional (i.e., in addition to the target argument) arguments
+    #' for \code{f}.
+    #' @param action
+    #' One of:
+    #' - \code{"set"} to set an argument,
+    #' - \code{"get"} to extract an argument value,
+    #' - \code{"remove"} to remove an argument,
+    #' - \code{"reset"} to reset an argument to the original value,
+    #' - \code{"modify"} to modify an argument to a new value (the original
+    #'   value is saved and can be recovered via \code{"reset"}),
+    #' - \code{"subset"} to subset an argument,
+    #' - \code{"standardize"} to standardize a \code{numeric} argument.
+    #' @param ...
+    #' Additional parameters depending on the \code{action}:
+    #' - if \code{action = "set"} or \code{"modify"}, one or more named
+    #'   arguments,
+    #' - if \code{action = "get"}, \code{"remove"}, or \code{"reset"},
+    #'   the argument \code{name},
+    #' - if \code{action = "subset"},
+    #'   - the argument \code{name},
+    #'   - \code{byrow}, either \code{TRUE} to subset
+    #'     row-wise (default) or \code{FALSE} to subset column-wise,
+    #'   - \code{how}, a \code{character}, specifying how to subset, either
+    #'     - \code{"random"} (default), subset at random,
+    #'     - \code{"first"}, subset to the first elements,
+    #'     - \code{"last"}, subset to the last elements,
+    #'     - \code{"similar"}, subset to similar elements,
+    #'     - \code{"dissimilar"}, subset to dissimilar elements,
+    #'     (the options \code{"similar"} and \code{"dissimilar"} apply k-means
+    #'     clustering via \code{\link[stats]{kmeans}} and require that
+    #'     the argument is \code{numeric}),
+    #'   - \code{proportion}, a \code{numeric} between \code{0} and \code{1},
+    #'     specifying the subset proportion (the default is \code{0.5}),
+    #'   - \code{centers}, passed on to \code{\link[stats]{kmeans}}
+    #'     if \code{how = "(dis)similar"} (by default, \code{centers = 2}),
+    #'   - \code{ignore}, an \code{integer} vector of row indices (or column
+    #'     indices if \code{byrow = FALSE}) to ignore for clustering if
+    #'     \code{how = "(dis)similar"},
+    #'   - \code{seed}, an \code{integer} for reproducibility,
+    #' - if \code{action = "standardize"},
+    #'   - the argument \code{name},
+    #'   - \code{byrow}, either \code{TRUE} to standardize
+    #'     row-wise or \code{FALSE} to standardize column-wise (default),
+    #'   - \code{center}, set to \code{TRUE} (default) for centering, resulting
+    #'     in zero mean,
+    #'   - \code{scale}, set to \code{TRUE} (default) for scaling, resulting in
+    #'     unit variance,
+    #'   - \code{ignore}, an \code{integer} vector of column indices (or row
+    #'     indices if \code{byrow = TRUE}) to not standardize,
+    #'   - \code{jointly}, a \code{list} of \code{integer} vectors with column
+    #'     indices (or row indices if \code{byrow = TRUE}) to standardize
+    #'     jointly.
+    #' @return
+    #' The argument value if \code{action = "get"} and invisibly the \code{Nop}
+    #' object, else. If \code{action = "standardize"}, the \code{numeric}
+    #' centering and scaling used (if any) are added as
+    #' attributes \code{"standardized:center"} and \code{"standardized:scale"}
+    #' to the argument.
+    #' @importFrom ellipsis check_dots_used
+    argument = function(
+      action, ..., verbose = getOption("verbose", default = FALSE)
+    ) {
+      if (missing(action)) {
+        ino_stop("Please specify argument {.var action}.")
+      }
+      is_name(action, allow_na = FALSE)
+      if (!action %in% c(
+        "set", "get", "remove", "reset", "modify", "subset", "standardize"
+      )) {
+        ino_stop(
+          "Argument {.var action} should be one of {.val set}, {.val get},
+          {.val remove}, {.val reset}, {.val modify}, {.val subset}, or
+          {.val standardize}."
+        )
+      }
+      is_TRUE_FALSE(verbose, allow_na = FALSE)
+      args <- list(...)
+      arg_names <- names(args)
+      if (action == "set") {
+        if (length(args) == 0) {
+          ino_warn("No argument to set.")
+        } else if (length(args) > 1) {
+          for (i in 1:length(args)) {
+            arg <- list("set", args[[i]])
+            names(arg) <- c("action", arg_names[i])
+            do.call(self$argument, arg)
+          }
+        } else {
+          name <- arg_names[1]
+          if (!is_name(name, error = FALSE)) {
+            ino_stop(
+              glue::glue(
+                "All arguments to be set must be named."
+              )
+            )
+          }
+          if (name %in% names(private$.arguments)) {
+            ino_stop(
+              glue::glue(
+                "Argument {.var <name>} already exists, ",
+                "call {.var $argument(\"remove\", {.val <name>})} first.",
+                .open = "<", .close = ">"
+              )
+            )
+          }
+          private$.arguments <- c(private$.arguments, args)
+          ino_status(
+            glue::glue(
+              "Set argument {.var <name>}.",
+              .open = "<", .close = ">"
+            ),
+            verbose = verbose
+          )
+        }
+      }
+      if (action == "get") {
+        if (!"name" %in% arg_names) {
+          ino_stop("Please specify {.var name}.")
+        }
+        name <- args[["name"]]
+        is_name(name)
+        private$.check_additional_argument_exists(name)
+        return(private$.arguments[[name]])
+      }
+      if (action == "remove") {
+        if (!"name" %in% arg_names) {
+          ino_stop("Please specify {.var name}.")
+        }
+        name <- args[["name"]]
+        is_name(name)
+        private$.check_additional_argument_exists(name)
+        arg_id <- which(names(private$.arguments) == name)
+        private$.arguments[arg_id] <- NULL
+        arg_id <- which(names(private$.original_arguments) == name)
+        private$.original_arguments[arg_id] <- NULL
+        ino_status(
+          glue::glue(
+            "Removed argument {.var <name>}.",
+            .open = "<", .close = ">"
+          ),
+          verbose = verbose
+        )
+      }
+      if (action == "reset") {
+        if (!"name" %in% arg_names) {
+          ino_stop("Please specify {.var name}.")
+        }
+        name <- args[["name"]]
+        is_name(name)
+        private$.check_additional_argument_exists(name)
+        if (!is.null(private$.original_arguments[[name]])) {
+          original_argument <- private$.original_arguments[[name]]
+          private$.arguments[[name]] <- original_argument
+          private$.original_arguments[[name]] <- NULL
+          ino_status(
+            glue::glue("Reset `{name}`."),
+            verbose = verbose
+          )
+        } else {
+          ino_warn("Nothing to reset.")
+        }
+      }
+      if (action == "modify") {
+        if (length(args) == 0) {
+          ino_warn("No argument to modify.")
+        } else if (length(args) > 1) {
+          for (i in 1:length(args)) {
+            arg <- list("modify", args[[i]])
+            names(arg) <- c("action", arg_names[i])
+            do.call(self$argument, arg)
+          }
+        } else {
+          name <- arg_names[1]
+          if (!is_name(name, error = FALSE)) {
+            ino_stop(
+              glue::glue(
+                "All arguments to be modified must be named."
+              )
+            )
+          }
+          private$.check_additional_argument_exists(name)
+          if (is.null(private$.original_arguments[[name]])) {
+            private$.original_arguments[[name]] <- private$.arguments[[name]]
+          }
+          private$.arguments[[name]] <- args[[name]]
+          ino_status(
+            glue::glue(
+              "Modified argument {.var <name>}.",
+              .open = "<", .close = ">"
+            ),
+            verbose = verbose
+          )
+        }
+      }
+      if (action == "subset") {
+        if (!"name" %in% arg_names) {
+          ino_stop("Please specify {.var name}.")
+        }
+        name <- args[["name"]]
+        is_name(name)
+        original_argument <- self$argument("get", name = name)
+        byrow <- if ("byrow" %in% arg_names) {
+          args[["byrow"]]
+        } else {
+          TRUE
+        }
+        how <- if ("how" %in% arg_names) {
+          args[["how"]]
+        } else {
+          "random"
+        }
+        proportion <- if ("proportion" %in% arg_names) {
+          args[["proportion"]]
+        } else {
+          0.5
+        }
+        centers <- if ("centers" %in% arg_names) {
+          args[["centers"]]
+        } else {
+          2
+        }
+        ignore <- if ("ignore" %in% arg_names) {
+          args[["ignore"]]
+        } else {
+          integer()
+        }
+        if ("seed" %in% arg_names) {
+          ino_seed(seed = args[["seed"]], verbose = verbose)
+        }
+        subsetted_argument <- helper_subset(
+          argument = original_argument, byrow = byrow, how = how,
+          proportion = proportion, centers = centers, ignore = ignore
+        )
+        ino_status(
+          glue::glue(
+            "Reduced `{name}` from ",
+            if (is.atomic(original_argument) &&
+                is.null(dim(original_argument))) {
+              length_old <- length(original_argument)
+              length_new <- length(subsetted_argument)
+              "{length_old} to {length_new} {how} element(s)."
+            } else {
+              if (byrow) {
+                nrow_old <- nrow(original_argument)
+                nrow_new <- nrow(subsetted_argument)
+                glue::glue(
+                  "{nrow_old} to {nrow_new} {how} row(s).",
+                )
+              } else {
+                ncol_old <- ncol(original_argument)
+                ncol_new <- ncol(subsetted_argument)
+                glue::glue(
+                  "{ncol_old} to {ncol_new} {how} column(s).",
+                )
+              }
+            }
+          ),
+          verbose = verbose
+        )
+        private$.arguments[[name]] <- subsetted_argument
+        if (is.null(private$.original_arguments[[name]])) {
+          private$.original_arguments[[name]] <- original_argument
+        }
+      }
+      if (action == "standardize") {
+        if (!"name" %in% arg_names) {
+          ino_stop("Please specify {.var name}.")
+        }
+        name <- args[["name"]]
+        is_name(name)
+        original_argument <- self$argument("get", name = name)
+        byrow <- if ("byrow" %in% arg_names) {
+          args[["byrow"]]
+        } else {
+          FALSE
+        }
+        center <- if ("center" %in% arg_names) {
+          args[["center"]]
+        } else {
+          TRUE
+        }
+        scale <- if ("scale" %in% arg_names) {
+          args[["scale"]]
+        } else {
+          TRUE
+        }
+        ignore <- if ("ignore" %in% arg_names) {
+          args[["ignore"]]
+        } else {
+          integer()
+        }
+        jointly <- if ("jointly" %in% arg_names) {
+          args[["jointly"]]
+        } else {
+          integer()
+        }
+        standardized_argument <- helper_standardize(
+          argument = original_argument, byrow = byrow, center = center,
+          scale = scale, ignore = ignore, jointly = jointly
+        )
+        private$.arguments[[name]] <- standardized_argument
+        if (is.null(private$.original_arguments[[name]])) {
+          private$.original_arguments[[name]] <- original_argument
+        }
+        ino_status(
+          glue::glue("Standardized `{name}`."),
+          verbose = verbose
+        )
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Specifies a numerical optimizer.
     #' @param optimizer
     #' An object of class \code{optimizer}, which can be created via
     #' \code{\link[optimizeR]{define_optimizer}}.
@@ -472,14 +648,14 @@ Nop <- R6::R6Class(
         private$.get_optimizer_ids(which_optimizer = which_optimizer)
       )
       is_TRUE_FALSE(verbose)
-      ino_status("Check Nop specifications:", verbose = verbose)
+      ino_status("Check specifications:", verbose = verbose)
       ino_success(
         glue::glue("Function specified: {self$f_name}"),
         verbose = verbose
       )
       ino_success(
         glue::glue(
-          "Target argument specified: {self$f_target} (length {self$npar})"
+          "Target argument specified: {private$.f_target} (length {self$npar})"
         ),
         verbose = verbose
       )
@@ -526,7 +702,7 @@ Nop <- R6::R6Class(
           )
         } else {
           ino_success(
-            glue::glue("Return value: {round(out, digits = digits)}"),
+            glue::glue("Value: {round(out, digits = digits)}"),
             verbose = verbose
           )
         }
@@ -540,15 +716,15 @@ Nop <- R6::R6Class(
         for (i in optimizer_ids) {
           ino_status(
             glue::glue(
-              "Try to optimize the function with ",
-              "`{paste(names(self$optimizer)[i], collapse = ', ')}`:"
+              "Try to optimize with ",
+              "`{paste(names(private$.optimizer)[i], collapse = ', ')}`:"
             ),
             verbose = verbose
           )
           out <- self$optimize(
             initial = at, runs = 1, which_optimizer = i, seed = NULL,
             return_results = TRUE, save_results = FALSE, ncores = 1,
-            verbose = FALSE, simplify = TRUE, time_limit = time_limit,
+            verbose = FALSE, simplify = FALSE, time_limit = time_limit,
             hide_warnings = TRUE
           )
           if (!is.null(out$error)) {
@@ -642,6 +818,22 @@ Nop <- R6::R6Class(
           if (tl) return("time limit reached") else return(msg)
         }
       )
+    },
+
+    initialize_fixed = function(at) {
+
+    },
+
+    initialize_random = function(
+      sampler = stats::rnorm(self$npar), runs = 1
+    ) {
+
+    },
+
+    initialize_continue = function(
+      run_ids, optimizer_ids, transform = function(x) x
+    ) {
+
     },
 
     #' @description
@@ -787,7 +979,7 @@ Nop <- R6::R6Class(
       }
       if (return_results) {
         if (simplify) {
-          helper_flatten_list(results)
+          helper_flatten(results)
         } else {
           results
         }
@@ -807,6 +999,10 @@ Nop <- R6::R6Class(
       which_run = "all", which_optimizer = "all", which_element = "all",
       only_comparable = FALSE, simplify = TRUE
     ) {
+
+      # TODO: if 'which_element' does not exist for some 'which_optimizer',
+      #       drop it and give a warning (same for 'which_optimizer')
+
       run_ids <- private$.get_run_ids(which_run)
       optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
       if (length(run_ids) == 0 || length(optimizer_ids) == 0) {
@@ -1248,7 +1444,7 @@ Nop <- R6::R6Class(
       if (!name %in% names(private$.arguments)) {
         ino_stop(
           glue::glue(
-            "Required function argument {.var <name>} is not yet specified, ",
+            "Function argument {.var <name>} is not yet specified, ",
             "call {.var $argument(\"set\", {.val <name>} = ...)} first.",
             .open = "<", .close = ">"
           )

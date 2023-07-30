@@ -32,7 +32,7 @@ test_that("Nop object can be initialized", {
   )
 })
 
-test_that("arguments for Nop object can be set", {
+test_that("Additional function arguments can be set", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -51,7 +51,7 @@ test_that("arguments for Nop object can be set", {
   expect_snapshot(print(hmm))
 })
 
-test_that("arguments for Nop object can be get", {
+test_that("Additional function arguments can be extracted", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -59,21 +59,21 @@ test_that("arguments for Nop object can be get", {
   data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data, test_arg = 6)
   expect_error(
-    hmm$get_argument(),
+    hmm$argument("get"),
     "Please specify"
   )
-  expect_equal(hmm$get_argument("test_arg"), 6)
+  expect_equal(hmm$argument("get", name = "test_arg"), 6)
   expect_error(
-    hmm$get_argument("does_not_exist"),
+    hmm$argument("get", name = "does_not_exist"),
     "is not yet specified"
   )
   expect_error(
-    hmm$get_argument(1),
+    hmm$argument("get", name = 1),
     "must be a single"
   )
 })
 
-test_that("arguments for Nop object can be removed", {
+test_that("Additional function arguments can be removed", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)
@@ -81,21 +81,43 @@ test_that("arguments for Nop object can be removed", {
   data <- sim_hmm(Tp = 100, N = 2, theta = theta)
   hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data)
   expect_error(
-    hmm$remove_argument("arg_does_not_exist"),
+    hmm$argument("remove", name = "arg_does_not_exist"),
     "is not yet specified"
   )
-  expect_s3_class(hmm$remove_argument("data"), "Nop")
+  expect_s3_class(hmm$argument("remove", name = "data"), "Nop")
   expect_error(
-    hmm$remove_argument(),
+    hmm$argument("remove"),
     "Please specify"
   )
   expect_error(
-    hmm$remove_argument(argument_name = 1:2),
+    hmm$argument("remove", name = 1:2),
     "must be a"
   )
 })
 
-test_that("optimizer can be set", {
+test_that("Additional function arguments can be modified and reset", {
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2, 2)
+  sigma <- c(0.5, 1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
+  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data)
+  hmm$argument("standardize", name = "data")
+  hmm$argument("subset", name = "data")
+  hmm$argument("reset", name = "data")
+  expect_identical(
+    hmm$argument("get", name = "data"),
+    data
+  )
+  data_tmp <- 1:10
+  hmm$argument("modify", data = data_tmp)
+  expect_identical(
+    hmm$argument("get", name = "data"),
+    data_tmp
+  )
+})
+
+test_that("Optimizer can be set", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
     ackley$set_optimizer(),
@@ -121,19 +143,25 @@ test_that("optimizer can be set", {
   expect_snapshot(ackley)
 })
 
-test_that("Nop object can be tested", {
+test_that("Nop object can be validated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
-    ackley$test(at = 1),
+    ackley$validate(at = 1),
     "must be of length 2"
   )
   expect_warning(
-    ackley$test(),
+    ackley$validate(),
     "No optimizer specified, testing optimizers is skipped."
   )
-  ackley$set_optimizer(optimizer_nlm())
-  expect_true(ackley$test())
+  ackley$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  expect_true(ackley$validate())
 })
+
+
+
+
 
 test_that("Ackley function can be evaluated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
@@ -380,171 +408,7 @@ test_that("Nop tests can be interrupted", {
   )
 })
 
-test_that("Standardization works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_argument(
-      "arg1" = diag(3), "arg2" = list(), "arg3" = 1,
-      "arg4" = 1:5, "arg5" = matrix(1:12, 3, 4),
-      "arg6" = data.frame(matrix(1:12, 3, 4))
-    )
-  expect_error(
-    ackley$standardize(),
-    "Please specify"
-  )
-  expect_error(
-    ackley$standardize(1),
-    "must be a single"
-  )
-  expect_error(
-    ackley$standardize(
-      argument_name = "arg1", by_column = "not_a_boolean",
-      center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
-    ),
-    "must be"
-  )
-  expect_error(
-    ackley$standardize(
-      argument_name = "arg1", by_column = TRUE,
-      center = TRUE, scale = TRUE, ignore = pi, jointly = list()
-    ),
-    "must be an"
-  )
-  expect_error(
-    ackley$standardize(
-      argument_name = "arg2", by_column = TRUE,
-      center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
-    ),
-    "Argument cannot be standardized."
-  )
-  expect_warning(
-    ackley$standardize(
-      argument_name = "arg3", by_column = TRUE,
-      center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
-    ),
-    "Argument has NAs after standardization."
-  )
-  combinations <- expand.grid(
-    argument_name = c("arg4", "arg5", "arg6"),
-    by_column = c(TRUE, FALSE),
-    center = c(TRUE, FALSE),
-    scale = c(TRUE, FALSE),
-    ignore = list(integer(), 3),
-    jointly = list(list(), list(1:2)),
-    stringsAsFactors = FALSE
-  )
-  for (i in 1:nrow(combinations)) {
-    ackley$standardize(
-      argument_name = combinations[i, "argument_name"],
-      by_column = combinations[i, "by_column"],
-      center = combinations[i, "center"],
-      scale = combinations[i, "scale"],
-      ignore = combinations[[i, "ignore"]],
-      jointly = combinations[[i, "jointly"]]
-    )$reset_argument(argument_name = combinations[i, "argument_name"])
-  }
-})
-
-test_that("Subsetting works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_argument(
-      "arg1" = diag(3), "arg2" = list(), "arg3" = 1,
-      "arg4" = 1:5, "arg5" = matrix(1:12, 3, 4),
-      "arg6" = data.frame(matrix(1:12, 3, 4))
-    )
-  expect_error(
-    ackley$subset(),
-    "Please specify"
-  )
-  expect_error(
-    ackley$subset(1),
-    "must be a single"
-  )
-  expect_error(
-    ackley$subset(
-      argument_name = "arg1", by_row = TRUE,
-      how = TRUE, proportion = 0.5, centers = 2, ignore = integer()
-    ),
-    "must be a single"
-  )
-  expect_error(
-    ackley$subset(
-      argument_name = "arg1", by_row = TRUE,
-      how = "bad", proportion = 0.5, centers = 2, ignore = integer()
-    ),
-    "is misspecified"
-  )
-  expect_error(
-    ackley$subset(
-      argument_name = "arg1", by_row = "bad",
-      how = "random", proportion = 0.5, centers = 2, ignore = integer()
-    ),
-    "must be"
-  )
-  expect_error(
-    ackley$subset(
-      argument_name = "arg1", by_row = FALSE,
-      how = "similar", proportion = 0.5, centers = 2, ignore = pi
-    ),
-    "must be an index"
-  )
-  expect_error(
-    ackley$subset(
-      argument_name = "arg2", by_row = FALSE,
-      how = "random", proportion = 0.5, centers = 2, ignore = integer()
-    ),
-    "Argument cannot be subsetted."
-  )
-  expect_error(
-    ackley$subset(
-      argument_name = "arg3", by_row = FALSE,
-      how = "random", proportion = 0.5, centers = 2, ignore = integer()
-    ),
-    "Argument cannot be subsetted."
-  )
-  expect_error(
-    ackley$subset(
-      argument_name = "arg1", by_row = FALSE,
-      how = "random", proportion = -0.5, centers = 2, ignore = integer()
-    ),
-    "between 0 and 1"
-  )
-  combinations <- expand.grid(
-    argument_name = c("arg4", "arg5", "arg6"),
-    by_row = c(TRUE, FALSE),
-    how = c("random", "first", "last", "similar", "dissimilar"),
-    proportion = c(0.2, 0.8),
-    ignore = list(list(), 2),
-    stringsAsFactors = FALSE
-  )
-  for (i in 1:nrow(combinations)) {
-    ackley$subset(
-      argument_name = combinations[i, "argument_name"],
-      by_row = combinations[i, "by_row"],
-      how = combinations[i, "how"],
-      proportion = combinations[i, "proportion"],
-      centers = 2,
-      ignore = combinations[[i, "ignore"]]
-    )$reset_argument(argument_name = combinations[i, "argument_name"])
-  }
-})
-
-test_that("continue optimization works", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )$set_optimizer(optimizer_nlm())$
-    standardize("data")$
-    optimize(runs = 2)$
-    reset_argument("data")$
-    continue()
-  expect_s3_class(hmm, "Nop")
-})
-
-test_that("results can be accessed", {
+test_that("Results can be accessed", {
   runs <- 10
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
@@ -555,7 +419,7 @@ test_that("results can be accessed", {
   expect_length(results, runs)
 })
 
-test_that("overview of available elements can be created", {
+test_that("Overview of available elements can be created", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())
   expect_warning(
@@ -572,7 +436,7 @@ test_that("overview of available elements can be created", {
   )
 })
 
-test_that("results can be cleared", {
+test_that("Results can be cleared", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())
   expect_warning(
@@ -583,7 +447,7 @@ test_that("results can be cleared", {
   ackley$clear(which_run = 1)
 })
 
-test_that("results can be summarized", {
+test_that("Results can be summarized", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
@@ -593,7 +457,7 @@ test_that("results can be summarized", {
   )
 })
 
-test_that("overview of optima works", {
+test_that("Overview of optima works", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
@@ -609,7 +473,7 @@ test_that("overview of optima works", {
   )
 })
 
-test_that("optimization times and values can be plotted", {
+test_that("Optimization times and values can be plotted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())$
@@ -642,12 +506,12 @@ test_that("optimization times and values can be plotted", {
   }
 })
 
-test_that("optimization trace can be extracted", {
+test_that("Optimization trace can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_s3_class(ackley$trace(), "data.frame")
 })
 
-test_that("best value can be extracted", {
+test_that("Best value and parameter can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
@@ -659,12 +523,6 @@ test_that("best value can be extracted", {
   expect_length(
     ackley$best_value(), 1
   )
-})
-
-test_that("best parameter can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
   expect_warning(
     expect_null(ackley$best_parameter()),
     "No optimization results saved yet."
@@ -675,7 +533,7 @@ test_that("best parameter can be extracted", {
   )
 })
 
-test_that("existence of additional argument can be checked", {
+test_that("Existence of additional argument can be checked", {
   tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
   mu <- c(-2, 2)
   sigma <- c(0.5, 1)

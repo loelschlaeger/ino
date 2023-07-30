@@ -150,15 +150,15 @@ initial_values_helper <- function(
 #' Helper function for standardization
 #'
 #' @details
-#' This function is part of the \code{$standardize()} method of a
-#' \code{\link{Nop}} object and standardizes a given argument.
+#' This function is part of the \code{$argument(action = "standardize")} method
+#' of a \code{\link{Nop}} object and standardizes a given argument.
 #'
 #' @param argument
 #' A \code{numeric} \code{vector}, \code{matrix}, or \code{data.frame}.
-#' @param by_column
+#' @param byrow
 #' Only relevant if \code{argument} is a \code{matrix} or a \code{data.frame}.
-#' In that case, either \code{TRUE} to standardize column-wise (default) or
-#' \code{FALSE} to standardize row-wise.
+#' In that case, either \code{TRUE} to standardize row-wise or
+#' \code{FALSE} to standardize column-wise (default).
 #' @param center
 #' Set to \code{TRUE} (default) for centering, resulting in zero mean.
 #' @param scale
@@ -166,11 +166,11 @@ initial_values_helper <- function(
 #' @param ignore
 #' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame}.
 #' In that case, A \code{integer} (vector) of column indices (or row indices if
-#' \code{by_column = FALSE}) to not standardize.
+#' \code{byrow = TRUE}) to not standardize.
 #' @param jointly
 #' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame}.
 #' In that case, a \code{list} of \code{integer} vectors with column indices
-#' (or row indices if \code{by_column = FALSE}) to standardize jointly.
+#' (or row indices if \code{byrow = TRUE}) to standardize jointly.
 #'
 #' @return
 #' The standardized input \code{argument}.
@@ -179,22 +179,22 @@ initial_values_helper <- function(
 #'
 #' @keywords internal
 
-standardize_helper <- function(
-    argument, by_column = TRUE, center = TRUE, scale = TRUE, ignore = integer(),
+helper_standardize <- function(
+    argument, byrow = FALSE, center = TRUE, scale = TRUE, ignore = integer(),
     jointly = list()
   ) {
   vector_flag <- is.atomic(argument) && is.null(dim(argument))
   if (vector_flag) {
     argument <- as.data.frame(argument)
-    by_column <- TRUE
+    byrow <- FALSE
     ignore <- integer()
     jointly <- list()
   } else if (is.data.frame(argument) || is.matrix(argument)) {
-    is_TRUE_FALSE(by_column)
-    indices <- if (by_column) {
-      seq_len(ncol(argument))
-    } else {
+    is_TRUE_FALSE(byrow)
+    indices <- if (byrow) {
       seq_len(nrow(argument))
+    } else {
+      seq_len(ncol(argument))
     }
     is_index_vector(ignore)
     if (!all(ignore %in% indices)) {
@@ -224,7 +224,7 @@ standardize_helper <- function(
   } else {
     ino_stop("Argument cannot be standardized.")
   }
-  margin <- ifelse(by_column, 2, 1)
+  margin <- ifelse(byrow, 1, 2)
   center_values <- rep(0, dim(argument)[margin])
   scale_values <- rep(1, dim(argument)[margin])
   if (center) {
@@ -243,10 +243,10 @@ standardize_helper <- function(
     )
     scale_values[ignore] <- 1
     for (join in jointly) {
-      scale_values[join] <- if (by_column) {
-        sd(as.matrix(argument[, join]), na.rm = TRUE)
-      } else {
+      scale_values[join] <- if (byrow) {
         sd(as.matrix(argument[join, ]), na.rm = TRUE)
+      } else {
+        sd(as.matrix(argument[, join]), na.rm = TRUE)
       }
     }
     argument <- sweep(argument, margin, scale_values, "/")
@@ -269,12 +269,12 @@ standardize_helper <- function(
 #' Helper function for subsetting
 #'
 #' @details
-#' This function is part of the \code{$subset()} method of a
+#' This function is part of the \code{$argument(action = "subset")} method of a
 #' \code{\link{Nop}} object and subsets a given argument.
 #'
 #' @param argument
 #' A \code{vector}, \code{matrix}, or \code{data.frame}.
-#' @param by_row
+#' @param byrow
 #' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame}.
 #' In that case, either \code{TRUE} to subset row-wise (default) or
 #' \code{FALSE} to subset column-wise.
@@ -300,15 +300,15 @@ standardize_helper <- function(
 #' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame} and
 #' \code{how = "(dis)similar"}.
 #' In that case, a \code{integer} (vector) of row indices (or column indices
-#' if \code{by_row = FALSE}) to ignore for clustering.
+#' if \code{byrow = FALSE}) to ignore for clustering.
 #'
 #' @return
 #' The subsetted input \code{argument}.
 #'
 #' @keywords internal
 
-subset_helper <- function(
-    argument, by_row = TRUE, how = "random", proportion = 0.5, centers = 2,
+helper_subset <- function(
+    argument, byrow = TRUE, how = "random", proportion = 0.5, centers = 2,
     ignore = integer()
   ) {
   is_name(how)
@@ -323,14 +323,14 @@ subset_helper <- function(
   }
   is_proportion(proportion)
   df_flag <- ifelse(is.data.frame(argument), TRUE, FALSE)
-  if (is.vector(argument) && length(argument) > 1) {
+  if (is.atomic(argument) && is.null(dim(argument)) && length(argument) > 1) {
     argument <- as.data.frame(argument)
     vector_flag <- TRUE
-    by_row <- TRUE
+    byrow <- TRUE
     ignore <- integer()
   } else if (is.data.frame(argument) || is.matrix(argument)) {
-    is_TRUE_FALSE(by_row)
-    if (!by_row) {
+    is_TRUE_FALSE(byrow)
+    if (!byrow) {
       argument <- t(argument)
     }
     if (how %in% c("similar", "dissimilar")) {
@@ -338,7 +338,10 @@ subset_helper <- function(
     }
     vector_flag <- FALSE
   } else {
-    ino_stop("Argument cannot be subsetted.")
+    ino_stop(
+      "Subsetting can only be applied to objects of class {.cls vector} (of
+      length greater than one), {.cls matrix}, or {.cls data.frame}."
+    )
   }
   n <- nrow(argument)
   m <- ceiling(n * proportion)
@@ -387,11 +390,72 @@ subset_helper <- function(
   if (vector_flag) {
     argument <- argument[, 1]
   }
-  if (!by_row) {
+  if (!byrow) {
     argument <- t(argument)
   }
   if (df_flag) {
     argument <- as.data.frame(argument)
   }
   return(argument)
+}
+
+#' Helper function for list flattening
+#'
+#' @description
+#' This function flattens a nested \code{list}, see the details.
+#'
+#' @details
+#' The input \code{list} \code{x} is transformed in the following ways:
+#' - If \code{x} has only one element, it becomes the new \code{x}. This is
+#'   repeated twice. E.g., \code{list(list(1))} becomes \code{1}.
+#' - Else, if all elements of \code{x} have only one element, these elements
+#'   become the elements of \code{x}. E.g., \code{list(list(1), list(2))}
+#'   becomes \code{list(1:2)}. This is repeated once.
+#' - Else, if each element of \code{x} is a \code{list} where each element is a
+#'   \code{list} with one element, the lowest-level \code{list} is replaced by
+#'   the one element.
+#'   E.g., \code{list(list(list(1), list(2)), list(list(3), list(4)))}
+#'   becomes \code{list(list(1, 2), list(3, 4))}.
+#' - Else, \code{x} remains unchanged.
+#'
+#' @param x
+#' A \code{list}.
+#'
+#' @return
+#' A \code{list}.
+#'
+#' @keywords internal
+
+helper_flatten <- function(x) {
+  stopifnot("'x' must be a list" = is.list(x))
+  if (length(x) == 1) {
+    names(x) <- NULL
+    x <- unlist(x, recursive = FALSE, use.names = TRUE)
+    if (length(x) == 1) {
+      names(x) <- NULL
+      x <- unlist(x, recursive = FALSE, use.names = TRUE)
+      if (length(x) == 1) {
+        x <- unlist(x, recursive = FALSE, use.names = FALSE)
+      }
+    }
+  } else if (all(sapply(x, length) == 1)) {
+    x <- lapply(x, function(x) {
+      names(x) <- NULL
+      unlist(x, recursive = FALSE, use.names = TRUE)
+    })
+    if (all(sapply(x, length) == 1)) {
+      x <- lapply(x, function(x) {
+        names(x) <- NULL
+        unlist(x, recursive = FALSE, use.names = TRUE)
+      })
+    }
+  } else if (all(sapply(x, function(x) sapply(x, length)) == 1)) {
+    x <- lapply(x, function(x) {
+      lapply(x, function(x) {
+        names(x) <- NULL
+        unlist(x, recursive = FALSE, use.names = TRUE)
+      })
+    })
+  }
+  return(x)
 }
