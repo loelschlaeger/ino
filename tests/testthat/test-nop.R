@@ -143,6 +143,22 @@ test_that("Optimizer can be set", {
   expect_snapshot(ackley)
 })
 
+test_that("Ackley function can be evaluated", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_error(
+    ackley$evaluate(1),
+    "must be of length 2"
+  )
+  expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
+})
+
+test_that("Initialization works", {
+
+})
+
+
+## TODO
+
 test_that("Nop object can be validated", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_error(
@@ -156,21 +172,11 @@ test_that("Nop object can be validated", {
   ackley$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
-  expect_true(ackley$validate())
+  expect_true(ackley$validate(verbose = TRUE))
 })
 
+## TODO
 
-
-
-
-test_that("Ackley function can be evaluated", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(
-    ackley$evaluate(1),
-    "must be of length 2"
-  )
-  expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
-})
 
 test_that("long function evaluation can be interrupted", {
   skip_if_not(.Platform$OS.type == "windows")

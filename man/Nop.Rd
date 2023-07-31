@@ -125,12 +125,12 @@ not been used yet.}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-argument}{\code{Nop$argument()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
-\item \href{#method-Nop-validate}{\code{Nop$validate()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-initialize_fixed}{\code{Nop$initialize_fixed()}}
 \item \href{#method-Nop-initialize_random}{\code{Nop$initialize_random()}}
 \item \href{#method-Nop-initialize_continue}{\code{Nop$initialize_continue()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
+\item \href{#method-Nop-validate}{\code{Nop$validate()}}
 \item \href{#method-Nop-results}{\code{Nop$results()}}
 \item \href{#method-Nop-number}{\code{Nop$number()}}
 \item \href{#method-Nop-clear}{\code{Nop$clear()}}
@@ -310,58 +310,16 @@ Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-validate"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-validate}{}}}
-\subsection{Method \code{validate()}}{
-Validates the configuration of a \code{Nop} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$validate(
-  at = rnorm(self$npar),
-  which_optimizer = "all",
-  time_limit = 10,
-  verbose = getOption("verbose", default = FALSE),
-  digits = getOption("digits", default = 7)
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{at}}{A \code{numeric} of length \code{npar}, the point at which the
-function \code{f} and the specified optimizer are tested.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
-from a standard normal distribution.}
-
-\item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
-\itemize{
-\item \code{"all"} for all specified optimizers,
-\item a \code{character} (vector) of specified optimizer labels,
-\item a \code{numeric} (vector) of optimizer ids, see the \code{$print()} output.
-}}
-
-\item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
-prematurely if \code{time_limit} is exceeded.
-This currently only works reliably under Windows OS.
-No time limit if \code{time_limit = NULL} (the default).}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.}
-
-\item{\code{digits}}{An \code{integer}, the number of shown decimal places.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly \code{TRUE} if the tests are successful.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-evaluate"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
 \subsection{Method \code{evaluate()}}{
 Evaluates the function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(at = rnorm(self$npar), time_limit = NULL, hide_warnings = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(
+  at = stats::rnorm(self$npar),
+  time_limit = NULL,
+  hide_warnings = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -369,7 +327,7 @@ Evaluates the function.
 \describe{
 \item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
 function is evaluated.
-Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+By default, \code{at = rnorm(self$npar)}, i.e., random values drawn
 from a standard normal distribution.}
 
 \item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
@@ -396,28 +354,102 @@ Either:
 \if{html}{\out{<a id="method-Nop-initialize_fixed"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_fixed}{}}}
 \subsection{Method \code{initialize_fixed()}}{
+Defines fixed initial values for the optimization.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_fixed(at)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_fixed(at, verbose = getOption("verbose", default = FALSE))}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at}}{A \code{numeric} vector of length \code{npar}, the initial parameter
+vector. It can also be a \code{list} of such vectors.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_random"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_random}{}}}
 \subsection{Method \code{initialize_random()}}{
+Defines random initial values for the optimization.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_random(sampler = stats::rnorm(self$npar), runs = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_random(
+  sampler = function() stats::rnorm(self$npar),
+  runs = 1,
+  verbose = getOption("verbose", default = FALSE)
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{sampler}}{A \code{function} without any arguments that returns a \code{numeric}
+vector of length \code{npar}.
+By default, \code{sampler = rnorm(self$npar)}, i.e., random values drawn
+from a standard normal distribution.}
+
+\item{\code{runs}}{An \code{integer}, the number of optimization runs.
+By default, \code{runs = 1}.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_continue"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_continue}{}}}
 \subsection{Method \code{initialize_continue()}}{
+Defines random initial values based on previous optimization runs.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(run_ids, optimizer_ids, transform = function(x) x)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(
+  which_run,
+  which_optimizer,
+  transform = function(x) x,
+  verbose = getOption("verbose", default = FALSE)
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_run}}{Selects saved results of optimization runs. Either:
+\itemize{
+\item \code{"all"} for all results,
+\item \code{"last"} for the results of the last \code{$optimize()} call,
+\item \code{"failed"}, the results from failed optimization runs,
+\item a \code{character} (vector) of optimization labels,
+\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+}}
+
+\item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"} for all specified optimizers,
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids, see the \code{$print()} output.
+}}
+
+\item{\code{transform}}{A \code{function} .}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optimize"></a>}}
@@ -426,51 +458,23 @@ Either:
 Optimizes the function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optimize(
-  initial = "random",
-  runs = 1,
   which_optimizer = "all",
   seed = NULL,
   return_results = FALSE,
   save_results = TRUE,
   optimization_label = self$fresh_label,
-  unique_label = TRUE,
   ncores = 1,
   verbose = getOption("verbose", default = FALSE),
   simplify = TRUE,
   time_limit = NULL,
   hide_warnings = TRUE,
-  check_initial = TRUE
+  reset_initial = TRUE
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{initial}}{Specify the initial point where the optimizer should start. Either:
-\itemize{
-\item the \code{character} \code{"random"} (the default) for random initial
-values drawn from a standard normal distribution,
-\item a \code{numeric} vector of length \code{npar}, the deterministic
-starting point for the optimization,
-\item a \code{list} of such vectors (in this case, \code{runs} is set to the
-length of the \code{list}),
-\item or a \code{function} without any arguments that returns a
-\code{numeric} vector of length \code{npar}.
-In all these cases, the same initial values are used across optimizers.
-}
-
-For more flexibility, a \code{funtion} input for \code{initial} can have
-two arguments, where the first argument specifies the optimization run,
-and the second argument specifies the optimizer, e.g.,
-\code{initial <- function(run, optimizer) ...} for the
-\code{run}-th optimization run and the \code{optimizer}-th optimizer
-listed in the \code{$print()} output.}
-
-\item{\code{runs}}{An \code{integer}, the number of optimization runs.
-If \code{initial} is a \code{list}, \code{runs} is set to
-\code{length(initial)}.
-By default, \code{runs = 1}.}
-
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
@@ -490,12 +494,9 @@ By default, \code{save_results = TRUE}.}
 
 \item{\code{optimization_label}}{Only relevant if \code{save_results = TRUE}.
 In this case, a \code{character} to specify a label for the optimization.
-Labels are useful to distinguish optimization runs later.
+Labels are useful to distinguish initialization strategies.
 By default, \code{optimization_label = self$fresh_label} creates a new
 label.}
-
-\item{\code{unique_label}}{Either \code{TRUE} to ensure that \code{optimization_label} has not been
-used before (the default) or \code{FALSE} else.}
 
 \item{\code{ncores}}{An \code{integer}, setting the number of CPU cores for parallel computation.
 The default is \code{1}.
@@ -517,8 +518,8 @@ No time limit if \code{time_limit = NULL} (the default).}
 If \code{hide_warnings = FALSE}, warning messages are printed even if
 \code{verbose = FALSE}.}
 
-\item{\code{check_initial}}{Either \code{TRUE} (default) to check the initial values and fail on
-misspecification, or \code{FALSE} to accept misspecifications.}
+\item{\code{reset_initial}}{Either \code{TRUE} (default) to reset the initial values after the
+optimization, or \code{FALSE}, else.}
 }
 \if{html}{\out{</div>}}
 }
@@ -533,6 +534,52 @@ each optimizer is a \code{list}, the output of
 \code{\link[optimizeR]{apply_optimizer}}. If \code{simplify = TRUE},
 the output is flattened if possible.
 }
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-validate"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-validate}{}}}
+\subsection{Method \code{validate()}}{
+Validates the configuration of a \code{Nop} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$validate(
+  at = stats::rnorm(self$npar),
+  which_optimizer = "all",
+  time_limit = 10,
+  verbose = getOption("verbose", default = FALSE),
+  digits = getOption("digits", default = 7)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
+function and the optimizers are tested.
+By default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+from a standard normal distribution.}
+
+\item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
+\itemize{
+\item \code{"all"} for all specified optimizers,
+\item a \code{character} (vector) of specified optimizer labels,
+\item a \code{numeric} (vector) of optimizer ids, see the \code{$print()} output.
+}}
+
+\item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
+prematurely if \code{time_limit} is exceeded.
+This currently only works reliably under Windows OS.
+No time limit if \code{time_limit = NULL} (the default).}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.}
+
+\item{\code{digits}}{An \code{integer}, the number of shown decimal places.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly \code{TRUE} if the tests are successful.
 }
 }
 \if{html}{\out{<hr>}}

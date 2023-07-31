@@ -630,16 +630,250 @@ Nop <- R6::R6Class(
     },
 
     #' @description
+    #' Evaluates the function.
+    #' @param at
+    #' A \code{numeric} vector of length \code{npar}, the point where the
+    #' function is evaluated.
+    #' By default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+    #' from a standard normal distribution.
+    #' @return
+    #' Either:
+    #' - a \code{numeric} value, the function value at \code{at},
+    #' - \code{"time limit reached"} if the time limit was reached,
+    #' - the error message if the evaluation failed.
+    evaluate = function(
+      at = stats::rnorm(self$npar), time_limit = NULL, hide_warnings = FALSE
+    ) {
+      private$.check_additional_arguments_complete()
+      private$.check_target_argument(at)
+      is_time_limit(time_limit)
+      is_TRUE_FALSE(hide_warnings)
+      at <- list(at)
+      names(at) <- private$.f_target
+      if (!is.null(time_limit)) {
+        setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
+        on.exit({
+          setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+        })
+      }
+      tryCatch(
+        {
+          suppressWarnings(
+            do.call(
+              what = private$.f,
+              args = c(at, private$.arguments)
+            ),
+            classes = if (hide_warnings) "warning" else ""
+          )
+        },
+        error = function(e) {
+          msg <- e$message
+          tl <- grepl("reached elapsed time limit|reached CPU time limit", msg)
+          if (tl) return("time limit reached") else return(msg)
+        }
+      )
+    },
+
+    #' @description
+    #' Defines fixed initial values for the optimization.
+    #' @param at
+    #' A \code{numeric} vector of length \code{npar}, the initial parameter
+    #' vector. It can also be a \code{list} of such vectors.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+    initialize_fixed = function(
+      at, verbose = getOption("verbose", default = FALSE)
+    ) {
+      is_TRUE_FALSE(verbose)
+      if (is.list(at)) {
+        for (i in seq_along(at)) {
+          private$.check_target_argument(at[[i]], paste0("at[[", i, "]]"))
+        }
+      } else {
+        private$.check_target_argument(at)
+        at <- list(at)
+      }
+      private$.initial_values <- c(private$.initial_values, at)
+      add_s <- ifelse(length(at) > 1, 's', '')
+      ino_status(
+        glue::glue("Added {length(at)} set{add_s} of fixed initial values."),
+        verbose = verbose
+      )
+      invisible(self)
+    },
+
+    #' @description
+    #' Defines random initial values for the optimization.
+    #' @param sampler
+    #' A \code{function} without any arguments that returns a \code{numeric}
+    #' vector of length \code{npar}.
+    #' By default, \code{sampler = rnorm(self$npar)}, i.e., random values drawn
+    #' from a standard normal distribution.
+    #' @param runs
+    #' An \code{integer}, the number of optimization runs.
+    #' By default, \code{runs = 1}.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+    initialize_random = function(
+      sampler = function() stats::rnorm(self$npar), runs = 1,
+      verbose = getOption("verbose", default = FALSE)
+    ) {
+      if (!is.function(sampler)) {
+        ino_stop("Argument {.var sampler} must be a {.cls function}.")
+      }
+      if (!is.null(formals(sampler))) {
+        ino_stop("{.var sampler} must not have any arguments.")
+      }
+      is_count(runs, allow_zero = FALSE)
+      is_TRUE_FALSE(verbose, allow_na = FALSE)
+      at <- list()
+      for (run in seq_len(runs)) {
+        value <- try(sampler(), silent = TRUE)
+        private$.check_target_argument(value, "sampler()")
+        at[[run]] <- value
+      }
+      private$.initial_values <- c(private$.initial_values, at)
+      add_s <- ifelse(length(at) > 1, 's', '')
+      ino_status(
+        glue::glue("Added {length(at)} set{add_s} of random initial values."),
+        verbose = verbose
+      )
+      invisible(self)
+    },
+
+    #' @description
+    #' Defines random initial values based on previous optimization runs.
+    #' @param transform
+    #' A \code{function} .
+    #' @return
+    #' Invisibly the \code{Nop} object.
+    initialize_continue = function(
+      which_run, which_optimizer, transform = function(x) x,
+      verbose = getOption("verbose", default = FALSE)
+    ) {
+      # TODO add seconds as attribute
+    },
+
+    #' @description
+    #' Optimizes the function.
+    #' @param optimization_label
+    #' Only relevant if \code{save_results = TRUE}.
+    #' In this case, a \code{character} to specify a label for the optimization.
+    #' Labels are useful to distinguish initialization strategies.
+    #' By default, \code{optimization_label = self$fresh_label} creates a new
+    #' label.
+    #' @param reset_initial
+    #' Either \code{TRUE} (default) to reset the initial values after the
+    #' optimization, or \code{FALSE}, else.
+    #' @return
+    #' The return value depends on the value of \code{return_results}:
+    #' - if \code{return_results = FALSE}, invisibly the \code{Nop} object,
+    #' - if \code{return_results = TRUE}, a nested \code{list} of
+    #'   optimization results. Each element corresponds to one optimization run
+    #'   and is a \code{list} of results for each optimizer. The results for
+    #'   each optimizer is a \code{list}, the output of
+    #'   \code{\link[optimizeR]{apply_optimizer}}. If \code{simplify = TRUE},
+    #'   the output is flattened if possible.
+    #' @importFrom parallel makeCluster stopCluster
+    #' @importFrom doSNOW registerDoSNOW
+    #' @importFrom foreach foreach %dopar% %do%
+    optimize = function(
+      which_optimizer = "all", seed = NULL,
+      return_results = FALSE, save_results = TRUE,
+      optimization_label = self$fresh_label,
+      ncores = 1, verbose = getOption("verbose", default = FALSE),
+      simplify = TRUE, time_limit = NULL, hide_warnings = TRUE,
+      reset_initial = TRUE
+    ) {
+      if (length(private$.initial_values) == 0) {
+        ino_stop(
+          "No initial values set, please call {.fun initialize_*} first."
+        )
+      }
+      runs <- length(private$.initial_values)
+      private$.check_additional_arguments_complete()
+      is_TRUE_FALSE(return_results, allow_na = FALSE)
+      is_TRUE_FALSE(save_results, allow_na = FALSE)
+      is_name(optimization_label, allow_na = FALSE)
+      is_count(ncores, allow_zero = FALSE)
+      is_TRUE_FALSE(verbose, allow_na = FALSE)
+      is_TRUE_FALSE(simplify, allow_na = FALSE)
+      is_time_limit(time_limit)
+      is_TRUE_FALSE(hide_warnings, allow_na = FALSE)
+      is_TRUE_FALSE(reset_initial, allow_na = FALSE)
+      format <- "Finished run :current of :total [elapsed :elapsed, to go :eta]"
+      pb <- progress::progress_bar$new(
+        format = format, total = runs, clear = FALSE, show_after = 0
+      )
+      opts <- structure(
+        list(function(n) {
+          if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
+        }),
+        names = "progress"
+      )
+      ino_seed(seed, verbose = verbose)
+      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
+      if (length(optimizer_ids) == 0) return(invisible(self))
+      parallel <- ncores > 1 && runs >= 2 * ncores
+      if (parallel) {
+        cluster <- parallel::makeCluster(ncores)
+        on.exit(parallel::stopCluster(cluster))
+        doSNOW::registerDoSNOW(cluster)
+        ino_status(
+          glue::glue("Parallel optimization with {ncores} cores."),
+          verbose = verbose
+        )
+      }
+      `%par_seq%` <- ifelse(parallel, `%dopar%`, `%do%`)
+      if (verbose) pb$tick(0)
+      results <- foreach::foreach(
+        run = 1:runs, .packages = "ino",
+        .export = "private", .inorder = TRUE, .options.snow = opts
+      ) %par_seq% {
+        lapply(optimizer_ids, function(optimizer_id) {
+          private$.optimize(
+            initial = private$.initial_values[[run]],
+            optimizer_id = optimizer_id,
+            time_limit = time_limit,
+            hide_warnings = hide_warnings
+          )
+        })
+      }
+      if (save_results) {
+        private$.records$save(
+          results = results,
+          results_depth = 3,
+          optimizer_label = names(self$optimizer)[optimizer_ids],
+          optimization_label = optimization_label,
+          comparable = length(private$.original_arguments) == 0
+        )
+      }
+      if (reset_initial) {
+        private$.initial_values <- list()
+        ino_status("Reset the initial values.", verbose = verbose)
+      }
+      if (return_results) {
+        if (simplify) {
+          helper_flatten(results)
+        } else {
+          results
+        }
+      } else {
+        invisible(self)
+      }
+    },
+
+    #' @description
     #' Validates the configuration of a \code{Nop} object.
     #' @param at
-    #' A \code{numeric} of length \code{npar}, the point at which the
-    #' function \code{f} and the specified optimizer are tested.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+    #' A \code{numeric} vector of length \code{npar}, the point where the
+    #' function and the optimizers are tested.
+    #' By default, \code{at = rnorm(self$npar)}, i.e., random values drawn
     #' from a standard normal distribution.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
     validate = function(
-      at = rnorm(self$npar), which_optimizer = "all", time_limit = 10,
+      at = stats::rnorm(self$npar), which_optimizer = "all", time_limit = 10,
       verbose = getOption("verbose", default = FALSE),
       digits = getOption("digits", default = 7)
     ) {
@@ -647,7 +881,9 @@ Nop <- R6::R6Class(
       optimizer_ids <- suppressWarnings(
         private$.get_optimizer_ids(which_optimizer = which_optimizer)
       )
+      is_time_limit(time_limit)
       is_TRUE_FALSE(verbose)
+      is_number(digits, allow_na = FALSE)
       ino_status("Check specifications:", verbose = verbose)
       ino_success(
         glue::glue("Function specified: {self$f_name}"),
@@ -721,12 +957,12 @@ Nop <- R6::R6Class(
             ),
             verbose = verbose
           )
-          out <- self$optimize(
-            initial = at, runs = 1, which_optimizer = i, seed = NULL,
-            return_results = TRUE, save_results = FALSE, ncores = 1,
-            verbose = FALSE, simplify = FALSE, time_limit = time_limit,
-            hide_warnings = TRUE
-          )
+          out <- self$initialize_fixed(at, verbose = verbose)$
+            optimize(
+              which_optimizer = i, seed = NULL, return_results = TRUE,
+              save_results = FALSE, ncores = 1, verbose = FALSE,
+              simplify = TRUE, time_limit = time_limit, hide_warnings = TRUE
+            )
           if (!is.null(out$error)) {
             if (isTRUE(out$error)) {
               if (identical(out$error_message, "time limit reached")) {
@@ -768,224 +1004,15 @@ Nop <- R6::R6Class(
                   )
                 }
               }
+              ino_status(
+                "Optimization elements: {names(out)}",
+                verbose = verbose
+              )
             }
           }
         }
       }
       invisible(TRUE)
-    },
-
-    #' @description
-    #' Evaluates the function.
-    #' @param at
-    #' A \code{numeric} vector of length \code{npar}, the point where the
-    #' function is evaluated.
-    #' Per default, \code{at = rnorm(self$npar)}, i.e., random values drawn
-    #' from a standard normal distribution.
-    #' @return
-    #' Either:
-    #' - a \code{numeric} value, the function value at \code{at},
-    #' - \code{"time limit reached"} if the time limit was reached,
-    #' - the error message if the evaluation failed.
-    evaluate = function(
-      at = rnorm(self$npar), time_limit = NULL, hide_warnings = FALSE
-    ) {
-      private$.check_additional_arguments_complete()
-      private$.check_target_argument(at)
-      is_time_limit(time_limit)
-      is_TRUE_FALSE(hide_warnings)
-      at <- list(at)
-      names(at) <- private$.f_target
-      if (!is.null(time_limit)) {
-        setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
-        on.exit({
-          setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
-        })
-      }
-      tryCatch(
-        {
-          suppressWarnings(
-            do.call(
-              what = private$.f,
-              args = c(at, private$.arguments)
-            ),
-            classes = if (hide_warnings) "warning" else ""
-          )
-        },
-        error = function(e) {
-          msg <- e$message
-          tl <- grepl("reached elapsed time limit|reached CPU time limit", msg)
-          if (tl) return("time limit reached") else return(msg)
-        }
-      )
-    },
-
-    initialize_fixed = function(at) {
-
-    },
-
-    initialize_random = function(
-      sampler = stats::rnorm(self$npar), runs = 1
-    ) {
-
-    },
-
-    initialize_continue = function(
-      run_ids, optimizer_ids, transform = function(x) x
-    ) {
-
-    },
-
-    #' @description
-    #' Optimizes the function.
-    #' @param initial
-    #' Specify the initial point where the optimizer should start. Either:
-    #' - the \code{character} \code{"random"} (the default) for random initial
-    #'   values drawn from a standard normal distribution,
-    #' - a \code{numeric} vector of length \code{npar}, the deterministic
-    #'   starting point for the optimization,
-    #' - a \code{list} of such vectors (in this case, \code{runs} is set to the
-    #'   length of the \code{list}),
-    #' - or a \code{function} without any arguments that returns a
-    #'   \code{numeric} vector of length \code{npar}.
-    #' In all these cases, the same initial values are used across optimizers.
-    #'
-    #' For more flexibility, a \code{funtion} input for \code{initial} can have
-    #' two arguments, where the first argument specifies the optimization run,
-    #' and the second argument specifies the optimizer, e.g.,
-    #' \code{initial <- function(run, optimizer) ...} for the
-    #' \code{run}-th optimization run and the \code{optimizer}-th optimizer
-    #' listed in the \code{$print()} output.
-    #' @param runs
-    #' An \code{integer}, the number of optimization runs.
-    #' If \code{initial} is a \code{list}, \code{runs} is set to
-    #' \code{length(initial)}.
-    #' By default, \code{runs = 1}.
-    #' @param optimization_label
-    #' Only relevant if \code{save_results = TRUE}.
-    #' In this case, a \code{character} to specify a label for the optimization.
-    #' Labels are useful to distinguish optimization runs later.
-    #' By default, \code{optimization_label = self$fresh_label} creates a new
-    #' label.
-    #' @param unique_label
-    #' Either \code{TRUE} to ensure that \code{optimization_label} has not been
-    #' used before (the default) or \code{FALSE} else.
-    #' @param check_initial
-    #' Either \code{TRUE} (default) to check the initial values and fail on
-    #' misspecification, or \code{FALSE} to accept misspecifications.
-    #' @return
-    #' The return value depends on the value of \code{return_results}:
-    #' - if \code{return_results = FALSE}, invisibly the \code{Nop} object,
-    #' - if \code{return_results = TRUE}, a nested \code{list} of
-    #'   optimization results. Each element corresponds to one optimization run
-    #'   and is a \code{list} of results for each optimizer. The results for
-    #'   each optimizer is a \code{list}, the output of
-    #'   \code{\link[optimizeR]{apply_optimizer}}. If \code{simplify = TRUE},
-    #'   the output is flattened if possible.
-    #' @importFrom parallel makeCluster stopCluster
-    #' @importFrom doSNOW registerDoSNOW
-    #' @importFrom foreach foreach %dopar% %do%
-    optimize = function(
-      initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
-      return_results = FALSE, save_results = TRUE,
-      optimization_label = self$fresh_label, unique_label = TRUE,
-      ncores = 1, verbose = getOption("verbose", default = FALSE),
-      simplify = TRUE, time_limit = NULL, hide_warnings = TRUE,
-      check_initial = TRUE
-    ) {
-
-      ### input checks
-      private$.check_additional_arguments_complete()
-      if (is.list(initial)) runs <- length(initial)
-      is_count(runs, allow_zero = FALSE)
-      is_TRUE_FALSE(return_results, allow_na = FALSE)
-      is_TRUE_FALSE(save_results, allow_na = FALSE)
-      is_name(optimization_label, allow_na = FALSE)
-      is_TRUE_FALSE(unique_label, allow_na = FALSE)
-      if (unique_label) {
-        if (optimization_label %in% private$.records$optimization_labels) {
-          ino_stop("Label {.val optimization_label} already exists.")
-        }
-      }
-      is_count(ncores, allow_zero = FALSE)
-      is_TRUE_FALSE(verbose, allow_na = FALSE)
-      is_TRUE_FALSE(simplify, allow_na = FALSE)
-      is_time_limit(time_limit)
-      is_TRUE_FALSE(hide_warnings, allow_na = FALSE)
-      is_TRUE_FALSE(check_initial, allow_na = FALSE)
-
-      ### build progress bar
-      format <- "Finished run :current of :total [elapsed :elapsed, to go :eta]"
-      pb <- progress::progress_bar$new(
-        format = format, total = runs, clear = FALSE, show_after = 0
-      )
-      opts <- structure(
-        list(function(n) {
-          if (verbose) if (pb$.__enclos_env__$private$total > 1) pb$tick()
-        }),
-        names = "progress"
-      )
-
-      ### set seed
-      ino_seed(seed, verbose = verbose)
-
-      ### optimizer ids
-      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      if (length(optimizer_ids) == 0) return(invisible(self))
-
-      ### build initial values
-      initial_values <- initial_values_helper(
-        initial = initial, npar = private$.npar,
-        check_initial = check_initial,
-        runs = runs, optimizer_ids = optimizer_ids
-      )
-
-      ### optimization
-      parallel <- ncores > 1 && runs >= 2 * ncores
-      if (parallel) {
-        cluster <- parallel::makeCluster(ncores)
-        on.exit(parallel::stopCluster(cluster))
-        doSNOW::registerDoSNOW(cluster)
-        ino_status(
-          glue::glue("Parallel optimization with {ncores} cores."),
-          verbose = verbose
-        )
-      }
-      `%par_seq%` <- ifelse(parallel, `%dopar%`, `%do%`)
-      if (verbose) pb$tick(0)
-      results <- foreach::foreach(
-        run = 1:runs, .packages = "ino", .export = "private",
-        .inorder = TRUE, .options.snow = opts
-      ) %par_seq% {
-        lapply(optimizer_ids, function(optimizer_id) {
-          private$.optimize(
-            initial = initial_values[[run]][[optimizer_id]],
-            optimizer_id = optimizer_id,
-            time_limit = time_limit,
-            hide_warnings = hide_warnings
-          )
-        })
-      }
-
-      ### return
-      if (save_results) {
-        private$.records$save(
-          results = results,
-          results_depth = 3,
-          optimizer_label = names(self$optimizer)[optimizer_ids],
-          optimization_label = optimization_label,
-          comparable = length(private$.original_arguments) == 0
-        )
-      }
-      if (return_results) {
-        if (simplify) {
-          helper_flatten(results)
-        } else {
-          results
-        }
-      } else {
-        invisible(self)
-      }
     },
 
     #' @description
@@ -1437,6 +1464,7 @@ Nop <- R6::R6Class(
     .arguments = list(),
     .original_arguments = list(),
     .optimizer = list(),
+    .initial_values = list(),
 
     ### checks for the optimization problem
     .check_additional_argument_exists = function(name) {
@@ -1462,8 +1490,12 @@ Nop <- R6::R6Class(
         }
       }
     },
-    .check_target_argument = function(target_arg) {
-      arg_name <- deparse(substitute(target_arg))
+    .check_target_argument = function(target_arg, arg_name = NULL) {
+      if (is.null(arg_name)) {
+        arg_name <- deparse(substitute(target_arg))
+      } else {
+        is_name(arg_name, allow_na = FALSE)
+      }
       if (!is.vector(target_arg) || !is.numeric(target_arg)) {
         ino_stop(
           glue::glue(
