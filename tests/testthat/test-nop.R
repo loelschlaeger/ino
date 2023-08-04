@@ -152,52 +152,7 @@ test_that("Ackley function can be evaluated", {
   expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
 })
 
-test_that("Initialization works", {
-
-})
-
-
-## TODO
-
-test_that("Nop object can be validated", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(
-    ackley$validate(at = 1),
-    "must be of length 2"
-  )
-  expect_warning(
-    ackley$validate(),
-    "No optimizer specified, testing optimizers is skipped."
-  )
-  ackley$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_true(ackley$validate(verbose = TRUE))
-})
-
-## TODO
-
-
-test_that("long function evaluation can be interrupted", {
-  skip_if_not(.Platform$OS.type == "windows")
-  expect_warning(
-    long_f <- Nop$new(f = function(x) {
-      for (i in 1:7) Sys.sleep(0.1)
-      x
-    }, npar = 1),
-    "is unnamed"
-  )
-  expect_equal(
-    long_f$evaluate(at = 1, time_limit = 0.5),
-    "time limit reached"
-  )
-  expect_equal(
-    long_f$evaluate(at = 1, time_limit = 1),
-    1
-  )
-})
-
-test_that("warnings in function evaluation can be hidden", {
+test_that("Warnings in function evaluation can be hidden", {
   warning_f <- function(x) {
     warning("huhu")
     x
@@ -213,7 +168,7 @@ test_that("warnings in function evaluation can be hidden", {
   )
 })
 
-test_that("errors in function evaluation can be returned", {
+test_that("Errors in function evaluation can be returned", {
   error_f <- function(x) {
     stop("shit")
     x
@@ -237,26 +192,27 @@ test_that("HMM likelihood function can be evaluated", {
     hmm$evaluate(),
     "is not yet specified"
   )
-  hmm$set_argument("N" = 2, "neg" = TRUE)
+  hmm$argument("set", "N" = 2, "neg" = TRUE)
   expect_equal(
     hmm$evaluate(at = at),
     f_ll_hmm(theta = at, data = data, N = 2, neg = TRUE)
   )
-  hmm$remove_argument("neg")
+  hmm$argument("remove", name = "neg")
   expect_equal(
     hmm$evaluate(at = at),
     f_ll_hmm(theta = at, data = data, N = 2)
   )
 })
 
-test_that("input checks for optimization method work", {
+test_that("Input checks for optimization method work", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
   expect_error(
-    ackley$optimize(runs = -1),
-    "must be a single, positive"
+    ackley$optimize(),
+    "No initial values set"
   )
+  ackley$initialize_random()
   expect_error(
     ackley$optimize(save_results = "TRUE"),
     "must be"
@@ -287,44 +243,44 @@ test_that("input checks for optimization method work", {
   )
 })
 
-test_that("Ackley function can be optimized", {
+
+# TODO
+
+test_that("Optimization via random or fixed initialization works", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
+    set_optimizer(optimizer_optim())$
+    initialize_random(runs = 5)$optimize()$
+    initialize_random(sampler = function() runif(2), seed = 1)$optimize()$
+    initialize_fixed(runif(2))$optimize()$
+    initialize_fixed(list(1:2, 2:3, 3:4))$optimize()
+
+
+
+
+  expect_snapshot(ackley)
 
 
   self <- ackley
   private <- self$.__enclos_env__$private
-  initial = "random"
-  runs = 5
+
   which_optimizer = "all"
   seed = NULL
   return_results = FALSE
   save_results = TRUE
-  optimization_label = self$new_label
-  unique_label = TRUE
-  ncores = getOption("ino_ncores", default = 1)
-  verbose = getOption("ino_verbose", default = TRUE)
+  optimization_label = self$fresh_label
+  ncores = 1
+  verbose = TRUE
   simplify = TRUE
   time_limit = NULL
   hide_warnings = TRUE
-  check_initial = TRUE
-
-  results = results
-  results_depth = 3
-  optimizer_label = names(self$optimizer)[optimizer_ids]
-  optimization_label = optimization_label
-  comparable = length(private$.original_arguments) == 0
-  self <- private$.runs
-  private <- self$.__enclos_env__$private
+  reset_initial = TRUE
 
 
-  ackley$optimize(runs = 5)
-  ackley$optimize(runs = 1, initial = runif(2))
-  ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)
-  ackley$optimize(initial = c(0, 0))
-  ackley$optimize(initial = list(1:2, 2:3, 3:4))
-  expect_snapshot(ackley)
+
+
+
+
   out <- ackley$optimize(runs = 5, return_results = TRUE, save_results = FALSE)
   expect_type(out, "list")
   expect_length(out, 5)
@@ -338,36 +294,50 @@ test_that("Ackley function can be optimized", {
     simplify = FALSE
   )
   expect_type(out, "list")
+
+
+
   skip_on_cran()
-  ackley$optimize(
-    runs = 40, ncores = 2, save_results = FALSE
-  )
+  ackley$initialize_random(runs = 50)$optimize(ncores = 2)
 })
 
-test_that("Bad function specifications can be detected in tests", {
+test_that("Nop object can be validated", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)
+  expect_error(
+    ackley$validate(at = 1),
+    "must be of length 2"
+  )
+  expect_warning(
+    ackley$validate(),
+    "No optimizer specified, testing optimizers is skipped."
+  )
+  ackley$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())
+  expect_true(ackley$validate(verbose = TRUE))
+})
+
+test_that("Bad functions and optimizers can be detected in validation", {
   error_f <- Nop$new(f = function(x) stop("error message"), 1)
   expect_error(
-    error_f$test(),
+    error_f$validate(),
     "Function call threw an error"
   )
   lengthy_f <- Nop$new(f = function(x) 1:2, 1)
   expect_error(
-    lengthy_f$test(),
+    lengthy_f$validate(),
     "Test function call is of length 2."
   )
   character_f <- Nop$new(f = function(x) "not_a_numeric", 1)
   expect_error(
-    character_f$test(),
+    character_f$validate(),
     "Function call threw an error"
   )
   list_f <- Nop$new(f = function(x) list(), 1)
   expect_error(
-    list_f$test(),
+    list_f$validate(),
     "Test function call did not return a"
   )
-})
-
-test_that("Bad optimizer specifications can be detected in tests", {
   error_optimizer_fun <- function(f, p) {
     if (identical(p, 1:2)) stop("error message")
     list(v = f(p), z = 1:2)
@@ -377,26 +347,28 @@ test_that("Bad optimizer specifications can be detected in tests", {
     objective = "f", initial = "p", value = "v",
     parameter = "z"
   )
-  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(error_optimizer)
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(error_optimizer)
   expect_error(
-    ackley$test(at = 1:2),
+    ackley$validate(at = 1:2),
     "Optimization threw an error"
   )
 })
 
-test_that("Nop tests can be interrupted", {
+test_that("Validations can be interrupted", {
   skip_if_not(.Platform$OS.type == "windows")
   slow_f <- function(x) {
     Sys.sleep(2)
     1
   }
-  slow_f <- Nop$new(slow_f, 1)
+  slow_f <- Nop$new(slow_f, 1)$
+    set_optimizer(optimizer_nlm())
   expect_warning(
     expect_warning(
-      slow_f$test(time_limit = 1),
-      "Time limit of 1s was reached"
+      slow_f$validate(time_limit = 1),
+      "Time limit of 1s reached in the function call"
     ),
-    "No optimizer specified, testing optimizers is skipped."
+    "Time limit of 1s reached in the optimization"
   )
   slow_optimizer_fun <- function(f, p) {
     Sys.sleep(2)
@@ -407,10 +379,30 @@ test_that("Nop tests can be interrupted", {
     objective = "f", initial = "p", value = "minimum",
     parameter = "estimate"
   )
-  ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(slow_optimizer)
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(slow_optimizer)
   expect_warning(
-    ackley$test(at = 1:2, time_limit = 1),
-    "Time limit of 1s was reached in the optimization"
+    ackley$validate(at = 1:2, time_limit = 1),
+    "Time limit of 1s reached in the optimization"
+  )
+})
+
+test_that("Long function evaluation can be interrupted", {
+  skip_if_not(.Platform$OS.type == "windows")
+  expect_warning(
+    long_f <- Nop$new(f = function(x) {
+      for (i in 1:7) Sys.sleep(0.1)
+      x
+    }, npar = 1),
+    "is unnamed"
+  )
+  expect_equal(
+    long_f$evaluate(at = 1, time_limit = 0.5),
+    "time limit reached"
+  )
+  expect_equal(
+    long_f$evaluate(at = 1, time_limit = 1),
+    1
   )
 })
 
@@ -659,38 +651,6 @@ test_that("true parameter can be extracted and modified", {
   )
   ackley$true_parameter <- NULL
   expect_null(ackley$true_parameter)
-})
-
-test_that("show minimum can be extracted and modified", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_true(ackley$minimized)
-  ackley$minimized <- FALSE
-  expect_false(ackley$minimized)
-  expect_error(
-    {
-      ackley$minimized <- "TRUE"
-    },
-    "must be"
-  )
-})
-
-test_that("optimizer can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_warning(
-    ackley$optimizer,
-    "No optimizer specified"
-  )
-  ackley$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_type(ackley$optimizer, "list")
-  expect_length(ackley$optimizer, 2)
-  expect_error(
-    {
-      ackley$optimizer <- "optimizer"
-    },
-    "must be"
-  )
 })
 
 test_that("new label can be generated", {

@@ -43,11 +43,10 @@ ino_status <- function(
 #' @keywords internal
 
 ino_success <- function(
-    msg, verbose = getOption("ino_verbose", default = TRUE), delay = 0.05
+    msg, verbose = getOption("ino_verbose", default = TRUE)
   ) {
   if (verbose) {
     cli::cli_alert_success(msg)
-    Sys.sleep(delay)
   }
 }
 

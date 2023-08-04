@@ -383,6 +383,7 @@ Defines random initial values for the optimization.
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_random(
   sampler = function() stats::rnorm(self$npar),
   runs = 1,
+  seed = NULL,
   verbose = getOption("verbose", default = FALSE)
 )}\if{html}{\out{</div>}}
 }
@@ -397,6 +398,9 @@ from a standard normal distribution.}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization runs.
 By default, \code{runs = 1}.}
+
+\item{\code{seed}}{An \code{integer}, passed on to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
 such messages.}
@@ -430,7 +434,7 @@ Defines random initial values based on previous optimization runs.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -465,7 +469,7 @@ Optimizes the function.
   optimization_label = self$fresh_label,
   ncores = 1,
   verbose = getOption("verbose", default = FALSE),
-  simplify = TRUE,
+  simplify = FALSE,
   time_limit = NULL,
   hide_warnings = TRUE,
   reset_initial = TRUE
@@ -507,7 +511,7 @@ CPU cores.}
 such messages.}
 
 \item{\code{simplify}}{If \code{simplify = TRUE}, the nested list output of optimization results is
-flattened if only one element is selected.}
+flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
 prematurely if \code{time_limit} is exceeded.
@@ -606,7 +610,7 @@ Returns saved optimization results.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -622,8 +626,6 @@ Returns saved optimization results.
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"optimization_label"}, the label for the optimization run,
-\item \code{"optimizer_label"}, the label for the optimizer,
 \item \code{"value"}, the function value at the found optimum,
 \item \code{"parameter"}, the parameter at which the optimum value is obtained,
 \item \code{"seconds"}, the optimization time in seconds,
@@ -640,7 +642,7 @@ for the original optimization problem without any transformations),
 or \code{FALSE} to include all optimization results.}
 
 \item{\code{simplify}}{If \code{simplify = TRUE}, the nested list output of optimization results is
-flattened if only one element is selected.}
+flattened if possible.}
 }
 \if{html}{\out{</div>}}
 }
@@ -674,7 +676,7 @@ Returns the number of saved optimization results.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -690,8 +692,6 @@ Returns the number of saved optimization results.
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"optimization_label"}, the label for the optimization run,
-\item \code{"optimizer_label"}, the label for the optimizer,
 \item \code{"value"}, the function value at the found optimum,
 \item \code{"parameter"}, the parameter at which the optimum value is obtained,
 \item \code{"seconds"}, the optimization time in seconds,
@@ -731,7 +731,7 @@ Deletes optimization results.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -747,8 +747,6 @@ Deletes optimization results.
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"optimization_label"}, the label for the optimization run,
-\item \code{"optimizer_label"}, the label for the optimizer,
 \item \code{"value"}, the function value at the found optimum,
 \item \code{"parameter"}, the parameter at which the optimum value is obtained,
 \item \code{"seconds"}, the optimization time in seconds,
@@ -770,7 +768,7 @@ Invisibly the \code{Records} object.
 \if{html}{\out{<a id="method-Nop-elements"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-elements}{}}}
 \subsection{Method \code{elements()}}{
-Returns names of available elements by optimizer in the results.
+Returns the names of available elements by optimizer in the results.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$elements(
   which_run = "all",
@@ -788,7 +786,7 @@ Returns names of available elements by optimizer in the results.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -837,7 +835,7 @@ Continues optimization runs, e.g., with a transformed parameter.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -866,7 +864,7 @@ CPU cores.}
 such messages.}
 
 \item{\code{simplify}}{If \code{simplify = TRUE}, the nested list output of optimization results is
-flattened if only one element is selected.}
+flattened if possible.}
 
 \item{\code{time_limit}}{An \code{integer}, a time limit in seconds. Computations are interrupted
 prematurely if \code{time_limit} is exceeded.
@@ -908,8 +906,6 @@ Provides an overview of the optimization runs.
 \item \code{"default"}, the elements that are saved for all optimization runs by
 default, i.e.
 \itemize{
-\item \code{"optimization_label"}, the label for the optimization run,
-\item \code{"optimizer_label"}, the label for the optimizer,
 \item \code{"value"}, the function value at the found optimum,
 \item \code{"parameter"}, the parameter at which the optimum value is obtained,
 \item \code{"seconds"}, the optimization time in seconds,
@@ -927,7 +923,7 @@ default, i.e.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -989,7 +985,7 @@ Provides an overview of the identified optimum values.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1053,7 +1049,7 @@ respect to the overall median.}
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1112,7 +1108,7 @@ Visualizes deviation of parameters.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1213,7 +1209,7 @@ Returns the best found \code{numeric} value of \code{f}.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1265,7 +1261,7 @@ Returns the best found \code{numeric} parameter vector.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item a \code{numeric} (vector) of optimization run ids, see \code{$run_ids()}.
+\item an \code{integer} (vector) of optimization run ids.
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
