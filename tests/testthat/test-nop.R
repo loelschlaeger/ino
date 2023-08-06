@@ -204,6 +204,25 @@ test_that("HMM likelihood function can be evaluated", {
   )
 })
 
+test_that("Long function evaluation can be interrupted", {
+  skip_if_not(.Platform$OS.type == "windows")
+  expect_warning(
+    long_f <- Nop$new(f = function(x) {
+      for (i in 1:7) Sys.sleep(0.1)
+      x
+    }, npar = 1),
+    "is unnamed"
+  )
+  expect_equal(
+    long_f$evaluate(at = 1, time_limit = 0.5),
+    "time limit reached"
+  )
+  expect_equal(
+    long_f$evaluate(at = 1, time_limit = 1),
+    1
+  )
+})
+
 test_that("Input checks for optimization method work", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
@@ -243,9 +262,6 @@ test_that("Input checks for optimization method work", {
   )
 })
 
-
-# TODO
-
 test_that("Optimization via random or fixed initialization works", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
@@ -254,49 +270,19 @@ test_that("Optimization via random or fixed initialization works", {
     initialize_random(sampler = function() runif(2), seed = 1)$optimize()$
     initialize_fixed(runif(2))$optimize()$
     initialize_fixed(list(1:2, 2:3, 3:4))$optimize()
-
-
-
-
   expect_snapshot(ackley)
-
-
-  self <- ackley
-  private <- self$.__enclos_env__$private
-
-  which_optimizer = "all"
-  seed = NULL
-  return_results = FALSE
-  save_results = TRUE
-  optimization_label = self$fresh_label
-  ncores = 1
-  verbose = TRUE
-  simplify = TRUE
-  time_limit = NULL
-  hide_warnings = TRUE
-  reset_initial = TRUE
-
-
-
-
-
-
-  out <- ackley$optimize(runs = 5, return_results = TRUE, save_results = FALSE)
+  out <- ackley$
+    initialize_random(runs = 5)$
+    optimize(return_results = TRUE, save_results = FALSE)
   expect_type(out, "list")
   expect_length(out, 5)
   expect_true(all(sapply(out, length) == 2))
-  out <- ackley$optimize(
-    runs = 1, which_optimizer = 1, return_results = TRUE, save_results = FALSE
+  out <- ackley$initialize_random(runs = 3)$
+    optimize(which_optimizer = 1, return_results = TRUE, save_results = FALSE
   )
   expect_type(out, "list")
-  out <- ackley$optimize(
-    runs = 1, which_optimizer = 1, return_results = TRUE, save_results = FALSE,
-    simplify = FALSE
-  )
-  expect_type(out, "list")
-
-
-
+  expect_length(out, 3)
+  expect_true(all(sapply(out, length) == 1))
   skip_on_cran()
   ackley$initialize_random(runs = 50)$optimize(ncores = 2)
 })
@@ -314,7 +300,7 @@ test_that("Nop object can be validated", {
   ackley$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
-  expect_true(ackley$validate(verbose = TRUE))
+  expect_true(ackley$validate(verbose = FALSE))
 })
 
 test_that("Bad functions and optimizers can be detected in validation", {
@@ -387,22 +373,26 @@ test_that("Validations can be interrupted", {
   )
 })
 
-test_that("Long function evaluation can be interrupted", {
-  skip_if_not(.Platform$OS.type == "windows")
+
+# TODO
+
+
+test_that("Overview of available elements can be created", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())
   expect_warning(
-    long_f <- Nop$new(f = function(x) {
-      for (i in 1:7) Sys.sleep(0.1)
-      x
-    }, npar = 1),
-    "is unnamed"
+    ackley$elements(),
+    "No optimization results saved yet"
   )
+  ackley$
+    initialize_random(runs = 10)$
+    optimize()
   expect_equal(
-    long_f$evaluate(at = 1, time_limit = 0.5),
-    "time limit reached"
-  )
-  expect_equal(
-    long_f$evaluate(at = 1, time_limit = 1),
-    1
+    ackley$elements(),
+    list("stats::nlm" = c(
+      "value", "parameter", "seconds", "initial", "gradient", "code",
+      "iterations", "error", "error_message"
+    ))
   )
 })
 
@@ -411,27 +401,11 @@ test_that("Results can be accessed", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())$
-    optimize(runs = runs, save_results = TRUE, return_results = FALSE)
+    initialize_random(runs = 10)$
+    optimize(save_results = TRUE, return_results = FALSE)
   results <- ackley$results()
   expect_type(results, "list")
-  expect_length(results, runs)
-})
-
-test_that("Overview of available elements can be created", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())
-  expect_warning(
-    ackley$elements_available(),
-    "No optimization results saved yet"
-  )
-  ackley$optimize(runs = 10)
-  expect_equal(
-    ackley$elements_available(),
-    list("stats::nlm" = c(
-      "value", "parameter", "seconds", "initial", "gradient", "code",
-      "iterations", "label", "run", "optimizer", "comparable"
-    ))
-  )
+  expect_length(results, 20)
 })
 
 test_that("Results can be cleared", {
@@ -463,7 +437,9 @@ test_that("Overview of optima works", {
     ackley$optima(),
     "No optimization results saved yet."
   )
-  ackley$optimize(runs = 10)
+  ackley$
+    initialize_random(runs = 10)$
+    optimize()
   expect_true(is.data.frame(ackley$optima()))
   expect_error(
     ackley$optima(sort_by = "bad_input"),

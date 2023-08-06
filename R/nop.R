@@ -37,6 +37,7 @@
 #' @param verbose
 #' Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
 #' such messages.
+#' This can be defined globally via \code{options("ino_verbose" = TRUE)}.
 #' @param ncores
 #' An \code{integer}, setting the number of CPU cores for parallel computation.
 #' The default is \code{1}.
@@ -259,17 +260,17 @@ Nop <- R6::R6Class(
         }
       }
       cat(crayon::underline("Optimization records:\n"))
-      if (suppressWarnings(self$number()) == 0) {
+      if (suppressWarnings(self$number(verbose = FALSE)) == 0) {
         cat(cli::style_italic("No results saved yet.\n"))
       } else {
         suppressWarnings({
-          noptimizations <- self$number()
-          ncomparable <- self$number(only_comparable = TRUE)
-          nfailed <- self$number(which_run = 'failed')
+          noptimizations <- self$number(verbose = FALSE)
+          ncomparable <- self$number(only_comparable = TRUE, verbose = FALSE)
+          nfailed <- self$number(which_run = "failed", verbose = FALSE)
         })
         cat(glue::glue(
           "- Number optimizations: {noptimizations}",
-          "- Comparable optimizations: {ncomparable}",
+          "- Not comparable optimizations: {noptimizations - ncomparable}",
           "- Failed optimizations: {nfailed}",
           .sep = "\n"
         ), "\n")
@@ -338,7 +339,7 @@ Nop <- R6::R6Class(
     #' to the argument.
     #' @importFrom ellipsis check_dots_used
     argument = function(
-      action, ..., verbose = getOption("verbose", default = FALSE)
+      action, ..., verbose = getOption("ino_verbose", default = FALSE)
     ) {
       if (missing(action)) {
         ino_stop("Please specify argument {.var action}.")
@@ -680,7 +681,7 @@ Nop <- R6::R6Class(
     #' @return
     #' Invisibly the \code{Nop} object.
     initialize_fixed = function(
-      at, verbose = getOption("verbose", default = FALSE)
+      at, verbose = getOption("ino_verbose", default = FALSE)
     ) {
       is_TRUE_FALSE(verbose)
       if (is.list(at)) {
@@ -714,7 +715,7 @@ Nop <- R6::R6Class(
     #' Invisibly the \code{Nop} object.
     initialize_random = function(
       sampler = function() stats::rnorm(self$npar), runs = 1, seed = NULL,
-      verbose = getOption("verbose", default = FALSE)
+      verbose = getOption("ino_verbose", default = FALSE)
     ) {
       if (!is.function(sampler)) {
         ino_stop("Argument {.var sampler} must be a {.cls function}.")
@@ -748,7 +749,7 @@ Nop <- R6::R6Class(
     #' Invisibly the \code{Nop} object.
     initialize_continue = function(
       which_run, which_optimizer, transform = function(x) x,
-      verbose = getOption("verbose", default = FALSE)
+      verbose = getOption("ino_verbose", default = FALSE)
     ) {
       # TODO add seconds as attribute
     },
@@ -780,7 +781,7 @@ Nop <- R6::R6Class(
       which_optimizer = "all", seed = NULL,
       return_results = FALSE, save_results = TRUE,
       optimization_label = self$fresh_label,
-      ncores = 1, verbose = getOption("verbose", default = FALSE),
+      ncores = 1, verbose = getOption("ino_verbose", default = FALSE),
       simplify = FALSE, time_limit = NULL, hide_warnings = TRUE,
       reset_initial = TRUE
     ) {
@@ -832,7 +833,7 @@ Nop <- R6::R6Class(
           "Optimization with label {.val <optimization_label>}.",
           .open = "<", .close = ">"
         ),
-        verbose = verbose
+        verbose = verbose && save_results
       )
       if (verbose) pb$tick(0)
       results <- foreach::foreach(
@@ -892,7 +893,7 @@ Nop <- R6::R6Class(
     #' Invisibly \code{TRUE} if the tests are successful.
     validate = function(
       at = stats::rnorm(self$npar), which_optimizer = "all", time_limit = 10,
-      verbose = getOption("verbose", default = FALSE),
+      verbose = getOption("ino_verbose", default = FALSE),
       digits = getOption("digits", default = 7)
     ) {
       private$.check_target_argument(at)
@@ -1040,6 +1041,50 @@ Nop <- R6::R6Class(
     },
 
     #' @description
+    #' Returns the names of all available elements by optimizers.
+    #' @return
+    #' A \code{list}.
+    elements = function(which_optimizer = "all") {
+      if (self$number(verbose = FALSE) == 0) {
+        ino_warn(
+          "No optimization results saved yet.",
+          "Please call {.var $optimize(save_results = TRUE)} first."
+        )
+      }
+      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
+      optimizer_labels <- names(private$.optimizer)[optimizer_ids]
+      elements <- list()
+      for (i in seq_along(optimizer_ids)) {
+        optimizer_id <- optimizer_ids[i]
+        optimizer_label <- optimizer_labels[i]
+        element_optimizer <- private$.check_which_element(
+          which_element = "all", which_optimizer = optimizer_id,
+          protected_elements = character()
+        )
+        elements[[optimizer_label]] <- element_optimizer
+      }
+      return(elements)
+    },
+
+    #' @description
+    #' Returns the number of saved optimization results.
+    #' @return
+    #' An \code{integer}.
+    number = function(
+      which_run = "all", which_optimizer = "all", which_element = "all",
+      only_comparable = FALSE,
+      verbose = getOption("ino_verbose", default = FALSE)
+    ) {
+      length(
+        private$.get_result_ids(
+          which_run = which_run, which_optimizer = which_optimizer,
+          which_element = which_element, only_comparable = only_comparable,
+          verbose = verbose
+        )
+      )
+    },
+
+    #' @description
     #' Returns saved optimization results.
     #' @return
     #' A nested \code{list} of optimization results.
@@ -1054,30 +1099,16 @@ Nop <- R6::R6Class(
       # TODO: if 'which_element' does not exist for some 'which_optimizer',
       #       drop it and give a warning (same for 'which_optimizer')
 
-      run_ids <- private$.get_run_ids(which_run)
-      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      if (length(run_ids) == 0 || length(optimizer_ids) == 0) {
-        return(invisible(list()))
-      }
-      which_element <- private$.check_which_element(
-        which_element = which_element, optimizer_ids = optimizer_ids
+      result_ids <- private$.get_result_ids(
+        which_run = which_run, which_optimizer = which_optimizer,
+        which_element = which_element, only_comparable = only_comparable
       )
-      private$.results |> filter_results(
-        run_ids = run_ids, optimizer_ids = optimizer_ids,
-        which_element = which_element, only_comparable = only_comparable,
-        keep_empty = FALSE
-      ) |> simplify_results(simplify = simplify)
-    },
-
-    #' @description
-    #' Returns the number of saved optimization results.
-    #' @return
-    #' An \code{integer}.
-    number = function(
-      which_run = "all", which_optimizer = "all", which_element = "all",
-      only_comparable = FALSE
-    ) {
-      length(private$.get_result_ids())
+      results <- private$.results[result_ids]
+      if (simplify) {
+        helper_flatten(results)
+      } else {
+        results
+      }
     },
 
     #' @description
@@ -1108,90 +1139,6 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Returns the names of available elements by optimizer in the results.
-    #' @return
-    #' A \code{list}.
-    elements = function(
-      which_run = "all", which_optimizer = "all", only_comparable = FALSE
-    ) {
-      if (self$number() == 0) {
-        ino_warn(
-          "No optimization results saved yet.",
-          "Please call {.var $optimize(save_results = TRUE)} first."
-        )
-      }
-
-      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-
-
-      ids <- private$.get_ids(
-        which_run = which_run, which_optimizer = which_optimizer,
-        only_comparable = only_comparable
-      )
-      if (length(ids) == 0) return(list())
-      elements <- list()
-
-      for (id in optimizer_ids) {
-        results <- sapply(private$.results, `[`, id)
-        names <- names(unlist(results, recursive = FALSE, use.names = TRUE))
-        optimizer_label <- names(self$optimizer)[id]
-        elements[[optimizer_label]] <- unique(names)
-      }
-      return(elements)
-    },
-
-    #' @description
-    #' Continues optimization runs, e.g., with a transformed parameter.
-    #' @return
-    #' The same as the return value of \code{$optimize()}.
-    continue = function(
-      which_run, which_optimizer = "all", seed = NULL,
-      return_results = FALSE, save_results = TRUE,
-      ncores = 1, verbose = getOption("verbose", default = FALSE),
-      simplify = TRUE, time_limit = NULL, hide_warnings = TRUE
-    ) {
-      run_ids <- private$.get_run_ids(which_run = which_run)
-      optimizer_ids <- private$.get_optimizer_ids(
-        which_optimizer = which_optimizer
-      )
-      ino_status(
-        glue::glue("Continue {length(run_ids)} optimization runs."),
-        verbose = verbose
-      )
-      previous_results <- self$results(
-        which_run = run_ids, which_optimizer = optimizer_ids,
-        which_element = "all", simplify = FALSE
-      )
-      initial <- function(run_id, optimizer_id) {
-        previous_results[[run_id]][[optimizer_id]][["parameter"]]
-      }
-      continued_results <- self$optimize(
-        initial = initial, runs = length(run_ids),
-        which_optimizer = optimizer_ids, seed = seed, return_results = TRUE,
-        save_results = FALSE, label = "continued", ncores = ncores,
-        verbose = verbose, simplify = FALSE, time_limit = time_limit,
-        hide_warnings = hide_warnings, check_initial = FALSE
-      )
-      results <- private$.merge_continued_previous_results(
-        continued_results = continued_results,
-        previous_results = previous_results
-      )
-      if (save_results) {
-        for (i in seq_along(run_ids)) {
-          private$.save_optimization_run(
-            run = results[[i]], optimizer_ids = optimizer_ids,
-            run_id = run_ids[i]
-          )
-        }
-      }
-      if (return_results) {
-        simplify_results(results = results, simplify = simplify)
-      } else {
-        invisible(self)
-      }
-    },
-
-    #' @description
     #' Provides an overview of the optimization runs.
     #' @param ...
     #' Optionally named expressions of elements.
@@ -1210,11 +1157,80 @@ Nop <- R6::R6Class(
       only_comparable = FALSE,
       ...
     ) {
-      summary.Nop(
-        object = self, which_element = which_element, which_run = which_run,
-        which_optimizer = which_optimizer, digits = digits,
-        only_comparable = only_comparable, ...
+      ### extract results and combine in data.frame
+      out <- data.frame()
+      results <- object$results(
+        which_run = which_run, which_optimizer = which_optimizer,
+        which_element = which_element, only_comparable = only_comparable,
+        simplify = FALSE
       )
+      if (length(results) == 0) {
+        return(invisible(out))
+      }
+      result_names <- unique(names(
+        unlist(unlist(results, recursive = FALSE), recursive = FALSE)
+      ))
+      for (run_id in seq_along(results)) {
+        for (optimizer_id in seq_along(results[[run_id]])) {
+          append <- results[[run_id]][[optimizer_id]]
+          missing_results <- setdiff(result_names, names(append))
+          if (length(missing_results) > 0) {
+            append[missing_results] <- NA
+          }
+          if (length(append) > 0) {
+            out <- dplyr::bind_rows(out, as.data.frame(t(cbind(append))))
+          }
+        }
+      }
+      rownames(out) <- NULL
+
+      ### add elements
+      add_vars <- list(...)
+      if (length(add_vars) > 0) {
+        results_all <- object$results(
+          which_run = which_run, which_optimizer = which_optimizer,
+          which_element = "all", only_comparable = only_comparable,
+          simplify = FALSE
+        )
+        true_value <- object$true_value
+        true_parameter <- object$true_parameter
+        best_value <- object$best_value()
+        best_parameter <- object$best_parameter()
+        for (i in seq_along(add_vars)) {
+          out[[names(add_vars)[i]]] <- sapply(
+            unlist(results_all, recursive = FALSE),
+            function(r) {
+              env <- new.env()
+              list2env(r, env)
+              tryCatch(
+                eval(parse(text = add_vars[[i]]), env),
+                error = function(e) NA
+              )
+            }
+          )
+        }
+      }
+
+      ### unlist single-valued records
+      for (i in seq_len(ncol(out))) {
+        unlist_try <- unlist(out[, i], recursive = FALSE)
+        if (length(unlist_try) == nrow(out)) {
+          out[, i] <- unlist(out[, i], recursive = FALSE)
+        }
+      }
+
+      ### round numeric records
+      for (i in seq_len(ncol(out))) {
+        if (is.vector(out[, i]) && is.numeric(out[, i])) {
+          out[, i] <- round(out[, i], digits = digits)
+        }
+        if (is.list(out[, i]) && all(sapply(out[, i], is.numeric))) {
+          out[[i]] <- lapply(out[, i], round, digits = digits)
+        }
+      }
+
+      ### return data.frame
+      return(out)
     },
 
     #' @description
@@ -1275,16 +1291,169 @@ Nop <- R6::R6Class(
     #' respect to the overall median.
     #' @return
     #' A \code{\link[ggplot2]{ggplot}} object.
+    #' @importFrom stats complete.cases median
+    #' @importFrom dplyr summarize mutate
+    #' @importFrom ggplot2 ggplot aes scale_x_continuous theme_minimal theme
+    #' @importFrom ggplot2 geom_boxplot geom_vline annotate element_blank ggtitle
+    #' @importFrom ggplot2 coord_cartesian
+    #' @importFrom scales label_percent
+    #' @importFrom forcats fct_reorder
+    #' @importFrom rlang .data
+    #' @importFrom scales percent
     plot = function(
       which_element = "seconds", by = NULL, relative = FALSE,
       which_run = "all", which_optimizer = "all", only_comparable = FALSE,
       title = paste("Optimization of", x$f_name), xlim = c(NA, NA)
     ) {
-      plot.Nop(
-        x = self, which_element = which_element, by = by, relative = relative,
-        which_run = which_run, which_optimizer = which_optimizer,
-        only_comparable = only_comparable, xlim = xlim
+      if (!which_element %in% c("seconds", "value")) {
+        ino_stop(
+          "Argument {.var which_element} must be {.val seconds} or {.val value}."
+        )
+      }
+      if (!is.null(by)) {
+        if (!by %in% c("label", "optimizer")) {
+          ino_stop(
+            "Argument {.var by} must be {.val label} or {.val optimizer} or {.val NULL}."
+          )
+        }
+      }
+      is_TRUE_FALSE(relative)
+      if (identical(which_element, "value") && relative) {
+        ino_status(
+          "Argument {.var relative} cannot be {.val TRUE} if {.var which_element} is {.val value}."
+        )
+        relative <- FALSE
+      }
+      is_name(title)
+      if (!(is.vector(xlim) && length(xlim) == 2)) {
+        ino_stop(
+          "Argument {.var xlim} must be {.cls numeric} vector of length 2.",
+          "Entries can also be {.val NA}."
+        )
+      }
+
+      ### get data
+      data <- x$summary(
+        which_element = c(which_element, by), which_run = which_run,
+        which_optimizer = which_optimizer, only_comparable = only_comparable,
+        digits = Inf
       )
+
+      ### drop incomplete cases
+      incomplete_cases <- which(!stats::complete.cases(data))
+      if (length(incomplete_cases) > 0) {
+        ino_status(
+          paste("Dropped", length(incomplete_cases), "results with missing data.")
+        )
+        data <- data[-incomplete_cases, , drop = FALSE]
+      }
+      if (nrow(data) == 0) {
+        ino_status(
+          "No data to plot."
+        )
+        return(invisible(NULL))
+      }
+
+      ### compute relative 'seconds' wrt to median seconds
+      if (identical(which_element, "seconds") && relative) {
+        med <- dplyr::summarize(
+          data,
+          "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
+        ) |> as.numeric()
+        data <- data |>
+          dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
+      }
+
+      ### sort by median 'seconds'
+      if (identical(which_element, "seconds") && !is.null(by)) {
+        data <- data |>
+          dplyr::mutate(
+            label = forcats::fct_reorder(
+              .f = .data[[by]], .x = .data[["seconds"]],
+              .fun = stats::median, .desc = TRUE
+            )
+          )
+      }
+
+      ### build base plot
+      if (is.null(by)) {
+        base_plot <- ggplot2::ggplot(
+          data, ggplot2::aes(x = .data[[which_element]], y = "")
+        )
+      } else {
+        base_plot <- ggplot2::ggplot(
+          data, ggplot2::aes(x = .data[[which_element]], y = .data[[by]])
+        )
+      }
+      base_plot <- base_plot +
+        ggplot2::theme_minimal()
+
+      ### add 'values'
+      if (identical(which_element, "value")) {
+        base_plot <- base_plot +
+          ggplot2::geom_point(
+            position = "jitter", alpha = 0.5
+          ) +
+          ggplot2::scale_x_continuous(
+            name = "Function value at optimum"
+          )
+      }
+
+      ### add 'seconds'
+      if (identical(which_element, "seconds")) {
+        base_plot <- base_plot +
+          ggplot2::geom_boxplot()
+        if (relative) {
+          base_plot <- base_plot +
+            ggplot2::scale_x_continuous(
+              labels = scales::label_percent(style_positive = c("plus")),
+              name = "Relative deviation in optimization time"
+            )
+        } else {
+          base_plot <- base_plot +
+            ggplot2::scale_x_continuous(
+              name = "Optimization time in seconds",
+              limits = c(0, NA)
+            )
+        }
+        if (!is.null(by)) {
+          med <- dplyr::summarize(
+            data,
+            "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
+          ) |> as.numeric()
+          base_plot <- base_plot + ggplot2::geom_vline(
+            xintercept = med
+          ) +
+            ggplot2::annotate(
+              x = med, y = Inf, label = "Overall median",
+              geom = "label", vjust = 1
+            )
+        }
+      }
+
+      ### modify labels and axes
+      if (is.null(by)) {
+        base_plot <- base_plot +
+          ggplot2::theme(
+            axis.text.y = ggplot2::element_blank(),
+            axis.ticks.y = ggplot2::element_blank(),
+            axis.title.y = ggplot2::element_blank(),
+            panel.grid.major.y = element_blank(),
+            panel.grid.minor.y = element_blank()
+          )
+      } else {
+        base_plot <- base_plot +
+          ggplot2::theme(
+            axis.title.y = ggplot2::element_blank()
+          )
+      }
+      if (!is.null(title)) {
+        base_plot <- base_plot + ggplot2::ggtitle(label = title)
+      }
+      base_plot <- base_plot + ggplot2::coord_cartesian(xlim = xlim)
+
+      ### return plot
+      return(base_plot)
     },
 
     #' @description
@@ -1417,62 +1586,18 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Returns the best found \code{numeric} value of \code{f}.
+    #' Returns best elements from optimization runs.
+    #' @param define_best
+    #' TODO
     #' @return
-    #' A \code{numeric}, the best found \code{numeric} value of \code{f}.
-    #' The output has two attributes:
-    #' - \code{run}, the run id that led to the best value,
-    #' - \code{optimizer}, the optimizer that led to the best value.
-    #' In the case that multiple optimization runs led to the best value, the
-    #' first one of them is returned.
-    best_value = function(
-      which_run = "all", which_optimizer = "all", only_comparable = TRUE,
+    #' TODO
+    best = function(
+      which_run = "all", which_optimizer = "all", which_element = "value",
+      only_comparable = TRUE,
+      define_best = function(x) min(x, na.rm = TRUE),
       digits = getOption("digits", default = 7)
     ) {
-      summary <- self$summary(
-        which_run = which_run, which_optimizer = which_optimizer,
-        which_element = c("value", "optimizer", "run"),
-        only_comparable = only_comparable, digits = Inf
-      )
-      best <- do.call(
-        what = ifelse(self$minimized, which.min, which.max),
-        args = list(summary$value)
-      )
-      structure(
-        round(summary[best, "value"], digits = digits),
-        "run" = summary[best, "run"],
-        "optimizer" = summary[best, "optimizer"]
-      )
-    },
-
-    #' @description
-    #' Returns the best found \code{numeric} parameter vector.
-    #' @return
-    #' A \code{numeric} of length \code{self$npar}.
-    #' The output has two attributes:
-    #' - \code{run}, the run id that led to the best parameter vector,
-    #' - \code{optimizer}, the optimizer that led to the best parameter vector.
-    #' Note that this parameter vector is not necessarily unique.
-    best_parameter = function(
-      which_run = "all", which_optimizer = "all", only_comparable = TRUE,
-      digits = getOption("digits", default = 7)
-    ) {
-      best_value <- self$best_value(
-        which_run = which_run, which_optimizer = which_optimizer,
-        only_comparable = only_comparable
-      )
-      run_id <- attr(best_value, "run")
-      optimizer <- attr(best_value, "optimizer")
-      best_parameter <- self$results(
-        which_run = run_id, which_optimizer = optimizer,
-        which_element = "parameter", only_comparable = only_comparable,
-        simplify = TRUE
-      )
-      structure(
-        round(best_parameter, digits = digits),
-        "run" = attr(best_value, "run"),
-        "optimizer" = attr(best_value, "optimizer")
-      )
+      # TODO
     }
 
   ),
@@ -1552,6 +1677,7 @@ Nop <- R6::R6Class(
     .comparable_ids = integer(),
     .failed_ids = integer(),
     .last_runs_ids = integer(),
+    .element_ids = list(),
     .save_result = function(result, optimizer_id, optimization_label) {
       result_id <- private$.next_result_id()
       parts <- names(result)
@@ -1615,52 +1741,107 @@ Nop <- R6::R6Class(
       if (error) {
         private$.failed_ids <- c(private$.failed_ids, result_id)
       }
+      for (element in names(result)) {
+        private$.element_ids[[element]] <- c(
+          private$.element_ids[[element]], result_id
+        )
+      }
     },
 
-    ### access of ids
+    ### get ids of results based on filters
     .get_result_ids = function(
-      which_run, which_optimizer, which_element, only_comparable
+      which_run, which_optimizer, which_element, only_comparable,
+      verbose = getOption("ino_verbose", default = FALSE)
     ) {
       if (length(private$.results) == 0) {
         ino_warn("No optimization results saved yet.")
         return(integer())
       }
-      is_name_vector(which_optimizer, allow_na = FALSE)
-      is_TRUE_FALSE(only_comparable, allow_na = FALSE)
-      ids <- if (is_name(which_run, allow_na = FALSE, error = FALSE)) {
+
+      ### first filter based on 'which_run'
+      result_ids <- if (is_name(which_run, allow_na = FALSE, error = FALSE)) {
         if (identical(which_run, "all")) {
+          ino_status(
+            "Selected all saved results.",
+            verbose = verbose
+          )
           seq_along(private$.results)
         } else if (identical(which_run, "last")) {
+          ino_status(
+            "Selected results of the last {.fun $optimize} call.",
+            verbose = verbose
+          )
           private$.last_runs_ids
         } else if (identical(which_run, "failed")) {
+          ino_status(
+            "Selected results from failed optimization runs.",
+            verbose = verbose
+          )
           private$.failed_runs_ids
         } else if (which_run %in% self$optimization_labels) {
+          ino_status(
+            "Selected results by label.",
+            verbose = verbose
+          )
           private$.optimization_label_ids[[which_run]]
         } else {
           integer()
         }
       } else if (is_index_vector(which_run, error = FALSE)) {
+        ino_status(
+          "Selected results by id.",
+          verbose = verbose
+        )
         which(seq_along(private$.results) %in% which_run)
       } else {
-        ino_stop("Argument {.var which_run} is misspecified.")
+        ino_stop(
+          "Argument {.var which_run} is misspecified."
+        )
       }
-      if (!identical(which_optimizer, "all")) {
-        ids <- if (which_optimizer %in% names(private$.optimizer_label_ids)) {
-          intersect(ids, private$.optimizer_label_ids[[which_optimizer]])
-        } else {
-          integer()
-        }
-      }
+
+      ### next filter based on 'which_optimizer'
+      optimizer_ids <- private$.get_optimizer_ids(
+        which_optimizer, verbose = verbose
+      )
+      result_ids <- intersect(
+        result_ids,
+        unlist(private$.optimizer_id_ids[optimizer_ids])
+      )
+
+      ### next filter based on 'which_element'
+      which_element <- private$.check_which_element(
+        which_element = which_element, which_optimizer = which_optimizer,
+        protected_elements = character(), verbose = verbose
+      )
+      result_ids <- intersect(
+        result_ids,
+        unique(unlist(private$.element_ids[which_element]))
+      )
+
+      ### next filter based on 'only_comparable'
+      is_TRUE_FALSE(only_comparable, allow_na = FALSE)
       if (only_comparable) {
-        ids <- intersect(ids, private$.comparable_runs_ids)
+        ino_status(
+          "Selected only comparable results.",
+          verbose = verbose
+        )
+        result_ids <- intersect(
+          result_ids,
+          private$.comparable_ids
+        )
       }
-      if (length(ids) == 0) {
-        ino_warn("Your input selects no saved result.")
+
+      if (length(result_ids) == 0) {
+        ino_warn("Your filter selects no saved result.")
         return(integer())
       }
-      return(ids)
+      return(result_ids)
     },
-    .get_optimizer_ids = function(which_optimizer) {
+
+    ### get ids of optimizers based on filters
+    .get_optimizer_ids = function(
+      which_optimizer, verbose = getOption("ino_verbose", default = FALSE)
+    ) {
       ids <- seq_along(private$.optimizer)
       if (length(ids) == 0) {
         ino_warn(
@@ -1670,10 +1851,22 @@ Nop <- R6::R6Class(
         return(integer(0))
       }
       if (identical(which_optimizer, "all")) {
+        ino_status(
+          "Selected all specified optimizers.",
+          verbose = verbose
+        )
         return(ids)
       } else if (is_name_vector(which_optimizer, error = FALSE)) {
+        ino_status(
+          "Selected optimizers by label.",
+          verbose = verbose
+        )
         ids <- which(names(private$.optimizer) %in% which_optimizer)
       } else if (is_number_vector(which_optimizer, error = FALSE)) {
+        ino_status(
+          "Selected optimizers by id.",
+          verbose = verbose
+        )
         ids <- which(seq_along(private$.optimizer) %in% which_optimizer)
       } else {
         ino_stop(
@@ -1688,48 +1881,81 @@ Nop <- R6::R6Class(
       }
       return(ids)
     },
+
+    ### check the filter for elements
     .check_which_element = function(
-      which_element, which_optimizer, protected_elements
+      which_element = "all", which_optimizer = "all",
+      protected_elements = character(),
+      verbose = getOption("ino_verbose", default = FALSE)
     ) {
-      optimizer_ids <- private$.get_optimizer_ids(which_optimizer)
-      all_elements <- c()
+      optimizer_ids <- private$.get_optimizer_ids(
+        which_optimizer, verbose = FALSE
+      )
+      element_names <- c()
       for (optimizer_id in optimizer_ids) {
-        all_elements <- unique(c(all_elements, names(unlist(
-          private$.results[private$.optimizer_id_ids[[optimizer_id]]],
-          recursive = FALSE
-        ))))
+        if (
+          length(private$.optimizer_id_ids) < optimizer_id ||
+          is.null(private$.optimizer_id_ids[[optimizer_id]])
+        ) {
+          optimizer_label <- names(private$.optimizer)[optimizer_id]
+          ino_warn(
+            glue::glue(
+              "No results for optimizer {.var <optimizer_label>} saved yet.",
+              .open = "<", .close = ">"
+            )
+          )
+        } else {
+          element_optimizer <- names(unlist(
+            private$.results[private$.optimizer_id_ids[[optimizer_id]]],
+            recursive = FALSE
+          ))
+          element_names <- unique(c(element_names, element_optimizer))
+        }
       }
       if (identical(which_element, "all")) {
-        which_element <- all_elements
-      }
-      if (identical(which_element, "default")) {
+        ino_status(
+          "Selected all available elements.",
+          verbose = verbose
+        )
+        which_element <- element_names
+      } else if (identical(which_element, "default")) {
+        ino_status(
+          "Selected default elements.",
+          verbose = verbose
+        )
         which_element <- c(
           "value", "parameter", "seconds", "initial", "error", "error_message"
         )
-      }
-      if (!all(sapply(which_element, is_name, error = FALSE))) {
+      } else if (is_name_vector(which_element, allow_na = FALSE, error = FALSE)) {
+        ino_status(
+          "Selected specific elements.",
+          verbose = verbose
+        )
+        unavailable <- setdiff(which_element, element_names)
+        if (length(unavailable) > 0) {
+          ino_warn(
+            "The following elements are not available:",
+            glue::glue("{unavailable}")
+          )
+          which_element <- intersect(which_element, unavailable)
+        }
+      } else {
         ino_stop(
           "Input {.var which_element} is misspecified.",
           "It can be {.val all} or {.val default}.",
           "It can also be a {.cls character} vector of specific element names."
         )
       }
-      which_element <- unique(which_element)
-      protect <- intersect(which_element, protected_elements)
-      if (length(protect) > 0) {
+      selected_protected <- intersect(which_element, protected_elements)
+      if (length(selected_protected) > 0) {
         ino_warn(
           "The following elements cannot be selected:",
-          glue::glue("{protect}")
+          glue::glue(
+            "{.val <selected_protected>}",
+            .open = "<", .close = ">"
+          )
         )
-        which_element <- setdiff(which_element, protected_elements)
-      }
-      unavailable <- setdiff(which_element, all_elements)
-      if (length(unavailable) > 0) {
-        ino_warn(
-          "The following elements are not available:",
-          glue::glue("{unavailable}")
-        )
-        which_element <- intersect(which_element, all_elements)
+        which_element <- setdiff(which_element, selected_protected)
       }
       return(which_element)
     },
@@ -1820,7 +2046,7 @@ Nop <- R6::R6Class(
           private$.true_parameter <- NULL
           ino_status(
             "Removed {.var true_value} and {.var true_parameter}.",
-            verbose = getOption("verbose", default = FALSE)
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         } else {
           if (!(is.vector(value) && is.numeric(value) && length(value) == 1)) {
@@ -1845,7 +2071,7 @@ Nop <- R6::R6Class(
               "{round(private$.true_value, digits = digits)}.",
               .sep = " "
             ),
-            verbose = getOption("verbose", default = FALSE)
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         }
       }
@@ -1866,7 +2092,7 @@ Nop <- R6::R6Class(
           private$.true_parameter <- NULL
           ino_status(
             "Removed {.var true_parameter}.",
-            verbose = getOption("verbose", default = FALSE)
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         } else {
           private$.check_target_argument(value)
@@ -1879,7 +2105,7 @@ Nop <- R6::R6Class(
               "{round(private$.true_parameter, digits = digits)}.",
               .sep = " "
             ),
-            verbose = getOption("verbose", default = FALSE)
+            verbose = getOption("ino_verbose", default = FALSE)
           )
         }
       }
@@ -1918,251 +2144,29 @@ print.Nop <- function(x, digits = getOption("digits", default = 7), ...) {
 #' @exportS3Method
 
 summary.Nop <- function(
-    object, which_element = c("value", "parameter"), which_run = "all",
-    which_optimizer = "all", digits = getOption("ino_digits", default = 2),
-    only_comparable = FALSE, ...
+    object, which_run = "all", which_optimizer = "all",
+    which_element = c("value", "parameter"), only_comparable = FALSE,
+    digits = getOption("ino_digits", default = 2), ...
 ) {
-  ### extract results and combine in data.frame
-  out <- data.frame()
-  results <- object$results(
+  object$summary(
     which_run = which_run, which_optimizer = which_optimizer,
     which_element = which_element, only_comparable = only_comparable,
-    simplify = FALSE
+    digits = digits, ...
   )
-  if (length(results) == 0) {
-    return(invisible(out))
-  }
-  result_names <- unique(names(
-    unlist(unlist(results, recursive = FALSE), recursive = FALSE)
-  ))
-  for (run_id in seq_along(results)) {
-    for (optimizer_id in seq_along(results[[run_id]])) {
-      append <- results[[run_id]][[optimizer_id]]
-      missing_results <- setdiff(result_names, names(append))
-      if (length(missing_results) > 0) {
-        append[missing_results] <- NA
-      }
-      if (length(append) > 0) {
-        out <- dplyr::bind_rows(out, as.data.frame(t(cbind(append))))
-      }
-    }
-  }
-  rownames(out) <- NULL
-
-  ### add elements
-  add_vars <- list(...)
-  if (length(add_vars) > 0) {
-    results_all <- object$results(
-      which_run = which_run, which_optimizer = which_optimizer,
-      which_element = "all", only_comparable = only_comparable,
-      simplify = FALSE
-    )
-    true_value <- object$true_value
-    true_parameter <- object$true_parameter
-    best_value <- object$best_value()
-    best_parameter <- object$best_parameter()
-    for (i in seq_along(add_vars)) {
-      out[[names(add_vars)[i]]] <- sapply(
-        unlist(results_all, recursive = FALSE),
-        function(r) {
-          env <- new.env()
-          list2env(r, env)
-          tryCatch(
-            eval(parse(text = add_vars[[i]]), env),
-            error = function(e) NA
-          )
-        }
-      )
-    }
-  }
-
-  ### unlist single-valued records
-  for (i in seq_len(ncol(out))) {
-    unlist_try <- unlist(out[, i], recursive = FALSE)
-    if (length(unlist_try) == nrow(out)) {
-      out[, i] <- unlist(out[, i], recursive = FALSE)
-    }
-  }
-
-  ### round numeric records
-  for (i in seq_len(ncol(out))) {
-    if (is.vector(out[, i]) && is.numeric(out[, i])) {
-      out[, i] <- round(out[, i], digits = digits)
-    }
-    if (is.list(out[, i]) && all(sapply(out[, i], is.numeric))) {
-      out[[i]] <- lapply(out[, i], round, digits = digits)
-    }
-  }
-
-  ### return data.frame
-  return(out)
 }
 
 #' @noRd
-#' @importFrom stats complete.cases median
-#' @importFrom dplyr summarize mutate
-#' @importFrom ggplot2 ggplot aes scale_x_continuous theme_minimal theme
-#' @importFrom ggplot2 geom_boxplot geom_vline annotate element_blank ggtitle
-#' @importFrom ggplot2 coord_cartesian
-#' @importFrom scales label_percent
-#' @importFrom forcats fct_reorder
-#' @importFrom rlang .data
-#' @importFrom scales percent
 #' @exportS3Method
 
 plot.Nop <- function(
     x, which_element = "seconds", by = NULL, relative = FALSE,
     which_run = "all", which_optimizer = "all", only_comparable = FALSE,
-    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...) {
-  ### input checks
-  if (!which_element %in% c("seconds", "value")) {
-    ino_stop(
-      "Argument {.var which_element} must be {.val seconds} or {.val value}."
-    )
-  }
-  if (!is.null(by)) {
-    if (!by %in% c("label", "optimizer")) {
-      ino_stop(
-        "Argument {.var by} must be {.val label} or {.val optimizer} or {.val NULL}."
-      )
-    }
-  }
-  is_TRUE_FALSE(relative)
-  if (identical(which_element, "value") && relative) {
-    ino_status(
-      "Argument {.var relative} cannot be {.val TRUE} if {.var which_element} is {.val value}."
-    )
-    relative <- FALSE
-  }
-  is_name(title)
-  if (!(is.vector(xlim) && length(xlim) == 2)) {
-    ino_stop(
-      "Argument {.var xlim} must be {.cls numeric} vector of length 2.",
-      "Entries can also be {.val NA}."
-    )
-  }
-
-  ### get data
-  data <- x$summary(
-    which_element = c(which_element, by), which_run = which_run,
-    which_optimizer = which_optimizer, only_comparable = only_comparable,
-    digits = Inf
+    title = paste("Optimization of", x$f_name), xlim = c(NA, NA), ...
+  ) {
+  x$plot(
+    which_element = which_element, by = by, relative = relative,
+    which_run = which_run, which_optimizer = which_optimizer,
+    only_comparable = only_comparable, title = title, xlim = xlim, ...
   )
-
-  ### drop incomplete cases
-  incomplete_cases <- which(!stats::complete.cases(data))
-  if (length(incomplete_cases) > 0) {
-    ino_status(
-      paste("Dropped", length(incomplete_cases), "results with missing data.")
-    )
-    data <- data[-incomplete_cases, , drop = FALSE]
-  }
-  if (nrow(data) == 0) {
-    ino_status(
-      "No data to plot."
-    )
-    return(invisible(NULL))
-  }
-
-  ### compute relative 'seconds' wrt to median seconds
-  if (identical(which_element, "seconds") && relative) {
-    med <- dplyr::summarize(
-      data,
-      "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
-    ) |> as.numeric()
-    data <- data |>
-      dplyr::mutate("seconds" = (.data[["seconds"]] - med) / med)
-  }
-
-  ### sort by median 'seconds'
-  if (identical(which_element, "seconds") && !is.null(by)) {
-    data <- data |>
-      dplyr::mutate(
-        label = forcats::fct_reorder(
-          .f = .data[[by]], .x = .data[["seconds"]],
-          .fun = stats::median, .desc = TRUE
-        )
-      )
-  }
-
-  ### build base plot
-  if (is.null(by)) {
-    base_plot <- ggplot2::ggplot(
-      data, ggplot2::aes(x = .data[[which_element]], y = "")
-    )
-  } else {
-    base_plot <- ggplot2::ggplot(
-      data, ggplot2::aes(x = .data[[which_element]], y = .data[[by]])
-    )
-  }
-  base_plot <- base_plot +
-    ggplot2::theme_minimal()
-
-  ### add 'values'
-  if (identical(which_element, "value")) {
-    base_plot <- base_plot +
-      ggplot2::geom_point(
-        position = "jitter", alpha = 0.5
-      ) +
-      ggplot2::scale_x_continuous(
-        name = "Function value at optimum"
-      )
-  }
-
-  ### add 'seconds'
-  if (identical(which_element, "seconds")) {
-    base_plot <- base_plot +
-      ggplot2::geom_boxplot()
-    if (relative) {
-      base_plot <- base_plot +
-        ggplot2::scale_x_continuous(
-          labels = scales::label_percent(style_positive = c("plus")),
-          name = "Relative deviation in optimization time"
-        )
-    } else {
-      base_plot <- base_plot +
-        ggplot2::scale_x_continuous(
-          name = "Optimization time in seconds",
-          limits = c(0, NA)
-        )
-    }
-    if (!is.null(by)) {
-      med <- dplyr::summarize(
-        data,
-        "median" = stats::median(.data[["seconds"]], na.rm = TRUE)
-      ) |> as.numeric()
-      base_plot <- base_plot + ggplot2::geom_vline(
-        xintercept = med
-      ) +
-        ggplot2::annotate(
-          x = med, y = Inf, label = "Overall median",
-          geom = "label", vjust = 1
-        )
-    }
-  }
-
-  ### modify labels and axes
-  if (is.null(by)) {
-    base_plot <- base_plot +
-      ggplot2::theme(
-        axis.text.y = ggplot2::element_blank(),
-        axis.ticks.y = ggplot2::element_blank(),
-        axis.title.y = ggplot2::element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank()
-      )
-  } else {
-    base_plot <- base_plot +
-      ggplot2::theme(
-        axis.title.y = ggplot2::element_blank()
-      )
-  }
-  if (!is.null(title)) {
-    base_plot <- base_plot + ggplot2::ggtitle(label = title)
-  }
-  base_plot <- base_plot + ggplot2::coord_cartesian(xlim = xlim)
-
-  ### return plot
-  return(base_plot)
 }
 
