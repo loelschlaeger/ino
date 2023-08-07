@@ -24,16 +24,24 @@ knitr::opts_chunk$set(
   # all optimizations are pre-computed to save building time
   eval = FALSE
 )
-library("ino")
+devtools::load_all()
+# library("ino")
 options("ino_verbose" = TRUE)
 data("mixture_ino")
-set.seed(1)
 ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
 ## Motivation
 
-Optimization is of great relevance in many fields, including finance (portfolio optimization), engineering (minimizing air resistance), and statistics (likelihood maximization for model fitting). Often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for gradient or Hessian are not available. In these cases, numerical optimization algorithms are helpful. They iteratively explore the parameter space, guaranteeing to improve the function value over each iteration, and eventually converge to a point where no more improvements can be made [@Bonnans:2006]. In R, several functions are available that can be applied to numerically solve optimization problems, including (quasi) Newton (`stats::nlm()`, `stats::nlminb()`, `stats::optim()`), direct search (`pracma::nelder_mead()`), and conjugate gradient methods (`Rcgmin::Rcgmin()`). The [CRAN Task View: Optimization and Mathematical Programming](https://CRAN.R-project.org/view=Optimization) provides a comprehensive list of packages for solving optimization problems. 
+Optimization is of great relevance in many fields, including finance (portfolio optimization), engineering (minimizing air resistance), and statistics (likelihood maximization for model fitting). Often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for gradient or Hessian are not available. In these cases, numerical optimization algorithms are helpful. They iteratively explore the parameter space, guaranteeing to improve the function value over each iteration, and eventually converge to a point where no more improvements can be made [@Bonnans:2006]. In R, several functions are available that can be applied to numerically solve optimization problems, including 
+
+- (quasi) Newton (`stats::nlm()`, `stats::nlminb()`, `stats::optim()`), 
+
+- direct search (`pracma::nelder_mead()`), 
+
+- and conjugate gradient methods (`Rcgmin::Rcgmin()`). 
+
+The [CRAN Task View: Optimization and Mathematical Programming](https://CRAN.R-project.org/view=Optimization) provides a comprehensive list of packages for solving optimization problems. 
 
 One thing that all of these numerical optimizers have in common is that initial parameter values must be specified, i.e., the point from where the optimization is started. Optimization theory [@Nocedal:2006] states that the choice of an initial point has a large influence on the optimization result, in particular convergence time and rate. In general, starting in areas of function saturation increases computation time, starting in areas of non-concavity leads to convergence problems or convergence to local rather than global optima. Consequently, numerical optimization can be facilitated by 
 
@@ -101,9 +109,8 @@ The following function calculates the log-likelihood value given the parameter v
 
 > **Remark:** We restrict the standard deviations `sd` to be positive (via the exponential transformation) and `lambda` to be between 0 and 1 (via the logit transformation). The function returns the negative log-likelihood value by default (`neg = TRUE`). This is necessary because most R optimizers only minimize (e.g., `stats::nlm`), where we can use the fact that $\arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta}) = \arg\min_{\boldsymbol{\theta}} -\ell(\boldsymbol{\theta})$.
 
-```{r, mixture ll, eval = TRUE}
+```{r, define mixture ll, eval = TRUE}
 normal_mixture_llk <- function(theta, data, neg = TRUE){
-  stopifnot(length(theta) == 5)
   mu <- theta[1:2]
   sd <- exp(theta[3:4])
   lambda <- plogis(theta[5])
@@ -127,7 +134,7 @@ Solving $\boldsymbol{\theta}^* = \arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol
 
 The following function implements this algorithm, which we will compare to standard numerical optimization below.
 
-```{r, em algorithm, eval = TRUE}
+```{r, define em algorithm, eval = TRUE}
 em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data) {
   llk <- normal_mixture_llk(theta, data, neg = FALSE)
   mu <- theta[1:2]
@@ -176,8 +183,8 @@ It is possible to define any numerical optimizer implemented in R through the {o
 
 ```{r, mixture_ino optimizer}
 mixture_ino$
-  set_optimizer(optimizer_nlm(), label = "nlm")$
-  set_optimizer(optimizer_optim(), label = "optim")
+  set_optimizer(optimizer_nlm())$
+  set_optimizer(optimizer_optim())
 ```
 
 > **Remark:** The previous code chunk makes use of a technique called "method chaining" [see @Wickham:2019, ch. 14.2.1]. This means that `mixture_ino$set_optimizer()` returns the modified `mixture_ino` object, for which we can specify a second optimizer by calling `$set_optimizer()` again. 
@@ -189,13 +196,15 @@ em_optimizer <- optimizeR::define_optimizer(
   optimizer = em, objective = "normal_mixture_llk",
   initial = "theta", value = "neg_llk", parameter = "estimate"
 )
-mixture_ino$set_optimizer(em_optimizer, label = "em")
+mixture_ino$
+  set_optimizer(em_optimizer, optimizer_label = "em")
 ```
 
 Finally, we can validate our specification:
 
 ```{r, validate mixture_ino, eval = TRUE}
-mixture_ino$test(verbose = TRUE)
+mixture_ino$
+  validate(verbose = TRUE)
 ```
 
 ### Function evaluation

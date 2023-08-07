@@ -18,11 +18,14 @@ This function flattens a nested \code{list}, see the details.
 \details{
 The input \code{list} \code{x} is transformed in the following ways:
 \itemize{
-\item If \code{x} has only one element, it becomes the new \code{x}. This is
-repeated twice. E.g., \code{list(list(1))} becomes \code{1}.
-\item Else, if all elements of \code{x} have only one element, these elements
-become the elements of \code{x}. E.g., \code{list(list(1), list(2))}
-becomes \code{list(1:2)}. This is repeated once.
+\item If \code{x} is a \code{list} with only one element, this element becomes
+the new \code{x}.
+This is repeated twice.
+E.g., \code{list(list(1))} becomes \code{1}.
+\item Else, if \code{x} is a \code{list} where each element is a \code{list}
+with only one element, these elements become the elements of \code{x}.
+This is repeated once.
+E.g., \code{list(list(1), list(2))} becomes \code{list(1:2)}.
 \item Else, if each element of \code{x} is a \code{list} where each element is a
 \code{list} with one element, the lowest-level \code{list} is replaced by
 the one element.

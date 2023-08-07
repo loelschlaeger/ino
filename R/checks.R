@@ -335,6 +335,40 @@ is_TRUE_FALSE <- function(x, allow_na = TRUE, error = TRUE) {
   invisible(check)
 }
 
+#' Check for proper index
+#'
+#' @description
+#' This function checks whether the input is a proper index, i.e., a
+#' single positive \code{integer}.
+#'
+#' @param x
+#' Any object.
+#' @param error
+#' In the case that \code{x} is not a proper index, either \code{TRUE}
+#' (default) to throw an error or \code{FALSE} to return invisibly \code{FALSE}.
+#'
+#' @return
+#' If \code{error = TRUE}, either invisibly \code{TRUE} or an error is thrown.
+#' If \code{error = FALSE}, invisibly \code{TRUE} or \code{FALSE}.
+#'
+#' @keywords checks
+
+is_index <- function(x, error = TRUE) {
+  is_TRUE_FALSE(error)
+  check <- is_count(x, allow_zero = FALSE, error = FALSE)
+  if (!check && error) {
+    x_name <- deparse(substitute(x))
+    ino_stop(
+      glue::glue(
+        "Argument {.var <x_name>} must be a single, positive {.cls integer}.",
+        .open = "<",
+        .close = ">"
+      )
+    )
+  }
+  invisible(check)
+}
+
 #' Check for proper index vector
 #'
 #' @description
@@ -355,8 +389,7 @@ is_TRUE_FALSE <- function(x, allow_na = TRUE, error = TRUE) {
 
 is_index_vector <- function(x, error = TRUE) {
   is_TRUE_FALSE(error)
-  check <- is.vector(x) &&
-    all(sapply(x, is_count, allow_zero = FALSE, error = FALSE))
+  check <- is.vector(x) && all(sapply(x, is_index, error = FALSE))
   if (!check && error) {
     x_name <- deparse(substitute(x))
     ino_stop(
@@ -369,3 +402,5 @@ is_index_vector <- function(x, error = TRUE) {
   }
   invisible(check)
 }
+
+

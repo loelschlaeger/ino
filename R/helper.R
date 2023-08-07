@@ -257,11 +257,14 @@ helper_subset <- function(
 #'
 #' @details
 #' The input \code{list} \code{x} is transformed in the following ways:
-#' - If \code{x} has only one element, it becomes the new \code{x}. This is
-#'   repeated twice. E.g., \code{list(list(1))} becomes \code{1}.
-#' - Else, if all elements of \code{x} have only one element, these elements
-#'   become the elements of \code{x}. E.g., \code{list(list(1), list(2))}
-#'   becomes \code{list(1:2)}. This is repeated once.
+#' - If \code{x} is a \code{list} with only one element, this element becomes
+#'   the new \code{x}.
+#'   This is repeated twice.
+#'   E.g., \code{list(list(1))} becomes \code{1}.
+#' - Else, if \code{x} is a \code{list} where each element is a \code{list}
+#'   with only one element, these elements become the elements of \code{x}.
+#'   This is repeated once.
+#'   E.g., \code{list(list(1), list(2))} becomes \code{list(1:2)}.
 #' - Else, if each element of \code{x} is a \code{list} where each element is a
 #'   \code{list} with one element, the lowest-level \code{list} is replaced by
 #'   the one element.
@@ -282,25 +285,29 @@ helper_flatten <- function(x) {
   if (length(x) == 1) {
     names(x) <- NULL
     x <- unlist(x, recursive = FALSE, use.names = TRUE)
-    if (length(x) == 1) {
+    if (is.list(x) && length(x) == 1) {
       names(x) <- NULL
       x <- unlist(x, recursive = FALSE, use.names = TRUE)
-      if (length(x) == 1) {
+      if (is.list(x) && length(x) == 1) {
         x <- unlist(x, recursive = FALSE, use.names = FALSE)
       }
     }
-  } else if (all(sapply(x, length) == 1)) {
+  } else if (all(sapply(x, function(y) is.list(y) && length(y) == 1))) {
     x <- lapply(x, function(x) {
       names(x) <- NULL
       unlist(x, recursive = FALSE, use.names = TRUE)
     })
-    if (all(sapply(x, length) == 1)) {
+    if (all(sapply(x, function(y) is.list(y) && length(y) == 1))) {
       x <- lapply(x, function(x) {
         names(x) <- NULL
         unlist(x, recursive = FALSE, use.names = TRUE)
       })
     }
-  } else if (all(sapply(x, function(x) sapply(x, length)) == 1)) {
+  } else if (all(
+      sapply(x, function(x) {
+        all(sapply(x, function(y) is.list(y) && length(y) == 1))
+      }
+      ))) {
     x <- lapply(x, function(x) {
       lapply(x, function(x) {
         names(x) <- NULL
@@ -310,3 +317,111 @@ helper_flatten <- function(x) {
   }
   return(x)
 }
+
+#' Helper function for argument matching
+#'
+#' @description
+#' This function matches function arguments and is a modified version of
+#' \code{\link[base]{match.arg}}.
+#'
+#' @param arg
+#' A \code{character} (vector).
+#' @param choices
+#' A \code{character} (vector) of candidate values.
+#' @param several.ok
+#' Either \code{TRUE} if \code{arg} is allowed to have more than one element,
+#' \code{FALSE} else.
+#' @param none.ok
+#' Either \code{TRUE} if \code{arg} is allowed to have zero elements,
+#' \code{FALSE} else.
+#'
+#' @return
+#' The un-abbreviated version of the exact or unique partial match if there is
+#' one. Otherwise, an error is signaled if \code{several.ok} is \code{FALSE}
+#' or \code{none.ok} is \code{FALSE}.
+#' When \code{several.ok} is \code{TRUE} and (at least) one element of
+#' \code{arg} has a match, all un-abbreviated versions of matches are returned.
+#' When \code{none.ok} is \code{TRUE} and \code{arg} has zero elements,
+#' \code{character(0)} is returned.
+#'
+#' @keywords internal
+
+match_arg <- function (arg, choices, several.ok = FALSE, none.ok = FALSE) {
+  is_name_vector(arg, allow_na = FALSE)
+  is_name_vector(choices, allow_na = FALSE)
+  is_TRUE_FALSE(several.ok, allow_na = FALSE)
+  is_TRUE_FALSE(none.ok, allow_na = FALSE)
+  arg_name <- deparse(substitute(arg))
+  if (!several.ok) {
+    if (identical(arg, choices)) {
+      return(arg[1L])
+    }
+    if (length(arg) > 1L) {
+      ino_stop(
+        "{.var arg_name} must be of length 1."
+      )
+    }
+  } else if (length(arg) == 0L) {
+    if (none.ok) {
+      return(character(0))
+    } else {
+      ino_stop(
+        "{.var arg_name} must be of length 1 or more."
+      )
+    }
+  }
+  i <- pmatch(arg, choices, nomatch = 0L, duplicates.ok = TRUE)
+  if (all(i == 0L)) {
+    ino_stop(
+      glue::glue(
+        "{.var <arg_name>} can be one",
+        ifelse(several.ok, " or more ", " "),
+        "of",
+        .open = "<", .close = ">"
+      ),
+      glue::glue(
+        "{.val <choices>}",
+        .open = "<", .close = ">"
+      )
+    )
+  }
+  i <- i[i > 0L]
+  if (!several.ok && length(i) > 1) {
+    ino_stop(
+      "There is more than one argument match."
+    )
+  }
+  choices[i]
+}
+
+#' Helper function for ...
+#'
+#' @description
+#' This function ... TODO
+#'
+#' @param x
+#' TODO
+#' @param index
+#' TODO
+#' @param replace
+#' Either \code{TRUE} ...
+#'
+#' @return
+#' TODO
+#'
+#' @keywords internal
+
+remove_index <- function(x, index, replace = FALSE) {
+  is_index_vector(x)
+  is_index(index)
+  is_TRUE_FALSE(replace)
+  x <- x[!(x %in% index)]
+  if (replace) {
+    x[x >= index] <- x[x >= index] - 1
+  }
+  return(x)
+}
+
+
+
+

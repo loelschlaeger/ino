@@ -373,10 +373,6 @@ test_that("Validations can be interrupted", {
   )
 })
 
-
-# TODO
-
-
 test_that("Overview of available elements can be created", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())
@@ -397,7 +393,6 @@ test_that("Overview of available elements can be created", {
 })
 
 test_that("Results can be accessed", {
-  runs <- 10
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())$
@@ -406,17 +401,11 @@ test_that("Results can be accessed", {
   results <- ackley$results()
   expect_type(results, "list")
   expect_length(results, 20)
-})
-
-test_that("Results can be cleared", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())
-  expect_warning(
-    ackley$clear(which_run = 1),
-    "No optimization results saved yet"
+  results <- ackley$results(
+    which_run = 1:10, which_optimizer = 2, which_element = "value"
   )
-  ackley$optimize(runs = 10)
-  ackley$clear(which_run = 1)
+  expect_type(results, "list")
+  expect_length(results, 5)
 })
 
 test_that("Results can be summarized", {
@@ -426,6 +415,34 @@ test_that("Results can be summarized", {
   expect_warning(
     ackley$summary(),
     "No optimization results saved yet."
+  )
+  ackley$
+    initialize_random(runs = 10)$
+    optimize()
+  out <- ackley$summary(
+    which_element = c("value", "iterations"), digits = 1
+  )
+})
+
+test_that("Results can be deleted", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())
+  expect_warning(
+    ackley$delete(which_run = 1),
+    "No optimization results saved yet"
+  )
+  expect_equal(
+    suppressWarnings(ackley$number()), 0
+  )
+  ackley$
+    initialize_random()$
+    optimize()
+  expect_equal(
+    suppressWarnings(ackley$number()), 1
+  )
+  ackley$delete(which_run = 1, prompt = FALSE)
+  expect_equal(
+    suppressWarnings(ackley$number()), 0
   )
 })
 
@@ -440,10 +457,12 @@ test_that("Overview of optima works", {
   ackley$
     initialize_random(runs = 10)$
     optimize()
-  expect_true(is.data.frame(ackley$optima()))
+  expect_true(
+    is.data.frame(ackley$optima())
+  )
   expect_error(
     ackley$optima(sort_by = "bad_input"),
-    "must be"
+    "can be one of"
   )
 })
 
@@ -451,11 +470,12 @@ test_that("Optimization times and values can be plotted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())$
-    optimize(runs = 100, label = "1")$
-    optimize(runs = 100, label = "2")
+    initialize_random(runs = 100)$
+    optimize(reset_initial = FALSE)$
+    optimize()
   combinations <- expand.grid(
     which_element = c("seconds", "value"),
-    by = list("label", "optimizer", NULL),
+    group_by = list("optimization_label", "optimizer_label", NULL),
     relative = c(TRUE, FALSE),
     which_run = "all",
     which_optimizer = "all",
@@ -464,14 +484,14 @@ test_that("Optimization times and values can be plotted", {
   )
   for (i in 1:nrow(combinations)) {
     which_element <- combinations[i, "which_element"]
-    by <- combinations[[i, "by"]]
+    group_by <- combinations[[i, "group_by"]]
     relative <- combinations[i, "relative"]
     which_run <- combinations[i, "which_run"]
     which_optimizer <- combinations[i, "which_optimizer"]
     only_comparable <- combinations[i, "only_comparable"]
     expect_s3_class(
       ackley$plot(
-        which_element = which_element, by = by, relative = relative,
+        which_element = which_element, group_by = group_by, relative = relative,
         which_run = which_run, which_optimizer = which_optimizer,
         only_comparable = only_comparable
       ),
@@ -479,6 +499,13 @@ test_that("Optimization times and values can be plotted", {
     )
   }
 })
+
+# TODO
+
+self <- ackley
+private <- self$.__enclos_env__$private
+
+
 
 test_that("Optimization trace can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)

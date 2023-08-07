@@ -84,3 +84,41 @@ ino_seed <- function(
     ino_status(glue::glue("Set a seed ({seed})."), verbose = verbose)
   }
 }
+
+#' @noRd
+#' @keywords internal
+
+ino_ask <- function (question, default = FALSE) {
+  if (!interactive()) {
+    return(default)
+  }
+  repeat {
+    selection <- if (default) {
+      "[Y/n]"
+    } else {
+      "[y/N]"
+    }
+    prompt <- sprintf("%s %s: ", question, selection)
+    response <- tryCatch(
+      tolower(trimws(readline(prompt))),
+      interrupt = identity
+    )
+    if (inherits(response, "interrupt")) {
+      stop()
+    }
+    if (!nzchar(response)) {
+      return(default)
+    }
+    if (response %in% c("y", "yes")) {
+      cat("")
+      return(TRUE)
+    }
+    if (response %in% c("n", "no")) {
+      cat("")
+      return(FALSE)
+    }
+    ino_status(
+      "Unrecognized response, please enter 'y' or 'n', or type Ctrl + C to cancel."
+    )
+  }
+}

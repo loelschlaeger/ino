@@ -2,7 +2,7 @@
 title: "Developer Guide"
 description: >
   Details on the implementation of the {ino} package, how to contribute, and
-  how to integrate {ino} in other R packages.
+  how to integrate {ino} into other R packages.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEncoding{UTF-8}
@@ -14,39 +14,50 @@ bibliography: ref.bib
 link-citations: true
 ---
 
-This document gives technical details on the implementation of the `{ino}` package.
+This document gives technical details on the implementation, how to contribute, and how to integrate the `{ino}` package into other R packages.
 
-## Objects
+## Options
 
-The `{ino}` package uses an object-oriented framework based on the `{R6}` package [@Chang:2021]. 
+The package uses two options to change the package behavior globally:
 
-### `Nop` object
+- `"digits"` receives an `integer` (default is `7`) to set the number of shown decimal places
 
-A `Nop` object is an `R6` object. It is the only object that a user of `{ino}` will interact with. The code is in the `R/nop.R` file. The purpose of this object is to
+- `"ino_verbose"` receives a `logical` (default is `FALSE`) to print or hide progress and details
 
-- contain everything that defines the numerical optimization problem,
+## `Nop` object
 
-- provide methods for evaluating and optimizing the target function,
+The package uses an object-oriented framework based on the `{R6}` package [@Chang:2021]. We currently only need a single object that a package user will interact with, the `Nop` object (short for numerical optimization problem). The code is in the `R/nop.R` file. The purpose of this object is to
 
-- ...
+- define the numerical optimization problem (that includes the target function, the length of the target argument, additional function arguments, and optimizer functions),
 
-### `Runs` object
+- evaluate and optimize the target function,
 
-A `Runs` object is an `R6` object. It is contained inside a `Nop` object. The code is in the `R/runs.R` file. The purpose of this object is 
+- 
 
-- contain the results of optimization runs,
+### Public methods
 
-- provide methods for summarizing, extracting, and filtering the results,
+- `$initialize()`: This method is called via `Nop$new()` and creates a new `Nop` object. Users must define the target function `f` and the length `npar` of the target argument. Optionally, additional arguments can be defined via the `...` argument. The target function `f` must return a single `numeric`. The target argument of `f` is the argument over which `f` is optimized. It must be the first argument of `f` and receive a `numeric` of length `npar`.
 
-- ...
+- `$print()`: This method prints specification details of the `Nop` object.
+
+-
+
+### Private methods
+
+### Active bindings
 
 ### `S3` methods
 
-The `R/s3.R` file implements `S3` methods for convenience.
+The public methods `$print()`, `$summary()`, and `$plot()` have corresponding `S3` methods for convenience. They are defined at the bottom of the `R/nop.R` file.
 
-## Helper and check functions
+## Helper functions
 
-The `R/helper.R` file implements helper functions, `R/checks.R` implements check functions.
+The `R/helper.R` file implements helper functions. 
+
+
+## Check functions
+
+`R/checks.R` implements check functions.
 
 ## Demos
 
