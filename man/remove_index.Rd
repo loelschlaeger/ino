@@ -2,21 +2,22 @@
 % Please edit documentation in R/helper.R
 \name{remove_index}
 \alias{remove_index}
-\title{Helper function for ...}
+\title{Helper function for removing an index}
 \usage{
 remove_index(x, index, replace = FALSE)
 }
 \arguments{
-\item{x}{TODO}
+\item{x}{An \code{integer} (vector).}
 
-\item{index}{TODO}
+\item{index}{An \code{integer}.}
 
-\item{replace}{Either \code{TRUE} ...}
+\item{replace}{Either \code{TRUE} the shift the indices up, or \code{FALSE} (default) else.}
 }
 \value{
-TODO
+An \code{integer} (vector).
 }
 \description{
-This function ... TODO
+This function removes a value from an index vector and optionally shifts the
+indices up.
 }
 \keyword{internal}

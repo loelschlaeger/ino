@@ -7,15 +7,15 @@
 match_arg(arg, choices, several.ok = FALSE, none.ok = FALSE)
 }
 \arguments{
-\item{arg}{A \code{character} (vector).}
+\item{arg}{A \code{character} (vector), the function argument.}
 
-\item{choices}{A \code{character} (vector) of candidate values.}
+\item{choices}{A \code{character} (vector) of allowed values for \code{arg}.}
 
 \item{several.ok}{Either \code{TRUE} if \code{arg} is allowed to have more than one element,
-\code{FALSE} else.}
+or \code{FALSE} else.}
 
 \item{none.ok}{Either \code{TRUE} if \code{arg} is allowed to have zero elements,
-\code{FALSE} else.}
+or \code{FALSE} else.}
 }
 \value{
 The un-abbreviated version of the exact or unique partial match if there is

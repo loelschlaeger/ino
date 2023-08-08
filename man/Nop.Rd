@@ -91,11 +91,18 @@ reference parameter (e.g., to the true parameter vector
 \examples{
 # Optimization of the Ackley function
 
-Nop$new(f = f_ackley, npar = 2)$   # initialize the Nop object
-  set_optimizer(optimizer_nlm())$  # define the nlm optimizer
-  initialize_random(runs = 100)$   # initialize 100 times randomly
-  optimize(verbose = FALSE)$       # optimize
-  optima()                         # return overview of optima
+ackley <- Nop$new(f = f_ackley, npar = 2)$  # define the Nop object
+  set_optimizer(optimizer_nlm())$           # set the nlm optimizer
+  set_optimizer(optimizer_optim())$         # also set the optim optimizer
+  initialize_random(
+    sampler = function() rnorm(2, mean = 0, sd = 3),
+    runs = 100, seed = 1
+  )$                                        # initialize 100 times randomly
+  optimize()                                # optimize
+
+ackley$optima(print.rows = 5)               # get overview of optima
+
+ackley$best_parameter()                     # get best parameter vector
 
 }
 \section{Active bindings}{
@@ -181,13 +188,15 @@ A new \code{Nop} object.
 \subsection{Method \code{print()}}{
 Prints details of the numerical optimization problem.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$print(digits = getOption("digits", default = 7), ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$print(digits = getOption("digits", default = 7), minimum = TRUE, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{digits}}{An \code{integer}, the number of shown decimal places.}
+
+\item{\code{minimum}}{TODO (maybe always assume minimum and provide option to transform maximization)}
 
 \item{\code{...}}{Currently not used.}
 }
@@ -437,7 +446,8 @@ Defines random initial values based on previous optimization runs.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -642,7 +652,8 @@ Returns the number of saved optimization results.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -708,7 +719,8 @@ Returns saved optimization results.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -742,7 +754,15 @@ or \code{FALSE} to include all optimization results.}
 \item{\code{simplify}}{If \code{simplify = TRUE}, the nested list output of optimization results is
 flattened if possible.}
 
-\item{\code{add_identifier}}{TODO}
+\item{\code{add_identifier}}{A \code{character} (vector) of identifiers to be added to the output.
+Can be one or more of
+\itemize{
+\item \code{"optimization_label"} (\code{character}),
+\item \code{"optimization_id"} (\code{numeric}),
+\item \code{"optimizer_label"} (\code{character}),
+\item \code{"optimizer_id"} (\code{numeric}),
+\item \code{"comparable"} (\code{logical}).
+}}
 }
 \if{html}{\out{</div>}}
 }
@@ -795,7 +815,8 @@ default, i.e.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -811,7 +832,15 @@ default, i.e.
 for the original optimization problem without any transformations),
 or \code{FALSE} to include all optimization results.}
 
-\item{\code{add_identifier}}{TODO}
+\item{\code{add_identifier}}{A \code{character} (vector) of identifiers to be added to the output.
+Can be one or more of
+\itemize{
+\item \code{"optimization_label"} (\code{character}),
+\item \code{"optimization_id"} (\code{numeric}),
+\item \code{"optimizer_label"} (\code{character}),
+\item \code{"optimizer_id"} (\code{numeric}),
+\item \code{"comparable"} (\code{logical}).
+}}
 }
 \if{html}{\out{</div>}}
 }
@@ -842,7 +871,8 @@ Deletes optimization results.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -875,7 +905,7 @@ Provides an overview of the identified optimum values.
   which_optimizer = "all",
   only_comparable = TRUE,
   decreasing = (sort_by == "frequency"),
-  max = getOption("max.print", default = 10)
+  print.rows = 0
 )}\if{html}{\out{</div>}}
 }
 
@@ -896,7 +926,8 @@ Provides an overview of the identified optimum values.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -912,7 +943,8 @@ or \code{FALSE} to include all optimization results.}
 
 \item{\code{decreasing}}{TODO}
 
-\item{\code{max}}{An \code{integer}, specifying the maximal number of entries to be printed.}
+\item{\code{print.rows}}{An \code{integer}, specifying the maximal number of rows to be
+printed. No printing if \code{print.rows = 0}, which is the default.}
 }
 \if{html}{\out{</div>}}
 }
@@ -964,7 +996,8 @@ respect to the overall median.}
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1023,7 +1056,8 @@ Visualizes deviation of parameters.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1061,6 +1095,7 @@ Capture trace of optimization with \code{stats::nlm()}.
   iterations = 100,
   tolerance = 1e-06,
   which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
+  seed = NULL,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -1091,6 +1126,9 @@ one or more of:
 \item \code{seconds} (the number of seconds for the current iteration)
 }}
 
+\item{\code{seed}}{An \code{integer}, passed on to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} for no seed, which is the default.}
+
 \item{\code{...}}{Additional arguments passed on to \code{\link[stats]{nlm}}.
 The arguments \code{iterlim} and \code{hessian} cannot be specified.}
 }
@@ -1111,7 +1149,7 @@ Returns the best found \code{numeric} value of \code{f}.
   which_run = "all",
   which_optimizer = "all",
   only_comparable = TRUE,
-  digits = getOption("ino_digits", default = 2),
+  digits = getOption("digits", default = 2),
   minimum = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -1125,7 +1163,8 @@ Returns the best found \code{numeric} value of \code{f}.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1141,18 +1180,20 @@ or \code{FALSE} to include all optimization results.}
 
 \item{\code{digits}}{An \code{integer}, the number of shown decimal places.}
 
-\item{\code{minimum}}{TODO}
+\item{\code{minimum}}{TODO (maybe always assume minimum and provide option to transform maximization)}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+In the case that multiple optimization runs led to the best value, only
+the first one of them is returned.
+}
+
 \subsection{Returns}{
-A \code{numeric}, the best found \code{numeric} value of \code{f}.
-The output has two attributes:
+A \code{numeric} with two attributes:
 \itemize{
-\item \code{run}, the run id that led to the best value,
-\item \code{optimizer}, the optimizer that led to the best value.
-In the case that multiple optimization runs led to the best value, the
-first one of them is returned.
+\item \code{optimization_id}, the run id that led to the best value,
+\item \code{optimizer_label}, the optimizer that led to the best value.
 }
 }
 }
@@ -1160,13 +1201,13 @@ first one of them is returned.
 \if{html}{\out{<a id="method-Nop-best_parameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-best_parameter}{}}}
 \subsection{Method \code{best_parameter()}}{
-Returns the best found \code{numeric} parameter vector.
+Returns the best found \code{numeric} parameter vector for \code{f}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$best_parameter(
   which_run = "all",
   which_optimizer = "all",
   only_comparable = TRUE,
-  digits = getOption("ino_digits", default = 2),
+  digits = getOption("digits", default = 2),
   minimum = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -1180,7 +1221,8 @@ Returns the best found \code{numeric} parameter vector.
 \item \code{"last"} for the results of the last \code{$optimize()} call,
 \item \code{"failed"}, the results from failed optimization runs,
 \item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of optimization run ids.
+\item an \code{integer} (vector) of optimization run ids (as returned, e.g.,
+via \code{$best_value()}).
 }}
 
 \item{\code{which_optimizer}}{Selects specified numerical optimizers. Either:
@@ -1196,17 +1238,20 @@ or \code{FALSE} to include all optimization results.}
 
 \item{\code{digits}}{An \code{integer}, the number of shown decimal places.}
 
-\item{\code{minimum}}{TODO}
+\item{\code{minimum}}{TODO (maybe always assume minimum and provide option to transform maximization)}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+In the case that multiple optimization runs led to the best value, only
+the first one of them is returned.
+}
+
 \subsection{Returns}{
-A \code{numeric} of length \code{self$npar}.
-The output has two attributes:
+A \code{numeric} of length \code{self$npar} with two attributes:
 \itemize{
-\item \code{run}, the run id that led to the best parameter vector,
-\item \code{optimizer}, the optimizer that led to the best parameter vector.
-Note that this parameter vector is not necessarily unique.
+\item \code{optimization_id}, the run id that led to the best value,
+\item \code{optimizer_label}, the optimizer that led to the best value.
 }
 }
 }

@@ -1,4 +1,4 @@
-test_that("input checks for standardization work", {
+test_that("Input checks for standardization work", {
   expect_error(
     helper_standardize(
       argument = diag(3), byrow = "not_a_boolean",
@@ -75,7 +75,7 @@ test_that("input checks for standardization work", {
   )
 })
 
-test_that("standardization of vector works", {
+test_that("Standardization of vector works", {
   argument <- rnorm(10)
   combinations <- expand.grid(
     byrow = TRUE,
@@ -110,7 +110,7 @@ test_that("standardization of vector works", {
   }
 })
 
-test_that("standardization of data.frame works", {
+test_that("Standardization of data.frame works", {
   argument <- data.frame("a" = rnorm(10), "b" = rnorm(10), "c" = rnorm(10))
   combinations <- expand.grid(
     byrow = c(TRUE, FALSE),
@@ -199,7 +199,7 @@ test_that("standardization of data.frame works", {
   }
 })
 
-test_that("standardization of matrix works", {
+test_that("Standardization of matrix works", {
   argument <- matrix(rnorm(9), 3, 3)
   combinations <- expand.grid(
     byrow = c(TRUE, FALSE),
@@ -290,7 +290,7 @@ test_that("standardization of matrix works", {
   }
 })
 
-test_that("standardization jointly works", {
+test_that("Standardization jointly works", {
   argument <- matrix(1:3, ncol = 3, nrow = 3)
   expect_equal(
     helper_standardize(
@@ -311,7 +311,7 @@ test_that("standardization jointly works", {
   )
 })
 
-test_that("input checks for subsetting work", {
+test_that("Input checks for subsetting work", {
   expect_error(
     helper_subset(
       argument = diag(3), byrow = TRUE,
@@ -356,7 +356,7 @@ test_that("input checks for subsetting work", {
   )
 })
 
-test_that("subsetting of vector works (without clusters)", {
+test_that("Subsetting of vector works (without clusters)", {
   argument <- rnorm(10)
   combinations <- expand.grid(
     how = c("random", "first", "last"),
@@ -376,7 +376,7 @@ test_that("subsetting of vector works (without clusters)", {
   }
 })
 
-test_that("subsetting of vector works (with clusters)", {
+test_that("Subsetting of vector works (with clusters)", {
   argument <- rep(1:4, each = 5)
   combinations <- expand.grid(
     how = c("similar", "dissimilar"),
@@ -407,7 +407,7 @@ test_that("subsetting of vector works (with clusters)", {
   )
 })
 
-test_that("subsetting of data.frame works (without clusters)", {
+test_that("Subsetting of data.frame works (without clusters)", {
   argument <- data.frame("a" = 1:5, "b" = LETTERS[1:5])
   combinations <- expand.grid(
     byrow = c(TRUE, FALSE),
@@ -441,7 +441,7 @@ test_that("subsetting of data.frame works (without clusters)", {
   }
 })
 
-test_that("subsetting of data.frame works (with clusters)", {
+test_that("Subsetting of data.frame works (with clusters)", {
   argument <- data.frame(
     "a" = c(1, 1, 6, 6, 6), "b" = c(5, 5, 2, 2, 2), "c" = c(0, 0, 0, 3, 3)
   )
@@ -482,7 +482,7 @@ test_that("subsetting of data.frame works (with clusters)", {
   }
 })
 
-test_that("subsetting of matrix works (without clusters)", {
+test_that("Subsetting of matrix works (without clusters)", {
   argument <- matrix(1:15, nrow = 5, ncol = 3)
   combinations <- expand.grid(
     byrow = c(TRUE, FALSE),
@@ -516,7 +516,7 @@ test_that("subsetting of matrix works (without clusters)", {
   }
 })
 
-test_that("subsetting of matrix works (with clusters)", {
+test_that("Subsetting of matrix works (with clusters)", {
   argument <- matrix(1:15, nrow = 5, ncol = 3)
   combinations <- expand.grid(
     byrow = c(TRUE, FALSE),
@@ -555,7 +555,7 @@ test_that("subsetting of matrix works (with clusters)", {
   }
 })
 
-test_that("flattening of list works", {
+test_that("Flattening of list works", {
   expect_error(
     helper_flatten("not_a_list"),
     "'x' must be a list"
@@ -685,4 +685,44 @@ test_that("flattening of list works", {
     helper_flatten(results),
     results
   )
+})
+
+test_that("Argument matching works", {
+  expect_equal(
+    match_arg("A", "A"),
+    "A"
+  )
+  expect_equal(
+    match_arg("A", LETTERS),
+    "A"
+  )
+  expect_error(
+    match_arg(c("A", "B"), LETTERS),
+    "must be of length 1"
+  )
+  expect_equal(
+    match_arg("lo", c("loooong", "else")),
+    "loooong"
+  )
+  expect_equal(
+    match_arg(c("A", "B"), LETTERS, several.ok = TRUE),
+    c("A", "B")
+  )
+  expect_error(
+    match_arg(character(), LETTERS),
+    "greater or equal 1"
+  )
+  expect_equal(
+    match_arg(character(), LETTERS, none.ok = TRUE),
+    character()
+  )
+  expect_error(
+    match_arg("bad", LETTERS),
+    "must be one of"
+  )
+})
+
+test_that("Removing index works", {
+  expect_equal(remove_index(1:10, 1), 2:10)
+  expect_equal(remove_index(1:10, 1, replace = TRUE), 1:9)
 })

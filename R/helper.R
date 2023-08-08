@@ -325,15 +325,15 @@ helper_flatten <- function(x) {
 #' \code{\link[base]{match.arg}}.
 #'
 #' @param arg
-#' A \code{character} (vector).
+#' A \code{character} (vector), the function argument.
 #' @param choices
-#' A \code{character} (vector) of candidate values.
+#' A \code{character} (vector) of allowed values for \code{arg}.
 #' @param several.ok
 #' Either \code{TRUE} if \code{arg} is allowed to have more than one element,
-#' \code{FALSE} else.
+#' or \code{FALSE} else.
 #' @param none.ok
 #' Either \code{TRUE} if \code{arg} is allowed to have zero elements,
-#' \code{FALSE} else.
+#' or \code{FALSE} else.
 #'
 #' @return
 #' The un-abbreviated version of the exact or unique partial match if there is
@@ -352,30 +352,26 @@ match_arg <- function (arg, choices, several.ok = FALSE, none.ok = FALSE) {
   is_TRUE_FALSE(several.ok, allow_na = FALSE)
   is_TRUE_FALSE(none.ok, allow_na = FALSE)
   arg_name <- deparse(substitute(arg))
-  if (!several.ok) {
-    if (identical(arg, choices)) {
-      return(arg[1L])
-    }
-    if (length(arg) > 1L) {
-      ino_stop(
-        "{.var arg_name} must be of length 1."
-      )
-    }
-  } else if (length(arg) == 0L) {
+  if (!several.ok && length(arg) > 1L) {
+    ino_stop(
+      "{.var arg_name} must be of length 1."
+    )
+  }
+  if (length(arg) == 0L) {
     if (none.ok) {
       return(character(0))
     } else {
       ino_stop(
-        "{.var arg_name} must be of length 1 or more."
+        "{.var arg_name} must be of length greater or equal 1."
       )
     }
   }
-  i <- pmatch(arg, choices, nomatch = 0L, duplicates.ok = TRUE)
+  i <- pmatch(arg, choices, nomatch = 0, duplicates.ok = TRUE)
   if (all(i == 0L)) {
     ino_stop(
       glue::glue(
-        "{.var <arg_name>} can be one",
-        ifelse(several.ok, " or more ", " "),
+        "{.var <arg_name>} must be one",
+        ifelse(several.ok, " (or more) ", " "),
         "of",
         .open = "<", .close = ">"
       ),
@@ -386,28 +382,24 @@ match_arg <- function (arg, choices, several.ok = FALSE, none.ok = FALSE) {
     )
   }
   i <- i[i > 0L]
-  if (!several.ok && length(i) > 1) {
-    ino_stop(
-      "There is more than one argument match."
-    )
-  }
   choices[i]
 }
 
-#' Helper function for ...
+#' Helper function for removing an index
 #'
 #' @description
-#' This function ... TODO
+#' This function removes a value from an index vector and optionally shifts the
+#' indices up.
 #'
 #' @param x
-#' TODO
+#' An \code{integer} (vector).
 #' @param index
-#' TODO
+#' An \code{integer}.
 #' @param replace
-#' Either \code{TRUE} ...
+#' Either \code{TRUE} the shift the indices up, or \code{FALSE} (default) else.
 #'
 #' @return
-#' TODO
+#' An \code{integer} (vector).
 #'
 #' @keywords internal
 
