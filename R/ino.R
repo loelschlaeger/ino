@@ -14,26 +14,16 @@
 "_PACKAGE"
 
 #' @noRd
-#' @importFrom utils packageVersion
-#' @importFrom glue glue
-#' @keywords internal
-
-.onAttach <- function(lib, pkg) {
-  # msg <- glue::glue("Thanks for using {{ino}} {utils::packageVersion('ino')}.")
-  # packageStartupMessage(msg)
-  invisible()
-}
-
-#' @noRd
 #' @importFrom cli cli_alert_info
 #' @importFrom glue glue
 #' @keywords internal
 
 ino_status <- function(
-    msg, verbose = getOption("ino_verbose", default = TRUE)
+    msg, verbose = getOption("ino_verbose", default = TRUE),
+    .envir = parent.frame()
   ) {
   if (verbose) {
-    cli::cli_alert_info(msg)
+    cli::cli_alert_info(msg, .envir = .envir)
   }
 }
 
@@ -118,7 +108,7 @@ ino_ask <- function (question, default = FALSE) {
       return(FALSE)
     }
     ino_status(
-      "Unrecognized response, please enter 'y' or 'n', or type Ctrl + C to cancel."
+      "Please enter 'y' or 'n', or type Ctrl + C to cancel."
     )
   }
 }

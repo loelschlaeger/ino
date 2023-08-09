@@ -227,9 +227,9 @@ test_that("Input checks for optimization method work", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
-  expect_error(
+  expect_warning(
     ackley$optimize(),
-    "No initial values set"
+    "No initial values defined"
   )
   ackley$initialize_random()
   expect_error(
@@ -266,7 +266,7 @@ test_that("Optimization via random or fixed initialization works", {
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())$
-    initialize_random(runs = 5)$optimize()$
+    initialize_random(runs = 5, seed = 1)$optimize()$
     initialize_random(sampler = function() runif(2), seed = 1)$optimize()$
     initialize_fixed(0:1)$optimize()$
     initialize_fixed(list(1:2, 2:3, 3:4))$optimize()
@@ -285,6 +285,28 @@ test_that("Optimization via random or fixed initialization works", {
   expect_true(all(sapply(out, length) == 1))
   skip_on_cran()
   ackley$initialize_random(runs = 50)$optimize(ncores = 2)
+})
+
+test_that("HMM likelihood function can be maximized", {
+  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
+  mu <- c(-2, 2)
+  sigma <- c(0.5, 1)
+  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
+  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
+  hmm <- Nop$
+    new(f = f_ll_hmm, npar = 6, "data" = data, "N" = 2)$
+    set_optimizer(optimizer_nlm())
+  result1 <- hmm$
+    argument("set", neg = FALSE)$
+    initialize_fixed(theta)$
+    optimize(which_direction = "max", return_results = TRUE, simplify = TRUE)
+
+  result2 <- hmm$
+    argument("modify", neg = TRUE)$
+    initialize_fixed(theta)$
+    optimize(which_direction = "min", return_results = TRUE, simplify = TRUE)
+  expect_identical(result1$value, -result2$value)
+  expect_identical(result1$parameter, result2$parameter)
 })
 
 test_that("Nop object can be validated", {
@@ -330,8 +352,8 @@ test_that("Bad functions and optimizers can be detected in validation", {
   }
   error_optimizer <- optimizeR::define_optimizer(
     error_optimizer_fun,
-    objective = "f", initial = "p", value = "v",
-    parameter = "z"
+    .objective = "f", .initial = "p", .value = "v",
+    .parameter = "z", .direction = "min"
   )
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(error_optimizer)
@@ -362,8 +384,8 @@ test_that("Validations can be interrupted", {
   }
   slow_optimizer <- optimizeR::define_optimizer(
     slow_optimizer_fun,
-    objective = "f", initial = "p", value = "minimum",
-    parameter = "estimate"
+    .objective = "f", .initial = "p", .value = "minimum",
+    .parameter = "estimate", .direction = "min"
   )
   ackley <- Nop$new(f = f_ackley, npar = 2)$
     set_optimizer(slow_optimizer)
@@ -479,7 +501,7 @@ test_that("Optimization times and values can be plotted", {
     optimize()
   combinations <- expand.grid(
     which_element = c("seconds", "value"),
-    group_by = list("optimization_label", "optimizer_label", NULL),
+    group_by = list(".optimization_label", ".optimizer_label", NULL),
     relative = c(TRUE, FALSE),
     which_run = "all",
     which_optimizer = "all",
@@ -507,6 +529,22 @@ test_that("Optimization times and values can be plotted", {
   }
 })
 
+test_that("Deviations can be calculated and ploted", {
+  ackley <- Nop$new(f = f_ackley, npar = 2)$
+    set_optimizer(optimizer_nlm())$
+    set_optimizer(optimizer_optim())$
+    true(c(0, 0), "parameter")$
+    initialize_random(runs = 10)$
+    optimize()
+  expect_true(
+    is.data.frame(ackley$deviation(plot = FALSE))
+  )
+  expect_s3_class(
+    ackley$deviation(),
+    "ggplot"
+  )
+})
+
 test_that("Optimization trace can be extracted", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_s3_class(ackley$trace(), "data.frame")
@@ -517,18 +555,18 @@ test_that("Best value and parameter can be extracted", {
     set_optimizer(optimizer_nlm())$
     set_optimizer(optimizer_optim())
   expect_warning(
-    expect_null(ackley$best_value()),
+    expect_null(ackley$best("value")),
     "No optimization results saved yet."
   )
   expect_warning(
-    expect_null(ackley$best_parameter()),
+    expect_null(ackley$best("parameter")),
     "No optimization results saved yet."
   )
   ackley$
     initialize_random(runs = 10)$
     optimize()
-  expect_length(ackley$best_value(), 1)
-  expect_length(ackley$best_parameter(), 2)
+  expect_length(ackley$best("value"), 1)
+  expect_length(ackley$best("parameter"), 2)
 })
 
 test_that("Function name can be extracted and set", {
@@ -555,52 +593,11 @@ test_that("Length of target argument can be extracted", {
   )
 })
 
-test_that("True value can be extracted and modified", {
+test_that("True value and parameter can be extracted and modified", {
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_warning(
-    expect_null(ackley$true_value),
-    "The true value has not been specified yet."
-  )
-  expect_error(
-    {
-      ackley$true_value <- 1:2
-    },
-    "must be a single"
-  )
-  ackley$true_value <- 0
-  expect_equal(ackley$true_value, 0)
-  ackley$true_value <- NULL
-  expect_warning(
-    expect_null(ackley$true_value),
-    "The true value has not been specified yet."
-  )
-})
-
-test_that("True parameter can be extracted and modified", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_warning(
-    expect_null(ackley$true_parameter),
-    "The true parameter vector has not been specified yet."
-  )
-  expect_error(
-    {
-      ackley$true_parameter <- 1:4
-    },
-    "must be of length 2"
-  )
-  ackley$true_parameter <- c(0, 0)
-  expect_equal(ackley$true_value, 0)
-  expect_equal(ackley$true_value, 0)
-  expect_error(
-    {
-      ackley$true_value <- 2
-    },
-    "Please update"
-  )
-  ackley$true_parameter <- NULL
-  expect_warning(
-    expect_null(ackley$true_parameter),
-    "The true parameter vector has not been specified yet."
+    ackley$true(),
+    "The true minimum parameter vector has not been specified yet."
   )
 })
 

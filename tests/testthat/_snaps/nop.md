@@ -8,7 +8,7 @@
       - Optimize over: x (length 2) 
       Optimizer functions:
       No optimizer specified yet.
-      Optimization results:
+      Optimization runs:
       No results saved yet.
 
 ---
@@ -21,7 +21,7 @@
       - Optimize over: x (length 2) 
       Optimizer functions:
       No optimizer specified yet.
-      Optimization results:
+      Optimization runs:
       No results saved yet.
 
 # Additional function arguments can be set
@@ -35,7 +35,7 @@
       - Additional arguments: data, N, neg 
       Optimizer functions:
       No optimizer specified yet.
-      Optimization results:
+      Optimization runs:
       No results saved yet.
 
 # Optimizer can be set
@@ -48,7 +48,7 @@
       - Optimize over: x (length 2) 
       Optimizer functions:
       - 1: nlm 
-      Optimization results:
+      Optimization runs:
       No results saved yet.
 
 ---
@@ -62,7 +62,7 @@
       Optimizer functions:
       - 1: nlm 
       - 2: stats::optim 
-      Optimization results:
+      Optimization runs:
       No results saved yet.
 
 # Optimization via random or fixed initialization works
@@ -76,10 +76,11 @@
       Optimizer functions:
       - 1: stats::nlm 
       - 2: stats::optim 
-      Optimization results:
-      - Optimizations runs: 20
+      Optimization runs:
+      - Total runs: 20
       - Not comparable runs: 0
-      - Failed runs: 0
-      - Best parameter vector: 0 0
-      - Best function value: 0 
+      - Failed runs: 0 
+      Optimization results:
+      - Minimum parameter vector: 0, 0
+      - Minimum function value: 0 
 
