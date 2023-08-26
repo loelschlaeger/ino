@@ -4,28 +4,28 @@ test_that("Input checks for standardization work", {
       argument = diag(3), byrow = "not_a_boolean",
       center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
     ),
-    "must be"
+    "Must be of type 'logical', not 'character'"
   )
   expect_error(
     helper_standardize(
       argument = diag(3), byrow = TRUE,
       center = TRUE, scale = TRUE, ignore = pi, jointly = list()
     ),
-    "must be"
+    "Must be of type 'integerish'"
   )
   expect_error(
     helper_standardize(
       argument = list(), byrow = TRUE,
       center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
     ),
-    "cannot be standardized"
+    "Argument cannot be standardized"
   )
   expect_warning(
     helper_standardize(
       argument = 1, byrow = TRUE,
       center = TRUE, scale = TRUE, ignore = integer(), jointly = list()
     ),
-    "NAs after standardization"
+    "Argument has NAs after standardization"
   )
   expect_error(
     helper_standardize(
@@ -39,7 +39,7 @@ test_that("Input checks for standardization work", {
       argument = diag(3), byrow = TRUE,
       center = TRUE, scale = TRUE, ignore = integer(), jointly = "not_a_list"
     ),
-    "must be"
+    "Must be of type 'list', not 'character'"
   )
   expect_error(
     helper_standardize(
@@ -314,31 +314,24 @@ test_that("Standardization jointly works", {
 test_that("Input checks for subsetting work", {
   expect_error(
     helper_subset(
-      argument = diag(3), byrow = TRUE,
-      how = TRUE, proportion = 0.5, centers = 2, ignore = integer()
-    ),
-    "must be a single"
-  )
-  expect_error(
-    helper_subset(
       argument = diag(3), byrow = TRUE, how = "bad_specification",
       proportion = 0.5, centers = 2, ignore = integer()
     ),
-    "is misspecified"
+    "must be one of"
   )
   expect_error(
     helper_subset(
       argument = diag(3), byrow = "not_a_boolean",
       how = "random", proportion = 0.5, centers = 2, ignore = integer()
     ),
-    "must be"
+    "Must be of type 'logical', not 'character'"
   )
   expect_error(
     helper_subset(
       argument = diag(3), byrow = TRUE,
       how = "similar", proportion = 0.5, centers = 2, ignore = pi
     ),
-    "must be an index"
+    "Must be of type 'integerish', but element 1 is not close to an integer"
   )
   expect_error(
     helper_subset(
@@ -352,7 +345,7 @@ test_that("Input checks for subsetting work", {
       argument = diag(3), byrow = TRUE,
       how = "similar", proportion = -1, centers = 2, ignore = integer()
     ),
-    "between 0 and 1"
+    "Element 1 is not >= 0"
   )
 })
 
@@ -403,7 +396,7 @@ test_that("Subsetting of vector works (with clusters)", {
     helper_subset(
       argument = rep(1, 10), how = "similar", centers = 2
     ),
-    "failed"
+    "more cluster centers than distinct data points"
   )
 })
 
@@ -555,138 +548,6 @@ test_that("Subsetting of matrix works (with clusters)", {
   }
 })
 
-test_that("Flattening of list works", {
-  expect_error(
-    helper_flatten("not_a_list"),
-    "'x' must be a list"
-  )
-  results <- list(
-    "run_1" = list(
-      "optimizer_1" = list(
-        "value" = 11, "message" = "a"
-      ),
-      "optimizer_2" = list(
-        "value" = 12, "message" = "b"
-      )
-    )
-  )
-  expect_identical(
-    helper_flatten(results),
-    list(
-      "optimizer_1" = list("value" = 11, "message" = "a"),
-      "optimizer_2" = list("value" = 12, "message" = "b")
-    )
-  )
-  results <- list(
-    "run_1" = list(
-      "optimizer_1" = list(
-        "value" = 11, "message" = "a"
-      )
-    )
-  )
-  expect_identical(
-    helper_flatten(results),
-    list("value" = 11, "message" = "a")
-  )
-  results <- list(
-    "run_1" = list(
-      "optimizer_1" = list(
-        "value" = 11
-      )
-    )
-  )
-  expect_identical(
-    helper_flatten(results),
-    11
-  )
-  results <- list(
-    "run_1" = list(
-      "optimizer_1" = list(
-        "value" = 11, "message" = "a"
-      )
-    ),
-    "run_2" = list(
-      "optimizer_1" = list(
-        "value" = 21, "message" = "b"
-      )
-    )
-  )
-  expect_identical(
-    helper_flatten(results),
-    list(
-      "run_1" = list("value" = 11, "message" = "a"),
-      "run_2" = list("value" = 21, "message" = "b")
-    )
-  )
-  results <- list(
-    "run_1" = list(
-      "optimizer_1" = list(
-        "value" = 11
-      )
-    ),
-    "run_2" = list(
-      "optimizer_1" = list(
-        "value" = 21
-      )
-    )
-  )
-  expect_identical(
-    helper_flatten(results),
-    list("run_1" = 11, "run_2" = 21)
-  )
-  results <- list(
-    "run_1" = list(
-      "optimizer_1" = list(
-        "value" = 11
-      ),
-      "optimizer_2" = list(
-        "value" = 12
-      )
-    ),
-    "run_2" = list(
-      "optimizer_1" = list(
-        "value" = 21
-      ),
-      "optimizer_2" = list(
-        "value" = 22
-      )
-    )
-  )
-  expect_identical(
-    helper_flatten(results),
-    list(
-      "run_1" = list("optimizer_1" = 11, "optimizer_2" = 12),
-      "run_2" = list("optimizer_1" = 21, "optimizer_2" = 22)
-    )
-  )
-  results <- list(
-    "run_1" = list(
-      "optimizer_1" = list(
-        "value" = 11,
-        "message" = "aa"
-      ),
-      "optimizer_2" = list(
-        "value" = 12,
-        "message" = "ab"
-      )
-    ),
-    "run_2" = list(
-      "optimizer_1" = list(
-        "value" = 21,
-        "message" = "ba"
-      ),
-      "optimizer_2" = list(
-        "value" = 22,
-        "message" = "bb"
-      )
-    )
-  )
-  expect_identical(
-    helper_flatten(results),
-    results
-  )
-})
-
 test_that("Argument matching works", {
   expect_equal(
     match_arg("A", "A"),
@@ -725,4 +586,22 @@ test_that("Argument matching works", {
 test_that("Removing index works", {
   expect_equal(remove_index(1:10, 1), 2:10)
   expect_equal(remove_index(1:10, 1, replace = TRUE), 1:9)
+})
+
+test_that("Confirmation by user works", {
+  f <- file()
+  options("ino_connection" = f)
+  ans <- paste(c("n", "y", "", "bad", "y"), collapse = "\n")
+  write(ans, f)
+  suppressMessages({
+    expect_false(user_confirm())
+    expect_true(user_confirm())
+    expect_false(user_confirm())
+    expect_true(user_confirm())
+  })
+  options("ino_connection" = stdin())
+  close(f)
+  if (!interactive()) {
+    expect_false(user_confirm())
+  }
 })

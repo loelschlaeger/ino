@@ -1,86 +1,215 @@
-# Nop object can be initialized
+# Example 1: Defining the problem works
 
     Code
-      ackley$print()
+      Nop_ackley$print()
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      
+      -- Optimizer functions --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Optimizer functions:
-      No optimizer specified yet.
-      Optimization runs:
-      No results saved yet.
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
 ---
 
     Code
-      print(ackley)
+      print(Nop_ackley)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      
+      -- Optimizer functions --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Optimizer functions:
-      No optimizer specified yet.
-      Optimization runs:
-      No results saved yet.
-
-# Additional function arguments can be set
-
-    Code
-      print(hmm)
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ll_hmm
-      - Optimize over: theta (length 6) 
-      - Additional arguments: data, N, neg 
-      Optimizer functions:
-      No optimizer specified yet.
-      Optimization runs:
-      No results saved yet.
-
-# Optimizer can be set
-
-    Code
-      ackley
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Optimizer functions:
-      - 1: nlm 
-      Optimization runs:
-      No results saved yet.
+      No results.
+      
 
 ---
 
     Code
-      ackley
+      Nop_ackley
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      
+      -- Optimizer functions --
+      
+      1. nlm
+      2. stats::optim
+      
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Optimizer functions:
-      - 1: nlm 
-      - 2: stats::optim 
-      Optimization runs:
-      No results saved yet.
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
-# Optimization via random or fixed initialization works
+# Example 2: Defining the problem works
 
     Code
-      ackley
+      Nop_hmm$print()
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      
+      -- Optimizer functions --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Optimizer functions:
-      - 1: stats::nlm 
-      - 2: stats::optim 
-      Optimization runs:
-      - Total runs: 20
-      - Not comparable runs: 0
-      - Failed runs: 0 
-      Optimization results:
-      - Minimum parameter vector: 0, 0
-      - Minimum function value: 0 
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
+
+---
+
+    Code
+      print(Nop_hmm)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      
+      -- Optimizer functions --
+      
+    Output
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
+
+---
+
+    Code
+      Nop_hmm
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
+
+# Example 2: Additional arguments can be modified and reset
+
+    Code
+      print(Nop_hmm)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      data
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 

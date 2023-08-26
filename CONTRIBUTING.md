@@ -1,19 +1,3 @@
----
-title: "Developer Guide"
-description: >
-  Details on the implementation of the {ino} package, how to contribute, and
-  how to integrate {ino} into other R packages.
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Developer Guide}
-  %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  chunk_output_type: console
-bibliography: ref.bib
-link-citations: true
----
-
 This document gives technical details on the implementation, how to contribute, and how to integrate the `{ino}` package into other R packages.
 
 ## Options

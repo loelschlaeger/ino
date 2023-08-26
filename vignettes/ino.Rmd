@@ -21,13 +21,12 @@ knitr::opts_chunk$set(
   fig.path = "figures/ino-",
   fig.dim = c(8, 6), 
   out.width = "75%",
-  # all optimizations are pre-computed to save building time
+  # optimizations are pre-computed to save building time
   eval = FALSE
 )
 devtools::load_all()
 # library("ino")
-options("ino_verbose" = TRUE)
-data("mixture_ino")
+# data("mixture_ino")
 ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
@@ -110,15 +109,14 @@ The following function calculates the log-likelihood value given the parameter v
 > **Remark:** We restrict the standard deviations `sd` to be positive (via the exponential transformation) and `lambda` to be between 0 and 1 (via the logit transformation). The function returns the negative log-likelihood value by default (`neg = TRUE`). This is necessary because most R optimizers only minimize (e.g., `stats::nlm`), where we can use the fact that $\arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta}) = \arg\min_{\boldsymbol{\theta}} -\ell(\boldsymbol{\theta})$.
 
 ```{r, define mixture ll, eval = TRUE}
-normal_mixture_llk <- function(theta, data, neg = TRUE){
+normal_mixture_llk <- function(theta, data){
   mu <- theta[1:2]
   sd <- exp(theta[3:4])
   lambda <- plogis(theta[5])
-  llk <- sum(log(
+  sum(log(
     lambda * dnorm(data, mu[1], sd[1]) + 
       (1 - lambda) * dnorm(data, mu[2], sd[2])
     ))
-  ifelse(neg, -llk, llk)
 }
 normal_mixture_llk(theta = 1:5, data = faithful$eruptions)
 ```
@@ -136,7 +134,7 @@ The following function implements this algorithm, which we will compare to stand
 
 ```{r, define em algorithm, eval = TRUE}
 em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data) {
-  llk <- normal_mixture_llk(theta, data, neg = FALSE)
+  llk <- normal_mixture_llk(theta, data)
   mu <- theta[1:2]
   sd <- exp(theta[3:4])
   lambda <- plogis(theta[5])
@@ -151,11 +149,11 @@ em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data)
     sd[2] <- sqrt(mean((1 - posterior) * (data - mu[2])^2) / (1 - lambda))
     llk_old <- llk
     theta <- c(mu, log(sd), qlogis(lambda))
-    llk <- normal_mixture_llk(theta, data, neg = FALSE)
-    if (is.na(llk)) stop("fail")
+    llk <- normal_mixture_llk(theta, data)
+    if (is.na(llk)) stop("em failed")
     if (llk - llk_old < epsilon) break
   }
-  list("neg_llk" = -llk, "estimate" = theta, "iterations" = i)
+  list("llk" = llk, "estimate" = theta, "iterations" = i)
 }
 ```
 
@@ -183,8 +181,8 @@ It is possible to define any numerical optimizer implemented in R through the {o
 
 ```{r, mixture_ino optimizer}
 mixture_ino$
-  set_optimizer(optimizer_nlm())$
-  set_optimizer(optimizer_optim())
+  set_optimizer(optimizer_nlm(), optimizer_label = "nlm")$
+  set_optimizer(optimizer_optim(), optimizer_label = "optim")
 ```
 
 > **Remark:** The previous code chunk makes use of a technique called "method chaining" [see @Wickham:2019, ch. 14.2.1]. This means that `mixture_ino$set_optimizer()` returns the modified `mixture_ino` object, for which we can specify a second optimizer by calling `$set_optimizer()` again. 
@@ -193,8 +191,9 @@ We also want to apply the EM algorithm introduced above:
 
 ```{r, set em algorithm}
 em_optimizer <- optimizeR::define_optimizer(
-  optimizer = em, objective = "normal_mixture_llk",
-  initial = "theta", value = "neg_llk", parameter = "estimate"
+  .optimizer = em, .objective = "normal_mixture_llk",
+  .initial = "theta", .value = "neg_llk", .parameter = "estimate",
+  .direction = "max"
 )
 mixture_ino$
   set_optimizer(em_optimizer, optimizer_label = "em")
@@ -204,7 +203,7 @@ Finally, we can validate our specification:
 
 ```{r, validate mixture_ino, eval = TRUE}
 mixture_ino$
-  validate(verbose = TRUE)
+  validate(verbose = TRUE, which_direction = "max")
 ```
 
 ### Function evaluation
@@ -221,7 +220,7 @@ Optimization of `normal_mixture_llk` is possible with the `$optimize()` method, 
 
 ```{r, example optimization, eval = TRUE}
 mixture_ino$optimize(
-  initial = "random", which_optimizer = "nlm", save_result = FALSE, return_result = TRUE
+  which_optimizer = "nlm", save_result = FALSE, return_result = TRUE
 )
 ```
 

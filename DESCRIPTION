@@ -19,22 +19,24 @@ Description: Analysis of the initialization for numerical optimization of
     models. See <https://loelschlaeger.de/ino/> for more details.
 License: GPL (>= 3)
 Encoding: UTF-8
-LazyData: true
-LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Depends:
+    R (>= 4.0.0)
 Imports:
-    cli,
-    doSNOW,
-    foreach,
-    ggplot2,
-    glue
+    checkmate (>= 2.2.0),
+    future,
+    future.apply,
+    optimizeR (>= 0.3.2.9000),
+    progressr,
+    TestFunctions
 Suggests:
+    devtools,
+    knitr,
+    renv,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://loelschlaeger.de/ino/, https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
-Depends:
-    R (>= 4.0.0),
-    optimizeR (>= 0.3.2.9000)
+LazyData: true
