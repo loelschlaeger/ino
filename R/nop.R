@@ -347,7 +347,7 @@ Nop <- R6::R6Class(
         cli::cli_bullets(c(
           "*" = "Total runs: {noptimizations}"
         ))
-        if (nnotcomparable > 0) {
+        if (nincomparable > 0) {
           cli::cli_bullets(c(
             "*" = "Incomparable runs: {nincomparable}"
           ))
@@ -964,19 +964,6 @@ Nop <- R6::R6Class(
         which_direction = which_direction, both_allowed = TRUE,
         verbose = verbose
       )
-      # TODO solve issue of orange text after progress bar
-
-      # TODO do not set plan inside function
-      # https://future.futureverse.org/articles/future-7-for-package-developers.html
-
-      # future::plan(evaluation, ...)
-      # if (verbose && future::nbrOfWorkers() > 1) {
-      #   cli::cli_alert_info(
-      #     "Optimization in parallel using {future::nbrOfWorkers()} worker{?s}."
-      #   )
-      # }
-
-
       checkmate::assert_number(time_limit, null.ok = TRUE, lower = 0)
       checkmate::assert_flag(hide_warnings)
       checkmate::assert_flag(reset_initial)
@@ -1005,15 +992,22 @@ Nop <- R6::R6Class(
         )
       }
       progress_step <- progressr::progressor(steps = nrow(combinations))
+      comparable <- private$.result_comparable()
       results <- future.apply::future_apply(
         combinations, MARGIN = 1, function(x) {
         progress_step()
-        private$.optimize(
-          initial = x$initial,
-          optimizer_id = x$optimizer_id,
-          which_direction = x$which_direction,
-          time_limit = time_limit,
-          hide_warnings = hide_warnings
+        structure(
+          private$.optimize(
+            initial = x$initial,
+            optimizer = private$.optimizer[[x$optimizer_id]],
+            which_direction = x$which_direction,
+            time_limit = time_limit,
+            hide_warnings = hide_warnings
+          ),
+          ".optimizer_id" = x$optimizer_id,
+          ".optimizer_label" = names(private$.optimizer)[x$optimizer_id],
+          ".direction" = x$which_direction,
+          ".comparable" = comparable
         )
       })
       private$.save_results(
@@ -1396,7 +1390,7 @@ Nop <- R6::R6Class(
     optima = function(
       digits = getOption("digits", default = 7), sort_by = "frequency",
       which_run = "comparable", which_optimizer = "all",
-      which_direction = "min", print.rows = 0
+      which_direction = c("min", "max"), print.rows = 0
     ) {
       checkmate::assert_count(digits)
       checkmate::assert_count(print.rows)
@@ -1611,9 +1605,12 @@ Nop <- R6::R6Class(
     #' @importFrom optimizeR optimizer_nlm apply_optimizer
     trace = function(
       initial = stats::rnorm(self$npar), iterations = 100, tolerance = 1e-6,
+      which_direction = "min",
       which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
-      seed = NULL, ...
+      ...
     ) {
+
+      ### input checks
       checkmate::assert_count(iterations)
       checkmate::assert_number(tolerance, lower = 0)
       which_element <- match_arg(
@@ -1621,10 +1618,14 @@ Nop <- R6::R6Class(
         choices = c("value", "parameter", "gradient", "hessian", "seconds"),
         several.ok = TRUE, none.ok = FALSE
       )
+
+      ### define nlm optimizer
       args <- list(...)
       args[["iterlim"]] <- 1
       args[["hessian"]] <- "hessian" %in% which_element
       nlm_opt <- do.call(optimizer_nlm, args)
+
+      ### storage for trace
       out_colnames <- c(
         if ("value" %in% which_element) "v",
         if ("parameter" %in% which_element) paste0("p", 1:self$npar),
@@ -1638,19 +1639,17 @@ Nop <- R6::R6Class(
       )
       out <- matrix(NA_real_, nrow = 0, ncol = length(out_colnames))
       colnames(out) <- out_colnames
+
+      ### track optimization path
       current_value <- self$evaluate(at = initial)
       current_initial <- initial
-      for (i in 1:iterations) {
-        step <- do.call(
-          what = optimizeR::apply_optimizer,
-          args = c(
-            list(
-              "optimizer" = nlm_opt,
-              "objective" = private$.f,
-              "initial" = current_initial
-            ),
-            private$.arguments
-          )
+      for (i in seq_len(iterations)) {
+        step <- self$.__enclos_env__$private$.optimize(
+          initial = current_initial,
+          optimizer = nlm_opt,
+          which_direction = which_direction,
+          time_limit = NULL,
+          hide_warnings = TRUE
         )
         step_pars <- c(
           if ("value" %in% which_element) step$value,
@@ -1666,6 +1665,7 @@ Nop <- R6::R6Class(
         current_initial <- step$parameter
       }
       as.data.frame(out)
+
     },
 
     #' @description
@@ -2589,20 +2589,19 @@ Nop <- R6::R6Class(
 
     ### function optimization
     .optimize = function(
-      initial, optimizer_id, which_direction, time_limit, hide_warnings, verbose
+      initial, optimizer, which_direction, time_limit, hide_warnings
     ) {
+      invert_objective <- !identical(
+        optimizer[["optimizer_direction"]], which_direction
+      )
+      objective <- if (invert_objective) private$.f_inverse else private$.f
       if (!is.null(time_limit)) {
         setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
         on.exit({
           setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
         })
       }
-      optimizer <- private$.optimizer[[optimizer_id]]
-      invert_objective <- !identical(
-        optimizer[["optimizer_direction"]], which_direction
-      )
-      objective <- if (invert_objective) private$.f_inverse else private$.f
-      result <- tryCatch(
+      tryCatch(
         {
           result <- suppressWarnings(
             do.call(
@@ -2638,14 +2637,7 @@ Nop <- R6::R6Class(
           )
         }
       )
-      attr(result, ".optimizer_id") <- optimizer_id
-      optimizer_label <- names(private$.optimizer)[optimizer_id]
-      attr(result, ".optimizer_label") <- optimizer_label
-      attr(result, ".direction") <- which_direction
-      attr(result, ".comparable") <- private$.result_comparable()
-      return(result)
     }
-
   )
 )
 
