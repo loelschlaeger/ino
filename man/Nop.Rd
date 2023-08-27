@@ -95,8 +95,8 @@ and see \code{\link[progressr]{handlers}} for details.
 }
 
 \section{Parallel optimization}{
-Parallel optimization of multiple runs via the \code{{future}} package is
-supported. To get started, run one of
+Parallel computation of multiple optimization uns via the \code{{future}}
+package is supported. To get started, run one of
 \preformatted{
 future::plan(future::sequential)
 future::plan(future::multisession)
@@ -723,7 +723,6 @@ Returns the number of optimization results.
   which_run = "all",
   which_direction = c("min", "max"),
   which_optimizer = "all",
-  which_argument = "all",
   which_element = "all",
   verbose = getOption("ino_verbose", default = FALSE)
 )}\if{html}{\out{</div>}}
@@ -758,14 +757,6 @@ transformations),
 \item a \code{character} (vector) of specified optimizer labels,
 \item an \code{integer} (vector) of optimizer ids as defined in the
 \code{$print()} output.
-}}
-
-\item{\code{which_argument}}{Only relevant if multiple values are specified for function arguments.
-In that case, selects an argument combination. Either:
-\itemize{
-\item \code{"all"} for all argument combinations,
-\item \code{"first"} for the first argument combination,
-\item a \code{list} TODO
 }}
 
 \item{\code{which_element}}{Selects elements of optimization results. Either:
@@ -804,7 +795,6 @@ Returns optimization results.
   which_run = "all",
   which_direction = c("min", "max"),
   which_optimizer = "all",
-  which_argument = "all",
   which_element = "all",
   add_identifier = character(),
   group_by = NULL,
@@ -841,14 +831,6 @@ transformations),
 \item a \code{character} (vector) of specified optimizer labels,
 \item an \code{integer} (vector) of optimizer ids as defined in the
 \code{$print()} output.
-}}
-
-\item{\code{which_argument}}{Only relevant if multiple values are specified for function arguments.
-In that case, selects an argument combination. Either:
-\itemize{
-\item \code{"all"} for all argument combinations,
-\item \code{"first"} for the first argument combination,
-\item a \code{list} TODO
 }}
 
 \item{\code{which_element}}{Selects elements of optimization results. Either:
@@ -1063,7 +1045,7 @@ Provides an overview of the identified optimum values.
   sort_by = "frequency",
   which_run = "comparable",
   which_optimizer = "all",
-  which_direction = "min",
+  which_direction = c("min", "max"),
   print.rows = 0
 )}\if{html}{\out{</div>}}
 }
@@ -1200,8 +1182,8 @@ Capture trace of optimization with \code{stats::nlm()}.
   initial = stats::rnorm(self$npar),
   iterations = 100,
   tolerance = 1e-06,
+  which_direction = "min",
   which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
-  seed = NULL,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -1222,6 +1204,12 @@ By default, \code{interations = 100}.}
 the function value before termination.
 By default, \code{tolerance = 1e-6}.}
 
+\item{\code{which_direction}}{Selects the type of optimization. Either:
+\itemize{
+\item \code{"min"} for minimization,
+\item \code{"max"} for maximization.
+}}
+
 \item{\code{which_element}}{A \code{character} (vector) of elements to provide in the output for
 each iteration. Can be one or more of:
 \itemize{
@@ -1231,9 +1219,6 @@ each iteration. Can be one or more of:
 \item \code{"hessian"}, the current Hessian,
 \item \code{"seconds"}, the computation time in seconds.
 }}
-
-\item{\code{seed}}{Passed on to \code{\link{set.seed}} for reproducibility.
-Can be \code{NULL} (default) for no seed or to reset the current seed.}
 
 \item{\code{...}}{Additional arguments passed on to \code{\link[stats]{nlm}}.
 The arguments \code{iterlim} and \code{hessian} cannot be specified.}
@@ -1317,7 +1302,6 @@ Returns the best found function value or parameter vector.
   which_run = c("success", "comparable"),
   which_direction = "min",
   which_optimizer = "all",
-  which_argument = "all",
   digits = getOption("digits", default = 7),
   verbose = getOption("ino_verbose", default = FALSE)
 )}\if{html}{\out{</div>}}
@@ -1350,14 +1334,6 @@ transformations),
 \item a \code{character} (vector) of specified optimizer labels,
 \item an \code{integer} (vector) of optimizer ids as defined in the
 \code{$print()} output.
-}}
-
-\item{\code{which_argument}}{Only relevant if multiple values are specified for function arguments.
-In that case, selects an argument combination. Either:
-\itemize{
-\item \code{"all"} for all argument combinations,
-\item \code{"first"} for the first argument combination,
-\item a \code{list} TODO
 }}
 
 \item{\code{digits}}{An \code{integer}, the number of decimal places of interest.

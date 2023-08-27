@@ -27,12 +27,6 @@
 #' - a \code{character} (vector) of specified optimizer labels,
 #' - an \code{integer} (vector) of optimizer ids as defined in the
 #'   \code{$print()} output.
-#' @param which_argument
-#' Only relevant if multiple values are specified for function arguments.
-#' In that case, selects an argument combination. Either:
-#' - \code{"all"} for all argument combinations,
-#' - \code{"first"} for the first argument combination,
-#' - a \code{list} TODO
 #' @param which_element
 #' Selects elements of optimization results. Either:
 #' - \code{"all"} for all available elements,
@@ -159,8 +153,8 @@
 #' and see \code{\link[progressr]{handlers}} for details.
 #'
 #' # Parallel optimization
-#' Parallel optimization of multiple runs via the \code{{future}} package is
-#' supported. To get started, run one of
+#' Parallel computation of multiple optimization uns via the \code{{future}}
+#' package is supported. To get started, run one of
 #' \preformatted{
 #' future::plan(future::sequential)
 #' future::plan(future::multisession)
@@ -1226,14 +1220,14 @@ Nop <- R6::R6Class(
     #' An \code{integer}.
     runs = function(
       which_run = "all", which_direction = c("min", "max"),
-      which_optimizer = "all", which_argument = "all", which_element = "all",
+      which_optimizer = "all", which_element = "all",
       verbose = getOption("ino_verbose", default = FALSE)
     ) {
       length(
         private$.get_run_ids(
           which_run = which_run, which_direction = which_direction,
-          which_optimizer = which_optimizer, which_argument = which_argument,
-          which_element = which_element, verbose = verbose
+          which_optimizer = which_optimizer, which_element = which_element,
+          verbose = verbose
         )
       )
     },
@@ -1244,7 +1238,7 @@ Nop <- R6::R6Class(
     #' A \code{list}.
     results = function(
       which_run = "all", which_direction = c("min", "max"),
-      which_optimizer = "all", which_argument = "all", which_element = "all",
+      which_optimizer = "all", which_element = "all",
       add_identifier = character(), group_by = NULL,
       verbose = getOption("ino_verbose", default = FALSE)
     ) {
@@ -1265,8 +1259,8 @@ Nop <- R6::R6Class(
       ### get ids of selected runs
       run_ids <- private$.get_run_ids(
         which_run = which_run, which_direction = which_direction,
-        which_optimizer = which_optimizer, which_argument = which_argument,
-        which_element = which_element, verbose = verbose
+        which_optimizer = which_optimizer, which_element = which_element,
+        verbose = verbose
       )
 
       ### build list of results
@@ -1377,7 +1371,7 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Provides an overview of the identified optimum values.
+    #' Provides a frequency overview of the identified optimum values.
     #' @param sort_by
     #' Either:
     #' - \code{"frequency"} (default) to sort rows by frequency,
@@ -1386,37 +1380,70 @@ Nop <- R6::R6Class(
     #' An \code{integer}, specifying the maximal number of rows to be
     #' printed. No printing if \code{print.rows = 0}, which is the default.
     #' @return
-    #' A \code{data.frame}.
+    #' A \code{data.frame}. If \code{group_by} is not \code{NULL}, a \code{list}
+    #' of \code{data.frame}s.
     optima = function(
-      digits = getOption("digits", default = 7), sort_by = "frequency",
-      which_run = "comparable", which_optimizer = "all",
-      which_direction = c("min", "max"), print.rows = 0
+      which_run = "comparable", which_direction = c("min", "max"),
+      which_optimizer = "all", group_by = NULL, sort_by = "frequency",
+      digits = getOption("digits", default = 7), print.rows = 0,
+      verbose = getOption("ino_verbose", default = FALSE)
     ) {
+
+      ### input checks
       checkmate::assert_count(digits)
       checkmate::assert_count(print.rows)
       sort_by <- match_arg(sort_by, choices = c("frequency", "value"))
-      values <- self$summary(
+
+      ###
+      data <- self$summary(
         which_element = "value", which_run = which_run,
-        which_optimizer = which_optimizer, which_direction = which_direction,
-        digits = digits
+        which_direction = which_direction, which_optimizer = which_optimizer,
+        digits = digits, add_identifier = group_by, verbose = verbose
       )
-      if (length(values) == 0) {
+      if (length(data) == 0) {
         return(data.frame())
       }
-      optima <- as.data.frame(table(values, useNA = "ifany"))
-      colnames(optima) <- c("value", "frequency")
-      decreasing <- identical(sort_by, "frequency") || identical(which_direction, "max")
-      optima <- optima[order(optima[[sort_by]], decreasing = decreasing), ]
-      rownames(optima) <- NULL
-      if (print.rows == 0) {
-        return(optima)
+
+      ### split
+      if (!is.null(group_by)) {
+        data <- split(data, factor(data[[group_by]]))
       } else {
-        print.rows <- min(nrow(optima), print.rows)
-        print(optima[seq_len(print.rows), ])
-        if (print.rows < nrow(optima)) {
-          cli::cli_alert_info(
-            "Omitted {nrow(optima) - print.rows} row{?s}."
-          )
+        data <- list(data)
+      }
+
+      ###
+      optima <- list()
+      for (i in seq_along(data)) {
+        values <- data[[i]][["value"]]
+        table <- as.data.frame(table(values, useNA = "ifany"))
+        colnames(table) <- c("value", "frequency")
+        decreasing <- identical(sort_by, "frequency") ||
+          identical(which_direction, "max")
+        table <- table[order(table[[sort_by]], decreasing = decreasing), ]
+        rownames(table) <- NULL
+        optima[[i]] <- table
+      }
+      names(optima) <- names(data)
+
+      ###
+      if (print.rows == 0) {
+        if (is.null(group_by)) {
+          return(optima[[1]])
+        } else {
+          return(optima)
+        }
+      } else {
+        for (i in seq_along(optima)) {
+          cli::cat_bullet(names(optima[i]), "\n")
+          table <- optima[[i]]
+          n <- min(nrow(table), print.rows)
+          print(table[seq_len(n), ])
+          if (n < nrow(table)) {
+            cli::cli_alert_info(
+              "Omitted {nrow(table) - n} row{?s}."
+            )
+          }
+          cat("\n")
         }
         return(invisible(optima))
       }
@@ -1447,8 +1474,11 @@ Nop <- R6::R6Class(
     #' @importFrom scales percent
     plot = function(
       which_element = "seconds", group_by = NULL, relative = FALSE,
-      which_run = "all", which_optimizer = "all", which_direction = "min", ...
+      which_run = "all", which_direction = c("min", "max"),
+      which_optimizer = "all", ...
     ) {
+
+      ### input checks
       which_element <- match_arg(which_element, c("seconds", "value"))
       if (!is.null(group_by)) {
         group_by <- match_arg(
@@ -1463,6 +1493,8 @@ Nop <- R6::R6Class(
         )
         relative <- FALSE
       }
+
+      ###
       data <- self$summary(
         which_element = which_element, which_run = which_run,
         which_optimizer = which_optimizer, which_direction = which_direction,
@@ -1852,7 +1884,7 @@ Nop <- R6::R6Class(
     #' - \code{.optimizer_label}, the optimizer that led to the best value.
     best = function(
       which_element = "value", which_run = c("success", "comparable"),
-      which_direction = "min", which_optimizer = "all", which_argument = "all",
+      which_direction = "min", which_optimizer = "all",
       digits = getOption("digits", default = 7),
       verbose = getOption("ino_verbose", default = FALSE)
     ) {
@@ -1871,9 +1903,6 @@ Nop <- R6::R6Class(
       )
       which_optimizer <- private$.check_which_optimizer(
         which_optimizer = which_optimizer, to_id = FALSE, verbose = verbose
-      )
-      which_argument <- private$.check_which_argument(
-        which_argument = which_argument, verbose = verbose
       )
 
       ### get results
@@ -2325,20 +2354,6 @@ Nop <- R6::R6Class(
 
     },
 
-    ### check `which_argument` filter
-    .check_which_argument = function(
-      which_argument, verbose
-    ) {
-
-      ### input checks
-      checkmate::assert_flag(verbose)
-
-      ### check `which_argument`
-      ### TODO
-      return(which_argument)
-
-    },
-
     ### check `which_element` filter
     .check_which_element = function(
       which_element, choices = NULL, several.ok = TRUE, expand_all = FALSE,
@@ -2384,8 +2399,7 @@ Nop <- R6::R6Class(
 
     ### return run ids based on filters
     .get_run_ids = function(
-      which_run, which_direction, which_optimizer, which_argument,
-      which_element, verbose
+      which_run, which_direction, which_optimizer, which_element, verbose
     ) {
 
       ### check inputs
@@ -2398,9 +2412,6 @@ Nop <- R6::R6Class(
       )
       which_optimizer <- private$.check_which_optimizer(
         which_optimizer, to_id = FALSE, verbose = FALSE
-      )
-      which_argument <- private$.check_which_argument(
-        which_argument, verbose = FALSE
       )
       which_element <- private$.check_which_element(
         which_element, verbose = FALSE
@@ -2545,21 +2556,6 @@ Nop <- R6::R6Class(
         run_ids <- intersect(
           run_ids, unlist(private$.optimizer_id_ids[optimizer_ids])
         )
-
-      }
-
-      ### filter `which_argument`
-      if (identical(which_argument, "all")) {
-
-        # if (verbose) {
-        #   cli::cli_alert_info("Filtered for all arguments.")
-        # }
-
-      } else {
-
-        # TODO
-
-        stop("not implemented")
 
       }
 

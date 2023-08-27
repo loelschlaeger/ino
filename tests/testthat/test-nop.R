@@ -25,12 +25,7 @@ test_that("Example 1: Evaluation and optimization works", {
     initialize_random(sampler = function() runif(2), seed = 1)$optimize()$
     initialize_fixed(0:1)$optimize()$
     initialize_fixed(list(1:2, 2:3, 3:4))$optimize()
-  # TODO
-  # expect_snapshot(Nop_ackley)
-  skip_on_cran()
-  Nop_ackley$
-    initialize_random(runs = 100)$
-    optimize(future_strategy = future::multisession, workers = 2)
+  expect_snapshot(Nop_ackley)
 })
 
 # Example 2: HMM likelihood maximization ----------------------------------
@@ -274,7 +269,7 @@ test_that("Long function evaluation can be interrupted", {
 
 test_that("Optimization checks work", {
   expect_warning(
-    Nop_ackley$optimize(progression_handler = progressr::handler_void()),
+    Nop_ackley$optimize(),
     "No initial values defined"
   )
   expect_error(

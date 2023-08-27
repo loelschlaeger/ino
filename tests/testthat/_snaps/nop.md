@@ -84,6 +84,37 @@
       No results.
       
 
+# Example 1: Evaluation and optimization works
+
+    Code
+      Nop_ackley
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      
+      -- Optimizer functions --
+      
+      1. nlm
+      2. stats::optim
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+      * Total runs: 20
+      
+      -- Optimization results --
+      
+      * Minimum parameter vector: 0, 0
+      * Minimum function value: 0
+
 # Example 2: Defining the problem works
 
     Code

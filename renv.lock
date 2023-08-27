@@ -1108,13 +1108,14 @@
       "RemoteRepo": "optimizeR",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "7ee86f1e54b6225f85dd255ff662276257838ec4",
+      "RemoteSha": "e5d4847e327e50cffbba1861f23379849d79e65b",
       "Requirements": [
         "R",
+        "TestFunctions",
         "cli",
-        "glue"
+        "stats"
       ],
-      "Hash": "1fc9d3ba76fd83b49c7af2436ae220e5"
+      "Hash": "b3937edb7c77fc9a248f923782dd59c1"
     },
     "parallelly": {
       "Package": "parallelly",
