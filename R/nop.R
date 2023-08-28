@@ -868,27 +868,29 @@ Nop <- R6::R6Class(
     #' previous optimization runs.
     #' @param transform
     #' A \code{function} for transforming the initial values.
-    #' @param save_as
-    #' A \code{character} that defines how to save TODO
-    #' - \code{"new"}
-    #' - \code{"replace"}
-    #' - \code{"extend"}
     #' @return
     #' Invisibly the \code{Nop} object.
     initialize_continue = function(
-      which_run = "last", which_optimizer = "all", which_direction = "min",
-      transform = function(x) x, save_as = "extend",
+      which_run = "last", which_optimizer = "all",
+      which_direction = c("min", "max"),
+      transform = function(x) x,
       verbose = getOption("ino_verbose", default = FALSE)
     ) {
       out <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
         which_element = c("parameter", "seconds")
       )
-      # TODO
+      at <- lapply(out, `[[`, "parameter")
+      seconds <- sapply(out, `[[`, "seconds")
+      runs <- length(at)
       private$.initial_values <- c(private$.initial_values, at)
-      if (verbose) cli::cli_alert_info(
-        "Added {length(at)} continued initial parameter values."
-      )
+      private$.initial_seconds <- c(private$.initial_seconds, seconds)
+      private$.initial_type <- c(private$.initial_type, rep("continued", runs))
+      if (verbose) {
+        cli::cli_alert_info(
+          "Added {runs} continued initial parameter values."
+        )
+      }
       invisible(self)
     },
 
@@ -1394,11 +1396,19 @@ Nop <- R6::R6Class(
       checkmate::assert_count(print.rows)
       sort_by <- match_arg(sort_by, choices = c("frequency", "value"))
 
+
+      # TODO
+      if (is.null(group_by)) {
+        add_identifier <- character()
+      } else {
+        add_identifier <- group_by
+      }
+
       ###
       data <- self$summary(
         which_element = "value", which_run = which_run,
         which_direction = which_direction, which_optimizer = which_optimizer,
-        digits = digits, add_identifier = group_by, verbose = verbose
+        digits = digits, add_identifier = add_identifier, verbose = verbose
       )
       if (length(data) == 0) {
         return(data.frame())
@@ -1474,7 +1484,7 @@ Nop <- R6::R6Class(
     #' @importFrom scales percent
     plot = function(
       which_element = "seconds", group_by = NULL, relative = FALSE,
-      which_run = "all", which_direction = c("min", "max"),
+      which_run = "comparable", which_direction = c("min", "max"),
       which_optimizer = "all", ...
     ) {
 
@@ -2094,7 +2104,8 @@ Nop <- R6::R6Class(
           "Saving {length(results)} optimization result{?s}."
         )
       }
-      for (result in results) {
+      for (i in seq_along(results)) {
+        result <- results[[i]]
         run_id <- private$.next_run_id()
         parts <- names(result)
         if ("value" %in% parts) {
@@ -2109,6 +2120,10 @@ Nop <- R6::R6Class(
         }
         if ("seconds" %in% parts) {
           checkmate::assert_number(result[["seconds"]], na.ok = TRUE, lower = 0)
+          add_seconds <- private$.initial_seconds[i]
+          if (checkmate::test_number(add_seconds)) {
+            result[["seconds"]] <- result[["seconds"]] + add_seconds
+          }
         } else {
           result[["seconds"]] <- NA_real_
         }

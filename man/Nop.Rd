@@ -452,9 +452,8 @@ previous optimization runs.
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(
   which_run = "last",
   which_optimizer = "all",
-  which_direction = "min",
+  which_direction = c("min", "max"),
   transform = function(x) x,
-  save_as = "extend",
   verbose = getOption("ino_verbose", default = FALSE)
 )}\if{html}{\out{</div>}}
 }
@@ -491,13 +490,6 @@ transformations),
 }}
 
 \item{\code{transform}}{A \code{function} for transforming the initial values.}
-
-\item{\code{save_as}}{A \code{character} that defines how to save TODO
-\itemize{
-\item \code{"new"}
-\item \code{"replace"}
-\item \code{"extend"}
-}}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
 such messages.
@@ -1038,30 +1030,23 @@ Invisibly the \code{Nop} object.
 \if{html}{\out{<a id="method-Nop-optima"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
 \subsection{Method \code{optima()}}{
-Provides an overview of the identified optimum values.
+Provides a frequency overview of the identified optimum values.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
-  digits = getOption("digits", default = 7),
-  sort_by = "frequency",
   which_run = "comparable",
-  which_optimizer = "all",
   which_direction = c("min", "max"),
-  print.rows = 0
+  which_optimizer = "all",
+  group_by = NULL,
+  sort_by = "frequency",
+  digits = getOption("digits", default = 7),
+  print.rows = 0,
+  verbose = getOption("ino_verbose", default = FALSE)
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
-
-\item{\code{sort_by}}{Either:
-\itemize{
-\item \code{"frequency"} (default) to sort rows by frequency,
-\item \code{"value"} to sort by function value.
-}}
-
 \item{\code{which_run}}{Selects results of optimization runs. Either:
 \itemize{
 \item \code{"all"} for all results,
@@ -1076,6 +1061,12 @@ transformations),
 \item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
 }}
 
+\item{\code{which_direction}}{Selects the type of optimization. Either:
+\itemize{
+\item \code{"min"} for minimization,
+\item \code{"max"} for maximization.
+}}
+
 \item{\code{which_optimizer}}{Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
@@ -1084,19 +1075,34 @@ transformations),
 \code{$print()} output.
 }}
 
-\item{\code{which_direction}}{Selects the type of optimization. Either:
+\item{\code{group_by}}{Selects how the output is grouped. Either:
 \itemize{
-\item \code{"min"} for minimization,
-\item \code{"max"} for maximization.
+\item \code{NULL} to not group (default),
+\item \code{".optimization_label"} to group by optimization label,
+\item \code{".optimizer_label"} to group by optimizer label.
 }}
+
+\item{\code{sort_by}}{Either:
+\itemize{
+\item \code{"frequency"} (default) to sort rows by frequency,
+\item \code{"value"} to sort by function value.
+}}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{options("digits" = 7)}.}
 
 \item{\code{print.rows}}{An \code{integer}, specifying the maximal number of rows to be
 printed. No printing if \code{print.rows = 0}, which is the default.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{data.frame}.
+A \code{data.frame}. If \code{group_by} is not \code{NULL}, a \code{list}
+of \code{data.frame}s.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1109,9 +1115,9 @@ Visualizes the optimization time or value.
   which_element = "seconds",
   group_by = NULL,
   relative = FALSE,
-  which_run = "all",
+  which_run = "comparable",
+  which_direction = c("min", "max"),
   which_optimizer = "all",
-  which_direction = "min",
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -1150,18 +1156,18 @@ transformations),
 \item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
 }}
 
+\item{\code{which_direction}}{Selects the type of optimization. Either:
+\itemize{
+\item \code{"min"} for minimization,
+\item \code{"max"} for maximization.
+}}
+
 \item{\code{which_optimizer}}{Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
 \item an \code{integer} (vector) of optimizer ids as defined in the
 \code{$print()} output.
-}}
-
-\item{\code{which_direction}}{Selects the type of optimization. Either:
-\itemize{
-\item \code{"min"} for minimization,
-\item \code{"max"} for maximization.
 }}
 
 \item{\code{...}}{Currently not used.}
