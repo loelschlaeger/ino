@@ -1005,7 +1005,7 @@ Nop <- R6::R6Class(
           ".direction" = x$which_direction,
           ".comparable" = comparable
         )
-      })
+      }, future.seed = TRUE)
       private$.save_results(
         results = results, optimization_label = optimization_label,
         verbose = verbose
