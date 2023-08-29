@@ -101,10 +101,6 @@ test_that("Example 2: Defining the problem works", {
 
 test_that("Example 2: Additional arguments can be modified and reset", {
   Nop_hmm$argument("set", data = hmm_data)
-  expect_error(
-    Nop_hmm$argument("set", data = hmm_data),
-    "already exists"
-  )
   expect_snapshot(print(Nop_hmm))
   expect_identical(
     Nop_hmm$argument("get", name = "data"),

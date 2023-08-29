@@ -481,14 +481,16 @@ Nop <- R6::R6Class(
             )
           }
           if (name %in% names(private$.arguments)) {
-            cli::cli_abort(
-              "Argument {.var {name}} already exists,
-              call {.var $argument(\"remove\", name = {.val {name}})} first.",
-              call = NULL
-            )
+            private$.arguments[name] <- args
+            if (verbose) {
+              cli::cli_alert_info("Replaced argument {.var {name}}.")
+            }
+          } else {
+            private$.arguments <- c(private$.arguments, args)
+            if (verbose) {
+              cli::cli_alert_info("Set argument {.var {name}}.")
+            }
           }
-          private$.arguments <- c(private$.arguments, args)
-          if (verbose) cli::cli_alert_info("Set argument {.var {name}}.")
         }
       }
       if (action == "get") {
