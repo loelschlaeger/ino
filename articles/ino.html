@@ -35,7 +35,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ino</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -343,8 +343,8 @@ popular ones, <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-l
 <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span></span>
-<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">optimizer_optim</a></span><span class="op">(</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"optim"</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_optim</a></span><span class="op">(</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"optim"</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
 <p><strong>Remark:</strong> The previous code chunk makes use of a
 technique called “method chaining” <span class="citation">(see <a href="#ref-Wickham:2019" role="doc-biblioref">Wickham 2019</a>,
@@ -355,36 +355,15 @@ optimizer by calling <code>$set_optimizer()</code> again.</p>
 </blockquote>
 <p>We also want to apply the EM algorithm introduced above:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">em_optimizer</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">define_optimizer</a></span><span class="op">(</span></span>
-<span>  optimizer <span class="op">=</span> <span class="va">em</span>, objective <span class="op">=</span> <span class="st">"normal_mixture_llk"</span>,</span>
-<span>  initial <span class="op">=</span> <span class="st">"theta"</span>, value <span class="op">=</span> <span class="st">"neg_llk"</span>, parameter <span class="op">=</span> <span class="st">"estimate"</span></span>
+<code class="sourceCode R"><span><span class="va">em_optimizer</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">define_optimizer</a></span><span class="op">(</span></span>
+<span>  .optimizer <span class="op">=</span> <span class="va">em</span>, .objective <span class="op">=</span> <span class="st">"normal_mixture_llk"</span>,</span>
+<span>  .initial <span class="op">=</span> <span class="st">"theta"</span>, .value <span class="op">=</span> <span class="st">"neg_llk"</span>, .parameter <span class="op">=</span> <span class="st">"estimate"</span>,</span>
+<span>  .direction <span class="op">=</span> <span class="st">"min"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">set_optimizer</span><span class="op">(</span><span class="va">em_optimizer</span>, label <span class="op">=</span> <span class="st">"em"</span><span class="op">)</span></span></code></pre></div>
 <p>Finally, we can validate our specification:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">test</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Test configuration</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Function specified: normal_mixture_llk</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Target argument specified: theta (length 5)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test initial values specified: -0.63 0.18 -0.84 1.6 0.33</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Test function call</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test function call returned a <span style="color: #0000BB;">&lt;numeric&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 989.25</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Test optimization with `nlm`</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 421.42</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: -0.63 3.49 -0.84 0.13 -23.17</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.01</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Test optimization with `optim`</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 421.42</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: 6.26 3.49 5.98 0.13 -16.93</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0.03</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Test optimization with `em`</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Test optimization returned a <span style="color: #0000BB;">&lt;list&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return value: 276.36</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return parameter: 2.02 4.27 -1.45 -0.83 -0.63</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Return seconds: 0</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">test</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="function-evaluation">Function evaluation<a class="anchor" aria-label="anchor" href="#function-evaluation"></a>
@@ -407,25 +386,19 @@ for example:</p>
 <span>  initial <span class="op">=</span> <span class="st">"random"</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span>, save_result <span class="op">=</span> <span class="cn">FALSE</span>, return_result <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; $value</span></span>
-<span><span class="co">#&gt; [1] 421.417</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $parameter</span></span>
-<span><span class="co">#&gt; [1]  -0.6263151   3.4877817  -0.8353111   0.1303885 -23.1650356</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.01096821</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $initial</span></span>
 <span><span class="co">#&gt; [1] -0.6264538  0.1836433 -0.8356286  1.5952808  0.3295078</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $gradient</span></span>
-<span><span class="co">#&gt; [1] 0.000000e+00 6.559893e-05 0.000000e+00 1.115836e-04 2.208461e-08</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $code</span></span>
-<span><span class="co">#&gt; [1] 1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $iterations</span></span>
-<span><span class="co">#&gt; [1] 36</span></span></code></pre></div>
+<span><span class="co">#&gt; $error</span></span>
+<span><span class="co">#&gt; [1] "attempt to select less than one element in get1index"</span></span></code></pre></div>
 <p>The method arguments are:</p>
 <ul>
 <li><p><code>initial = "random"</code> for random starting values drawn

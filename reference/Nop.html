@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ino</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,10 +86,10 @@ for analyzing the results, see the details.</p>
 
 <p>Call <code>object$set_optimizer(&lt;optimizer object&gt;)</code>, where
 <code>&lt;optimizer object&gt;</code> is an object of class <code>optimizer</code>, which can
-be created with the <code><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">define_optimizer</a></code> function from
+be created with the <code><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">define_optimizer</a></code> function from
 the {optimizeR} package.
-Two optimizer objects are already available:</p><ul><li><p><code><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">optimizer_nlm</a></code></p></li>
-<li><p><code><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">optimizer_optim</a></code></p></li>
+Two optimizer objects are already available:</p><ul><li><p><code><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_nlm</a></code></p></li>
+<li><p><code><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_optim</a></code></p></li>
 </ul></div>
 
 <div class="section">
@@ -332,7 +332,7 @@ The default is <code>2</code>.</p></dd>
 <h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>optimizer</code></dt>
 <dd><p>An object of class <code>optimizer</code>, which can be created with the
-<code><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">define_optimizer</a></code> function from the {optimizeR}
+<code><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">define_optimizer</a></code> function from the {optimizeR}
 package.</p></dd>
 
 
@@ -543,7 +543,7 @@ optimization results.
 Each element corresponds to one optimization run
 and is a <code>list</code> of results for each optimizer.
 The results for each optimizer is a <code>list</code>, the output of
-<code><a href="https://rdrr.io/pkg/optimizeR/man/apply_optimizer.html" class="external-link">apply_optimizer</a></code>.
+<code><a href="https://loelschlaeger.de/optimizeR/reference/apply_optimizer.html" class="external-link">apply_optimizer</a></code>.
 If <code>simplify = TRUE</code>, the output is flattened if possible.</p></li>
 </ul></div>
 
@@ -1593,7 +1593,7 @@ The output has two attributes:</p><ul><li><p><code>run</code>, the run id that l
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">Nop</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>f <span class="op">=</span> <span class="va">f_ackley</span>, npar <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">$</span></span></span>
-<span class="r-in"><span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">$</span></span></span>
+<span class="r-in"><span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">$</span></span></span>
 <span class="r-in"><span>  <span class="fu">optimize</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span></span></span>
 <span class="r-in"><span>  <span class="fu">optima</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   value frequency</span>

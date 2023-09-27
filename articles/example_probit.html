@@ -35,7 +35,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ino</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -102,7 +102,7 @@ involves the numerical maximization of the likelihood function. However,
 this approach can be computationally expensive and may encounter
 problems in reaching the global optimum, especially when dealing with
 complex models. In this vignette<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;The vignette was build using R 4.3.1 with the
-&lt;a href="https://loelschlaeger.de/ino/"&gt;ino&lt;/a&gt; 1.0.1.9000 package.&lt;/p&gt;'><sup>1</sup></a>, we utilize the <a href="https://loelschlaeger.de/ino/">ino</a> package
+&lt;a href="https://loelschlaeger.de/ino/"&gt;ino&lt;/a&gt; 1.0.2 package.&lt;/p&gt;'><sup>1</sup></a>, we utilize the <a href="https://loelschlaeger.de/ino/">ino</a> package
 to investigate the influence of initialization on the numerical
 maximization of the probit likelihood function.</p>
 <div class="section level2">
@@ -254,7 +254,7 @@ negative log-likelihood value.</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">probit_ino</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Nop.html">Nop</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>f <span class="op">=</span> <span class="va">f_ll_mnp</span>, npar <span class="op">=</span> <span class="fl">7</span>, data <span class="op">=</span> <span class="va">probit_data</span>, neg <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/optimizeR/man/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span>iterlim <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span>iterlim <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>The true parameter vector <code>theta</code> is saved to assess the
 convergence of the optimization runs to the global optimum:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
