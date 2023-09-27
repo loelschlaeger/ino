@@ -52,8 +52,7 @@
 #' - \code{".comparable"}, which yields a \code{logical} that identifies whether
 #'   the result is comparable,
 #' - \code{".direction"}, which yields \code{"min"} or \code{"max"} that
-#'   identifies whether the result corresponds to minimization or maximization,
-#' - \code{".argument}, which TODO
+#'   identifies whether the result corresponds to minimization or maximization.
 #' @param group_by
 #' Selects how the output is grouped. Either:
 #' - \code{NULL} to not group (default),
@@ -144,7 +143,7 @@
 #' - \code{$fresh_label} generates a new label for the optimization,
 #' - \code{$reserved_labels} returns the names of reserved labels.
 #'
-#' # Progress bar for optimization
+#' # Progress bar during optimization
 #' Displaying progress during multiple optimization runs via the
 #' \code{{progressr}} package is supported. To get started, run
 #' \preformatted{
@@ -153,7 +152,7 @@
 #' and see \code{\link[progressr]{handlers}} for details.
 #'
 #' # Parallel optimization
-#' Parallel computation of multiple optimization uns via the \code{{future}}
+#' Parallel computation of multiple optimization runs via the \code{{future}}
 #' package is supported. To get started, run one of
 #' \preformatted{
 #' future::plan(future::sequential)
@@ -1824,7 +1823,7 @@ Nop <- R6::R6Class(
             private$.true_parameter_min <- input
             cli::cli_alert_info(
               "Set true minimum parameter vector to,
-              {round(private$.true_parameter_min, digits = digits))}."
+              {round(private$.true_parameter_min, digits = digits)}."
             )
           } else {
             checkmate::assert_numeric(input)
@@ -2653,43 +2652,4 @@ Nop <- R6::R6Class(
     }
   )
 )
-
-#' @noRd
-#' @exportS3Method
-
-print.Nop <- function(x, digits = getOption("digits", default = 7), ...) {
-  x$print(digits = digits, ...)
-}
-
-#' @noRd
-#' @exportS3Method
-
-summary.Nop <- function(
-    object, which_element = c("value", "parameter"), which_run = "all",
-    which_optimizer = "all", which_direction = "min",
-    digits = getOption("digits", default = 7),
-    add_identifier = character(),
-    verbose = getOption("ino_verbose", default = FALSE), ...
-) {
-  object$summary(
-    which_element = which_element, which_run = which_run,
-    which_optimizer = which_optimizer, which_direction = which_direction,
-    digits = digits,  add_identifier = add_identifier, verbose = verbose, ...
-  )
-}
-
-#' @noRd
-#' @exportS3Method
-
-plot.Nop <- function(
-    x, which_element = "seconds", group_by = NULL, relative = FALSE,
-    which_run = "all", which_optimizer = "all", which_direction = "min",
-    ...
-  ) {
-  x$plot(
-    which_element = which_element, group_by = group_by, relative = relative,
-    which_run = which_run, which_optimizer = which_optimizer,
-    which_direction = which_direction, ...
-  )
-}
 

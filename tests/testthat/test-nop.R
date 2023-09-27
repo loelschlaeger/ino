@@ -12,6 +12,7 @@ test_that("Example 1: Defining the problem works", {
   Nop_ackley$
     set_optimizer(optimizeR::optimizer_nlm(), optimizer_label = "nlm")$
     set_optimizer(optimizeR::optimizer_optim())
+  Nop_ackley$true(c(0, 0))
   expect_snapshot(Nop_ackley)
 })
 
@@ -30,12 +31,13 @@ test_that("Example 1: Evaluation and optimization works", {
 
 # Example 2: HMM likelihood maximization ----------------------------------
 
-sim_hmm <- function(Tp, N, theta) {
+sim_hmm <- function(Tp, N, theta, seed = NULL) {
   stopifnot(
     is.numeric(Tp), length(Tp) == 1, Tp > 0, Tp %% 1 == 0, is.numeric(N),
     length(N) == 1, N > 0, N %% 1 == 0, is.numeric(theta),
     length(theta) == N * (N - 1) + 2 * N
   )
+  if (!is.null(seed)) set.seed(seed)
   tpm <- matrix(1, N, N)
   tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
   tpm <- tpm / rowSums(tpm)
@@ -86,7 +88,7 @@ tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
 mu <- c(-2, 2)
 sigma <- c(0.5, 1)
 theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-hmm_data <- sim_hmm(Tp = 100, N = 2, theta = theta)
+hmm_data <- sim_hmm(Tp = 100, N = 2, theta = theta, seed = 1)
 
 Nop_hmm <- Nop$new(f = ll_hmm, npar = 6, N = 2)
 
@@ -108,6 +110,7 @@ test_that("Example 2: Additional arguments can be modified and reset", {
   )
   Nop_hmm$argument("standardize", name = "data")
   Nop_hmm$argument("subset", name = "data")
+  expect_snapshot(print(Nop_hmm))
   Nop_hmm$argument("reset", name = "data")
   expect_identical(
     Nop_hmm$argument("get", name = "data"),
@@ -123,6 +126,11 @@ test_that("Example 2: Additional arguments can be modified and reset", {
     Nop_hmm$argument("get", name = "N"),
     2
   )
+})
+
+test_that("Example 2: True value and parameter can be set", {
+  Nop_hmm$true(theta, which_direction = "max")
+  expect_snapshot(print(Nop_hmm))
 })
 
 test_that("Example 2: Evaluation and optimization works", {
@@ -160,6 +168,12 @@ test_that("Initialization checks work", {
   expect_error(
     Nop$new(f = function() 1, npar = 2),
     "must have at least one argument"
+  )
+  expect_warning(
+    Nop$new(f = function(x) {
+      1
+    }, npar = 2),
+    "is unnamed"
   )
   expect_error(
     {Nop_ackley$npar <- 1},

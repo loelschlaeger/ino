@@ -85,7 +85,7 @@ optimizer outputs,
 }
 }
 
-\section{Progress bar for optimization}{
+\section{Progress bar during optimization}{
 Displaying progress during multiple optimization runs via the
 \code{{progressr}} package is supported. To get started, run
 \preformatted{
@@ -95,7 +95,7 @@ and see \code{\link[progressr]{handlers}} for details.
 }
 
 \section{Parallel optimization}{
-Parallel computation of multiple optimization uns via the \code{{future}}
+Parallel computation of multiple optimization runs via the \code{{future}}
 package is supported. To get started, run one of
 \preformatted{
 future::plan(future::sequential)
@@ -854,8 +854,7 @@ the optimizer,
 \item \code{".comparable"}, which yields a \code{logical} that identifies whether
 the result is comparable,
 \item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
-identifies whether the result corresponds to minimization or maximization,
-\item \code{".argument}, which TODO
+identifies whether the result corresponds to minimization or maximization.
 }}
 
 \item{\code{group_by}}{Selects how the output is grouped. Either:
@@ -955,8 +954,7 @@ the optimizer,
 \item \code{".comparable"}, which yields a \code{logical} that identifies whether
 the result is comparable,
 \item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
-identifies whether the result corresponds to minimization or maximization,
-\item \code{".argument}, which TODO
+identifies whether the result corresponds to minimization or maximization.
 }}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide

@@ -66,6 +66,8 @@
       
       * Function: ackley
       * Optimize over: x (length 2)
+      * True minimum value: 0
+      * True minimum at: 0, 0
       
       -- Optimizer functions --
       
@@ -94,6 +96,8 @@
       
       * Function: ackley
       * Optimize over: x (length 2)
+      * True minimum value: 0
+      * True minimum at: 0, 0
       
       -- Optimizer functions --
       
@@ -222,6 +226,40 @@
       
       * Function: ll_hmm
       * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      data
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
+
+# Example 2: True value and parameter can be set
+
+    Code
+      print(Nop_hmm)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      * True maximum value: -139.545254
+      * True maximum at: -2.3025851, -1.6094379, -2, 2, -0.6931472, 0
       
       -- Additional function arguments --
       
