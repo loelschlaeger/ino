@@ -1,3 +1,19 @@
+#' @keywords internal
+"_PACKAGE"
+
+#' @keywords internal
+.onAttach <- function(libname, pkgname){
+  options("ino_connection" = stdin())
+}
+
+## usethis namespace: start
+#' @importFrom optimizeR define_optimizer
+#' @importFrom optimizeR optimizer_nlm
+#' @importFrom optimizeR optimizer_optim
+#' @importFrom TestFunctions TF_ackley
+## usethis namespace: end
+NULL
+
 #' Example application to mixture likelihood
 #'
 #' @description
@@ -6,14 +22,13 @@
 #'
 #' @docType data
 #'
-#' @usage data("mixture_ino")
+#' @usage data("ino_mixture")
 #'
 #' @format
 #' A \code{\link{Nop}} object.
 #'
-#' @keywords
-#' demo
-"mixture_ino"
+#' @keywords demos
+"ino_mixture"
 
 #' Example application to HMM likelihood
 #'
@@ -23,16 +38,15 @@
 #'
 #' @docType data
 #'
-#' @usage data("hmm_ino")
+#' @usage data("ino_hmm")
 #'
 #' @format
 #' A \code{\link{Nop}} object.
 #'
-#' @keywords
-#' demo
-"hmm_ino"
+#' @keywords demos
+"ino_hmm"
 
-#' Example application of to probit likelihood
+#' Example application to probit likelihood
 #'
 #' @description
 #' See the vignette about the probit likelihood for details:
@@ -40,11 +54,10 @@
 #'
 #' @docType data
 #'
-#' @usage data(probit_ino)
+#' @usage data("ino_probit")
 #'
 #' @format
 #' A \code{\link{Nop}} object.
 #'
-#' @keywords
-#' demo
-"probit_ino"
+#' @keywords demos
+"ino_probit"

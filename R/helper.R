@@ -1,485 +1,209 @@
-#' Unified function call for initial parameter specifications
+#' Helper function for standardization
 #'
-#' @description
-#' This helper function turns various formats of initial parameter
-#' specifications into a unified function call.
-#'
-#' @param initial,npar,fail_bad_initial
-#' See documentation of method \code{$optimize()} from \code{Nop} object.
-#'
-#' @return
-#' A \code{function} that returns a \code{numeric} of length \code{npar}.
-#' The \code{function} has two \code{integer} arguments:
-#' 1. \code{run_id}, which selects the run,
-#' 2. \code{optimizer_id}, which selects the optimizer.
-#'
-#' @keywords internal
-#'
-#' @importFrom glue glue
-
-build_initial <- function(initial, npar, fail_bad_initial = TRUE) {
-  is_TRUE_FALSE(fail_bad_initial)
-  if (identical(initial, "random")) {
-    function(run_id, optimizer_id) {
-      ### same initial values across optimizers in given optimization run
-      set.seed(run_id)
-      rnorm(npar)
-    }
-  } else if (is.list(initial)) {
-    if (all(sapply(initial, is.numeric) & sapply(initial, length) == npar)) {
-      function(run_id, optimizer_id) {
-        initial[[run_id]]
-      }
-    } else if (fail_bad_initial) {
-      ino_stop(
-        "You specified a {.cls list} as input {.var initial}.",
-        "It should only contain {.cls numeric} vectors.",
-        glue::glue("Each of them should be of length {npar}.")
-      )
-    }
-  } else if (is.numeric(initial) && is.vector(initial)) {
-    if (length(initial) == npar) {
-      function(run_id, optimizer_id) {
-        initial
-      }
-    } else if (fail_bad_initial) {
-      ino_stop(
-        "The {.cls numeric} input {.var initial} is misspecified.",
-        glue::glue("It should be of length {npar}."),
-        glue::glue("Instead, it is of length {length(initial)}.")
-      )
-    }
-  } else if (is.function(initial)) {
-    nargs <- length(formals(initial))
-    initial_tmp <- if (nargs == 0) {
-      function(run_id, optimizer_id) {
-        ### same initial values across optimizers in given optimization run
-        set.seed(run_id)
-        initial()
-      }
-    } else if (nargs == 2) {
-      function(run_id, optimizer_id) {
-        initial(run_id, optimizer_id)
-      }
-    } else {
-      ino_stop(
-        "The {.cls function} input {.var initial} is misspecified.",
-        glue::glue("It can have 0 or 2 arguments, but not {nargs}."),
-        "Please see the documentation."
-      )
-    }
-    try_initial <- try(initial_tmp(1, 1), silent = TRUE)
-    if (!(is.numeric(try_initial) && length(try_initial) == npar)) {
-      if (fail_bad_initial) {
-        ino_stop(
-          "The {.cls function} input {.var initial} is misspecified.",
-          glue::glue("It should return initial values of length {npar}.")
-        )
-      }
-    }
-    initial_tmp
-  } else {
-    ino_stop(
-      "The input specification {.var initial} is unexpected.",
-      "Please see the documentation for possible inputs."
-    )
-  }
-}
-
-#' Filter optimization results
-#'
-#' @description
-#' This helper function filters optimization results.
-#'
-#' @param results
-#' A nested \code{list} of optimization results.
-#' Each element corresponds to one optimization run.
-#' It is either \code{list()} if the run has been removed or a \code{list}
-#' of results for each optimizer.
-#' The results for each optimizer is a \code{list}, the output of
-#' \code{\link[optimizeR]{apply_optimizer}}.
-#' @param run_ids
-#' A \code{vector} of indices. Selects the first layer of \code{results}.
-#' @param optimizer_ids
-#' A \code{vector} of indices. Selects the second layer of \code{results}.
-#' @param which_element
-#' A \code{character} (vector). Selects the third layer of \code{results}.
-#' @param only_comparable
-#' See documentation of method \code{$results()} from \code{Nop} object.
-#' @param keep_empty
-#' Set to \code{TRUE} (\code{FALSE}, the default) to keep (discard) empty
-#' entries.
-#'
-#' @return
-#' A \code{list}.
-#'
-#' @keywords internal
-
-filter_results <- function(
-    results, run_ids, optimizer_ids, which_element, only_comparable,
-    keep_empty = FALSE) {
-  ### input checks
-  stopifnot(
-    is.list(results), is_index_vector(run_ids), is_index_vector(optimizer_ids),
-    is_name_vector(which_element), is_TRUE_FALSE(only_comparable),
-    is_TRUE_FALSE(keep_empty)
-  )
-
-  ### filter runs
-  results <- results[run_ids]
-
-  ### filter optimizers
-  results <- lapply(results, `[`, optimizer_ids)
-
-  ### filter comparable
-  if (only_comparable) {
-    results <- lapply(results, function(x) {
-      Filter(function(y) y["comparable"], x)
-    })
-  }
-
-  ### filter elements
-  results <- lapply(results, function(x) {
-    lapply(x, function(y) y[intersect(which_element, names(y))])
-  })
-
-  ### discard empty entries
-  results <- results[sapply(results, length) > 0]
-
-  ### return
-  return(results)
-}
-
-#' Simplify optimization results
-#'
-#' @description
-#' This helper function simplifies optimization results (if possible).
-#'
-#' @inheritParams filter_results
-#' @param simplify
-#' See documentation of method \code{$results()} from \code{Nop} object.
-#'
-#' @return
-#' A \code{list}.
-#'
-#' @keywords internal
-
-simplify_results <- function(results, simplify) {
-  stopifnot(is.list(results))
-  is_TRUE_FALSE(simplify)
-  if (simplify) {
-    if (length(results) == 1) {
-      results <- unlist(results, recursive = FALSE, use.names = TRUE)
-      if (length(results) == 1) {
-        results <- unlist(results, recursive = FALSE, use.names = TRUE)
-      }
-      if (length(results) == 1) {
-        results <- unlist(results, recursive = FALSE, use.names = FALSE)
-      }
-    } else {
-      if (all(sapply(results, length) == 1)) {
-        results <- lapply(results, unlist, recursive = FALSE, use.names = TRUE)
-        if (all(sapply(results, length) == 1)) {
-          results <- lapply(
-            results, unlist,
-            recursive = FALSE, use.names = TRUE
-          )
-        }
-      } else {
-        if (all(sapply(results, function(x) sapply(x, length)) == 1)) {
-          results <- lapply(results, function(x) {
-            lapply(x, unlist, recursive = FALSE, use.names = TRUE)
-          })
-        }
-      }
-    }
-  }
-  return(results)
-}
-
-#' Test \code{Nop} object
-#'
-#' @description
-#' This helper function validates the configuration of a \code{Nop} object.
-#'
-#' @param x
-#' A \code{Nop} object.
-#' @param optimizer_ids
-#' A \code{vector} of indices.
-#' @param at,time_limit,verbose,digits
-#' See documentation of method \code{$test()} from \code{Nop} object.
-#'
-#' @return
-#' Invisibly \code{TRUE} if the tests are successful.
-#'
-#' @keywords internal
-
-test_nop <- function(
-    x, at, optimizer_ids, time_limit, verbose, digits) {
-  ### input checks
-  is_TRUE_FALSE(verbose)
-
-  ### test configurations
-  ino_status("Test configuration", verbose = verbose)
-  ino_success(
-    glue::glue("Function specified: {x$f_name}"),
-    verbose = verbose
-  )
-  ino_success(
-    glue::glue(
-      "Target argument specified: {x$f_target} (length {x$npar})"
-    ),
-    verbose = verbose
-  )
-  ino_success(
-    glue::glue(
-      "Test initial values specified: ",
-      paste(round(at, digits = digits), collapse = " ")
-    ),
-    verbose = verbose
-  )
-
-  ### test function call
-  ino_status("Test function call", verbose = verbose)
-  out <- x$evaluate(
-    at = at, time_limit = time_limit, hide_warnings = TRUE
-  )
-  if (is.character(out)) {
-    if (identical(out, "time limit reached")) {
-      ino_warn(
-        glue::glue(
-          "Time limit of {time_limit}s was reached in the function call."
-        ),
-        "Consider increasing {.var time_limit}."
-      )
-    } else {
-      ino_stop(
-        "Function call threw an error.",
-        glue::glue("Message: {out}")
-      )
-    }
-  } else {
-    if (!is.numeric(out)) {
-      ino_stop(
-        "Test function call did not return a {.cls numeric} value."
-      )
-    } else {
-      ino_success(
-        "Test function call returned a {.cls numeric}.",
-        verbose = verbose
-      )
-    }
-    if (length(out) != 1) {
-      ino_stop(
-        glue::glue("Test function call is of length {length(out)}."),
-        "It should be a single {.cls numeric} value."
-      )
-    } else {
-      ino_success(
-        glue::glue("Return value: {round(out, digits = digits)}"),
-        verbose = verbose
-      )
-    }
-  }
-
-  ### test optimization
-  if (length(optimizer_ids) == 0) {
-    ino_warn(
-      "No optimizer specified, testing optimizer is skipped.",
-      "Please use {.fun $set_optimizer} to specify an optimizer."
-    )
-  } else {
-    for (i in optimizer_ids) {
-      ino_status(
-        glue::glue(
-          "Test optimization with ",
-          "`{paste(names(x$optimizer)[i], collapse = ', ')}`"
-        ),
-        verbose = verbose
-      )
-      out <- x$optimize(
-        initial = at, runs = 1, which_optimizer = i, seed = NULL,
-        return_results = TRUE, save_results = FALSE, ncores = 1,
-        verbose = FALSE, simplify = TRUE, time_limit = time_limit,
-        hide_warnings = TRUE
-      )
-      if (!is.null(out$error)) {
-        if (identical(out$error, "time limit reached")) {
-          ino_warn(
-            glue::glue(
-              "Time limit of {time_limit}s was reached in the optimization."
-            ),
-            "Consider increasing {.var time_limit}."
-          )
-        } else {
-          ino_stop(
-            "Optimization threw an error.",
-            glue::glue("Message: {out$error}")
-          )
-        }
-      } else {
-        if (!is.list(out)) {
-          ino_stop(
-            "Test optimization did not return a {.cls list}."
-          )
-        } else {
-          ino_success(
-            "Test optimization returned a {.cls list}.",
-            verbose = verbose
-          )
-          for (value in c("value", "parameter", "seconds")) {
-            if (!value %in% names(out)) {
-              ino_stop(
-                glue::glue("Output does not contain the element '{value}'.")
-              )
-            } else {
-              ino_success(
-                glue::glue(
-                  "Return {value}: ",
-                  "{paste(round(out[[value]], digits = digits), collapse = ' ')}"
-                ),
-                verbose = verbose
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-  invisible(TRUE)
-}
-
-#' Standardize argument
-#'
-#' @description
-#' This helper function standardizes a \code{numeric} argument.
+#' @details
+#' This function is part of the \code{$argument(action = "standardize")} method
+#' of a \code{\link{Nop}} object and standardizes a given argument.
 #'
 #' @param argument
 #' A \code{numeric} \code{vector}, \code{matrix}, or \code{data.frame}.
-#' @param by_column,center,scale,ignore
-#' See documentation of method \code{$standardize()} from \code{Nop} object.
+#' @param byrow
+#' Only relevant if \code{argument} is a \code{matrix} or a \code{data.frame}.
+#' In that case, either \code{TRUE} to standardize row-wise or
+#' \code{FALSE} to standardize column-wise (default).
+#' @param center
+#' Set to \code{TRUE} (default) for centering, resulting in zero mean.
+#' @param scale
+#' Set to \code{TRUE} (default) for scaling, resulting in unit variance.
+#' @param ignore
+#' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame}.
+#' In that case, A \code{integer} (vector) of column indices (or row indices if
+#' \code{byrow = TRUE}) to not standardize.
+#' @param jointly
+#' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame}.
+#' In that case, a \code{list} of \code{integer} vectors with column indices
+#' (or row indices if \code{byrow = TRUE}) to standardize jointly.
 #'
 #' @return
-#' The standardized \code{argument}.
+#' The standardized input \code{argument}.
+#' The \code{numeric} centering and scalings used (if any) are added as
+#' attributes \code{"standardized:center"} and \code{"standardized:scale"}.
 #'
 #' @keywords internal
+#'
+#' @importFrom stats sd
 
-standardize_argument <- function(argument, by_column, center, scale, ignore) {
-  ### input checks
-  attr_argument <- attributes(argument)
-  vector_flag <- FALSE
-  df_flag <- is.data.frame(argument)
-  if (is.vector(argument) && is.numeric(argument)) {
+helper_standardize <- function(
+    argument, byrow = FALSE, center = TRUE, scale = TRUE, ignore = integer(),
+    jointly = list()
+  ) {
+  vector_flag <- is.atomic(argument) && is.null(dim(argument))
+  if (vector_flag) {
     argument <- as.data.frame(argument)
-    vector_flag <- TRUE
-    by_column <- TRUE
+    byrow <- FALSE
+    ignore <- integer()
+    jointly <- list()
   } else if (is.data.frame(argument) || is.matrix(argument)) {
-    is_TRUE_FALSE(by_column)
-    if (isFALSE(by_column)) {
-      ino_stop(
-        "Currently, only {.var by_column = TRUE} is implemented."
+    checkmate::assert_logical(byrow, len = 1)
+    indices <- if (byrow) {
+      seq_len(nrow(argument))
+    } else {
+      seq_len(ncol(argument))
+    }
+    checkmate::assert_integerish(ignore, lower = 1)
+    if (!all(ignore %in% indices)) {
+      cli::cli_abort(
+        "Argument {.var ignore} is out of bound.",
+        call = NULL
       )
     }
-    is_index_vector(ignore)
+    checkmate::assert_list(jointly)
+    if (length(jointly) > 0) {
+      for (joint in jointly) {
+        if (!checkmate::test_integerish(joint)) {
+          cli::cli_abort(
+            "Argument {.var jointly} must contain index vectors.",
+            call = NULL
+          )
+        }
+        if (!all(joint %in% indices)) {
+          cli::cli_abort(
+            "Argument {.var jointly} is out of bound.",
+            call = NULL
+          )
+        }
+      }
+      if (length(unlist(jointly)) != length(unique(unlist(jointly)))) {
+        cli::cli_abort(
+          "Elements in {.var jointly} must be exclusive.",
+          call = NULL
+        )
+      }
+      if (length(intersect(unlist(jointly), ignore)) > 0) {
+        cli::cli_abort(
+          "Cannot have same elements in {.var jointly} and {.var ignored}.",
+          call = NULL
+        )
+      }
+    }
   } else {
-    ino_stop(
-      "Argument is not suited for standardization.",
-      "Please see the function documentation."
+    cli::cli_abort(
+      "Argument cannot be standardized.",
+      call = NULL
     )
   }
-
-  ### standardizing
-  if (length(ignore) > 0) {
-    if (vector_flag) {
-      argument[-ignore, ] <- scale(
-        argument[-ignore, ],
-        center = center, scale = scale
-      )
-    } else {
-      argument[, -ignore] <- scale(
-        argument[, -ignore],
-        center = center, scale = scale
-      )
+  margin <- ifelse(byrow, 1, 2)
+  center_values <- rep(0, dim(argument)[margin])
+  scale_values <- rep(1, dim(argument)[margin])
+  if (center) {
+    center_values <- apply(
+      argument, margin, mean, na.rm = TRUE, simplify = TRUE
+    )
+    center_values[ignore] <- 0
+    for (join in jointly) {
+      center_values[join] <- mean(center_values[join], na.rm = TRUE)
     }
-  } else {
-    argument <- scale(argument, center = center, scale = scale)
+    argument <- sweep(argument, margin, center_values, "-")
+  }
+  if (scale) {
+    scale_values <- apply(
+      argument, margin, stats::sd, na.rm = TRUE, simplify = TRUE
+    )
+    scale_values[ignore] <- 1
+    for (join in jointly) {
+      scale_values[join] <- if (byrow) {
+        stats::sd(as.matrix(argument[join, ]), na.rm = TRUE)
+      } else {
+        stats::sd(as.matrix(argument[, join]), na.rm = TRUE)
+      }
+    }
+    argument <- sweep(argument, margin, scale_values, "/")
+  }
+  if (anyNA(argument)) {
+    cli::cli_warn("Argument has NAs after standardization.")
   }
   if (vector_flag) {
-    argument <- argument[, 1]
-  } else {
-    if (df_flag) {
-      argument <- as.data.frame(argument)
-    }
+    argument <- argument[, 1, drop = TRUE]
   }
-
-  ### check for NAs
-  if (anyNA(argument)) {
-    ino_warn(
-      "Standardization produced NAs."
-    )
+  if (center) {
+    attr(argument, "standardized:center") <- as.numeric(center_values)
   }
-
-  ### return argument
-  attributes(argument) <- attr_argument
+  if (scale) {
+    attr(argument, "standardized:scale") <- as.numeric(scale_values)
+  }
   return(argument)
 }
 
-#' Subset argument
+#' Helper function for subsetting
 #'
-#' @description
-#' This helper function subsets an argument.
+#' @details
+#' This function is part of the \code{$argument(action = "subset")} method of a
+#' \code{\link{Nop}} object and subsets a given argument.
 #'
 #' @param argument
 #' A \code{vector}, \code{matrix}, or \code{data.frame}.
-#' In case of \code{how = "(dis)similar"}, it must be \code{numeric}.
-#' @param by_row,how,proportion,centers,ignore,seed
-#' See documentation of method \code{$reduce()} from \code{Nop} object.
+#' @param byrow
+#' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame}.
+#' In that case, either \code{TRUE} to subset row-wise (default) or
+#' \code{FALSE} to subset column-wise.
+#' @param how
+#' A \code{character}, specifying how to subset. Can be one of:
+#' - \code{"random"} (default), subset at random
+#' - \code{"first"}, subset to the first elements
+#' - \code{"last"}, subset to the last elements
+#' - \code{"similar"}, subset to similar elements
+#' - \code{"dissimilar"}, subset to dissimilar elements
+#' The options \code{"similar"} and \code{"dissimilar"} apply k-means
+#' clustering via \code{\link[stats]{kmeans}} and require that
+#' the argument \code{argument_name} is \code{numeric}.
+#' @param proportion
+#' A \code{numeric} between \code{0} and \code{1}, specifying the
+#' subset proportion.
+#' By default, \code{proportion = 0.5}.
+#' @param centers
+#' Only relevant, if \code{how = "(dis)similar"}.
+#' In that case, passed to \code{\link[stats]{kmeans}}.
+#' By default, \code{centers = 2}.
+#' @param ignore
+#' Only relevant if \code{argument} is a \code{matrix} or \code{data.frame} and
+#' \code{how = "(dis)similar"}.
+#' In that case, a \code{integer} (vector) of row indices (or column indices
+#' if \code{byrow = FALSE}) to ignore for clustering.
 #'
 #' @return
-#' The subsetted \code{argument}.
+#' The subsetted input \code{argument}.
 #'
 #' @keywords internal
-#'
-#' @importFrom utils tail
 
-subset_argument <- function(
-    argument, by_row, how, proportion, centers, ignore, seed = NULL) {
-  ### input checks
-  is_name(how)
-  if (!how %in% c("random", "first", "last", "similar", "dissimilar")) {
-    ino_stop(
-      "Argument {.var how} is misspecified.",
-      paste(
-        "It must be one of {.val random}, {.val first}, {.val last},",
-        "{.val similar} or {.val dissimilar}."
-      )
-    )
-  }
-  is_proportion(proportion)
-  ino_seed(seed)
-  if (is.vector(argument) && length(argument) > 1) {
+helper_subset <- function(
+    argument, byrow = TRUE, how = "random", proportion = 0.5, centers = 2,
+    ignore = integer()
+  ) {
+  how <- match_arg(
+    how, c("random", "first", "last", "similar", "dissimilar")
+  )
+  checkmate::assert_number(proportion, lower = 0, upper = 1)
+  df_flag <- ifelse(is.data.frame(argument), TRUE, FALSE)
+  if (is.atomic(argument) && is.null(dim(argument)) && length(argument) > 1) {
     argument <- as.data.frame(argument)
     vector_flag <- TRUE
-    by_row <- TRUE
+    byrow <- TRUE
     ignore <- integer()
   } else if (is.data.frame(argument) || is.matrix(argument)) {
-    is_TRUE_FALSE(by_row)
-    if (isFALSE(by_row)) {
-      ino_stop(
-        "Currently, only {.var by_row = TRUE} is implemented."
-      )
+    checkmate::assert_logical(byrow, len = 1)
+    if (!byrow) {
+      argument <- t(argument)
     }
     if (how %in% c("similar", "dissimilar")) {
-      is_index_vector(ignore)
+      checkmate::assert_integerish(ignore)
     }
     vector_flag <- FALSE
   } else {
-    ino_stop(
-      glue::glue("Argument is not suited for reduction.")
+     cli::cli_abort(
+      "Subsetting can only be applied to objects of class {.cls vector} (of
+      length greater than one), {.cls matrix}, or {.cls data.frame}.",
+      call = NULL
     )
   }
-
-  ### subsetting
   n <- nrow(argument)
   m <- ceiling(n * proportion)
   if (how == "random") {
@@ -489,26 +213,11 @@ subset_argument <- function(
   } else if (how == "last") {
     ind <- utils::tail(seq_len(n), m)
   } else {
-    stopifnot(how == "similar" || how == "dissimilar")
     argument_ign <- argument
     if (length(ignore) > 0) {
       argument_ign <- argument_ign[, -ignore, drop = FALSE]
     }
-    cluster <- tryCatch(
-      stats::kmeans(argument_ign, centers = centers)$cluster,
-      error = function(e) {
-        ino_stop(
-          "CLustering with {.fun stats::kmeans} failed:",
-          e$message
-        )
-      },
-      warning = function(w) {
-        ino_stop(
-          "CLustering with {.fun stats::kmeans} failed:",
-          w$message
-        )
-      }
-    )
+    cluster <- stats::kmeans(argument_ign, centers = centers)$cluster
     ind <- integer(0)
     if (how == "similar") {
       i <- 1
@@ -522,10 +231,10 @@ subset_argument <- function(
       i <- 0
       while (length(ind) < m) {
         i_mod <- i %% centers + 1
+        i <- i + 1
         if (length(ind_cluster[[i_mod]]) == 0) next
         ind <- c(ind, ind_cluster[[i_mod]][1])
         ind_cluster[[i_mod]] <- ind_cluster[[i_mod]][-1]
-        i <- i + 1
       }
     }
     ind <- sort(ind)
@@ -534,30 +243,137 @@ subset_argument <- function(
   if (vector_flag) {
     argument <- argument[, 1]
   }
-
-  ### check for NAs
-  if (anyNA(argument)) {
-    ino_warn("Reduction produced NA's.")
+  if (!byrow) {
+    argument <- t(argument)
   }
-
-  ### return argument
+  if (df_flag) {
+    argument <- as.data.frame(argument)
+  }
   return(argument)
 }
 
-# transfer_nop <- function(
-#     x, var = data.frame(
-#       "old" = c(".f_name", ".arguments", ".original_arguments",
-#                 ".true_parameter", ".true_value", ".show_minimum", ".optimizer",
-#                 ".results", ".runs_last", ".optimization_labels"),
-#       "new" = c(".f_name", ".arguments", ".original_arguments",
-#                 ".true_parameter", ".true_value", ".minimized", ".optimizer",
-#                 ".results", ".runs_last", ".optimization_labels"))
-#   ) {
-#   stopifnot(inherits(x, "Nop"))
-#   private <- x$.__enclos_env__$private
-#   y <- Nop$new(f = private$.f, npar = private$.npar)
-#   for (i in seq_len(nrow(var))) {
-#     y$.__enclos_env__$private[[var[i, "new"]]] <- private[[var[i, "old"]]]
-#   }
-#   return(y)
-# }
+#' Helper function for argument matching
+#'
+#' @description
+#' This function matches function arguments and is a modified version of
+#' \code{\link[base]{match.arg}}.
+#'
+#' @param arg
+#' A \code{character} (vector), the function argument.
+#' @param choices
+#' A \code{character} (vector) of allowed values for \code{arg}.
+#' @param several.ok
+#' Either \code{TRUE} if \code{arg} is allowed to have more than one element,
+#' or \code{FALSE} else.
+#' @param none.ok
+#' Either \code{TRUE} if \code{arg} is allowed to have zero elements,
+#' or \code{FALSE} else.
+#'
+#' @return
+#' The un-abbreviated version of the exact or unique partial match if there is
+#' one. Otherwise, an error is signaled if \code{several.ok} is \code{FALSE}
+#' or \code{none.ok} is \code{FALSE}.
+#' When \code{several.ok} is \code{TRUE} and (at least) one element of
+#' \code{arg} has a match, all un-abbreviated versions of matches are returned.
+#' When \code{none.ok} is \code{TRUE} and \code{arg} has zero elements,
+#' \code{character(0)} is returned.
+#'
+#' @keywords internal
+
+match_arg <- function (arg, choices, several.ok = FALSE, none.ok = FALSE) {
+  checkmate::assert_character(arg)
+  checkmate::assert_character(choices)
+  checkmate::assert_logical(several.ok, len = 1)
+  checkmate::assert_logical(none.ok, len = 1)
+  arg_name <- deparse(substitute(arg))
+  if (!several.ok && length(arg) > 1L) {
+    cli::cli_abort(
+      "{.var {arg_name}} must be of length 1.",
+      call = NULL
+    )
+  }
+  if (length(arg) == 0L) {
+    if (none.ok) {
+      return(character(0))
+    } else {
+      cli::cli_abort(
+        "{.var {arg_name}} must be of length greater or equal 1.",
+        call = NULL
+      )
+    }
+  }
+  i <- pmatch(arg, choices, nomatch = 0, duplicates.ok = TRUE)
+  if (all(i == 0L)) {
+    cli::cli_abort(
+      "{.var {arg_name}} {ifelse(none.ok, 'can', 'must')} be one
+      {ifelse(several.ok, 'or more', '')} of {.val {choices}}.",
+      call = NULL
+    )
+  }
+  i <- i[i > 0L]
+  choices[i]
+}
+
+#' Helper function for removing an index
+#'
+#' @description
+#' This function removes a value from an index vector and optionally shifts the
+#' indices up.
+#'
+#' @param x
+#' An \code{integer} (vector).
+#' @param index
+#' An \code{integer}.
+#' @param replace
+#' Either \code{TRUE} the shift the indices up, or \code{FALSE} (default) else.
+#'
+#' @return
+#' An \code{integer} (vector).
+#'
+#' @keywords internal
+
+remove_index <- function(x, index, replace = FALSE) {
+  checkmate::assert_integerish(x)
+  checkmate::assert_int(index)
+  checkmate::assert_logical(replace, len = 1)
+  x <- x[!(x %in% index)]
+  if (replace) x[x >= index] <- x[x >= index] - 1
+  return(x)
+}
+
+#' Helper function for user confirmation
+#'
+#' @description
+#' This function asks in an interactive question a binary question.
+#'
+#' @param question
+#' A \code{character}, the binary question to ask. It should end with a
+#' question mark.
+#' @param default
+#' Either \code{TRUE} or \code{FALSE} (default), the default decision.
+#'
+#' @return
+#' Either \code{TRUE} or \code{FALSE}.
+#'
+#' @keywords internal
+
+user_confirm <- function (question = "Question?", default = FALSE) {
+  checkmate::assert_flag(default)
+  if (!interactive()) return(default)
+  checkmate::assert_string(question)
+  repeat {
+    selection <- ifelse(default, "[Y/n]", "[y/N]")
+    cli::cli_inform("{question} {selection}:")
+    response <- tryCatch(
+      tolower(trimws(readLines(con = getOption("ino_connection"), n = 1))),
+      interrupt = identity
+    )
+    if (inherits(response, "interrupt")) stop()
+    if (!nzchar(response)) return(default)
+    if (response %in% c("y", "yes")) return(TRUE)
+    if (response %in% c("n", "no")) return(FALSE)
+    cli::cli_inform("Please enter 'y' or 'n', or type Ctrl + C to cancel.")
+  }
+}
+
+

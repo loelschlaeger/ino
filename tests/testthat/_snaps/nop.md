@@ -1,147 +1,284 @@
-# Nop object can be printed
+# Example 1: Defining the problem works
 
     Code
-      print(ackley)
+      Nop_ackley$print()
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      
+      -- Optimizer functions --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      No optimizer specified yet.
-      Optimization results:
-      No results saved yet.
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
 ---
 
     Code
-      ackley$print()
+      print(Nop_ackley)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      
+      -- Optimizer functions --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      No optimizer specified yet.
-      Optimization results:
-      No results saved yet.
-
-# Parameters for Nop object can be set
-
-    Code
-      print(hmm)
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ll_hmm
-      - Optimize over: theta (length 6) 
-      - Additional arguments: data 
-      Numerical optimizer:
-      No optimizer specified yet.
-      Optimization results:
-      No results saved yet.
-
-# optimizer can be set
-
-    Code
-      ackley
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      - 1: nlm 
-      Optimization results:
-      No results saved yet.
+      No results.
+      
 
 ---
 
     Code
-      ackley
+      Nop_ackley
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      * True minimum value: 0
+      * True minimum at: 0, 0
+      
+      -- Optimizer functions --
+      
+      1. nlm
+      2. stats::optim
+      
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      - 1: nlm 
-      - 2: stats::optim 
-      Optimization results:
-      No results saved yet.
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
-# optimizer can be removed
+# Example 1: Evaluation and optimization works
 
     Code
-      ackley
+      Nop_ackley
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ackley
+      * Optimize over: x (length 2)
+      * True minimum value: 0
+      * True minimum at: 0, 0
+      
+      -- Optimizer functions --
+      
+      1. nlm
+      2. stats::optim
+      
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      - 1: A 
-      - 2: B 
-      - 3: C 
-      - 4: stats::nlm 
-      Optimization results:
-      No results saved yet.
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+      * Total runs: 20
+      
+      -- Optimization results --
+      
+      * Minimum parameter vector: 0, 0
+      * Minimum function value: 0
+
+# Example 2: Defining the problem works
+
+    Code
+      Nop_hmm$print()
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      
+      -- Optimizer functions --
+      
+    Output
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
 ---
 
     Code
-      ackley2
+      print(Nop_hmm)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      
+      -- Optimizer functions --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      - 1: A has been removed. 
-      - 2: B has been removed. 
-      - 3: C has been removed. 
-      - 4: stats::nlm has been removed. 
-      Optimization results:
-      No results saved yet.
+      No optimizer specified.
+      
+    Message <cliMessage>
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
 ---
 
     Code
-      ackley
+      Nop_hmm
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      - 1: A 
-      - 2: B has been removed. 
-      - 3: C 
-      - 4: stats::nlm 
-      Optimization results:
-      No results saved yet.
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
----
+# Example 2: Additional arguments can be modified and reset
 
     Code
-      ackley
+      print(Nop_hmm)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      data
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      - 1: A has been removed. 
-      - 2: B has been removed. 
-      - 3: C 
-      - 4: stats::nlm has been removed. 
-      Optimization results:
-      No results saved yet.
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
-# ackley function can be optimized
+# Example 2: True value and parameter can be set
 
     Code
-      ackley
+      print(Nop_hmm)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      * True maximum value: -139.545254
+      * True maximum at: -2.3025851, -1.6094379, -2, 2, -0.6931472, 0
+      
+      -- Additional function arguments --
+      
+      N
+      data
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
     Output
-      Optimization problem:
-      - Function: f_ackley
-      - Optimize over: x (length 2) 
-      Numerical optimizer:
-      - 1: stats::nlm 
-      - 2: stats::optim 
-      Optimization results:
-      - Total runs (comparable): 13 (13)
-      - Best parameter: 0 0
-      - Best value: 0 
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
 
