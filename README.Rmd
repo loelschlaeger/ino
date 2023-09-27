@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ino/branch/master/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ino?branch=master)
 <!-- badges: end -->
 
-The `{ino}` R package provides tools for the analysis of the initialization for numerical optimization. For detailed examples and usage instructions, please refer to the [vignettes](https://loelschlaeger.de/ino/articles/) accompanying the package.
+The `{ino}` package provides tools for the analysis of the initialization for numerical optimization in R. For detailed examples and usage instructions, please refer to the [vignettes](https://loelschlaeger.de/ino/articles/) accompanying the package.
 
 ## Installation
 

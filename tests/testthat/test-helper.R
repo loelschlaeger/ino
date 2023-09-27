@@ -402,9 +402,9 @@ test_that("Bad optimizer specifications can be detected in tests", {
     list(v = f(p), z = 1:2)
   }
   error_optimizer <- optimizeR::define_optimizer(
-    error_optimizer_fun,
-    objective = "f", initial = "p", value = "v",
-    parameter = "z"
+    .optimizer = error_optimizer_fun,
+    .objective = "f", .initial = "p", .value = "v",
+    .parameter = "z", .direction = "min"
   )
   ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(error_optimizer)
   expect_error(
@@ -432,9 +432,9 @@ test_that("Nop tests can be interrupted", {
     stats::nlm(f = f, p = p)
   }
   slow_optimizer <- optimizeR::define_optimizer(
-    slow_optimizer_fun,
-    objective = "f", initial = "p", value = "minimum",
-    parameter = "estimate"
+    .optimizer = slow_optimizer_fun,
+    .objective = "f", .initial = "p", .value = "minimum",
+    .parameter = "estimate", .direction = "min"
   )
   ackley <- Nop$new(f = f_ackley, npar = 2)$set_optimizer(slow_optimizer)
   expect_warning(

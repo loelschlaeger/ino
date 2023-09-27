@@ -4,7 +4,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.path = "figures/ino-",
-  fig.dim = c(8, 6), 
+  fig.dim = c(8, 6),
   out.width = "75%",
   # all optimizations are pre-computed to save building time
   eval = FALSE
@@ -22,9 +22,9 @@ str(faithful)
 
 ## ---- faithful, warning = FALSE, eval = TRUE-------------------------------------------------------------
 library("ggplot2")
-ggplot(faithful, aes(x = eruptions)) + 
-  geom_histogram(aes(y = after_stat(density)), bins = 30) + 
-  xlab("eruption time (min)") 
+ggplot(faithful, aes(x = eruptions)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
+  xlab("eruption time (min)")
 
 
 ## ---- mixture ll, eval = TRUE----------------------------------------------------------------------------
@@ -66,8 +66,8 @@ em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data)
 
 ## ---- initialize mixture_ino-----------------------------------------------------------------------------
 mixture_ino <- Nop$new(
-  f = normal_mixture_llk, 
-  npar = 5, 
+  f = normal_mixture_llk,
+  npar = 5,
   data = faithful$eruptions
 )
 
@@ -80,14 +80,15 @@ mixture_ino$
 
 ## ---- set em algorithm-----------------------------------------------------------------------------------
 em_optimizer <- optimizeR::define_optimizer(
-  optimizer = em, objective = "normal_mixture_llk",
-  initial = "theta", value = "neg_llk", parameter = "estimate"
+  .optimizer = em, .objective = "normal_mixture_llk",
+  .initial = "theta", .value = "neg_llk", .parameter = "estimate",
+  .direction = "min"
 )
 mixture_ino$set_optimizer(em_optimizer, label = "em")
 
 
-## ---- validate mixture_ino, eval = TRUE------------------------------------------------------------------
-mixture_ino$test(verbose = TRUE)
+## ---- validate mixture_ino, eval = FALSE-----------------------------------------------------------------
+mixture_ino$test(verbose = FALSE)
 
 
 ## ---- example evaluation, eval = TRUE--------------------------------------------------------------------
@@ -131,8 +132,8 @@ transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
 mixture_density <- function (data, mu, sd, lambda) {
   lambda * dnorm(data, mu[1], sd[1]) + (1 - lambda) * dnorm(data, mu[2], sd[2])
 }
-ggplot(faithful, aes(x = eruptions)) + 
-  geom_histogram(aes(y = after_stat(density)), bins = 30) + 
+ggplot(faithful, aes(x = eruptions)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
   labs(x = "eruption time (min)", colour = "parameter") +
   stat_function(
     fun = function(x) {
@@ -185,7 +186,7 @@ mixture_ino$optimize(initial = rep(0, 5), label = "bad_guess")
 
 
 ## ---- bad guess summary, which_run = "random", eval = TRUE-----------------------------------------------
-summary(mixture_ino, which_run = "bad_guess") 
+summary(mixture_ino, which_run = "bad_guess")
 
 
 ## ---- standardize data-----------------------------------------------------------------------------------

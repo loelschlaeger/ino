@@ -1,17 +1,10 @@
-#' ino: Analysis of Initialization for Numerical Optimization
-#'
-#' @description
-#' This package implements tools for analyzing the initialization of
-#' numerical optimization.
-#'
-#' @docType package
-#'
-#' @name ino
-#'
 #' @keywords internal
-#'
-#' @import optimizeR
 "_PACKAGE"
+
+## usethis namespace: start
+#' @importFrom optimizeR apply_optimizer
+## usethis namespace: end
+NULL
 
 #' @noRd
 #' @importFrom utils packageVersion

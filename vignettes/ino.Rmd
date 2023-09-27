@@ -186,16 +186,17 @@ We also want to apply the EM algorithm introduced above:
 
 ```{r, set em algorithm}
 em_optimizer <- optimizeR::define_optimizer(
-  optimizer = em, objective = "normal_mixture_llk",
-  initial = "theta", value = "neg_llk", parameter = "estimate"
+  .optimizer = em, .objective = "normal_mixture_llk",
+  .initial = "theta", .value = "neg_llk", .parameter = "estimate",
+  .direction = "min"
 )
 mixture_ino$set_optimizer(em_optimizer, label = "em")
 ```
 
 Finally, we can validate our specification:
 
-```{r, validate mixture_ino, eval = TRUE}
-mixture_ino$test(verbose = TRUE)
+```{r, validate mixture_ino, eval = FALSE}
+mixture_ino$test(verbose = FALSE)
 ```
 
 ### Function evaluation
