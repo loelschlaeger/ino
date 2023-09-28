@@ -14,9 +14,9 @@ downloads](https://cranlogs.r-pkg.org/badges/last-month/ino)](https://CRAN.R-pro
 coverage](https://codecov.io/gh/loelschlaeger/ino/branch/master/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ino?branch=master)
 <!-- badges: end -->
 
-The `{ino}` R package provides tools for the analysis of the
-initialization for numerical optimization. For detailed examples and
-usage instructions, please refer to the
+The `{ino}` package provides tools for the analysis of the
+initialization for numerical optimization in R. For detailed examples
+and usage instructions, please refer to the
 [vignettes](https://loelschlaeger.de/ino/articles/) accompanying the
 package.
 

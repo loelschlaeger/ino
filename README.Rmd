@@ -54,7 +54,7 @@ f_ackley(c(0, 0))
 
 The optimization result depends on the initial value:
 
-```{r, ackley demo, message = FALSE}
+```{r, ackley demo, message = FALSE, warning = FALSE}
 library("ino")
 Nop$new(f = f_ackley, npar = 2)$
   set_optimizer(optimizer_nlm())$
