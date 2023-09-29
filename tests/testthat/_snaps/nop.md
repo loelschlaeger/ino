@@ -248,6 +248,38 @@
       No results.
       
 
+---
+
+    Code
+      print(Nop_hmm)
+    Message <cliMessage>
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Additional function arguments --
+      
+      N
+      data
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified.
+      
+    Message <cliMessage>
+      -- Optimization runs --
+      
+    Output
+      No results.
+      
+
 # Example 2: True value and parameter can be set
 
     Code

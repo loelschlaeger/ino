@@ -606,33 +606,7 @@ Nop <- R6::R6Class(
           argument = original_argument, byrow = byrow, how = how,
           proportion = proportion, centers = centers, ignore = ignore
         )
-        # TODO
-        # cli::cli_alert_info(
-        #   glue::glue(
-        #     "Subsetted `{name}` from ",
-        #     if (is.atomic(original_argument) &&
-        #         is.null(dim(original_argument))) {
-        #       length_old <- length(original_argument)
-        #       length_new <- length(subsetted_argument)
-        #       "{length_old} to {length_new} {how} element(s)."
-        #     } else {
-        #       if (byrow) {
-        #         nrow_old <- nrow(original_argument)
-        #         nrow_new <- nrow(subsetted_argument)
-        #         glue::glue(
-        #           "{nrow_old} to {nrow_new} {how} row(s).",
-        #         )
-        #       } else {
-        #         ncol_old <- ncol(original_argument)
-        #         ncol_new <- ncol(subsetted_argument)
-        #         glue::glue(
-        #           "{ncol_old} to {ncol_new} {how} column(s).",
-        #         )
-        #       }
-        #     }
-        #   ),
-        #   verbose = verbose
-        # )
+        # TODO add message about subset action
         private$.arguments[[name]] <- subsetted_argument
         if (is.null(private$.original_arguments[[name]])) {
           private$.original_arguments[[name]] <- original_argument
@@ -1032,6 +1006,8 @@ Nop <- R6::R6Class(
       verbose = getOption("ino_verbose", default = FALSE),
       digits = getOption("digits", default = 7)
     ) {
+
+      ### TODO use cli::progress_step()
 
       ### input checks
       private$.check_target_argument(at)
@@ -2229,12 +2205,12 @@ Nop <- R6::R6Class(
       ### check `which_run`
       if (checkmate::test_character(which_run)) {
 
-        ### TODO: check if all is alone, no contradictions
+        ### TODO check if all is alone, no contradictions
         return(which_run)
 
       } else if (checkmate::test_integerish(which_optimizer, lower = 1)) {
 
-        ### TODO: check if ids exist
+        ### TODO check if ids exist
         return(which_run)
 
       } else {
