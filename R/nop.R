@@ -166,7 +166,9 @@
 #' ackley <- TestFunctions::TF_ackley
 #'
 #' Nop_ackley <- Nop$new(f = ackley, npar = 2)$  # define the Nop object
-#'   set_optimizer(optimizeR::optimizer_nlm())$  # select the nlm optimizer
+#'   set_optimizer(
+#'     optimizeR:Optimizer("stats::nlm")         # select the nlm optimizer
+#'   )$
 #'   initialize_random(
 #'     sampler = function() rnorm(2, mean = 0, sd = 3),
 #'     runs = 100, seed = 1
@@ -185,32 +187,57 @@ Nop <- R6::R6Class(
 
     #' @description
     #' Creates a new \code{Nop} object.
-    #' @param f
-    #' The \code{function} to be optimized.
-    #' It should return a single \code{numeric} value and
-    #' is optimized over its first argument (the target argument), which should
-    #' be a \code{numeric} vector of length \code{npar}.
+    #' @param objective
+    #' The \code{function} to be optimized (the so-called objective function).
+    #' It should return a single \code{numeric} value.
+    #' @param target
+    #' The names of the arguments over which \code{f} will be optimized (the
+    #' so-called target arguments).
+    #' Each of these arguments should expect a \code{numeric} \code{vector}.
     #' @param npar
-    #' An \code{integer}, the length of the first argument of \code{f} (i.e.,
-    #' the first argument over which \code{f} is optimized).
+    #' The lengths of the target arguments.
     #' @param ...
-    #' Optionally additional (i.e., in addition to the target argument)
-    #' named arguments for \code{f}.
+    #' Optionally additional, named arguments for \code{f} which are kept fixed
+    #' during the optimization.
     #' @return
     #' A new \code{Nop} object.
-    initialize = function(f, npar, ...) {
-      if (missing(f)) {
-        cli::cli_abort(c(
-          "Please specify argument {.var f}.",
-          "i" = "It should be the {.cls function} to be optimized."
-        ))
-      }
-      checkmate::assert_function(f)
-      if (is.null(formals(f))) {
+
+    initialize = function(objective, target, npar, ...) {
+      if (missing(objective)) {
         cli::cli_abort(
           c(
-            "Function {.var f} must have at least one argument.",
-            "i" = "The function is optimized with respect to its first argument."
+            "Please specify argument {.var objective}.",
+            "i" = "It should be the {.cls function} to be optimized."
+          ),
+          call = NULL
+        )
+      }
+      checkmate::assert_function(objective)
+      if (is.null(formals(objective))) {
+        cli::cli_abort(
+          c(
+            "Function {.var objective} should have at least one argument.",
+            "i" = "The function needs an argument over which it is optimized."
+          ),
+          call = NULL
+        )
+      }
+      if (missing(target)) {
+        cli::cli_abort(
+          c(
+            "Please specify argument {.var target}.",
+            "i" = "It should be the names of the target arguments."
+          ),
+          call = NULL
+        )
+      }
+      checkmate::assert_character(target, any.missing = FALSE, min.len = 1)
+      if (!checkmate::test_subset(target, names(formals(objective)))) {
+        bad_args <- setdiff(target, formals(objective))
+        cli::cli_abort(
+          c(
+            "The argument {.var target} is incorrectly stated.",
+            "i" = "The objective does not have argument{?s} {.val {bad_args}}."
           ),
           call = NULL
         )
@@ -219,28 +246,22 @@ Nop <- R6::R6Class(
         cli::cli_abort(
           c(
             "Please specify argument {.var npar}.",
-            "i" = "It should be the length of the first argument of {.var f}."
+            "i" = "It should be the lengths of the target arguments."
           ),
           call = NULL
         )
       }
-      checkmate::assert_count(npar, positive = TRUE)
-      private$.f <- f
-      private$.f_inverse <- function(...) -f(...)
-      f_name <- deparse(substitute(f))
-      if(!checkmate::test_string(f_name)) {
-        f_name <- "unnamed_function"
-        cli::cli_warn(c(
-          "Function {.var f} is unnamed.",
-          "i" = "You can name it via {.var $f_name <- {.val name}}."
-        ))
-      }
-      private$.f_name <- f_name
-      private$.f_target <- names(formals(f))[1]
-      private$.npar <- as.integer(npar)
-      if (length(list(...)) > 0) {
-        self$argument("set", ...)
-      }
+      checkmate::assert_integerish(
+        npar, lower = 1, any.missing = FALSE, len = length(target)
+      )
+      private$objective <- optimizeR::Objective$new(
+        objective = objective,
+        target = target,
+        npar = npar,
+        ...
+      )
+      ### TODO: do I need this?
+      private$objective$objective_name <- deparse(substitute(objective))
     },
 
     #' @description
@@ -682,7 +703,7 @@ Nop <- R6::R6Class(
         cli::cli_abort(
           c(
             "Argument {.var optimizer} must be an {.cls optimizer} object.",
-            "i" = "See {.help optimizeR::define_optimizer} to create such an object."
+            "i" = "See {.help optimizeR::Optimizer} to create such an object."
           ),
           call = NULL
         )
@@ -704,9 +725,9 @@ Nop <- R6::R6Class(
     #' @description
     #' Evaluates the function.
     #' @param at
-    #' A \code{numeric} vector of length \code{npar}, the point where the
+    #' A \code{numeric} vector of length \code{sum(npar)}, the point where the
     #' function is evaluated.
-    #' By default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+    #' By default, \code{at = rnorm(sum(self$npar))}, i.e., random values drawn
     #' from a standard normal distribution.
     #' @return
     #' Either:
@@ -714,36 +735,16 @@ Nop <- R6::R6Class(
     #' - \code{"time limit reached"} if the time limit was reached,
     #' - the error message if the evaluation failed.
     evaluate = function(
-      at = stats::rnorm(self$npar), time_limit = NULL, hide_warnings = FALSE
+      at = stats::rnorm(sum(self$npar)), time_limit = NULL,
+      hide_warnings = FALSE
     ) {
-      private$.check_additional_arguments_complete()
-      private$.check_target_argument(at)
       checkmate::assert_number(time_limit, null.ok = TRUE, lower = 0)
       checkmate::assert_flag(hide_warnings)
-      at <- list(at)
-      names(at) <- private$.f_target
-      if (!is.null(time_limit)) {
-        setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
-        on.exit({
-          setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
-        })
-      }
-      tryCatch(
-        {
-          suppressWarnings(
-            do.call(
-              what = private$.f,
-              args = c(at, private$.arguments)
-            ),
-            classes = if (hide_warnings) "warning" else ""
-          )
-        },
-        error = function(e) {
-          msg <- e$message
-          tl <- grepl("reached elapsed time limit|reached CPU time limit", msg)
-          if (tl) return("time limit reached") else return(msg)
-        }
-      )
+      private$objective$seconds <- seconds
+      private$objective$hide_warnings <- hide_warnings
+      private$check_target_argument(at)
+      private$objective$evaluate(at)
+      # TODO: reset time limit and hide warnings
     },
 
     #' @description
@@ -1921,24 +1922,10 @@ Nop <- R6::R6Class(
 
   active = list(
 
-    #' @field f_name A \code{character}, the name of the function \code{f}.
-    f_name = function(value) {
-      if (missing(value)) {
-        private$.f_name
-      } else {
-        if (!checkmate::test_string(value)) {
-          cli::cli_abort("{.var $f_name} must be a single {.cls character}.")
-        } else {
-          private$.f_name <- value
-        }
-      }
-    },
-
-    #' @field npar An \code{integer}, the length of the target argument (i.e.,
-    #' the argument over which \code{f} is optimized).
+    #' @field npar The lengths of the target arguments.
     npar = function(value) {
       if (missing(value)) {
-        private$.npar
+        private$objective$npar
       } else {
         cli::cli_abort(
           "The field {.var $npar} is read only.",
@@ -1947,8 +1934,7 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field fresh_label A \code{character}, an optimization label that has
-    #' not been used yet.
+    #' @field fresh_label An optimization label that has not been used yet.
     fresh_label = function(value) {
       if (missing(value)) {
         default_label <- "unlabeled"
@@ -1967,21 +1953,6 @@ Nop <- R6::R6Class(
           call = NULL
         )
       }
-    },
-
-    #' @field reserved_labels A \code{character} vector, the names of reserved
-    #' labels.
-    reserved_labels = function(value) {
-      if (missing(value)) {
-        return(
-          c("all", "last", "success", "failed", "comparable", "incomparable")
-        )
-      } else {
-        cli::cli_abort(
-          "The field {.var $reserved_labels} is read only.",
-          call = NULL
-        )
-      }
     }
 
   ),
@@ -1989,11 +1960,7 @@ Nop <- R6::R6Class(
   private = list(
 
     ### storage of the optimization problem details
-    .f = NULL,
-    .f_inverse = NULL,
-    .f_name = NULL,
-    .f_target = NULL,
-    .npar = NULL,
+    objective = NULL,
     .true_parameter_min = NULL,
     .true_parameter_max = NULL,
     .true_value_min = NULL,

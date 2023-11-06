@@ -110,7 +110,9 @@ and see \code{\link[future]{plan}} for details.
 ackley <- TestFunctions::TF_ackley
 
 Nop_ackley <- Nop$new(f = ackley, npar = 2)$  # define the Nop object
-  set_optimizer(optimizeR::optimizer_nlm())$  # select the nlm optimizer
+  set_optimizer(
+    optimizeR:Optimizer("stats::nlm")         # select the nlm optimizer
+  )$
   initialize_random(
     sampler = function() rnorm(2, mean = 0, sd = 3),
     runs = 100, seed = 1
@@ -125,16 +127,9 @@ Nop_ackley$best("parameter")                  # return best parameter vector
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{f_name}}{A \code{character}, the name of the function \code{f}.}
+\item{\code{npar}}{The lengths of the target arguments.}
 
-\item{\code{npar}}{An \code{integer}, the length of the target argument (i.e.,
-the argument over which \code{f} is optimized).}
-
-\item{\code{fresh_label}}{A \code{character}, an optimization label that has
-not been used yet.}
-
-\item{\code{reserved_labels}}{A \code{character} vector, the names of reserved
-labels.}
+\item{\code{fresh_label}}{An optimization label that has not been used yet.}
 }
 \if{html}{\out{</div>}}
 }
@@ -171,22 +166,23 @@ labels.}
 \subsection{Method \code{new()}}{
 Creates a new \code{Nop} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$new(f, npar, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$new(objective, target, npar, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{f}}{The \code{function} to be optimized.
-It should return a single \code{numeric} value and
-is optimized over its first argument (the target argument), which should
-be a \code{numeric} vector of length \code{npar}.}
+\item{\code{objective}}{The \code{function} to be optimized (the so-called objective function).
+It should return a single \code{numeric} value.}
 
-\item{\code{npar}}{An \code{integer}, the length of the first argument of \code{f} (i.e.,
-the first argument over which \code{f} is optimized).}
+\item{\code{target}}{The names of the arguments over which \code{f} will be optimized (the
+so-called target arguments).
+Each of these arguments should expect a \code{numeric} \code{vector}.}
 
-\item{\code{...}}{Optionally additional (i.e., in addition to the target argument)
-named arguments for \code{f}.}
+\item{\code{npar}}{The lengths of the target arguments.}
+
+\item{\code{...}}{Optionally additional, named arguments for \code{f} which are kept fixed
+during the optimization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -334,7 +330,7 @@ Invisibly the \code{Nop} object.
 Evaluates the function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(
-  at = stats::rnorm(self$npar),
+  at = stats::rnorm(sum(self$npar)),
   time_limit = NULL,
   hide_warnings = FALSE
 )}\if{html}{\out{</div>}}
@@ -343,9 +339,9 @@ Evaluates the function.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{A \code{numeric} vector of length \code{npar}, the point where the
+\item{\code{at}}{A \code{numeric} vector of length \code{sum(npar)}, the point where the
 function is evaluated.
-By default, \code{at = rnorm(self$npar)}, i.e., random values drawn
+By default, \code{at = rnorm(sum(self$npar))}, i.e., random values drawn
 from a standard normal distribution.}
 
 \item{\code{time_limit}}{A \code{numeric}, a time limit in seconds. Computations are interrupted

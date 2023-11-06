@@ -20,18 +20,17 @@ knitr::opts_chunk$set(
   fig.align = "center",
   fig.path  = "figures/ino-",
   fig.dim   = c(8, 6), 
-  out.width = "75%",
-  eval      = FALSE
+  out.width = "75%"
 )
 ```
 
 ## Motivation
 
-Optimization refers to making something as effective, efficient, or functional as possible. This is important in many fields, for example optimal portfolio composition in finance, minimizing air resistance in engineering, or likelihood maximization for model fitting in statistics. In any case, assuming a function can be defined that maps inputs to outputs, the goal of optimization is to find inputs such that the output is in some sense optimal.
+Optimization refers to making something as effective, efficient, or functional as possible. This goal is important in many fields, for example optimal portfolio composition in finance, minimizing air resistance in engineering, or likelihood maximization for model fitting in statistics. In any case, assuming a function can be defined that maps inputs to outputs, the goal of optimization is to find inputs such that the output is in some sense optimal.
 
-In some cases, the function is simple enough that finding the optimal value is possible analytically: if $f:\mathbb{R} \to \mathbb{R},\ f(x) = -x^2$, we find that the first derivative $f'(x) = -2x$ vanishes at $x = 0$, and since $f$ is strictly concave, this $x$ must be the unique point where $f(x)$ is maximal. But often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for derivatives are unknown or do not exist. In these cases, optimization is still possible via a concept called numerical optimization.
+In some cases, the function is simple enough that finding the optimal value is possible analytically: for example, if $f:\mathbb{R} \to \mathbb{R},\ f(x) = -x^2$, we find that the first derivative $f'(x) = -2x$ vanishes at $x = 0$, and since $f$ is strictly concave, this $x$ must be the unique point where $f(x)$ is maximal. But often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for derivatives are unknown or do not exist. In these cases, optimization is still possible via a concept called numerical optimization.
 
-Numerical optimization refers to any algorithm that iteratively explores the parameter space, guaranteeing to improve the function output over each iteration, and eventually converging to a point where no more improvements can be made [@Bonnans:2006]. Several such algorithms are implemented in R.^[The [CRAN Task View: Optimization and Mathematical Programming](https://CRAN.R-project.org/view=Optimization) provides a comprehensive list of packages for solving optimization problems numerically. ] One thing that all of these algorithms have in common is that initial parameter values must be specified, i.e., the point from where the procedure is started. But choosing initial values is non-trivial and can be a challenging task.
+Numerical optimization refers to any algorithm that iteratively explores the parameter space, guaranteeing to improve the function output over each iteration, and eventually converging to a point where no more improvements can be made [@Bonnans:2006]. Several such algorithms are implemented in R.^[The CRAN Task View: Optimization and Mathematical Programming [@Schwendinger:2023] provides a comprehensive list of packages for solving optimization problems numerically.] One thing that all of these algorithms have in common is that initial parameter values must be specified, i.e., the point from where the procedure is started. But choosing initial values is non-trivial and can be a challenging task.
 
 The reason why initialization is so challenging is that starting values can have a large influence on the optimization time and optimization result [@Nocedal:2006]. In general, starting in areas of function saturation increases computation time, starting in areas of non-concavity leads to convergence problems or convergence to local rather than global optima. The increase in computation time is a problem for complex functions where each iteration of the optimizer takes a significant evaluation time, while the concern of convergence issues to the global optimum is problematic in any case. So two questions immediately arise:
 
@@ -49,15 +48,15 @@ We introduce the `{ino}` R package (acronym for initialization of numerical opti
 
 3. comparing different numerical optimizers
 
-The package follows an object-oriented approach^[We make use of the object-oriented framework of the `{R6}` package [@Chang:2021].], treating a numerical optimization problem as an object. The object is defined by a real-valued function, the argument over which the function is to be optimized, and one or more optimization algorithms. The object provides methods for choosing initial values, carrying out numerical optimization, and evaluating the optimization results.
+The package follows an object-oriented approach^[We make use of the object-oriented framework of the `{R6}` package [@Chang:2021].], treating numerical optimization problems as objects. The object is defined by a real-valued function, the argument over which the function is to be optimized, and one or more optimization algorithms. The object provides methods for choosing initial values, carrying out numerical optimization, and evaluating the optimization results.
 
 The main benefits of using the package are as follows:
 
-- Any optimizer implemented in R can be applied for minimization as well as maximization.^[To achieve consistency across implementations of optimization algorithms in R, we make use of the framework of the `{optimizeR}` package [@Oelschlaeger:2023].]
+- Any optimizer implemented in R can be applied for minimization and maximization tasks.^[To achieve consistency across implementations of optimization algorithms in R, we make use of the framework provided by the `{optimizeR}` package [@Oelschlaeger:2023].]
 
-- Several generally applicable initialization strategies are implemented, and users can extend custom strategies.
+- Generally applicable initialization strategies are implemented, and users can extend custom strategies.
 
-- Many methods allow for easy comparisons across optimizers and initialization strategies, and to finally extract the best optimization result.
+- Methods allow for easy comparisons across optimizers and initialization strategies, and to finally extract the best optimization result.
 
 - The package supports parallel computation and progress updates.
 
@@ -65,7 +64,7 @@ The main benefits of using the package are as follows:
 
 ## Example workflow
 
-To illustrate the package workflow, we solve a likelihood optimization problem. In a first step, `{ino}` can be obtained from CRAN via:
+To illustrate the package workflow, we solve a likelihood optimization problem. In a first step, `{ino}` can be obtained from [CRAN](https://CRAN.R-project.org) via:
 
 ```{r, load ino}
 # install.packages("ino")
@@ -74,7 +73,7 @@ library("ino")
 
 ### Gaussian mixture model
 
-The function to be optimized here is a likelihood function, which computes the probability of observing given data under a model assumption. The parameters that maximize the likelihood function are then identified as the model estimates. This approach is called maximum likelihood estimation and is very popular in statistics for fitting a model to empirical data.
+The function to be optimized in this example is a likelihood function, which computes the probability of observing given data under a model assumption. The parameters that maximize the likelihood function are then identified as the model estimates. This approach is called maximum likelihood estimation and is very popular in statistics for fitting a model to empirical data.
 
 We consider eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA. The data histogram hints at two clusters with short and long eruption times, respectively:
 
@@ -97,10 +96,10 @@ We seek values for the parameter vector $\boldsymbol{\theta} = (\mu_1, \mu_2, \s
 
 > **Remark:** We will see that optimization in this example is very fast. This is because the data set is relatively small and we consider a model with two classes only. Therefore, it might not seem relevant to be concerned about initialization here. However, the problem scales: optimization time will rise with more data and more parameters, in which case initialization becomes a greater issue, see for example @Shireman:2017. Additionally, we will see that even this simple optimization problem suffers heavily from local optima, depending on the choice of initial values.
 
-The following function calculates the log-likelihood value given the parameter vector `theta` and the observation vector `data`. We restrict the standard deviations `sd` to be positive (via the exponential transformation) and `lambda` to be between 0 and 1 (via the logit transformation).
+The following function calculates the log-likelihood value $\ell(\boldsymbol{\theta})$ given the parameter vector `theta` and the observation vector `data`:
 
 ```{r, define mixture ll}
-normal_mixture_llk <- function(mu, sd, lambda, data){
+normal_mixture_llk <- function(mu, sd, lambda, data) {
   sd <- exp(sd)
   lambda <- plogis(lambda)
   sum(log(lambda * dnorm(data, mu[1], sd[1]) + (1 - lambda) * dnorm(data, mu[2], sd[2])))
@@ -108,38 +107,50 @@ normal_mixture_llk <- function(mu, sd, lambda, data){
 normal_mixture_llk(mu = 1:2, sd = 3:4, lambda = 5, data = faithful$eruptions)
 ```
 
+> **Remark:** We restrict the standard deviations `sd` to be positive via the exponential transformation and `lambda` to be between 0 and 1 via the logit transformation. In this way we are able to optimize over the value space $\mathbb{R}^5$ and do not require box-constrained optimizers.
+
 ### Initialization effect
 
-Does the choice of initial values has an influence for this optimization problem? In the following, we will use the `{ino}` package to optimize the likelihood function, starting from 100 random initial points, and compare the results. 
+Does the choice of initial values have an influence for this optimization problem? In the following, we will use the `{ino}` package to optimize the likelihood function, starting from 100 random initial points, and compare the results. 
 
 We start be defining the optimization problem:^[For more details on the `{R6}` syntax that `{ino}` uses, we refer to @Wickham:2019, Chapter 14.]
 
-```{r, initialize Nop}
+```{r, initialize Nop, eval = FALSE}
 Nop_mixture <- Nop$new(
-  f = normal_mixture_llk, 
-  target = c("mu", "sd", "lambda"), 
-  npar = c(2, 2, 1), 
-  data = faithful$eruptions
+  objective = normal_mixture_llk,    # the objective function
+  target = c("mu", "sd", "lambda"),  # names of target arguments
+  npar = c(2, 2, 1),                 # lengths of target arguments
+  data = faithful$eruptions          # values for fixed arguments
 )
 ```
 
-The call `Nop$new()` creates a `Nop` object that defines a numerical optimization problem. We saved the object under the name `Nop_mixture`. We can work with this object by calling its methods via `Nop_mixture$<method name>()`. The arguments are `f`, the function to be optimized, `target`, the argument names over which `f` is optimized, `npar`, the length of each of these arguments, and the additional argument `data`. 
+The call `Nop$new()` creates a `Nop` object that defines a numerical optimization problem. We saved the object under the name `Nop_mixture`. In the future we can work with this object by calling its methods via `Nop_mixture$<method name>()`. The arguments are 
 
-Once the `Nop` object is specified, the function can be evaluated at some value `at` for the collapsed parameter vector:
+- `objective`, the so-called objective function to be optimized, 
+- `target`, the names of so-called target argument over which `objective` is optimized, 
+- `npar`, the length of each of these target arguments, 
+- and the additional argument `data`, which is kept fixed during optimization. 
 
-```{r, example evaluation}
-Nop_mixture$evaluate(at = 1:5)
+Once the `Nop` object is defined, the objective function can be evaluated at some value `at` for the collapsed target arguments:
+
+# TODO
+```{r, example evaluation, eval = FALSE}
+Nop_mixture$evaluate(at = 1:5) # same value as above
 ```
 
-Next, we define a numerical optimizer. Here, we choose `stats::nlm()`:
+Next, we need a numerical optimizer. Here, we choose `stats::nlm()`:
 
-```{r, define optimizer}
-Nop_mixture$set_optimizer(optimizeR::optimizer_nlm)
+```{r, define optimizer, eval = FALSE}
+nlm <- optimizeR::Optimizer$new("stats::nlm")
+Nop_mixture$set_optimizer(nlm)
 ```
 
-Once an optimizer is defined, optimizing the function is simple via:
+Once an optimizer is defined, optimizing the function is simple: 
 
-```{r, example optimization}
+1. defining initial values with one of the `initialize_*()` methods
+2. calling `$optimize()`
+
+```{r, example optimization, eval = FALSE}
 Nop_mixture$
   initialize_random(runs = 100)$
   optimize(which_direction = "max")
@@ -149,7 +160,7 @@ The call `initialize_random(runs = 100)` generates 100 sets of random initial va
 
 Finally, accessing the optimization results is possible via the `results()` method. By default, it will return a list of 100 entries with all the optimization results. The method also has some filter options, for example accessing only the function value and parameter estimate from the 42th run is possible via:
 
-```{r, access results}
+```{r, access results, eval = FALSE}
 Nop_mixture$results(which_run = 42, which_element = c("value", "parameter"))
 ```
 
@@ -157,7 +168,7 @@ The `summary` method summarizes the results in a data.frame.
 
 For a quick overview, the `optima()` method provides a frequency table of the function values obtained at optimizer convergence for the random initial values: 
 
-```{r, overview optima}
+```{r, overview optima, eval = FALSE}
 Nop_mixture$optima()
 ```
 
@@ -216,7 +227,7 @@ em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data)
 ```
 
 
-```{r, set em algorithm}
+```{r, set em algorithm, eval = FALSE}
 em_optimizer <- optimizeR::define_optimizer(
   .optimizer = em, .objective = "normal_mixture_llk",
   .initial = "theta", .value = "neg_llk", .parameter = "estimate",
