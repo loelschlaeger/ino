@@ -331,7 +331,7 @@ Evaluates the function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(
   at = stats::rnorm(sum(self$npar)),
-  time_limit = NULL,
+  seconds = NULL,
   hide_warnings = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -344,10 +344,10 @@ function is evaluated.
 By default, \code{at = rnorm(sum(self$npar))}, i.e., random values drawn
 from a standard normal distribution.}
 
-\item{\code{time_limit}}{A \code{numeric}, a time limit in seconds. Computations are interrupted
-prematurely if \code{time_limit} is exceeded.
+\item{\code{seconds}}{A \code{numeric}, a time limit in seconds. Optimization is interrupted
+prematurely if \code{seconds} is exceeded.
 This currently only works reliably under Windows OS.
-No time limit if \code{time_limit = NULL} (the default).}
+No time limit if \code{seconds = Inf} (the default).}
 
 \item{\code{hide_warnings}}{Either \code{TRUE} or \code{FALSE} to hide (show) warning messages
 during the function evaluation or optimization.}
@@ -530,7 +530,7 @@ Optimizes the function.
   which_optimizer = "all",
   which_direction = "min",
   verbose = getOption("ino_verbose", default = FALSE),
-  time_limit = NULL,
+  seconds = NULL,
   hide_warnings = TRUE,
   reset_initial = TRUE,
   seed = NULL
@@ -564,10 +564,10 @@ Must not be one of \code{self$reserved_labels}.}
 such messages.
 This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 
-\item{\code{time_limit}}{A \code{numeric}, a time limit in seconds. Computations are interrupted
-prematurely if \code{time_limit} is exceeded.
+\item{\code{seconds}}{A \code{numeric}, a time limit in seconds. Optimization is interrupted
+prematurely if \code{seconds} is exceeded.
 This currently only works reliably under Windows OS.
-No time limit if \code{time_limit = NULL} (the default).}
+No time limit if \code{seconds = Inf} (the default).}
 
 \item{\code{hide_warnings}}{Either \code{TRUE} or \code{FALSE} to hide (show) warning messages
 during the function evaluation or optimization.}
@@ -619,7 +619,7 @@ Validates the configuration of a \code{Nop} object.
   at = stats::rnorm(self$npar),
   which_optimizer = "all",
   which_direction = "min",
-  time_limit = 10,
+  seconds = 10,
   verbose = getOption("ino_verbose", default = FALSE),
   digits = getOption("digits", default = 7)
 )}\if{html}{\out{</div>}}
@@ -647,10 +647,10 @@ from a standard normal distribution.}
 \item \code{"max"} for maximization.
 }}
 
-\item{\code{time_limit}}{A \code{numeric}, a time limit in seconds. Computations are interrupted
-prematurely if \code{time_limit} is exceeded.
+\item{\code{seconds}}{A \code{numeric}, a time limit in seconds. Optimization is interrupted
+prematurely if \code{seconds} is exceeded.
 This currently only works reliably under Windows OS.
-No time limit if \code{time_limit = NULL} (the default).}
+No time limit if \code{seconds = Inf} (the default).}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
 such messages.

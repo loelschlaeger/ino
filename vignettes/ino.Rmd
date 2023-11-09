@@ -115,7 +115,7 @@ Does the choice of initial values have an influence for this optimization proble
 
 We start be defining the optimization problem:^[For more details on the `{R6}` syntax that `{ino}` uses, we refer to @Wickham:2019, Chapter 14.]
 
-```{r, initialize Nop, eval = FALSE}
+```{r, initialize Nop}
 Nop_mixture <- Nop$new(
   objective = normal_mixture_llk,    # the objective function
   target = c("mu", "sd", "lambda"),  # names of target arguments
@@ -134,7 +134,7 @@ The call `Nop$new()` creates a `Nop` object that defines a numerical optimizatio
 Once the `Nop` object is defined, the objective function can be evaluated at some value `at` for the collapsed target arguments:
 
 # TODO
-```{r, example evaluation, eval = FALSE}
+```{r, example evaluation}
 Nop_mixture$evaluate(at = 1:5) # same value as above
 ```
 

@@ -67,11 +67,11 @@
 #' @param hide_warnings
 #' Either \code{TRUE} or \code{FALSE} to hide (show) warning messages
 #' during the function evaluation or optimization.
-#' @param time_limit
-#' A \code{numeric}, a time limit in seconds. Computations are interrupted
-#' prematurely if \code{time_limit} is exceeded.
+#' @param seconds
+#' A \code{numeric}, a time limit in seconds. Optimization is interrupted
+#' prematurely if \code{seconds} is exceeded.
 #' This currently only works reliably under Windows OS.
-#' No time limit if \code{time_limit = NULL} (the default).
+#' No time limit if \code{seconds = Inf} (the default).
 
 ### Arguments connected to options
 
@@ -735,10 +735,10 @@ Nop <- R6::R6Class(
     #' - \code{"time limit reached"} if the time limit was reached,
     #' - the error message if the evaluation failed.
     evaluate = function(
-      at = stats::rnorm(sum(self$npar)), time_limit = NULL,
+      at = stats::rnorm(sum(self$npar)), seconds = NULL,
       hide_warnings = FALSE
     ) {
-      checkmate::assert_number(time_limit, null.ok = TRUE, lower = 0)
+      checkmate::assert_number(seconds, null.ok = TRUE, lower = 0)
       checkmate::assert_flag(hide_warnings)
       private$objective$seconds <- seconds
       private$objective$hide_warnings <- hide_warnings
@@ -923,7 +923,7 @@ Nop <- R6::R6Class(
       which_optimizer = "all", which_direction = "min",
       # evaluation = future::sequential, ...,
       verbose = getOption("ino_verbose", default = FALSE),
-      time_limit = NULL, hide_warnings = TRUE, reset_initial = TRUE, seed = NULL
+      seconds = NULL, hide_warnings = TRUE, reset_initial = TRUE, seed = NULL
     ) {
       private$.check_additional_arguments_complete()
       checkmate::assert_string(optimization_label)
@@ -936,7 +936,7 @@ Nop <- R6::R6Class(
         which_direction = which_direction, both_allowed = TRUE,
         verbose = verbose
       )
-      checkmate::assert_number(time_limit, null.ok = TRUE, lower = 0)
+      checkmate::assert_number(seconds, null.ok = TRUE, lower = 0)
       checkmate::assert_flag(hide_warnings)
       checkmate::assert_flag(reset_initial)
       set.seed(seed)
@@ -973,7 +973,7 @@ Nop <- R6::R6Class(
             initial = x$initial,
             optimizer = private$.optimizer[[x$optimizer_id]],
             which_direction = x$which_direction,
-            time_limit = time_limit,
+            seconds = seconds,
             hide_warnings = hide_warnings
           ),
           ".optimizer_id" = x$optimizer_id,
@@ -1003,7 +1003,7 @@ Nop <- R6::R6Class(
     #' Invisibly \code{TRUE} if the tests are successful.
     validate = function(
       at = stats::rnorm(self$npar), which_optimizer = "all",
-      which_direction = "min", time_limit = 10,
+      which_direction = "min", seconds = 10,
       verbose = getOption("ino_verbose", default = FALSE),
       digits = getOption("digits", default = 7)
     ) {
@@ -1020,7 +1020,7 @@ Nop <- R6::R6Class(
         which_direction = which_direction, both_allowed = FALSE,
         verbose = verbose
       )
-      checkmate::assert_number(time_limit, null.ok = TRUE, lower = 0)
+      checkmate::assert_number(seconds, null.ok = TRUE, lower = 0)
       checkmate::assert_flag(verbose)
       checkmate::assert_count(digits)
 
@@ -1037,13 +1037,13 @@ Nop <- R6::R6Class(
         cli::cli_alert_info("Try to evaluate the function:")
       }
       out <- self$evaluate(
-        at = at, time_limit = time_limit, hide_warnings = TRUE
+        at = at, seconds = seconds, hide_warnings = TRUE
       )
       if (is.character(out)) {
         if (identical(out, "time limit reached")) {
           cli::cli_warn(
-            "Time limit of {time_limit} second{?s} reached in the function call,
-            consider increasing {.var time_limit}."
+            "Time limit of {seconds} second{?s} reached in the function call,
+            consider increasing {.var seconds}."
           )
         } else {
           cli::cli_abort(
@@ -1090,14 +1090,14 @@ Nop <- R6::R6Class(
               which_optimizer = i, which_direction = which_direction,
               seed = NULL, return_results = TRUE,
               save_results = FALSE, ncores = 1, verbose = FALSE,
-              time_limit = time_limit, hide_warnings = TRUE
+              seconds = seconds, hide_warnings = TRUE
             )
           if (!is.null(out$error)) {
             if (isTRUE(out$error)) {
               if (identical(out$error_message, "time limit reached")) {
                 cli::cli_warn(
-                  "Time limit of {time_limit}s reached in the optimization.
-                  Consider increasing {.var time_limit}."
+                  "Time limit of {seconds}s reached in the optimization.
+                  Consider increasing {.var seconds}."
                 )
               } else {
                 cli::cli_abort("Optimization threw an error: {out$error_message}")
@@ -1667,7 +1667,7 @@ Nop <- R6::R6Class(
           initial = current_initial,
           optimizer = nlm_opt,
           which_direction = which_direction,
-          time_limit = NULL,
+          seconds = NULL,
           hide_warnings = TRUE
         )
         step_pars <- c(
