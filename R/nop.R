@@ -1622,7 +1622,6 @@ Nop <- R6::R6Class(
     #' A \code{data.frame} with iterations in rows, the columns depend on the
     #' specification of \code{which_element}.
     #' @importFrom stats rnorm nlm
-    #' @importFrom optimizeR optimizer_nlm apply_optimizer
     trace = function(
       initial = stats::rnorm(self$npar), iterations = 100, tolerance = 1e-6,
       which_direction = "min",
@@ -2540,58 +2539,6 @@ Nop <- R6::R6Class(
       }
       return(run_ids)
 
-    },
-
-    ### function optimization
-    .optimize = function(
-      initial, optimizer, which_direction, time_limit, hide_warnings
-    ) {
-      invert_objective <- !identical(
-        optimizer[["optimizer_direction"]], which_direction
-      )
-      objective <- if (invert_objective) private$.f_inverse else private$.f
-      if (!is.null(time_limit)) {
-        setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
-        on.exit({
-          setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
-        })
-      }
-      tryCatch(
-        {
-          result <- suppressWarnings(
-            do.call(
-              what = optimizeR::apply_optimizer,
-              args = c(
-                list(
-                  "optimizer" = optimizer,
-                  "objective" = objective,
-                  "initial" = initial
-                ),
-                private$.arguments
-              )
-            ),
-            classes = if (hide_warnings) "warning" else ""
-          )
-          if (invert_objective) {
-            result[["value"]] <- -result[["value"]]
-          }
-          result
-        },
-        error = function(e) {
-          error_message <- e$message
-          time_limit_reached <- grepl(
-            "reached elapsed time limit|reached CPU time limit", error_message
-          )
-          if (time_limit_reached) {
-            error_message <- "time limit reached"
-          }
-          list(
-            "initial" = initial,
-            "error" = TRUE,
-            "error_message" = error_message
-          )
-        }
-      )
     }
   )
 )
