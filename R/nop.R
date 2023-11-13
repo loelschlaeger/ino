@@ -73,16 +73,6 @@
 #' This currently only works reliably under Windows OS.
 #' No time limit if \code{seconds = Inf} (the default).
 
-### Arguments connected to options
-
-#' @param digits
-#' An \code{integer}, the number of decimal places of interest.
-#' This can be defined globally via \code{options("digits" = 7)}.
-#' @param verbose
-#' Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-#' such messages.
-#' This can be defined globally via \code{options("ino_verbose" = TRUE)}.
-
 #' @return
 #' Either the \code{Nop} object to allow for method chaining, or a result.
 #' Please refer to the respective documentation for the output of the different
@@ -477,9 +467,9 @@ Nop <- R6::R6Class(
         )
       }
       checkmate::assert_string(action)
-      action <- match_arg(action, c(
-        "set", "get", "remove", "reset", "modify", "subset", "standardize"
-      ))
+      action <- oeli::match_arg(
+        action, c("set", "get", "remove", "reset", "modify")
+      )
       checkmate::assert_logical(verbose, len = 1, any.missing = FALSE)
       args <- list(...)
       arg_names <- names(args)
@@ -685,9 +675,9 @@ Nop <- R6::R6Class(
     #' Specifies a numerical optimizer.
     #' @param optimizer
     #' An object of class \code{optimizer}, which can be created via
-    #' \code{\link[optimizeR]{define_optimizer}}.
+    #' \code{\link[optimizeR]{Optimizer}}.
     #' @param optimizer_label
-    #' A \code{character}, a unique label for the optimizer.
+    #' A \code{character}, a *unique* label for the optimizer.
     #' By default \code{label = NULL}, in which case the default label saved
     #' inside \code{optimizer} is used.
     #' @return
@@ -699,17 +689,17 @@ Nop <- R6::R6Class(
           call = NULL
         )
       }
-      if (!inherits(optimizer, "optimizer")) {
+      if (!inherits(optimizer, "Optimizer")) {
         cli::cli_abort(
           c(
-            "Argument {.var optimizer} must be an {.cls optimizer} object.",
+            "Argument {.var optimizer} must be an {.cls Optimizer} object.",
             "i" = "See {.help optimizeR::Optimizer} to create such an object."
           ),
           call = NULL
         )
       }
       if (is.null(optimizer_label)) {
-        optimizer_label <- optimizer$optimizer_name
+        optimizer_label <- optimizer$label
       }
       checkmate::assert_string(optimizer_label)
       if (optimizer_label %in% names(private$.optimizer)) {
@@ -723,7 +713,7 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Evaluates the function.
+    #' Evaluates the objective function.
     #' @param at
     #' A \code{numeric} vector of length \code{sum(npar)}, the point where the
     #' function is evaluated.
@@ -735,88 +725,44 @@ Nop <- R6::R6Class(
     #' - \code{"time limit reached"} if the time limit was reached,
     #' - the error message if the evaluation failed.
     evaluate = function(
-      at = stats::rnorm(sum(self$npar)), seconds = NULL,
+      at = stats::rnorm(sum(self$npar)),
+      seconds = Inf,
       hide_warnings = FALSE
     ) {
-      checkmate::assert_number(seconds, null.ok = TRUE, lower = 0)
-      checkmate::assert_flag(hide_warnings)
+      private$objective$check_target(at, verbose = FALSE)
       private$objective$seconds <- seconds
       private$objective$hide_warnings <- hide_warnings
-      private$check_target_argument(at)
       private$objective$evaluate(at)
-      # TODO: reset time limit and hide warnings
     },
 
     #' @description
     #' Defines fixed initial values for the optimization.
-    #' @details
-    #' Initial parameter vectors can have an attribute \code{"seconds"} to
-    #' account for the number of seconds it took to generate them, which will
-    #' be added to the overall optimization time.
     #' @param at
-    #' A \code{numeric} vector of length \code{npar}, the initial parameter
-    #' vector.
-    #' It can also be a \code{list} of such vectors.
+    #' A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+    #' initial parameter vector. It can also be a \code{list} of such vectors.
     #' @return
     #' Invisibly the \code{Nop} object.
-    initialize_fixed = function(
-      at, verbose = getOption("ino_verbose", default = FALSE)
-    ) {
-      checkmate::assert_flag(verbose)
-      if (!is.list(at)) {
-        if ("seconds" %in% names(attributes(at))) {
-          checkmate::assert_number(attr(at, "seconds"), lower = 0)
-          seconds <- attr(at, "seconds")
-          attr(at, "seconds") <- NULL
-        } else {
-          seconds <- 0
-        }
-        private$.check_target_argument(at)
-        at <- list(at)
-      } else {
-        seconds <- numeric(length(at))
-        for (i in seq_along(at)) {
-          if ("seconds" %in% names(attributes(at[[i]]))) {
-            checkmate::assert_number(attr(at[[i]], "seconds"), lower = 0)
-            seconds[i] <- attr(at[[i]], "seconds")
-            attr(at[[i]], "seconds") <- NULL
-          }
-        }
-      }
-      runs <- length(at)
-      private$.initial_values <- c(private$.initial_values, at)
-      private$.initial_type <- c(private$.initial_type, rep("fixed", runs))
-      private$.initial_seconds <- c(private$.initial_seconds, seconds)
-      if (verbose) {
-        cli::cli_alert_info("Added {runs} fixed initial parameter values.")
-      }
-      invisible(self)
+    initialize_fixed = function(at) {
+      self$initialize_custom(at, type = "fixed")
     },
 
     #' @description
     #' Defines random initial values for the optimization.
     #' @param sampler
     #' A \code{function} without any arguments that returns a \code{numeric}
-    #' vector of length \code{$npar}.
-    #' By default, \code{sampler = rnorm(self$npar)}, i.e., random values drawn
-    #' from a standard normal distribution.
+    #' vector of length \code{sum(self$npar)}.
+    #' By default, \code{sampler = rnorm(sum(self$npar))}, i.e., random values
+    #' drawn from a standard normal distribution.
     #' @param runs
     #' An \code{integer}, the number of optimization runs.
     #' By default, \code{runs = 1}.
-    #' @param add_seconds
-    #' Either \code{TRUE} (default) to measure the number of seconds it takes to
-    #' sample the initial values, which will be added to the overall
-    #' optimization time, or \code{FALSE} else.
     #' @return
     #' Invisibly the \code{Nop} object.
     initialize_random = function(
-      sampler = function() stats::rnorm(self$npar), runs = 1, seed = NULL,
-      add_seconds = TRUE, verbose = getOption("ino_verbose", default = FALSE)
+      sampler = function() stats::rnorm(sum(self$npar)), runs = 1, seed = NULL
     ) {
       checkmate::assert_function(sampler, nargs = 0)
       checkmate::assert_count(runs, positive = TRUE)
-      checkmate::assert_flag(add_seconds)
-      checkmate::assert_flag(verbose)
       set.seed(seed)
       at <- list()
       seconds <- numeric(runs)
@@ -824,33 +770,59 @@ Nop <- R6::R6Class(
         t_start <- Sys.time()
         value <- try(sampler(), silent = TRUE)
         t_end <- Sys.time()
-        if (add_seconds) {
-          seconds[run] <- as.numeric(difftime(t_end, t_start, units = "secs"))
-        }
-        private$.check_target_argument(value, "sampler()")
+        seconds[run] <- as.numeric(difftime(t_end, t_start, units = "secs"))
         at[[run]] <- value
       }
-      private$.initial_values <- c(private$.initial_values, at)
-      private$.initial_type <- c(private$.initial_type, rep("random", runs))
-      private$.initial_seconds <- c(private$.initial_seconds, seconds)
-      if (verbose) {
-        cli::cli_alert_info("Added {runs} random initial parameter values.")
-      }
-      invisible(self)
+      self$initialize_custom(at, seconds = seconds, type = "random")
     },
 
     #' @description
-    #' Defines random initial values based on the optimal parameters from
-    #' previous optimization runs.
-    #' @param transform
-    #' A \code{function} for transforming the initial values.
+    #' Defines grid initial values for the optimization.
+    #' @param lower
+    #' A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+    #' lower grid bounds for each parameter dimension.
+    #' @param upper
+    #' A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+    #' upper grid bounds for each parameter dimension.
+    #' @param breaks
+    #' A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+    #' number of breaks for each parameter dimension.
+    #' @param jitter
+    #' Either \code{TRUE} to add noise to the grid points for a random grid
+    #' layout, or \code{FALSE} (default), else.
+    #' @param ...
+    #' Optional parameters passed to \code{\link[base]{jitter}}.
     #' @return
     #' Invisibly the \code{Nop} object.
-    initialize_continue = function(
-      which_run = "last", which_optimizer = "all",
-      which_direction = c("min", "max"),
-      transform = function(x) x,
-      verbose = getOption("ino_verbose", default = FALSE)
+    initialize_grid = function(
+      lower = rep(0, length(sum(self$npar))),
+      upper = rep(1, length(sum(self$npar))),
+      breaks = rep(3, length(sum(self$npar))),
+      jitter = FALSE, ...
+    ) {
+      checkmate::assert_numeric(lower, any.missing = FALSE, len = sum(self$npar))
+      checkmate::assert_numeric(upper, any.missing = FALSE, len = sum(self$npar))
+      if (!all(lower <= upper)) {
+        cli::cli_abort(
+          "Lower bounds must be smaller than upper bounds.", call = NULL
+        )
+      }
+      checkmate::assert_integerish(breaks, any.missing = FALSE, lower = 1, len = sum(self$npar))
+      checkmate::assert_flag(jitter)
+      grid_points <- mapply(seq, from = lower, to = upper, len = breaks, SIMPLIFY = FALSE)
+      at <- asplit(expand.grid(grid_points), 1)
+      if (jitter) {
+        at <- lapply(at, jitter, ...)
+      }
+      self$initialize_custom(at, verbose = FALSE, type = "grid")
+    },
+
+    #' @description
+    #' Defines initial values based on results from previous optimizations.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+    initialize_transfer = function(
+      which_run = "last", which_optimizer = "all", which_direction = c("min", "max")
     ) {
       out <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
@@ -859,29 +831,116 @@ Nop <- R6::R6Class(
       at <- lapply(out, `[[`, "parameter")
       seconds <- sapply(out, `[[`, "seconds")
       runs <- length(at)
+      self$initialize_custom(at = at, seconds = seconds, type = "transferred")
+    },
+
+    #' @description
+    #' Defines custom initial values for the optimization.
+    #' @param at
+    #' A \code{list} of \code{numeric} \code{vector}s, each of length
+    #' \code{self$sum(npar)}, the initial parameter vector.
+    #' @param seconds
+    #' A \code{numeric} \code{vector} of the same length as \code{at}. It
+    #' contains the number of seconds it took to obtain these initial values,
+    #' which is added to the overall optimization time.
+    #' @param type
+    #' A single \code{character}, the type of the initial values.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+    initialize_custom = function(at, seconds = rep(0, length(at)), type = "custom") {
+      checkmate::assert_list(at)
+      runs <- length(at)
+      lapply(at, private$objective$check_target, verbose = FALSE)
+      checkmate::assert_numeric(seconds, lower = 0, any.missing = FALSE, len = runs)
       private$.initial_values <- c(private$.initial_values, at)
+      private$.initial_type <- c(private$.initial_type, rep(type, runs))
       private$.initial_seconds <- c(private$.initial_seconds, seconds)
-      private$.initial_type <- c(private$.initial_type, rep("continued", runs))
-      if (verbose) {
-        cli::cli_alert_info(
-          "Added {runs} continued initial parameter values."
-        )
+      if (self$verbose) {
+        cli::cli_alert_info("Added {runs} {type} initial parameter value{?s}.")
       }
       invisible(self)
     },
 
     #' @description
-    #' Resets the initialization.
+    #' Defines a subset of promising initial values for the optimization.
+    #' @param proportion
+    #' A \code{numeric} between 0 and 1, the subset proportion.
+    #' @param condition
+    #' Defines the condition on which the initial values are selected, either
+    #' - \code{"gradient_steep"} for the points where the numerical gradient is steepest,
+    #' - \code{"value_low"} for the points where the function value is lowest,
+    #' - \code{"value_high"} for the points where the function value is highest.
     #' @return
     #' Invisibly the \code{Nop} object.
-    initialize_reset = function(
-      verbose = getOption("ino_verbose", default = FALSE)
-    ) {
-      private$.initial_values <- list()
-      private$.initial_type <- numeric()
-      private$.initial_seconds <- numeric()
-      if (verbose) {
-        cli::cli_alert_info("Reset the initial values.")
+    initialize_promising = function(proportion, condition = "gradient_steep") {
+      checkmate::assert_number(proportion, lower = 0, upper = 1)
+      oeli::match_arg(condition, c("gradient_steep", "value_low", "value_high"))
+      runs <- length(private$.initial_values)
+      if (runs == 0) {
+        if (self$verbose) {
+          cli::cli_alert_info("No initial values defined yet.")
+        }
+      } else {
+        runs <- ceiling(runs * proportion)
+        if (condition == "gradient_steep") {
+          # TODO
+          # numDeriv::grad
+        } else {
+          values <- sapply(private$.initial_values, self$evaluate)
+          if (condition == "value_low") {
+            # TODO
+          } else {
+            # TODO
+          }
+        }
+        ### remove seconds and types
+        if (self$verbose) {
+          cli::cli_alert_info("Selected {runs} initial parameter value{?s}.")
+        }
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Transforms the currently defined initial values.
+    #' @param transform
+    #' A \code{function} for transforming the initial values. It must be able to
+    #' receive and return a \code{numeric} \code{vector} of length
+    #' \code{sum(self$npar)}.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+    initialize_transform = function(transform = function(x) x) {
+      runs <- length(private$.initial_values)
+      if (runs == 0) {
+        if (self$verbose) {
+          cli::cli_alert_info("No initial values defined yet.")
+        }
+      } else {
+        private$.initial_values <- lapply(private$.initial_values, transform)
+        if (self$verbose) {
+          cli::cli_alert_info("Transformed {runs} initial parameter value{?s}.")
+        }
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Resets the currently defined initial values.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+    initialize_reset = function() {
+      runs <- length(private$.initial_values)
+      if (runs == 0) {
+        if (self$verbose) {
+          cli::cli_alert_info("No initial values defined yet.")
+        }
+      } else {
+        private$.initial_values <- list()
+        private$.initial_type <- numeric()
+        private$.initial_seconds <- numeric()
+        if (self$verbose) {
+          cli::cli_alert_info("Reset {runs} initial parameter value{?s}.")
+        }
       }
       invisible(self)
     },
@@ -889,82 +948,61 @@ Nop <- R6::R6Class(
     #' @description
     #' Optimizes the function.
     #' @details
-    #' Progress bar:
-    #' Parallel:
+    #' Parallel computation of multiple optimization runs via the \code{{future}}
+    #' package and displaying progress via the \code{{progressr}} package are supported.
     #' @param optimization_label
     #' A \code{character} to specify a label for the optimization.
     #' Labels are useful to distinguish optimization runs.
-    #' By default, \code{optimization_label = self$fresh_label} creates a new
-    #' label.
-    #' Must not be one of \code{self$reserved_labels}.
-    #' @param progress
-    #' Defines the progress bar and is passed on to
-    #' \code{\link[progressr]{handlers}}. Options are:
-    #' - \code{progressr::handler_progress()} (default)
-    #' - \code{progressr::handler_void()} (no progress bar)
-    #' - and many more (see the documentation).
-    #' @param evaluation
-    #' Defines whether optimization is sequential or in parallel and is passed
-    #' on to \code{\link[future]{plan}}. Options are:
-    #' - \code{future::sequential} (default),
-    #' - \code{future::multisession},
-    #' - \code{future::multicore},
-    #' - and many more (see the documentation).
-    #' @param ...
-    #' Additional arguments for \code{\link[future]{plan}}. For example,
-    #' supply \code{workers = 2} to use two parallel processes.
+    #' By default, \code{self$fresh_label} creates a new label.
     #' @param reset_initial
     #' Either \code{TRUE} (default) to reset the initial values after the
     #' optimization, or \code{FALSE}, else.
     #' @return
     #' Invisibly the \code{Nop} object.
     optimize = function(
-      optimization_label = self$fresh_label,
-      which_optimizer = "all", which_direction = "min",
-      # evaluation = future::sequential, ...,
-      verbose = getOption("ino_verbose", default = FALSE),
-      seconds = NULL, hide_warnings = TRUE, reset_initial = TRUE, seed = NULL
+      optimization_label = self$fresh_label, which_optimizer = "all",
+      which_direction = "min", seconds = Inf, hide_warnings = TRUE,
+      reset_initial = TRUE
     ) {
-      private$.check_additional_arguments_complete()
+
+      ### input checks
+      private$objective$.__enclos_env__$private$.check_arguments_complete(
+        verbose = FALSE
+      )
       checkmate::assert_string(optimization_label)
-      # TODO check reserved labels
-      checkmate::assert_flag(verbose)
       optimizer_ids <- private$.check_which_optimizer(
-        which_optimizer = which_optimizer, to_id = TRUE, verbose = verbose
+        which_optimizer = which_optimizer, to_id = TRUE, verbose = FALSE
       )
       which_direction <- private$.check_which_direction(
-        which_direction = which_direction, both_allowed = TRUE,
-        verbose = verbose
+        which_direction = which_direction, both_allowed = TRUE, verbose = FALSE
       )
-      checkmate::assert_number(seconds, null.ok = TRUE, lower = 0)
+      checkmate::assert_number(seconds, lower = 0)
       checkmate::assert_flag(hide_warnings)
       checkmate::assert_flag(reset_initial)
-      set.seed(seed)
+
+      ### initial values available?
       if (length(private$.initial_values) == 0) {
-        self$initialize_random(seed = seed, verbose = verbose)
+        self$initialize_random(runs = 1)
         cli::cli_warn(
           "No initial values defined, so random initial values are used.",
           "Call {.fun $initialize_*} first to customize the initialization."
         )
       }
+
+      ### build grid of optimization combinations
       combinations <- expand.grid(
         initial = private$.initial_values,
         optimizer_id = optimizer_ids,
         which_direction = which_direction
       )
-      if (verbose) {
+
+      ### optimize
+      if (self$verbose) {
         cli::cli_alert_info(
           "Optimization with label {.val {optimization_label}}."
         )
       }
-      private$.last_runs_ids <- integer()
-      if (verbose) {
-        cli::cli_alert_info(
-          "Resetting the filter {.var which_run = {.val last}}."
-        )
-      }
       progress_step <- progressr::progressor(steps = nrow(combinations))
-      comparable <- private$.result_comparable()
       results <- future.apply::future_apply(
         combinations, MARGIN = 1, function(x) {
         progress_step()
@@ -978,16 +1016,17 @@ Nop <- R6::R6Class(
           ),
           ".optimizer_id" = x$optimizer_id,
           ".optimizer_label" = names(private$.optimizer)[x$optimizer_id],
-          ".direction" = x$which_direction,
-          ".comparable" = comparable
+          ".direction" = x$which_direction
         )
       }, future.seed = TRUE)
+
+      ### save results
       private$.save_results(
         results = results, optimization_label = optimization_label,
-        verbose = verbose
+        verbose = verbose, comparable = private$.result_comparable()
       )
       if (reset_initial) {
-        self$initialize_reset(verbose = verbose)
+        self$initialize_reset()
       }
       invisible(self)
     },
@@ -1003,9 +1042,7 @@ Nop <- R6::R6Class(
     #' Invisibly \code{TRUE} if the tests are successful.
     validate = function(
       at = stats::rnorm(self$npar), which_optimizer = "all",
-      which_direction = "min", seconds = 10,
-      verbose = getOption("ino_verbose", default = FALSE),
-      digits = getOption("digits", default = 7)
+      which_direction = "min", seconds = 10
     ) {
 
       ### TODO use cli::progress_step()
@@ -1372,7 +1409,7 @@ Nop <- R6::R6Class(
       ### input checks
       checkmate::assert_count(digits)
       checkmate::assert_count(print.rows)
-      sort_by <- match_arg(sort_by, choices = c("frequency", "value"))
+      sort_by <- oeli::match_arg(sort_by, c("frequency", "value"))
 
 
       # TODO
@@ -1467,9 +1504,9 @@ Nop <- R6::R6Class(
     ) {
 
       ### input checks
-      which_element <- match_arg(which_element, c("seconds", "value"))
+      which_element <- oeli::match_arg(which_element, c("seconds", "value"))
       if (!is.null(group_by)) {
-        group_by <- match_arg(
+        group_by <- heckmate::assert_choice(
           group_by, c(".optimization_label", ".optimizer_label")
         )
       }
@@ -1632,10 +1669,10 @@ Nop <- R6::R6Class(
       ### input checks
       checkmate::assert_count(iterations)
       checkmate::assert_number(tolerance, lower = 0)
-      which_element <- match_arg(
-        arg = which_element,
+      which_element <- oeli::match_arg(
+        which_element,
         choices = c("value", "parameter", "gradient", "hessian", "seconds"),
-        several.ok = TRUE, none.ok = FALSE
+        several.ok = TRUE
       )
 
       ### define nlm optimizer
@@ -1952,11 +1989,40 @@ Nop <- R6::R6Class(
           call = NULL
         )
       }
+    },
+
+    #' @field verbose
+    #' Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+    #' such messages.
+    #' This can be defined globally via \code{options("ino_verbose" = TRUE)}.
+    verbose = function(value) {
+      if (missing(value)) {
+        private$.verbose
+      } else {
+        checkmate::assert_flag(value)
+        private$.verbose <- value
+      }
+    },
+
+    #' @field digits
+    #' An \code{integer}, the number of decimal places of interest.
+    #' This can be defined globally via \code{options("digits" = 7)}.
+    digits = function(value) {
+      if (missing(value)) {
+        private$.digits
+      } else {
+        checkmate::assert_int(value, lower = 0)
+        private$.digits <- value
+      }
     }
 
   ),
 
   private = list(
+
+    ### storage of options
+    .verbose = getOption("ino_verbose", default = FALSE),
+    .digits = getOption("digits", default = 7),
 
     ### storage of the optimization problem details
     objective = NULL,
@@ -1982,53 +2048,6 @@ Nop <- R6::R6Class(
     .failed_ids = integer(),
     .last_runs_ids = integer(),
     .element_ids = list(),
-
-    ### check that a specified function argument is specified
-    .check_additional_argument_exists = function(name) {
-      checkmate::assert_string(name)
-      if (!name %in% names(private$.arguments)) {
-        cli::cli_abort(
-          "Function argument {.var {name}} is not specified,
-          Call {.var $argument(\"set\", {.val {name}} = ...)} first.",
-        call = NULL
-        )
-      }
-      TRUE
-    },
-
-    ### check that all required function arguments are specified
-    .check_additional_arguments_complete = function() {
-      args_all <- formals(private$.f)
-      args_all[private$.f_target] <- NULL
-      for (arg in names(args_all)) {
-        if (!all(nzchar(args_all[[arg]])) && is.name(args_all[[arg]])) {
-          private$.check_additional_argument_exists(arg)
-        }
-      }
-      TRUE
-    },
-
-    ### check that a value for the target argument is correctly specified
-    .check_target_argument = function(target_arg, arg_name = NULL) {
-      if (is.null(arg_name)) {
-        arg_name <- deparse(substitute(target_arg))
-      } else {
-        checkmate::assert_string(arg_name)
-      }
-      if (!is.vector(target_arg) || !is.numeric(target_arg)) {
-        cli::cli_abort(
-          "Input {.var {arg_name}} must be a {.cls numeric}.",
-          call = NULL
-        )
-      }
-      if (length(target_arg) != self$npar) {
-        cli::cli_abort(
-          "Input {.var {arg_name}} must be of length {self$npar}.",
-          call = NULL
-        )
-      }
-      TRUE
-    },
 
     ### determine the next run id
     .next_run_id = function() {
@@ -2161,9 +2180,7 @@ Nop <- R6::R6Class(
     },
 
     ### check `which_run` filter
-    .check_which_run = function(
-      which_run, verbose
-    ) {
+    .check_which_run = function(which_run, verbose = self$verbose) {
 
       ### input checks
       checkmate::assert_flag(verbose)
@@ -2191,7 +2208,7 @@ Nop <- R6::R6Class(
 
     ### check `which_direction` filter
     .check_which_direction = function(
-      which_direction, both_allowed, verbose
+      which_direction, both_allowed = FALSE, verbose = self$verbose
     ) {
 
       ### input checks
@@ -2199,9 +2216,11 @@ Nop <- R6::R6Class(
       checkmate::assert_flag(verbose)
 
       ### check `which_direction`
-      which_direction <- match_arg(
+      which_direction <- oeli::match_arg(
         which_direction, choices = c("min", "max"), several.ok = both_allowed
       )
+
+
       if (identical(which_direction, "min")) {
 
         if (verbose) {
@@ -2324,7 +2343,7 @@ Nop <- R6::R6Class(
 
       ### check `which_element`
       if (!is.null(choices)) {
-        which_element <- match_arg(
+        which_element <- oeli::match_arg(
           arg = which_element, choices = choices, several.ok = several.ok,
           none.ok = FALSE
         )
@@ -2344,7 +2363,7 @@ Nop <- R6::R6Class(
       checkmate::assert_flag(verbose)
 
       ### check `add_identifier` input
-      match_arg(
+      oeli::match_arg(
         add_identifier, choices = c(
           ".run_id", ".optimization_label", ".optimizer_id",
           ".optimizer_label", ".comparable", ".direction"

@@ -46,14 +46,14 @@ Nop_mixture$evaluate(at = 1:5) # same value as above
 
 
 ## ---- define optimizer, eval = FALSE-----------------------------------------------------------
-## nlm <- optimizeR::Optimizer$new("stats::nlm")
-## Nop_mixture$set_optimizer(nlm)
+nlm <- optimizeR::Optimizer$new("stats::nlm")
+Nop_mixture$set_optimizer(nlm)
 
 
 ## ---- example optimization, eval = FALSE-------------------------------------------------------
-## Nop_mixture$
-##   initialize_random(runs = 100)$
-##   optimize(which_direction = "max")
+Nop_mixture$
+  initialize_random(runs = 100)$
+  optimize(which_direction = "max")
 
 
 ## ---- access results, eval = FALSE-------------------------------------------------------------

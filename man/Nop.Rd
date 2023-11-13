@@ -130,6 +130,13 @@ Nop_ackley$best("parameter")                  # return best parameter vector
 \item{\code{npar}}{The lengths of the target arguments.}
 
 \item{\code{fresh_label}}{An optimization label that has not been used yet.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{options("digits" = 7)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -143,7 +150,11 @@ Nop_ackley$best("parameter")                  # return best parameter vector
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-initialize_fixed}{\code{Nop$initialize_fixed()}}
 \item \href{#method-Nop-initialize_random}{\code{Nop$initialize_random()}}
-\item \href{#method-Nop-initialize_continue}{\code{Nop$initialize_continue()}}
+\item \href{#method-Nop-initialize_grid}{\code{Nop$initialize_grid()}}
+\item \href{#method-Nop-initialize_transfer}{\code{Nop$initialize_transfer()}}
+\item \href{#method-Nop-initialize_custom}{\code{Nop$initialize_custom()}}
+\item \href{#method-Nop-initialize_promising}{\code{Nop$initialize_promising()}}
+\item \href{#method-Nop-initialize_transform}{\code{Nop$initialize_transform()}}
 \item \href{#method-Nop-initialize_reset}{\code{Nop$initialize_reset()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-validate}{\code{Nop$validate()}}
@@ -202,9 +213,6 @@ Prints details of the numerical optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
-
 \item{\code{...}}{Currently not used.}
 }
 \if{html}{\out{</div>}}
@@ -277,10 +285,6 @@ indices (or row indices if \code{byrow = TRUE}) to standardize
 jointly.
 }
 }}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -311,9 +315,9 @@ Specifies a numerical optimizer.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{optimizer}}{An object of class \code{optimizer}, which can be created via
-\code{\link[optimizeR]{define_optimizer}}.}
+\code{\link[optimizeR]{Optimizer}}.}
 
-\item{\code{optimizer_label}}{A \code{character}, a unique label for the optimizer.
+\item{\code{optimizer_label}}{A \code{character}, a \emph{unique} label for the optimizer.
 By default \code{label = NULL}, in which case the default label saved
 inside \code{optimizer} is used.}
 }
@@ -327,11 +331,11 @@ Invisibly the \code{Nop} object.
 \if{html}{\out{<a id="method-Nop-evaluate"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
 \subsection{Method \code{evaluate()}}{
-Evaluates the function.
+Evaluates the objective function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(
   at = stats::rnorm(sum(self$npar)),
-  seconds = NULL,
+  seconds = Inf,
   hide_warnings = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -369,28 +373,17 @@ Either:
 \subsection{Method \code{initialize_fixed()}}{
 Defines fixed initial values for the optimization.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_fixed(at, verbose = getOption("ino_verbose", default = FALSE))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_fixed(at)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{A \code{numeric} vector of length \code{npar}, the initial parameter
-vector.
-It can also be a \code{list} of such vectors.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
+\item{\code{at}}{A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+initial parameter vector. It can also be a \code{list} of such vectors.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-Initial parameter vectors can have an attribute \code{"seconds"} to
-account for the number of seconds it took to generate them, which will
-be added to the overall optimization time.
-}
-
 \subsection{Returns}{
 Invisibly the \code{Nop} object.
 }
@@ -402,11 +395,9 @@ Invisibly the \code{Nop} object.
 Defines random initial values for the optimization.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_random(
-  sampler = function() stats::rnorm(self$npar),
+  sampler = function() stats::rnorm(sum(self$npar)),
   runs = 1,
-  seed = NULL,
-  add_seconds = TRUE,
-  verbose = getOption("ino_verbose", default = FALSE)
+  seed = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -414,23 +405,15 @@ Defines random initial values for the optimization.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{sampler}}{A \code{function} without any arguments that returns a \code{numeric}
-vector of length \code{$npar}.
-By default, \code{sampler = rnorm(self$npar)}, i.e., random values drawn
-from a standard normal distribution.}
+vector of length \code{sum(self$npar)}.
+By default, \code{sampler = rnorm(sum(self$npar))}, i.e., random values
+drawn from a standard normal distribution.}
 
 \item{\code{runs}}{An \code{integer}, the number of optimization runs.
 By default, \code{runs = 1}.}
 
 \item{\code{seed}}{Passed on to \code{\link{set.seed}} for reproducibility.
 Can be \code{NULL} (default) for no seed or to reset the current seed.}
-
-\item{\code{add_seconds}}{Either \code{TRUE} (default) to measure the number of seconds it takes to
-sample the initial values, which will be added to the overall
-optimization time, or \code{FALSE} else.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -439,18 +422,53 @@ Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-initialize_continue"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-initialize_continue}{}}}
-\subsection{Method \code{initialize_continue()}}{
-Defines random initial values based on the optimal parameters from
-previous optimization runs.
+\if{html}{\out{<a id="method-Nop-initialize_grid"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_grid}{}}}
+\subsection{Method \code{initialize_grid()}}{
+Defines grid initial values for the optimization.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_grid(
+  lower = rep(0, length(sum(self$npar))),
+  upper = rep(1, length(sum(self$npar))),
+  breaks = rep(3, length(sum(self$npar))),
+  jitter = FALSE,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{lower}}{A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+lower grid bounds for each parameter dimension.}
+
+\item{\code{upper}}{A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+upper grid bounds for each parameter dimension.}
+
+\item{\code{breaks}}{A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
+number of breaks for each parameter dimension.}
+
+\item{\code{jitter}}{Either \code{TRUE} to add noise to the grid points for a random grid
+layout, or \code{FALSE} (default), else.}
+
+\item{\code{...}}{Optional parameters passed to \code{\link[base]{jitter}}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_transfer"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_transfer}{}}}
+\subsection{Method \code{initialize_transfer()}}{
+Defines initial values based on results from previous optimizations.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_transfer(
   which_run = "last",
   which_optimizer = "all",
-  which_direction = c("min", "max"),
-  transform = function(x) x,
-  verbose = getOption("ino_verbose", default = FALSE)
+  which_direction = c("min", "max")
 )}\if{html}{\out{</div>}}
 }
 
@@ -484,12 +502,82 @@ transformations),
 \item \code{"min"} for minimization,
 \item \code{"max"} for maximization.
 }}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_custom"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_custom}{}}}
+\subsection{Method \code{initialize_custom()}}{
+Defines custom initial values for the optimization.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_custom(at, seconds = rep(0, length(at)), type = "custom")}\if{html}{\out{</div>}}
+}
 
-\item{\code{transform}}{A \code{function} for transforming the initial values.}
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at}}{A \code{list} of \code{numeric} \code{vector}s, each of length
+\code{self$sum(npar)}, the initial parameter vector.}
 
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
+\item{\code{seconds}}{A \code{numeric} \code{vector} of the same length as \code{at}. It
+contains the number of seconds it took to obtain these initial values,
+which is added to the overall optimization time.}
+
+\item{\code{type}}{A single \code{character}, the type of the initial values.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_promising"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_promising}{}}}
+\subsection{Method \code{initialize_promising()}}{
+Defines a subset of promising initial values for the optimization.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_promising(proportion, condition = "gradient_steep")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{proportion}}{A \code{numeric} between 0 and 1, the subset proportion.}
+
+\item{\code{condition}}{Defines the condition on which the initial values are selected, either
+\itemize{
+\item \code{"gradient_steep"} for the points where the numerical gradient is steepest,
+\item \code{"value_low"} for the points where the function value is lowest,
+\item \code{"value_high"} for the points where the function value is highest.
+}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_transform"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_transform}{}}}
+\subsection{Method \code{initialize_transform()}}{
+Transforms the currently defined initial values.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_transform(transform = function(x) x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{transform}}{A \code{function} for transforming the initial values. It must be able to
+receive and return a \code{numeric} \code{vector} of length
+\code{sum(self$npar)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -501,20 +589,11 @@ Invisibly the \code{Nop} object.
 \if{html}{\out{<a id="method-Nop-initialize_reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_reset}{}}}
 \subsection{Method \code{initialize_reset()}}{
-Resets the initialization.
+Resets the currently defined initial values.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_reset(verbose = getOption("ino_verbose", default = FALSE))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_reset()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
 Invisibly the \code{Nop} object.
 }
@@ -559,10 +638,6 @@ Must not be one of \code{self$reserved_labels}.}
 \item \code{"min"} for minimization,
 \item \code{"max"} for maximization.
 }}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 
 \item{\code{seconds}}{A \code{numeric}, a time limit in seconds. Optimization is interrupted
 prematurely if \code{seconds} is exceeded.
@@ -651,13 +726,6 @@ from a standard normal distribution.}
 prematurely if \code{seconds} is exceeded.
 This currently only works reliably under Windows OS.
 No time limit if \code{seconds = Inf} (the default).}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
-
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -690,10 +758,6 @@ Returns the names of available elements in the optimization results.
 }}
 
 \item{\code{group_by}}{TODO}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -762,10 +826,6 @@ where the following elements are always available:
 \item \code{"error_message"}, the error message (if any).
 }
 }}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -859,10 +919,6 @@ identifies whether the result corresponds to minimization or maximization.
 \item \code{".optimization_label"} to group by optimization label,
 \item \code{".optimizer_label"} to group by optimizer label.
 }}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -934,9 +990,6 @@ transformations),
 \item \code{"max"} for maximization.
 }}
 
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
-
 \item{\code{add_identifier}}{Selects identifiers to be added to the output. Can be one or more of:
 \itemize{
 \item \code{".run_id"}, which yields an \code{integer} that identifies the
@@ -952,10 +1005,6 @@ the result is comparable,
 \item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
 identifies whether the result corresponds to minimization or maximization.
 }}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1082,15 +1131,8 @@ transformations),
 \item \code{"value"} to sort by function value.
 }}
 
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
-
 \item{\code{print.rows}}{An \code{integer}, specifying the maximal number of rows to be
 printed. No printing if \code{print.rows = 0}, which is the default.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1276,13 +1318,6 @@ where the following elements are always available:
 \item \code{"min"} for minimization,
 \item \code{"max"} for maximization.
 }}
-
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1335,13 +1370,6 @@ transformations),
 \item an \code{integer} (vector) of optimizer ids as defined in the
 \code{$print()} output.
 }}
-
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
 }
 \if{html}{\out{</div>}}
 }

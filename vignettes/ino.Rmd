@@ -68,7 +68,8 @@ To illustrate the package workflow, we solve a likelihood optimization problem. 
 
 ```{r, load ino}
 # install.packages("ino")
-library("ino")
+# library("ino")
+devtools::load_all() # TODO: remove
 ```
 
 ### Gaussian mixture model
@@ -133,22 +134,21 @@ The call `Nop$new()` creates a `Nop` object that defines a numerical optimizatio
 
 Once the `Nop` object is defined, the objective function can be evaluated at some value `at` for the collapsed target arguments:
 
-# TODO
 ```{r, example evaluation}
 Nop_mixture$evaluate(at = 1:5) # same value as above
 ```
 
 Next, we need a numerical optimizer. Here, we choose `stats::nlm()`:
 
-```{r, define optimizer, eval = FALSE}
+```{r, define optimizer}
 nlm <- optimizeR::Optimizer$new("stats::nlm")
 Nop_mixture$set_optimizer(nlm)
 ```
 
 Once an optimizer is defined, optimizing the function is simple: 
 
-1. defining initial values with one of the `initialize_*()` methods
-2. calling `$optimize()`
+1. define initial values with one of the `initialize_*()` methods (see below)
+2. call `optimize()`
 
 ```{r, example optimization, eval = FALSE}
 Nop_mixture$
@@ -156,7 +156,7 @@ Nop_mixture$
   optimize(which_direction = "max")
 ```
 
-The call `initialize_random(runs = 100)` generates 100 sets of random initial values (by default independently drawn from a standard normal distribution), and `optimize(which_direction = "max")` maximizes the function starting from these values. Setting `which_direction = "max"` here is important because the default is minimization.
+The call `initialize_random(runs = 100)` generates 100 sets of random initial values (by default independently drawn from a standard normal distribution), and `optimize(which_direction = "max")` maximizes the function starting from these values. 
 
 Finally, accessing the optimization results is possible via the `results()` method. By default, it will return a list of 100 entries with all the optimization results. The method also has some filter options, for example accessing only the function value and parameter estimate from the 42th run is possible via:
 
