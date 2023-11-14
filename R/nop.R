@@ -6,17 +6,23 @@
 ### Arguments for filtering
 
 #' @param which_run
-#' Selects results of optimization runs. Either:
-#' - \code{"all"} for all results,
-#' - \code{"last"} for the results of the last optimizations,
+#' Selects results of optimization runs.
+#'
+#' By default, \code{which_run = "all"} for all results.
+#'
+#' It can also the filter
 #' - \code{"success"} for the results of successful optimizations,
-#' - \code{"failed"} for the results from failed optimizations,
 #' - \code{"comparable"} for the results of comparable optimizations (i.e.,
 #'   results obtained for the original optimization problem without any
 #'   transformations),
-#' - \code{"incomparable"} for the results from incomparable optimizations,
-#' - a \code{character} (vector) of optimization labels,
-#' - an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
+#' - a \code{character} (vector) of optimization labels.
+#'
+#' Filters can be combined and negated (by putting a \code{"!"} in front),
+#' for example \code{which_run = c("!success", "comparable")} filters for
+#' comparable runs that failed.
+#'
+#' Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+#' as provided for example by \code{$best()}.
 #' @param which_direction
 #' Selects the type of optimization. Either:
 #' - \code{"min"} for minimization,
@@ -25,8 +31,7 @@
 #' Selects numerical optimizers. Either:
 #' - \code{"all"} for all specified optimizers,
 #' - a \code{character} (vector) of specified optimizer labels,
-#' - an \code{integer} (vector) of optimizer ids as defined in the
-#'   \code{$print()} output.
+#' - an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 #' @param which_element
 #' Selects elements of optimization results. Either:
 #' - \code{"all"} for all available elements,
@@ -41,12 +46,8 @@
 #'   - \code{"error_message"}, the error message (if any).
 #' @param add_identifier
 #' Selects identifiers to be added to the output. Can be one or more of:
-#' - \code{".run_id"}, which yields an \code{integer} that identifies the
-#'   optimization runs,
 #' - \code{".optimization_label"}, which yields a \code{character} that
 #'   identifies custom groups of optimization runs,
-#' - \code{".optimizer_id"}, which yields an \code{integer} that identifies the
-#'   optimizer,
 #' - \code{".optimizer_label"}, which yields a \code{character} that identifies
 #'   the optimizer,
 #' - \code{".comparable"}, which yields a \code{logical} that identifies whether
@@ -252,6 +253,10 @@ Nop <- R6::R6Class(
       )
       ### TODO: do I need this?
       private$objective$objective_name <- deparse(substitute(objective))
+
+      private$.results <- oeli::Index$new()
+      private$.results$missing_identifier <- NA
+
     },
 
     #' @description
@@ -729,7 +734,7 @@ Nop <- R6::R6Class(
       seconds = Inf,
       hide_warnings = FALSE
     ) {
-      private$objective$check_target(at, verbose = FALSE)
+      private$.check_target(at, verbose = FALSE)
       private$objective$seconds <- seconds
       private$objective$hide_warnings <- hide_warnings
       private$objective$evaluate(at)
@@ -850,7 +855,7 @@ Nop <- R6::R6Class(
     initialize_custom = function(at, seconds = rep(0, length(at)), type = "custom") {
       checkmate::assert_list(at)
       runs <- length(at)
-      lapply(at, private$objective$check_target, verbose = FALSE)
+      lapply(at, private$.check_target, verbose = FALSE)
       checkmate::assert_numeric(seconds, lower = 0, any.missing = FALSE, len = runs)
       private$.initial_values <- c(private$.initial_values, at)
       private$.initial_type <- c(private$.initial_type, rep(type, runs))
@@ -966,15 +971,14 @@ Nop <- R6::R6Class(
     ) {
 
       ### input checks
-      private$objective$.__enclos_env__$private$.check_arguments_complete(
-        verbose = FALSE
-      )
+      private$.check_arguments_complete(verbose = self$verbose)
       checkmate::assert_string(optimization_label)
       optimizer_ids <- private$.check_which_optimizer(
-        which_optimizer = which_optimizer, to_id = TRUE, verbose = FALSE
+        which_optimizer = which_optimizer, to_id = TRUE, verbose = self$verbose
       )
       which_direction <- private$.check_which_direction(
-        which_direction = which_direction, both_allowed = TRUE, verbose = FALSE
+        which_direction = which_direction, both_allowed = TRUE,
+        verbose = self$verbose
       )
       checkmate::assert_number(seconds, lower = 0)
       checkmate::assert_flag(hide_warnings)
@@ -998,36 +1002,26 @@ Nop <- R6::R6Class(
 
       ### optimize
       if (self$verbose) {
-        cli::cli_alert_info(
-          "Optimization with label {.val {optimization_label}}."
-        )
+        cli::cli_alert_info("Optimization with label {.val {optimization_label}}.")
       }
       progress_step <- progressr::progressor(steps = nrow(combinations))
       results <- future.apply::future_apply(
         combinations, MARGIN = 1, function(x) {
         progress_step()
-        structure(
-          private$.optimize(
-            initial = x$initial,
-            optimizer = private$.optimizer[[x$optimizer_id]],
-            which_direction = x$which_direction,
-            seconds = seconds,
-            hide_warnings = hide_warnings
-          ),
-          ".optimizer_id" = x$optimizer_id,
-          ".optimizer_label" = names(private$.optimizer)[x$optimizer_id],
-          ".direction" = x$which_direction
+        private$.optimize(
+          initial = x$initial,
+          optimizer_id = x$optimizer_id,
+          direction = x$which_direction,
+          seconds = seconds,
+          hide_warnings = hide_warnings
         )
       }, future.seed = TRUE)
 
       ### save results
       private$.save_results(
-        results = results, optimization_label = optimization_label,
-        verbose = verbose, comparable = private$.result_comparable()
+        results = results, optimization_label = optimization_label
       )
-      if (reset_initial) {
-        self$initialize_reset()
-      }
+      if (reset_initial) self$initialize_reset()
       invisible(self)
     },
 
@@ -1048,7 +1042,7 @@ Nop <- R6::R6Class(
       ### TODO use cli::progress_step()
 
       ### input checks
-      private$.check_target_argument(at)
+      private$.check_target(at)
 
       optimizer_ids <- private$.check_which_optimizer(
         which_optimizer = which_optimizer, to_id = TRUE, verbose = verbose
@@ -1181,19 +1175,10 @@ Nop <- R6::R6Class(
 
     #' @description
     #' Returns the names of available elements in the optimization results.
-    #' @param group_by
-    #' TODO
     #' @return
-    #' Depending on group_by, ... A \code{list}.
-    elements = function(
-      which_optimizer = "all", group_by = NULL,
-      verbose = getOption("ino_verbose", default = FALSE)
-    ) {
-
-      ### check if any results saved yet
-      if (self$runs(verbose = FALSE) == 0) {
-        return(list())
-      }
+    #' If \code{group_by} is \code{NULL} a \code{character}, otherwise a
+    #' \code{list}.
+    elements = function(which_optimizer = "all", group_by = NULL) {
 
       ### input checks
       optimizer_ids <- private$.check_which_optimizer(
@@ -1223,6 +1208,8 @@ Nop <- R6::R6Class(
       }
 
       ###
+      if (is.null())
+
       if (identical(group_by, ".optimizer_label")) {
         return(elements)
       } else {
@@ -1261,10 +1248,6 @@ Nop <- R6::R6Class(
     ) {
 
       ### check inputs
-      add_identifier <- private$.check_add_identifier(
-        add_identifier = add_identifier, several.ok = TRUE, none.ok = TRUE,
-        verbose = verbose
-      )
       elements <- self$elements(
         which_optimizer = which_optimizer, group_by = NULL, verbose = FALSE
       )
@@ -1272,6 +1255,11 @@ Nop <- R6::R6Class(
         which_element = which_element, choices = elements, several.ok = TRUE,
         expand_all = TRUE, verbose = FALSE
       )
+      add_identifier <- private$.check_add_identifier(
+        add_identifier = add_identifier, several.ok = TRUE, none.ok = TRUE,
+        verbose = verbose
+      )
+
 
       ### get ids of selected runs
       run_ids <- private$.get_run_ids(
@@ -1506,7 +1494,7 @@ Nop <- R6::R6Class(
       ### input checks
       which_element <- oeli::match_arg(which_element, c("seconds", "value"))
       if (!is.null(group_by)) {
-        group_by <- heckmate::assert_choice(
+        group_by <- checkmate::assert_choice(
           group_by, c(".optimization_label", ".optimizer_label")
         )
       }
@@ -1828,7 +1816,7 @@ Nop <- R6::R6Class(
       } else {
         if (identical(which_direction, "min")) {
           if (identical(which_element, "parameter")) {
-            private$.check_target_argument(input)
+            private$.check_target(input)
             self$true(
               input = self$evaluate(at = input),
               which_element = "value", which_direction = "min"
@@ -1856,7 +1844,7 @@ Nop <- R6::R6Class(
           }
         } else {
           if (identical(which_element, "parameter")) {
-            private$.check_target_argument(input)
+            private$.check_target(input)
             self$true(
               input = self$evaluate(at = input),
               which_element = "value", which_direction = "max"
@@ -2033,42 +2021,57 @@ Nop <- R6::R6Class(
     .arguments = list(),
     .original_arguments = list(),
     .optimizer = list(),
+    .results = NULL,
 
     ### storage of the initial values
     .initial_values = list(),
     .initial_type = character(),
     .initial_seconds = numeric(),
 
-    ### storage of the optimization results and ids
-    .results = list(),
-    .optimizer_id_ids = list(),
-    .optimization_label_ids = list(),
-    .comparable_ids = integer(),
-    .direction_ids = list("min" = integer(), "max" = integer()),
-    .failed_ids = integer(),
-    .last_runs_ids = integer(),
-    .element_ids = list(),
-
-    ### determine the next run id
-    .next_run_id = function() {
-      length(private$.results) + 1
+    ### check methods
+    .check_target = function(at, verbose = FALSE) {
+      private$objective$.__enclos_env__$private$.check_target(
+        .at = at, verbose = verbose
+      )
     },
 
-    ### determine whether the result is comparable
-    .result_comparable = function() {
-      length(private$.original_arguments) == 0
+    .check_arguments_complete = function(verbose = FALSE) {
+      private$objective$.__enclos_env__$private$.check_arguments_complete(
+        verbose = verbose
+      )
+    },
+
+    ### optimization method
+    .optimize = function(
+      initial, optimizer_id, direction, seconds, hide_warnings
+    ) {
+      optimizer <- private$.optimizer[[optimizer_id]]
+      optimizer$seconds <- seconds
+      optimizer$hide_warnings <- hide_warnings
+      result <- optimizer$.__enclos_env__$private$.optimize(
+        objective = private$objective, initial = initial,
+        additional_arguments = list(), direction = direction
+      )
+      structure(
+        result,
+        ".optimizer_id" = optimizer_id,
+        ".optimizer_label" = names(private$.optimizer)[optimizer_id],
+        ".direction" = direction
+      )
     },
 
     ### save optimization results
-    .save_results = function(results, optimization_label, verbose) {
+    .save_results = function(
+      results, optimization_label, verbose = self$verbose
+    ) {
       if (verbose) {
         cli::cli_alert_info(
           "Saving {length(results)} optimization result{?s}."
         )
       }
+      comparable <- length(private$.original_arguments) == 0
       for (i in seq_along(results)) {
         result <- results[[i]]
-        run_id <- private$.next_run_id()
         parts <- names(result)
         if ("value" %in% parts) {
           checkmate::assert_number(result[["value"]], na.ok = TRUE)
@@ -2094,87 +2097,30 @@ Nop <- R6::R6Class(
         } else {
           result[["initial"]] <- NA_real_
         }
-        if ("error" %in% parts) {
-          checkmate::assert_flag(result[["error"]], na.ok = TRUE)
+        if (".error_message" %in% parts) {
+          checkmate::assert_string(result[[".error_message"]], na.ok = TRUE)
+          error <- TRUE
         } else {
-          result[["error"]] <- FALSE
+          result[[".error_message"]] <- NA_character_
+          error <- FALSE
         }
-        error <- result[["error"]]
-        if ("error_message" %in% parts) {
-          checkmate::assert_string(result[["error_message"]], na.ok = TRUE)
-        } else {
-          result[["error_message"]] <- NA_character_
-        }
-        attr(result, ".run_id") <- run_id
         attr(result, ".optimization_label") <- optimization_label
         optimizer_id <- attr(result, ".optimizer_id")
         optimizer_label <- attr(result, ".optimizer_label")
         comparable <- attr(result, ".comparable")
         direction <- attr(result, ".direction")
-        private$.results[[run_id]] <- result
-        private$.last_runs_ids <- c(private$.last_runs_ids, run_id)
-        if (length(private$.optimizer_id_ids) < optimizer_id) {
-          private$.optimizer_id_ids[[optimizer_id]] <- run_id
-        } else {
-          private$.optimizer_id_ids[[optimizer_id]] <- c(
-            private$.optimizer_id_ids[[optimizer_id]], run_id
-          )
-        }
-        if (is.null(private$.optimization_label_ids[[optimization_label]])) {
-          private$.optimization_label_ids[[optimization_label]] <- run_id
-        } else {
-          private$.optimization_label_ids[[optimization_label]] <- c(
-            private$.optimization_label_ids[[optimization_label]], run_id
-          )
-        }
-        if (comparable) {
-          private$.comparable_ids <- c(private$.comparable_ids, run_id)
-        }
-        private$.direction_ids[[direction]] <- c(
-          private$.direction_ids[[direction]], run_id
+        identifier <- c(
+          paste0("optimization_label:", optimization_label),
+          paste0("optimizer_id:", optimizer_id),
+          paste0("optimizer_label:", optimizer_label),
+          paste0(ifelse(comparable, "", "!"), "comparable"),
+          paste0("direction:", direction),
+          paste0(ifelse(error, "", "!"), "fail"),
+          paste0("element:", names(result))
         )
-        if (error) {
-          private$.failed_ids <- c(private$.failed_ids, run_id)
-        }
-        for (element in names(result)) {
-          private$.element_ids[[element]] <- c(
-            private$.element_ids[[element]], run_id
-          )
-        }
-      }
-    },
-
-    ### delete optimization results
-    .delete_results = function(run_ids, replace) {
-      for (run_id in run_ids) {
-        if (replace) {
-          private$.results[run_id] <- NULL
-        } else {
-          private$.results[run_id] <- list(NULL)
-        }
-        private$.last_runs_ids <- remove_index(
-          private$.last_runs_ids, index = run_id, replace = replace
-        )
-        private$.optimizer_id_ids <- lapply(
-          private$.optimizer_id_ids, remove_index, index = run_id,
-          replace = replace
-        )
-        private$.optimization_label_ids <- lapply(
-          private$.optimization_label_ids, remove_index, index = run_id,
-          replace = replace
-        )
-        private$.comparable_ids <- remove_index(
-          private$.comparable_ids, index = run_id, replace = replace
-        )
-        private$.failed_ids <- remove_index(
-          private$.failed_ids, index = run_id, replace = replace
-        )
-        private$.element_ids <- lapply(
-          private$.element_ids, remove_index, index = run_id,
-          replace = replace
-        )
-        cli::cli_alert_info(
-          "Result with id {run_id} is removed."
+        private$.results$add(
+          x = result, identifier = identifier, confirm = FALSE,
+          missing_identifier = NA
         )
       }
     },
@@ -2219,7 +2165,6 @@ Nop <- R6::R6Class(
       which_direction <- oeli::match_arg(
         which_direction, choices = c("min", "max"), several.ok = both_allowed
       )
-
 
       if (identical(which_direction, "min")) {
 
@@ -2394,75 +2339,62 @@ Nop <- R6::R6Class(
         which_element, verbose = FALSE
       )
 
-      ### start with all ids
-      run_ids <- seq_along(private$.results)
-      if (length(run_ids) == 0) {
-        cli::cli_warn("No optimization results available.")
-        return(integer())
-      }
+      ### build identifier
+      identifier <- character()
 
       ### filter 'which_run'
       if (checkmate::test_character(which_run)) {
 
-        for (filter in which_run) {
-
-          if (filter %in% self$reserved_labels) {
-
-            # if (identical(filter, "all")) {
-            #   if (verbose) {
-            #     cli::cli_alert_info("Filtered for all results.")
-            #   }
-            # }
-
-            if (identical(filter, "last")) {
-              if (verbose) {
-                cli::cli_alert_info("Filtered for the last optimizations.")
-              }
-              run_ids <- intersect(run_ids, private$.last_runs_ids)
-            }
-
-            if (identical(filter, "success")) {
-              if (verbose) {
-                cli::cli_alert_info("Filtered for successful optimizations.")
-              }
-              run_ids <- setdiff(run_ids, private$.failed_ids)
-            }
-
-            if (identical(which_run, "failed")) {
-              if (verbose) {
-                cli::cli_alert_info("Filtered for failed optimizations.")
-              }
-              run_ids <- intersect(run_ids, private$.failed_ids)
-            }
-
-            if (identical(which_run, "comparable")) {
-              if (verbose) {
-                cli::cli_alert_info("Filtered for comparable optimizations.")
-              }
-              run_ids <- intersect(run_ids, private$.comparable_ids)
-            }
-
-            if (identical(which_run, "incomparable")) {
-              if (verbose) {
-                cli::cli_alert_info("Filtered for incomparable optimizations.")
-              }
-              run_ids <- setdiff(run_ids, private$.comparable_ids)
-            }
-
+        if ("failed" %in% which_run) {
+          if (verbose) {
+            cli::cli_alert_info("Filtered for failed optimizations.")
           }
-
-          if (filter %in% names(private$.optimization_label_ids)) {
-
-            if (verbose) {
-              cli::cli_alert_info("Filtered for optimization label {filter}.")
-            }
-            run_ids <- intersect(
-              run_ids, private$.optimization_label_ids[[filter]]
-            )
-
-          }
-
+          identifier <- c(identifier, "failed")
         }
+
+        # TODO
+
+
+
+      #   if (identical(filter, "success")) {
+      #     if (verbose) {
+      #       cli::cli_alert_info("Filtered for successful optimizations.")
+      #     }
+      #     run_ids <- setdiff(run_ids, private$.failed_ids)
+      #   }
+      #
+      #   if (identical(which_run, "failed")) {
+      #     if (verbose) {
+      #       cli::cli_alert_info("Filtered for failed optimizations.")
+      #     }
+      #     run_ids <- intersect(run_ids, private$.failed_ids)
+      #   }
+      #
+      #   if (identical(which_run, "comparable")) {
+      #     if (verbose) {
+      #       cli::cli_alert_info("Filtered for comparable optimizations.")
+      #     }
+      #     run_ids <- intersect(run_ids, private$.comparable_ids)
+      #   }
+      #
+      #   if (identical(which_run, "incomparable")) {
+      #     if (verbose) {
+      #       cli::cli_alert_info("Filtered for incomparable optimizations.")
+      #     }
+      #     run_ids <- setdiff(run_ids, private$.comparable_ids)
+      #   }
+      #
+      # }
+      #
+      # if (filter %in% names(private$.optimization_label_ids)) {
+      #
+      #   if (verbose) {
+      #     cli::cli_alert_info("Filtered for optimization label {filter}.")
+      #   }
+      #   run_ids <- intersect(
+      #     run_ids, private$.optimization_label_ids[[filter]]
+      #   )
+
 
       } else if (checkmate::test_integerish(which_run)) {
 

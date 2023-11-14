@@ -475,26 +475,31 @@ Defines initial values based on results from previous optimizations.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_optimizer}}{Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -608,11 +613,9 @@ Optimizes the function.
   optimization_label = self$fresh_label,
   which_optimizer = "all",
   which_direction = "min",
-  verbose = getOption("ino_verbose", default = FALSE),
-  seconds = NULL,
+  seconds = Inf,
   hide_warnings = TRUE,
-  reset_initial = TRUE,
-  seed = NULL
+  reset_initial = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -621,16 +624,13 @@ Optimizes the function.
 \describe{
 \item{\code{optimization_label}}{A \code{character} to specify a label for the optimization.
 Labels are useful to distinguish optimization runs.
-By default, \code{optimization_label = self$fresh_label} creates a new
-label.
-Must not be one of \code{self$reserved_labels}.}
+By default, \code{self$fresh_label} creates a new label.}
 
 \item{\code{which_optimizer}}{Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -649,35 +649,12 @@ during the function evaluation or optimization.}
 
 \item{\code{reset_initial}}{Either \code{TRUE} (default) to reset the initial values after the
 optimization, or \code{FALSE}, else.}
-
-\item{\code{seed}}{Passed on to \code{\link{set.seed}} for reproducibility.
-Can be \code{NULL} (default) for no seed or to reset the current seed.}
-
-\item{\code{progress}}{Defines the progress bar and is passed on to
-\code{\link[progressr]{handlers}}. Options are:
-\itemize{
-\item \code{progressr::handler_progress()} (default)
-\item \code{progressr::handler_void()} (no progress bar)
-\item and many more (see the documentation).
-}}
-
-\item{\code{evaluation}}{Defines whether optimization is sequential or in parallel and is passed
-on to \code{\link[future]{plan}}. Options are:
-\itemize{
-\item \code{future::sequential} (default),
-\item \code{future::multisession},
-\item \code{future::multicore},
-\item and many more (see the documentation).
-}}
-
-\item{\code{...}}{Additional arguments for \code{\link[future]{plan}}. For example,
-supply \code{workers = 2} to use two parallel processes.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Progress bar:
-Parallel:
+Parallel computation of multiple optimization runs via the \code{{future}}
+package and displaying progress via the \code{{progressr}} package are supported.
 }
 
 \subsection{Returns}{
@@ -694,9 +671,7 @@ Validates the configuration of a \code{Nop} object.
   at = stats::rnorm(self$npar),
   which_optimizer = "all",
   which_direction = "min",
-  seconds = 10,
-  verbose = getOption("ino_verbose", default = FALSE),
-  digits = getOption("digits", default = 7)
+  seconds = 10
 )}\if{html}{\out{</div>}}
 }
 
@@ -712,8 +687,7 @@ from a standard normal distribution.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -739,11 +713,7 @@ Invisibly \code{TRUE} if the tests are successful.
 \subsection{Method \code{elements()}}{
 Returns the names of available elements in the optimization results.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$elements(
-  which_optimizer = "all",
-  group_by = NULL,
-  verbose = getOption("ino_verbose", default = FALSE)
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$elements(which_optimizer = "all", group_by = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -753,16 +723,21 @@ Returns the names of available elements in the optimization results.
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
-\item{\code{group_by}}{TODO}
+\item{\code{group_by}}{Selects how the output is grouped. Either:
+\itemize{
+\item \code{NULL} to not group (default),
+\item \code{".optimization_label"} to group by optimization label,
+\item \code{".optimizer_label"} to group by optimizer label.
+}}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Depending on group_by, ... A \code{list}.
+If \code{group_by} is \code{NULL} a \code{character}, otherwise a
+\code{list}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -783,19 +758,25 @@ Returns the number of optimization results.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
 \itemize{
@@ -807,8 +788,7 @@ transformations),
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{which_element}}{Selects elements of optimization results. Either:
@@ -853,19 +833,25 @@ Returns optimization results.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
 \itemize{
@@ -877,8 +863,7 @@ transformations),
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{which_element}}{Selects elements of optimization results. Either:
@@ -899,12 +884,8 @@ where the following elements are always available:
 
 \item{\code{add_identifier}}{Selects identifiers to be added to the output. Can be one or more of:
 \itemize{
-\item \code{".run_id"}, which yields an \code{integer} that identifies the
-optimization runs,
 \item \code{".optimization_label"}, which yields a \code{character} that
 identifies custom groups of optimization runs,
-\item \code{".optimizer_id"}, which yields an \code{integer} that identifies the
-optimizer,
 \item \code{".optimizer_label"}, which yields a \code{character} that identifies
 the optimizer,
 \item \code{".comparable"}, which yields a \code{logical} that identifies whether
@@ -962,26 +943,31 @@ where the following elements are always available:
 }
 }}
 
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_optimizer}}{Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -992,12 +978,8 @@ transformations),
 
 \item{\code{add_identifier}}{Selects identifiers to be added to the output. Can be one or more of:
 \itemize{
-\item \code{".run_id"}, which yields an \code{integer} that identifies the
-optimization runs,
 \item \code{".optimization_label"}, which yields a \code{character} that
 identifies custom groups of optimization runs,
-\item \code{".optimizer_id"}, which yields an \code{integer} that identifies the
-optimizer,
 \item \code{".optimizer_label"}, which yields a \code{character} that identifies
 the optimizer,
 \item \code{".comparable"}, which yields a \code{logical} that identifies whether
@@ -1030,26 +1012,31 @@ Deletes optimization results.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_optimizer}}{Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -1090,19 +1077,25 @@ Provides a frequency overview of the identified optimum values.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
 \itemize{
@@ -1114,8 +1107,7 @@ transformations),
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{group_by}}{Selects how the output is grouped. Either:
@@ -1178,19 +1170,25 @@ Visualizes the optimization time or value.
 In this case, set to \code{TRUE} to plot relative time differences with
 respect to the overall median.}
 
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
 \itemize{
@@ -1202,8 +1200,7 @@ transformations),
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 
 \item{\code{...}}{Currently not used.}
@@ -1347,19 +1344,25 @@ Returns the best found function value or parameter vector.
 \describe{
 \item{\code{which_element}}{Either \code{"value"} or \code{"parameter"}.}
 
-\item{\code{which_run}}{Selects results of optimization runs. Either:
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
 \itemize{
-\item \code{"all"} for all results,
-\item \code{"last"} for the results of the last optimizations,
 \item \code{"success"} for the results of successful optimizations,
-\item \code{"failed"} for the results from failed optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
-\item \code{"incomparable"} for the results from incomparable optimizations,
-\item a \code{character} (vector) of optimization labels,
-\item an \code{integer} (vector) of run ids as provided, e.g., by \code{$best()}.
-}}
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
 
 \item{\code{which_direction}}{Either \code{"min"} or \code{"max"}.}
 
@@ -1367,8 +1370,7 @@ transformations),
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the
-\code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
 }
 \if{html}{\out{</div>}}

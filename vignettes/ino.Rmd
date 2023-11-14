@@ -150,13 +150,15 @@ Once an optimizer is defined, optimizing the function is simple:
 1. define initial values with one of the `initialize_*()` methods (see below)
 2. call `optimize()`
 
-```{r, example optimization, eval = FALSE}
+```{r, example optimization}
 Nop_mixture$
   initialize_random(runs = 100)$
   optimize(which_direction = "max")
 ```
 
-The call `initialize_random(runs = 100)` generates 100 sets of random initial values (by default independently drawn from a standard normal distribution), and `optimize(which_direction = "max")` maximizes the function starting from these values. 
+The method `initialize_random(runs = 100)` generates 100 sets of random initial values (by default independently drawn from a standard normal distribution), and `optimize(which_direction = "max")` maximizes the function starting from these values. 
+
+# TODO
 
 Finally, accessing the optimization results is possible via the `results()` method. By default, it will return a list of 100 entries with all the optimization results. The method also has some filter options, for example accessing only the function value and parameter estimate from the 42th run is possible via:
 
@@ -166,13 +168,19 @@ Nop_mixture$results(which_run = 42, which_element = c("value", "parameter"))
 
 The `summary` method summarizes the results in a data.frame.
 
+```{r, summary of results, eval = FALSE}
+Nop_mixture$optima()
+```
+
 For a quick overview, the `optima()` method provides a frequency table of the function values obtained at optimizer convergence for the random initial values: 
 
 ```{r, overview optima, eval = FALSE}
 Nop_mixture$optima()
 ```
 
-The influence of the initial values on the outcome is evident: we find that two values are obtained quite often. But what is the implication on the model fit? Use method `best()` to get best.
+The influence of the initial values on the outcome is evident: we find that two values are obtained quite often. 
+
+But what is the implication on the model fit? Use method `best()` to get best.
 
 ### Comparing initialization strategies
 
