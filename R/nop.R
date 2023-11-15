@@ -46,6 +46,8 @@
 #'   - \code{"error_message"}, the error message (if any).
 #' @param add_identifier
 #' Selects identifiers to be added to the output. Can be one or more of:
+#' - \code{".run_id"}, which yields an \code{integer} that identifies the
+#'   optimization run,
 #' - \code{".optimization_label"}, which yields a \code{character} that
 #'   identifies custom groups of optimization runs,
 #' - \code{".optimizer_label"}, which yields a \code{character} that identifies
@@ -73,6 +75,15 @@
 #' prematurely if \code{seconds} is exceeded.
 #' This currently only works reliably under Windows OS.
 #' No time limit if \code{seconds = Inf} (the default).
+#' @param verbose
+#' Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+#' such messages.
+#' This can be defined globally via \code{self$verbose}.
+#' By default, \code{verbose = getOption("verbose", default = FALSE)}.
+#' @param digits
+#' An \code{integer}, the number of decimal places of interest.
+#' This can be defined globally via \code{self$digits}.
+#' By default, \code{digits = getOption("digits", default = 7)}.
 
 #' @return
 #' Either the \code{Nop} object to allow for method chaining, or a result.
@@ -194,6 +205,8 @@ Nop <- R6::R6Class(
     #' A new \code{Nop} object.
 
     initialize = function(objective, target, npar, ...) {
+
+      ### input checks
       if (missing(objective)) {
         cli::cli_abort(
           c(
@@ -245,17 +258,19 @@ Nop <- R6::R6Class(
       checkmate::assert_integerish(
         npar, lower = 1, any.missing = FALSE, len = length(target)
       )
-      private$objective <- optimizeR::Objective$new(
+
+      ### build objective
+      private$.objective <- optimizeR::Objective$new(
         objective = objective,
         target = target,
         npar = npar,
         ...
       )
-      ### TODO: do I need this?
-      private$objective$objective_name <- deparse(substitute(objective))
 
+      ### build result index
       private$.results <- oeli::Index$new()
       private$.results$missing_identifier <- NA
+      private$.results$hide_warnings <- TRUE
 
     },
 
@@ -265,6 +280,7 @@ Nop <- R6::R6Class(
     #' Currently not used.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     print = function(digits = getOption("digits", default = 7), ... ) {
 
       ### info on optimization problem
@@ -462,9 +478,8 @@ Nop <- R6::R6Class(
     #' centering and scaling used (if any) are added as
     #' attributes \code{"standardized:center"} and \code{"standardized:scale"}
     #' to the argument.
-    argument = function(
-      action, ..., verbose = getOption("ino_verbose", default = FALSE)
-    ) {
+
+    fixed_argument = function(action, ...) {
       if (missing(action)) {
         cli::cli_abort(
           "Please specify argument {.var action}.",
@@ -735,9 +750,9 @@ Nop <- R6::R6Class(
       hide_warnings = FALSE
     ) {
       private$.check_target(at, verbose = FALSE)
-      private$objective$seconds <- seconds
-      private$objective$hide_warnings <- hide_warnings
-      private$objective$evaluate(at)
+      private$.objective$seconds <- seconds
+      private$.objective$hide_warnings <- hide_warnings
+      private$.objective$evaluate(at)
     },
 
     #' @description
@@ -747,6 +762,7 @@ Nop <- R6::R6Class(
     #' initial parameter vector. It can also be a \code{list} of such vectors.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_fixed = function(at) {
       self$initialize_custom(at, type = "fixed")
     },
@@ -763,6 +779,7 @@ Nop <- R6::R6Class(
     #' By default, \code{runs = 1}.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_random = function(
       sampler = function() stats::rnorm(sum(self$npar)), runs = 1, seed = NULL
     ) {
@@ -799,6 +816,7 @@ Nop <- R6::R6Class(
     #' Optional parameters passed to \code{\link[base]{jitter}}.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_grid = function(
       lower = rep(0, length(sum(self$npar))),
       upper = rep(1, length(sum(self$npar))),
@@ -826,12 +844,13 @@ Nop <- R6::R6Class(
     #' Defines initial values based on results from previous optimizations.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_transfer = function(
       which_run = "last", which_optimizer = "all", which_direction = c("min", "max")
     ) {
       out <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
-        which_element = c("parameter", "seconds")
+        which_direction = which_direction, which_element = c("parameter", "seconds")
       )
       at <- lapply(out, `[[`, "parameter")
       seconds <- sapply(out, `[[`, "seconds")
@@ -852,6 +871,7 @@ Nop <- R6::R6Class(
     #' A single \code{character}, the type of the initial values.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_custom = function(at, seconds = rep(0, length(at)), type = "custom") {
       checkmate::assert_list(at)
       runs <- length(at)
@@ -877,6 +897,7 @@ Nop <- R6::R6Class(
     #' - \code{"value_high"} for the points where the function value is highest.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_promising = function(proportion, condition = "gradient_steep") {
       checkmate::assert_number(proportion, lower = 0, upper = 1)
       oeli::match_arg(condition, c("gradient_steep", "value_low", "value_high"))
@@ -914,6 +935,7 @@ Nop <- R6::R6Class(
     #' \code{sum(self$npar)}.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_transform = function(transform = function(x) x) {
       runs <- length(private$.initial_values)
       if (runs == 0) {
@@ -933,6 +955,7 @@ Nop <- R6::R6Class(
     #' Resets the currently defined initial values.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     initialize_reset = function() {
       runs <- length(private$.initial_values)
       if (runs == 0) {
@@ -964,6 +987,7 @@ Nop <- R6::R6Class(
     #' optimization, or \code{FALSE}, else.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     optimize = function(
       optimization_label = self$fresh_label, which_optimizer = "all",
       which_direction = "min", seconds = Inf, hide_warnings = TRUE,
@@ -1176,62 +1200,78 @@ Nop <- R6::R6Class(
     #' @description
     #' Returns the names of available elements in the optimization results.
     #' @return
-    #' If \code{group_by} is \code{NULL} a \code{character}, otherwise a
-    #' \code{list}.
-    elements = function(which_optimizer = "all", group_by = NULL) {
+    #' A \code{character} if \code{group_by = NULL}, otherwise a
+    #' \code{list} of \code{character}s.
+
+    elements = function(
+      which_optimizer = "all", group_by = NULL, verbose = self$verbose
+    ) {
 
       ### input checks
       optimizer_ids <- private$.check_which_optimizer(
-        which_optimizer = which_optimizer, to_id = TRUE, verbose = FALSE
+        which_optimizer = which_optimizer, to_id = TRUE, verbose = verbose
       )
-      group_by <- group_by # TODO
+      group_by <- private$.check_group_by(
+        group_by = group_by, verbose = verbose
+      )
 
       ### get element names
-      elements <- list()
-      optimizer_labels <- names(private$.optimizer)
-      for (optimizer_id in optimizer_ids) {
-        optimizer_label <- optimizer_labels[optimizer_id]
-        if (
-          length(private$.optimizer_id_ids) < optimizer_id ||
-          is.null(private$.optimizer_id_ids[[optimizer_id]])
-        ) {
-          cli::cli_warn(
-            "No results for optimizer {.var {optimizer_label}}.",
-          )
-          elements[[optimizer_label]] <- character()
+      if (is.null(group_by)) {
+        out <- private$.results$identifier
+        out <- out[startsWith(out, "element:")]
+        out <- sub(".*:", "", out)
+      } else {
+        if (group_by == ".optimization_label") {
+          out <- rep(list(character()), length(private$.optimization_labels))
+          names(out) <- private$.optimization_labels
+          for (optimization_label in names(out)) {
+            out[[optimization_label]] <- unique(
+              names(
+                unlist(
+                  private$.results$get(
+                    c(
+                      paste0("optimization_label:", optimization_label),
+                      paste0("optimizer_id:", optimizer_ids)
+                    )
+                  ),
+                  recursive = FALSE
+                )
+              )
+            )
+          }
+        } else if (group_by == ".optimizer_label") {
+          out <- rep(list(character()), length(private$.optimizer[optimizer_ids]))
+          names(out) <- names(private$.optimizer[optimizer_ids])
+          for (optimizer_label in names(out)) {
+            out[[optimizer_label]] <- unique(
+              names(
+                unlist(
+                  private$.results$get(paste0("optimizer_label:", optimizer_label)),
+                  recursive = FALSE
+                )
+              )
+            )
+          }
         } else {
-          elements[[optimizer_label]] <- unique(names(unlist(
-            private$.results[private$.optimizer_id_ids[[optimizer_id]]],
-            recursive = FALSE
-          )))
+          stop("error")
         }
       }
-
-      ###
-      if (is.null())
-
-      if (identical(group_by, ".optimizer_label")) {
-        return(elements)
-      } else {
-        return(unique(unlist(elements, use.names = FALSE)))
-      }
-
+      return(out)
     },
 
     #' @description
     #' Returns the number of optimization results.
     #' @return
     #' An \code{integer}.
+
     runs = function(
       which_run = "all", which_direction = c("min", "max"),
-      which_optimizer = "all", which_element = "all",
-      verbose = getOption("ino_verbose", default = FALSE)
+      which_optimizer = "all", which_element = "all"
     ) {
       length(
         private$.get_run_ids(
           which_run = which_run, which_direction = which_direction,
-          which_optimizer = which_optimizer, which_element = which_element,
-          verbose = verbose
+          which_optimizer = which_optimizer, which_element = which_element
         )
       )
     },
@@ -1239,46 +1279,63 @@ Nop <- R6::R6Class(
     #' @description
     #' Returns optimization results.
     #' @return
-    #' A \code{list}.
+    #' A \code{list} if \code{group_by = NULL}, otherwise a \code{list} of
+    #' \code{list}s.
+
     results = function(
       which_run = "all", which_direction = c("min", "max"),
       which_optimizer = "all", which_element = "all",
-      add_identifier = character(), group_by = NULL,
-      verbose = getOption("ino_verbose", default = FALSE)
+      add_identifier = character(), group_by = NULL
     ) {
 
       ### check inputs
+      which_optimizer <- private$.check_which_optimizer(
+        which_optimizer = which_optimizer, to_id = FALSE, verbose = FALSE
+      )
       elements <- self$elements(
         which_optimizer = which_optimizer, group_by = NULL, verbose = FALSE
       )
       which_element <- private$.check_which_element(
         which_element = which_element, choices = elements, several.ok = TRUE,
-        expand_all = TRUE, verbose = FALSE
+        verbose = FALSE
       )
+      group_by <- private$.check_group_by(group_by = group_by)
       add_identifier <- private$.check_add_identifier(
-        add_identifier = add_identifier, several.ok = TRUE, none.ok = TRUE,
-        verbose = verbose
+        add_identifier = add_identifier, several.ok = TRUE, none.ok = TRUE
       )
 
-
-      ### get ids of selected runs
+      ### get list of results and add `run_ids` identifier
       run_ids <- private$.get_run_ids(
         which_run = which_run, which_direction = which_direction,
-        which_optimizer = which_optimizer, which_element = which_element,
-        verbose = verbose
+        which_optimizer = which_optimizer, which_element = which_element
       )
+      results <- private$.results$get(ids = run_ids, id_names = TRUE)
+      run_ids <- as.numeric(names(results))
+      names(results) <- NULL
+      for (i in seq_along(results)) {
+        attr(results[[i]], ".run_id") <- run_ids[i]
+      }
 
-      ### build list of results
-      results <- private$.results[run_ids]
-      lapply(results, function(result) {
+      ### auxiliary identifier for grouping
+      add_identifier_aux <- c(add_identifier, group_by)
 
-        ### filter elements
+      ### filter not required elements out of results and add identifiers
+      results <- lapply(results, function(result) {
         result[which(!names(result) %in% which_element)] <- NULL
-
-        ### add identifier
-        identifier <- attributes(result)[add_identifier]
+        identifier <- attributes(result)[add_identifier_aux]
         result <- append(result, identifier, after = 0)
       })
+
+      ### group results
+      if (is.null(group_by)) {
+        return(results)
+      } else {
+
+        ### TODO split list by `group_by`
+
+        ### TODO remove identifier `group_by` if it is not contained in `add_identifier`
+
+      }
 
     },
 
@@ -1286,19 +1343,18 @@ Nop <- R6::R6Class(
     #' Provides an overview of the optimization runs.
     #' @return
     #' A \code{data.frame}.
+
     summary = function(
       which_element = c("value", "parameter"), which_run = "all",
-      which_optimizer = "all", which_direction = "min",
-      digits = getOption("digits", default = 7),
-      add_identifier = character(),
-      verbose = getOption("ino_verbose", default = FALSE)
+      which_optimizer = "all", which_direction = c("min", "max"),
+      add_identifier = character(), group_by = NULL, digits = self$digits
     ) {
 
       ### get results
       results <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
         which_element = which_element, which_direction = which_direction,
-        add_identifier = add_identifier, verbose = verbose
+        add_identifier = add_identifier
       )
 
       ### save results in data.frame
@@ -1390,8 +1446,7 @@ Nop <- R6::R6Class(
     optima = function(
       which_run = "comparable", which_direction = c("min", "max"),
       which_optimizer = "all", group_by = NULL, sort_by = "frequency",
-      digits = getOption("digits", default = 7), print.rows = 0,
-      verbose = getOption("ino_verbose", default = FALSE)
+      digits = getOption("digits", default = 7), print.rows = 0
     ) {
 
       ### input checks
@@ -1724,8 +1779,7 @@ Nop <- R6::R6Class(
     #' \code{Nop} object, else.
     true = function(
       input = NULL, which_element = "parameter", which_direction = "min",
-      digits = getOption('digits', default = 7),
-      verbose = getOption("ino_verbose", default = FALSE)
+      digits = self$digits
     ) {
 
       ### input checks
@@ -1896,9 +1950,7 @@ Nop <- R6::R6Class(
     #' - \code{.optimizer_label}, the optimizer that led to the best value.
     best = function(
       which_element = "value", which_run = c("success", "comparable"),
-      which_direction = "min", which_optimizer = "all",
-      digits = getOption("digits", default = 7),
-      verbose = getOption("ino_verbose", default = FALSE)
+      which_direction = "min", which_optimizer = "all", digits = self$digits
     ) {
 
       ### check inputs
@@ -1946,10 +1998,10 @@ Nop <- R6::R6Class(
 
   active = list(
 
-    #' @field npar The lengths of the target arguments.
+    #' @field npar The length(s) of the target argument(s).
     npar = function(value) {
       if (missing(value)) {
-        private$objective$npar
+        private$.objective$npar
       } else {
         cli::cli_abort(
           "The field {.var $npar} is read only.",
@@ -1958,14 +2010,14 @@ Nop <- R6::R6Class(
       }
     },
 
-    #' @field fresh_label An optimization label that has not been used yet.
+    #' @field fresh_label A new optimization label that has not been used yet.
     fresh_label = function(value) {
       if (missing(value)) {
         default_label <- "unlabeled"
         n <- 1
         while (TRUE) {
           label <- glue::glue("{default_label}_{n}")
-          if (!label %in% names(private$.optimization_label_ids)) {
+          if (!label %in% private$.optimization_labels) {
             return(as.character(label))
           } else {
             n <- n + 1
@@ -1982,7 +2034,7 @@ Nop <- R6::R6Class(
     #' @field verbose
     #' Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
     #' such messages.
-    #' This can be defined globally via \code{options("ino_verbose" = TRUE)}.
+    #' By default, \code{verbose = getOption("verbose", default = FALSE)}.
     verbose = function(value) {
       if (missing(value)) {
         private$.verbose
@@ -1994,7 +2046,7 @@ Nop <- R6::R6Class(
 
     #' @field digits
     #' An \code{integer}, the number of decimal places of interest.
-    #' This can be defined globally via \code{options("digits" = 7)}.
+    #' By default, \code{digits = getOption("digits", default = 7)}.
     digits = function(value) {
       if (missing(value)) {
         private$.digits
@@ -2009,11 +2061,11 @@ Nop <- R6::R6Class(
   private = list(
 
     ### storage of options
-    .verbose = getOption("ino_verbose", default = FALSE),
+    .verbose = getOption("verbose", default = FALSE),
     .digits = getOption("digits", default = 7),
 
     ### storage of the optimization problem details
-    objective = NULL,
+    .objective = NULL,
     .true_parameter_min = NULL,
     .true_parameter_max = NULL,
     .true_value_min = NULL,
@@ -2022,6 +2074,7 @@ Nop <- R6::R6Class(
     .original_arguments = list(),
     .optimizer = list(),
     .results = NULL,
+    .optimization_labels = character(),
 
     ### storage of the initial values
     .initial_values = list(),
@@ -2029,14 +2082,14 @@ Nop <- R6::R6Class(
     .initial_seconds = numeric(),
 
     ### check methods
-    .check_target = function(at, verbose = FALSE) {
-      private$objective$.__enclos_env__$private$.check_target(
+    .check_target = function(at, verbose = self$verbose) {
+      private$.objective$.__enclos_env__$private$.check_target(
         .at = at, verbose = verbose
       )
     },
 
-    .check_arguments_complete = function(verbose = FALSE) {
-      private$objective$.__enclos_env__$private$.check_arguments_complete(
+    .check_arguments_complete = function(verbose = self$verbose) {
+      private$.objective$.__enclos_env__$private$.check_arguments_complete(
         verbose = verbose
       )
     },
@@ -2049,9 +2102,10 @@ Nop <- R6::R6Class(
       optimizer$seconds <- seconds
       optimizer$hide_warnings <- hide_warnings
       result <- optimizer$.__enclos_env__$private$.optimize(
-        objective = private$objective, initial = initial,
+        objective = private$.objective, initial = initial,
         additional_arguments = list(), direction = direction
       )
+      # TODO: additional arguments?
       structure(
         result,
         ".optimizer_id" = optimizer_id,
@@ -2122,6 +2176,9 @@ Nop <- R6::R6Class(
           x = result, identifier = identifier, confirm = FALSE,
           missing_identifier = NA
         )
+        private$.optimization_labels <- unique(
+          c(private$.optimization_labels, optimization_label)
+        )
       }
     },
 
@@ -2134,21 +2191,55 @@ Nop <- R6::R6Class(
       ### check `which_run`
       if (checkmate::test_character(which_run)) {
 
-        ### TODO check if all is alone, no contradictions
-        return(which_run)
+        if ("all" %in% which_run) {
 
-      } else if (checkmate::test_integerish(which_optimizer, lower = 1)) {
+          if (length(unique(which_run)) > 1) {
+            cli::cli_abort(
+              "Filter {.var which_run = {.val all}} cannot be paired with
+              other run filters."
+            )
+          }
+          if (verbose) {
+            cli::cli_alert_info(
+              "Selected all optimization runs."
+            )
+          }
 
-        ### TODO check if ids exist
-        return(which_run)
+        } else {
+
+          which_run <- unique(which_run)
+          if (verbose) {
+            cli::cli_alert_info(
+              "Selected optimization runs with filter{?s} {.val {which_run}}."
+            )
+          }
+
+        }
+
+      } else if (checkmate::test_integerish(which_run, lower = 1)) {
+
+        which_run <- unique(which_run)
+
+        if (any(which_run > private$.results$number())) {
+          cli::cli_warn(
+            "The largest available run id is {private$.results$number()}."
+          )
+          which_run <- which_run[-which(which_run > private$.results$number())]
+        }
+
+        if (verbose) {
+          cli::cli_alert_info(
+            "Selected optimization runs with id {which_run}."
+          )
+        }
 
       } else {
 
-        cli::cli_abort(
-          "Argument {.var which_run} is misspecified."
-        )
+        cli::cli_abort("Argument {.var which_run} is misspecified.")
 
       }
+
+      return(which_run)
 
     },
 
@@ -2169,14 +2260,14 @@ Nop <- R6::R6Class(
       if (identical(which_direction, "min")) {
 
         if (verbose) {
-          cli::cli_alert_info("Selected minimization")
+          cli::cli_alert_info("Selected minimization.")
         }
         return("min")
 
       } else if (identical(which_direction, "max")) {
 
         if (verbose) {
-          cli::cli_alert_info("Selected maximization")
+          cli::cli_alert_info("Selected maximization.")
         }
         return("max")
 
@@ -2193,19 +2284,19 @@ Nop <- R6::R6Class(
 
     ### check `which_optimizer` filter
     .check_which_optimizer = function(
-      which_optimizer, to_id, verbose
+      which_optimizer, to_id, verbose = self$verbose
     ) {
 
       ### input checks
       checkmate::assert_flag(to_id)
       checkmate::assert_flag(verbose)
 
-      ### check whether any optimizer is specified
+      ### check whether any optimizer is specified yet
       optimizer_ids <- seq_along(private$.optimizer)
       if (length(optimizer_ids) == 0) {
         cli::cli_warn(
-          "No optimizer specified.",
-          "Use {.fun $set_optimizer} to specify an optimizer."
+          "No optimizer specified yet.",
+          "Please use {.fun $set_optimizer} to specify an optimizer."
         )
         return(integer(0))
       }
@@ -2255,9 +2346,7 @@ Nop <- R6::R6Class(
         optimizer_labels <- names(private$.optimizer)[optimizer_ids]
 
         if (length(optimizer_ids) > 0 && verbose) {
-          cli::cli_alert_info(
-            "Selected optimizer {optimizer_labels}."
-          )
+          cli::cli_alert_info("Selected optimizer {optimizer_labels}.")
         }
 
         if (to_id) {
@@ -2278,20 +2367,34 @@ Nop <- R6::R6Class(
 
     ### check `which_element` filter
     .check_which_element = function(
-      which_element, choices = NULL, several.ok = TRUE, expand_all = FALSE,
-      verbose = verbose
+      which_element, choices, several.ok = TRUE, verbose = self$verbose
     ) {
 
       ### input checks
-      checkmate::assert_flag(verbose)
+      checkmate::assert_names(choices)
       checkmate::assert_flag(several.ok)
+      checkmate::assert_flag(verbose)
 
       ### check `which_element`
-      if (!is.null(choices)) {
+      if ("all" %in% which_element) {
+
+        which_element <- choices
+        if (verbose) {
+          cli::cli_alert_info("Selected all available elements.")
+        }
+
+      } else {
+
         which_element <- oeli::match_arg(
           arg = which_element, choices = choices, several.ok = several.ok,
           none.ok = FALSE
         )
+        if (verbose) {
+          cli::cli_alert_info(
+            "Selected element{?s} {.val {which_element}}."
+          )
+        }
+
       }
       return(which_element)
 
@@ -2299,7 +2402,7 @@ Nop <- R6::R6Class(
 
     ### check `add_identifier` filter
     .check_add_identifier = function(
-      add_identifier, several.ok, none.ok, verbose
+      add_identifier, several.ok, none.ok, verbose = self$verbose
     ) {
 
       ### input checks
@@ -2308,20 +2411,42 @@ Nop <- R6::R6Class(
       checkmate::assert_flag(verbose)
 
       ### check `add_identifier` input
-      oeli::match_arg(
+      add_identifier <- oeli::match_arg(
         add_identifier, choices = c(
-          ".run_id", ".optimization_label", ".optimizer_id",
-          ".optimizer_label", ".comparable", ".direction"
+          ".run_id", ".optimization_label", ".optimizer_label", ".comparable",
+          ".direction"
         ),
         several.ok = several.ok, none.ok = none.ok
       )
+      if (verbose) {
+        cli::cli_alert_info(
+          "Selected identifier{?s} {.val {add_identifier}}."
+        )
+      }
+      return(add_identifier)
+    },
 
-      ### TODO add verbose output of selected identifiers
+    .check_group_by = function(
+      group_by, verbose = self$verbose
+    ) {
+      checkmate::assert_choice(
+        group_by, choices = c(".optimization_label", ".optimizer_label"),
+        null.ok = TRUE
+      )
+      if (verbose) {
+        if (is.null(group_by)) {
+          cli::cli_alert_info("Selected no grouping.")
+        } else {
+          cli::cli_alert_info("Selected grouping by {.val {group_by}}.")
+        }
+      }
+      return(group_by)
     },
 
     ### return run ids based on filters
     .get_run_ids = function(
-      which_run, which_direction, which_optimizer, which_element, verbose
+      which_run, which_direction, which_optimizer, which_element,
+      verbose = self$verbose
     ) {
 
       ### check inputs
@@ -2336,94 +2461,102 @@ Nop <- R6::R6Class(
         which_optimizer, to_id = FALSE, verbose = FALSE
       )
       which_element <- private$.check_which_element(
-        which_element, verbose = FALSE
+        which_element, choices = self$elements(
+          which_optimizer = which_optimizer, group_by = NULL, verbose = FALSE
+        ),
+        verbose = FALSE
       )
 
       ### build identifier
       identifier <- character()
+      ids <- integer()
 
       ### filter 'which_run'
       if (checkmate::test_character(which_run)) {
 
-        if ("failed" %in% which_run) {
-          if (verbose) {
-            cli::cli_alert_info("Filtered for failed optimizations.")
+        for (filter in which_run) {
+
+          if (identical(filter, "all")) {
+            if (verbose) {
+              cli::cli_alert_info("Filtered for all optimizations.")
+            }
+            next
+          } else if (identical(filter, "success")) {
+            identifier <- c(identifier, "!fail")
+            if (verbose) {
+              cli::cli_alert_info("Filtered for successfull optimizations.")
+            }
+          } else if (identical(filter, "!success")) {
+            identifier <- c(identifier, "fail")
+            if (verbose) {
+              cli::cli_alert_info("Filtered for failed optimizations.")
+            }
+          } else if (identical(filter, "comparable")) {
+            identifier <- c(identifier, "comparable")
+            if (verbose) {
+              cli::cli_alert_info("Filtered for comparable optimizations.")
+            }
+          } else if (identical(filter, "!comparable")) {
+            identifier <- c(identifier, "!comparable")
+            if (verbose) {
+              cli::cli_alert_info("Filtered for incomparable optimizations.")
+            }
+          } else {
+            if (startsWith(filter, "!")) {
+              filter <- sub("!*", "", filter)
+              identifier <- c(identifier, paste0("!optimization_label:", filter))
+              if (verbose) {
+                cli::cli_alert_info(
+                  "Filtered for optimizations that do not have the label {.val {filter}}."
+                )
+              }
+            } else {
+              identifier <- c(identifier, paste0("optimization_label:", filter))
+              if (verbose) {
+                cli::cli_alert_info(
+                  "Filtered for optimizations that do have the label {.val {filter}}."
+                )
+              }
+            }
           }
-          identifier <- c(identifier, "failed")
+
         }
-
-        # TODO
-
-
-
-      #   if (identical(filter, "success")) {
-      #     if (verbose) {
-      #       cli::cli_alert_info("Filtered for successful optimizations.")
-      #     }
-      #     run_ids <- setdiff(run_ids, private$.failed_ids)
-      #   }
-      #
-      #   if (identical(which_run, "failed")) {
-      #     if (verbose) {
-      #       cli::cli_alert_info("Filtered for failed optimizations.")
-      #     }
-      #     run_ids <- intersect(run_ids, private$.failed_ids)
-      #   }
-      #
-      #   if (identical(which_run, "comparable")) {
-      #     if (verbose) {
-      #       cli::cli_alert_info("Filtered for comparable optimizations.")
-      #     }
-      #     run_ids <- intersect(run_ids, private$.comparable_ids)
-      #   }
-      #
-      #   if (identical(which_run, "incomparable")) {
-      #     if (verbose) {
-      #       cli::cli_alert_info("Filtered for incomparable optimizations.")
-      #     }
-      #     run_ids <- setdiff(run_ids, private$.comparable_ids)
-      #   }
-      #
-      # }
-      #
-      # if (filter %in% names(private$.optimization_label_ids)) {
-      #
-      #   if (verbose) {
-      #     cli::cli_alert_info("Filtered for optimization label {filter}.")
-      #   }
-      #   run_ids <- intersect(
-      #     run_ids, private$.optimization_label_ids[[filter]]
-      #   )
-
 
       } else if (checkmate::test_integerish(which_run)) {
 
+        ids <- c(ids, which_run)
         if (verbose) {
           cli::cli_alert_info("Filtered for run id {which_run}.")
         }
-        run_ids <- which(seq_along(private$.results) %in% which_run)
 
       }
 
       ### filter `which_direction`
       if (checkmate::test_character(which_direction)) {
 
-        if (identical(which_direction, "min")) {
+        if (all(c("min", "max") %in% which_direction)) {
 
+          identifier <- c(identifier, "direction:min", "direction:max")
           if (verbose) {
-            cli::cli_alert_info("Filtered for minimizations.")
+            cli::cli_alert_info("Filtered for minimization and maximization.")
           }
-          run_ids <- intersect(run_ids, private$.direction_ids[["min"]])
 
-        }
+        } else if (identical(which_direction, "min")) {
 
-        if (identical(which_direction, "max")) {
-
+          identifier <- c(identifier, "direction:min")
           if (verbose) {
-            cli::cli_alert_info("Filtered for maximizations.")
+            cli::cli_alert_info("Filtered for minimization.")
           }
-          run_ids <- intersect(run_ids, private$.direction_ids[["max"]])
 
+        } else if (identical(which_direction, "max")) {
+
+          identifier <- c(identifier, "direction:max")
+          if (verbose) {
+            cli::cli_alert_info("Filtered for maximization.")
+          }
+
+        } else {
+          stop("error")
         }
 
       }
@@ -2433,62 +2566,69 @@ Nop <- R6::R6Class(
 
         for (filter in which_optimizer) {
 
-          if (filter %in% self$reserved_labels) {
-
-            if (identical(filter, "all")) {
-              # if (verbose) {
-              #   cli::cli_alert_info("Filtered for all optimizers.")
-              # }
-            }
-
-          }
-
-          if (filter %in% names(private$.optimizer)) {
-
+          if (identical(filter, "all")) {
             if (verbose) {
-              cli::cli_alert_info("Filtered for optimizer label {filter}.")
+              cli::cli_alert_info("Filtered for all optimizers.")
             }
-            run_ids <- intersect(
-              run_ids, private$.optimizer_label_ids[[filter]]
-            )
+            next
+          } else {
+
+            if (filter %in% names(private$.optimizer)) {
+
+              identifier <- c(identifier, paste0("optimizer_label:", filter))
+              if (verbose) {
+                cli::cli_alert_info(
+                  "Filtered for optimizer label {.val {filter}}."
+                )
+              }
+
+            } else {
+
+              cli::cli_warn(
+                "Optimizer label {.val {filter}} is unkown."
+              )
+
+            }
 
           }
-
         }
 
       } else if (checkmate::test_integerish(which_optimizer)) {
 
+        identifier <- c(identifier, paste0("optimizer_id:", which_optimizer))
         if (verbose) {
           optimizer_labels <- names(private$.optimizer)[which_optimizer]
-          cli::cli_alert_info("Filtered for optimizer {optimizer_labels}.")
+          cli::cli_alert_info("Filtered for optimizer {.val {optimizer_labels}}.")
         }
-        run_ids <- intersect(
-          run_ids, unlist(private$.optimizer_id_ids[optimizer_ids])
-        )
 
       }
 
       ### filter `which_element`
-      if (identical(which_element, "all")) {
+      if (checkmate::test_character(which_element)) {
 
-        # if (verbose) {
-        #   cli::cli_alert_info("Filtered for all elements.")
-        # }
+        if ("all" %in% which_element) {
 
-      } else if (checkmate::test_character(which_element)) {
+          if (verbose) {
+            cli::cli_alert_info("Filtered for all elements.")
+          }
+          next
 
-        run_ids <- intersect(
-          run_ids,
-          unique(unlist(private$.element_ids[unlist(which_element)]))
-        )
+        } else {
+
+          identifier <- c(identifier, paste0("element:", which_element))
+          if (verbose) {
+            cli::cli_alert_info("Filtered for elements {.val {which_element}}.")
+          }
+        }
 
       }
 
       ### return ids
-      if (length(run_ids) == 0) {
+      ids <- unique(c(private$.results$indices(identifier = identifier), ids))
+      if (length(ids) == 0) {
         cli::cli_warn("No optimization results selected.")
       }
-      return(run_ids)
+      return(ids)
 
     }
   )

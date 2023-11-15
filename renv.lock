@@ -1037,14 +1037,14 @@
     },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.2.0.9004",
+      "Version": "0.2.0.9005",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oeli",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "c3e350cf98c715f04b2c1a22b65b974a530685d3",
+      "RemoteSha": "e95b7351213aee5176feaadbfe7d3c1911b7f2c2",
       "Requirements": [
         "Rcpp",
         "RcppArmadillo",
@@ -1058,7 +1058,7 @@
         "testthat",
         "usethis"
       ],
-      "Hash": "a5ed657a618ca32b8a1f0a2300b775b4"
+      "Hash": "3ae497548193b0b3316817e41cbffc69"
     },
     "openssl": {
       "Package": "openssl",
@@ -1079,7 +1079,7 @@
       "RemoteRepo": "optimizeR",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "7a1d8a21efeabdbce8c193fecbd153f7795d3559",
+      "RemoteSha": "665eec661d97c57477756c4778815e995ed0a154",
       "Requirements": [
         "R",
         "R6",
@@ -1090,7 +1090,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "83b3aa9a79e5c2cc600c4d7cb983d76e"
+      "Hash": "f0795f32868a1028f1652815307ca39d"
     },
     "parallelly": {
       "Package": "parallelly",

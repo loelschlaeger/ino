@@ -57,7 +57,7 @@ Nop_mixture$
 
 
 ## ---- access results, eval = FALSE-------------------------------------------------------------
-## Nop_mixture$results(which_run = 42, which_element = c("value", "parameter"))
+Nop_mixture$results(which_run = 42, which_element = c("value", "parameter"))
 
 
 ## ---- overview optima, eval = FALSE------------------------------------------------------------
@@ -65,6 +65,9 @@ Nop_mixture$
 
 
 ## ---- define em algorithm----------------------------------------------------------------------
+
+# TODO: can I have data as ... argument?
+
 em <- function(normal_mixture_llk, theta, epsilon = 1e-08, iterlim = 1000, data) {
   llk <- normal_mixture_llk(theta, data)
   mu <- theta[1:2]

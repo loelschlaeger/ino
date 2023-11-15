@@ -127,16 +127,16 @@ Nop_ackley$best("parameter")                  # return best parameter vector
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{npar}}{The lengths of the target arguments.}
+\item{\code{npar}}{The length(s) of the target argument(s).}
 
-\item{\code{fresh_label}}{An optimization label that has not been used yet.}
+\item{\code{fresh_label}}{A new optimization label that has not been used yet.}
 
 \item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
 such messages.
-This can be defined globally via \code{options("ino_verbose" = TRUE)}.}
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 
 \item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
-This can be defined globally via \code{options("digits" = 7)}.}
+By default, \code{digits = getOption("digits", default = 7)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -145,7 +145,7 @@ This can be defined globally via \code{options("digits" = 7)}.}
 \itemize{
 \item \href{#method-Nop-new}{\code{Nop$new()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
-\item \href{#method-Nop-argument}{\code{Nop$argument()}}
+\item \href{#method-Nop-fixed_argument}{\code{Nop$fixed_argument()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-initialize_fixed}{\code{Nop$initialize_fixed()}}
@@ -213,6 +213,10 @@ Prints details of the numerical optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{self$digits}.
+By default, \code{digits = getOption("digits", default = 7)}.}
+
 \item{\code{...}}{Currently not used.}
 }
 \if{html}{\out{</div>}}
@@ -222,13 +226,13 @@ Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-argument}{}}}
-\subsection{Method \code{argument()}}{
+\if{html}{\out{<a id="method-Nop-fixed_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-fixed_argument}{}}}
+\subsection{Method \code{fixed_argument()}}{
 Manages additional (i.e., in addition to the target argument) arguments
 for \code{f}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$argument(action, ..., verbose = getOption("ino_verbose", default = FALSE))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$fixed_argument(action, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -713,7 +717,7 @@ Invisibly \code{TRUE} if the tests are successful.
 \subsection{Method \code{elements()}}{
 Returns the names of available elements in the optimization results.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$elements(which_optimizer = "all", group_by = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$elements(which_optimizer = "all", group_by = NULL, verbose = self$verbose)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -732,12 +736,17 @@ Returns the names of available elements in the optimization results.
 \item \code{".optimization_label"} to group by optimization label,
 \item \code{".optimizer_label"} to group by optimizer label.
 }}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-If \code{group_by} is \code{NULL} a \code{character}, otherwise a
-\code{list}.
+A \code{character} if \code{group_by = NULL}, otherwise a
+\code{list} of \code{character}s.
 }
 }
 \if{html}{\out{<hr>}}
@@ -750,8 +759,7 @@ Returns the number of optimization results.
   which_run = "all",
   which_direction = c("min", "max"),
   which_optimizer = "all",
-  which_element = "all",
-  verbose = getOption("ino_verbose", default = FALSE)
+  which_element = "all"
 )}\if{html}{\out{</div>}}
 }
 
@@ -825,8 +833,7 @@ Returns optimization results.
   which_optimizer = "all",
   which_element = "all",
   add_identifier = character(),
-  group_by = NULL,
-  verbose = getOption("ino_verbose", default = FALSE)
+  group_by = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -884,6 +891,8 @@ where the following elements are always available:
 
 \item{\code{add_identifier}}{Selects identifiers to be added to the output. Can be one or more of:
 \itemize{
+\item \code{".run_id"}, which yields an \code{integer} that identifies the
+optimization run,
 \item \code{".optimization_label"}, which yields a \code{character} that
 identifies custom groups of optimization runs,
 \item \code{".optimizer_label"}, which yields a \code{character} that identifies
@@ -904,7 +913,8 @@ identifies whether the result corresponds to minimization or maximization.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{list}.
+A \code{list} if \code{group_by = NULL}, otherwise a \code{list} of
+\code{list}s.
 }
 }
 \if{html}{\out{<hr>}}
@@ -917,10 +927,10 @@ Provides an overview of the optimization runs.
   which_element = c("value", "parameter"),
   which_run = "all",
   which_optimizer = "all",
-  which_direction = "min",
-  digits = getOption("digits", default = 7),
+  which_direction = c("min", "max"),
   add_identifier = character(),
-  verbose = getOption("ino_verbose", default = FALSE)
+  group_by = NULL,
+  digits = self$digits
 )}\if{html}{\out{</div>}}
 }
 
@@ -978,6 +988,8 @@ as provided for example by \code{$best()}.}
 
 \item{\code{add_identifier}}{Selects identifiers to be added to the output. Can be one or more of:
 \itemize{
+\item \code{".run_id"}, which yields an \code{integer} that identifies the
+optimization run,
 \item \code{".optimization_label"}, which yields a \code{character} that
 identifies custom groups of optimization runs,
 \item \code{".optimizer_label"}, which yields a \code{character} that identifies
@@ -987,6 +999,17 @@ the result is comparable,
 \item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
 identifies whether the result corresponds to minimization or maximization.
 }}
+
+\item{\code{group_by}}{Selects how the output is grouped. Either:
+\itemize{
+\item \code{NULL} to not group (default),
+\item \code{".optimization_label"} to group by optimization label,
+\item \code{".optimizer_label"} to group by optimizer label.
+}}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{self$digits}.
+By default, \code{digits = getOption("digits", default = 7)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1069,8 +1092,7 @@ Provides a frequency overview of the identified optimum values.
   group_by = NULL,
   sort_by = "frequency",
   digits = getOption("digits", default = 7),
-  print.rows = 0,
-  verbose = getOption("ino_verbose", default = FALSE)
+  print.rows = 0
 )}\if{html}{\out{</div>}}
 }
 
@@ -1122,6 +1144,10 @@ as provided for example by \code{$best()}.}
 \item \code{"frequency"} (default) to sort rows by frequency,
 \item \code{"value"} to sort by function value.
 }}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{self$digits}.
+By default, \code{digits = getOption("digits", default = 7)}.}
 
 \item{\code{print.rows}}{An \code{integer}, specifying the maximal number of rows to be
 printed. No printing if \code{print.rows = 0}, which is the default.}
@@ -1279,8 +1305,7 @@ Stores the true best function value or parameter vector.
   input = NULL,
   which_element = "parameter",
   which_direction = "min",
-  digits = getOption("digits", default = 7),
-  verbose = getOption("ino_verbose", default = FALSE)
+  digits = self$digits
 )}\if{html}{\out{</div>}}
 }
 
@@ -1315,6 +1340,10 @@ where the following elements are always available:
 \item \code{"min"} for minimization,
 \item \code{"max"} for maximization.
 }}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{self$digits}.
+By default, \code{digits = getOption("digits", default = 7)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1334,8 +1363,7 @@ Returns the best found function value or parameter vector.
   which_run = c("success", "comparable"),
   which_direction = "min",
   which_optimizer = "all",
-  digits = getOption("digits", default = 7),
-  verbose = getOption("ino_verbose", default = FALSE)
+  digits = self$digits
 )}\if{html}{\out{</div>}}
 }
 
@@ -1372,6 +1400,10 @@ as provided for example by \code{$best()}.}
 \item a \code{character} (vector) of specified optimizer labels,
 \item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
 }}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{self$digits}.
+By default, \code{digits = getOption("digits", default = 7)}.}
 }
 \if{html}{\out{</div>}}
 }
