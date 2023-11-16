@@ -2,6 +2,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @importFrom numDeriv grad
 ## usethis namespace: end
 NULL
 

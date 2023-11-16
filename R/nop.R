@@ -833,11 +833,12 @@ Nop <- R6::R6Class(
       checkmate::assert_integerish(breaks, any.missing = FALSE, lower = 1, len = sum(self$npar))
       checkmate::assert_flag(jitter)
       grid_points <- mapply(seq, from = lower, to = upper, len = breaks, SIMPLIFY = FALSE)
-      at <- asplit(expand.grid(grid_points), 1)
+      at <- lapply(as.list(asplit(expand.grid(grid_points), 1)), as.numeric)
       if (jitter) {
         at <- lapply(at, jitter, ...)
       }
-      self$initialize_custom(at, verbose = FALSE, type = "grid")
+      at <- as.list(at)
+      self$initialize_custom(at, type = "grid")
     },
 
     #' @description
@@ -845,7 +846,7 @@ Nop <- R6::R6Class(
     #' @return
     #' Invisibly the \code{Nop} object.
 
-    initialize_transfer = function(
+    initialize_continue = function(
       which_run = "last", which_optimizer = "all", which_direction = c("min", "max")
     ) {
       out <- self$results(
@@ -855,7 +856,7 @@ Nop <- R6::R6Class(
       at <- lapply(out, `[[`, "parameter")
       seconds <- sapply(out, `[[`, "seconds")
       runs <- length(at)
-      self$initialize_custom(at = at, seconds = seconds, type = "transferred")
+      self$initialize_custom(at = at, seconds = seconds, type = "continued")
     },
 
     #' @description
@@ -909,22 +910,33 @@ Nop <- R6::R6Class(
       } else {
         runs <- ceiling(runs * proportion)
         if (condition == "gradient_steep") {
-          # TODO
-          # numDeriv::grad
+          gradient_norms <- sapply(
+            private$.initial_values,
+            function(x) {
+              grad <- numDeriv::grad(
+                func = private$.objective$evaluate,
+                x = x
+              )
+              sqrt(sum(grad^2))
+            }
+          )
+          indices <- order(gradient_norms, decreasing = TRUE)[seq_len(runs)]
         } else {
           values <- sapply(private$.initial_values, self$evaluate)
-          if (condition == "value_low") {
-            # TODO
-          } else {
-            # TODO
-          }
+          indices <- order(values, decreasing = (condition == "value_high"))[seq_len(runs)]
         }
-        ### remove seconds and types
+        private$.initial_values <- private$.initial_values[indices]
+        private$.initial_seconds <- private$.initial_seconds[indices]
+        private$.initial_type <- private$.initial_type[indices]
         if (self$verbose) {
-          cli::cli_alert_info("Selected {runs} initial parameter value{?s}.")
+          cli::cli_alert_info(
+            "Reduced to a subset of {runs} initial parameter value{?s} based
+            on the condition {.val {condition}}."
+          )
         }
       }
       invisible(self)
+
     },
 
     #' @description
@@ -1354,7 +1366,7 @@ Nop <- R6::R6Class(
       results <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
         which_element = which_element, which_direction = which_direction,
-        add_identifier = add_identifier
+        add_identifier = add_identifier, group_by = group_by
       )
 
       ### save results in data.frame
@@ -1372,7 +1384,7 @@ Nop <- R6::R6Class(
         out <- rbind(out, rbind(append), make.row.names = FALSE)
       }
 
-      ### try to unlist
+      ### try to unlist results in list form
       for (i in seq_len(ncol(out))) {
         unlist_try <- unlist(out[, i], recursive = FALSE)
         if (length(unlist_try) == nrow(out)) {
@@ -1380,7 +1392,7 @@ Nop <- R6::R6Class(
         }
       }
 
-      ### round
+      ### round numeric results
       for (i in seq_len(ncol(out))) {
         if (is.vector(out[, i]) && is.numeric(out[, i])) {
           out[, i] <- round(out[, i], digits = digits)
@@ -1443,43 +1455,30 @@ Nop <- R6::R6Class(
     #' @return
     #' A \code{data.frame}. If \code{group_by} is not \code{NULL}, a \code{list}
     #' of \code{data.frame}s.
+
     optima = function(
-      which_run = "comparable", which_direction = c("min", "max"),
+      which_run = "comparable", which_direction = "min",
       which_optimizer = "all", group_by = NULL, sort_by = "frequency",
-      digits = getOption("digits", default = 7), print.rows = 0
+      digits = self$digits, print.rows = 0
     ) {
 
       ### input checks
+      which_direction <- private$.check_which_direction(
+        which_direction = which_direction, both_allowed = FALSE
+      )
+      sort_by <- oeli::match_arg(sort_by, c("frequency", "value"))
       checkmate::assert_count(digits)
       checkmate::assert_count(print.rows)
-      sort_by <- oeli::match_arg(sort_by, c("frequency", "value"))
 
-
-      # TODO
-      if (is.null(group_by)) {
-        add_identifier <- character()
-      } else {
-        add_identifier <- group_by
-      }
-
-      ###
+      ### access the values of the optimizations
       data <- self$summary(
         which_element = "value", which_run = which_run,
         which_direction = which_direction, which_optimizer = which_optimizer,
-        digits = digits, add_identifier = add_identifier, verbose = verbose
+        digits = digits, group_by = group_by
       )
-      if (length(data) == 0) {
-        return(data.frame())
-      }
-
-      ### split
-      if (!is.null(group_by)) {
-        data <- split(data, factor(data[[group_by]]))
-      } else {
-        data <- list(data)
-      }
 
       ###
+      if (is.null(group_by)) data <- list(data)
       optima <- list()
       for (i in seq_along(data)) {
         values <- data[[i]][["value"]]
@@ -1515,6 +1514,7 @@ Nop <- R6::R6Class(
         }
         return(invisible(optima))
       }
+
     },
 
     #' @description
@@ -1777,6 +1777,7 @@ Nop <- R6::R6Class(
     #' @return
     #' Either a \code{numeric} if \code{input} is \code{NULL} or invisibly the
     #' \code{Nop} object, else.
+
     true = function(
       input = NULL, which_element = "parameter", which_direction = "min",
       digits = self$digits
@@ -1943,11 +1944,12 @@ Nop <- R6::R6Class(
     #' Either \code{"min"} or \code{"max"}.
     #' @details
     #' In the case that multiple optimization runs led to the best value, only
-    #' the first one of them is considered.
+    #' the first one of them is returned.
     #' @return
     #' A \code{numeric} (vector) with two attributes:
     #' - \code{.run_id}, the run id that led to the best value,
     #' - \code{.optimizer_label}, the optimizer that led to the best value.
+
     best = function(
       which_element = "value", which_run = c("success", "comparable"),
       which_direction = "min", which_optimizer = "all", digits = self$digits
@@ -1956,17 +1958,16 @@ Nop <- R6::R6Class(
       ### check inputs
       which_element <- private$.check_which_element(
         which_element = which_element, choices = c("value", "parameter"),
-        several.ok = FALSE, verbose = verbose
+        several.ok = FALSE
       )
       which_run <- private$.check_which_run(
-        which_run = which_run, verbose = verbose
+        which_run = which_run
       )
       which_direction <- private$.check_which_direction(
-        which_direction = which_direction, both_allowed = FALSE,
-        verbose = verbose
+        which_direction = which_direction, both_allowed = FALSE
       )
       which_optimizer <- private$.check_which_optimizer(
-        which_optimizer = which_optimizer, to_id = FALSE, verbose = verbose
+        which_optimizer = which_optimizer, to_id = FALSE
       )
 
       ### get results
@@ -1975,8 +1976,7 @@ Nop <- R6::R6Class(
         which_element = c("value", "parameter"),
         which_direction = which_direction,
         digits = Inf,
-        add_identifier = c(".run_id", ".optimizer_label"),
-        verbose = verbose
+        add_identifier = c(".run_id", ".optimizer_label")
       )
       if (nrow(data) == 0) {
         return(invisible(NULL))
@@ -1992,6 +1992,54 @@ Nop <- R6::R6Class(
         ".run_id" = data[best, ".run_id"],
         ".optimizer_label" = data[best, ".optimizer_label"]
       )
+    },
+
+    #' @description
+    #' Returns the parameter vector corresponding to an optimum closest
+    #' (in absolute distance) to a reference \code{value}.
+    #' @param value
+    #' A single \code{numeric}, a reference for the value.
+    #' @details
+    #' In the case of ties, only one of the closest parameter vectors is
+    #' returned.
+    #' @return
+    #' A \code{numeric} parameter \code{vector} with attributes defined by
+    #' \code{add_identifier}.
+
+    closest = function(
+      value, which_run = "all", which_direction = c("min", "max"),
+      which_optimizer = "all", add_identifier = c(".run_id", ".optimizer_label"),
+      digits = self$digits
+    ) {
+
+      ### check inputs
+      checkmate::assert_number(value, finite = TRUE)
+      which_run <- private$.check_which_run(which_run = which_run)
+      which_direction <- private$.check_which_direction(
+        which_direction = which_direction, both_allowed = TRUE
+      )
+      which_optimizer <- private$.check_which_optimizer(
+        which_optimizer = which_optimizer, to_id = FALSE
+      )
+      add_identifier <- private$.check_add_identifier(
+        add_identifier = add_identifier, several.ok = TRUE, none.ok = TRUE
+      )
+
+      ### get values
+      values <- self$summary(
+        which_element = c("value", "parameter"), which_run = which_run,
+        which_optimizer = which_optimizer, which_direction = which_direction,
+        add_identifier = add_identifier, digits = Inf
+      )
+
+      ### find closest value
+      row <- which.min(abs(values$value - value))
+      out <- round(values[row, "parameter"][[1]], digits = digits)
+      for (identifier in add_identifier) {
+        attr(out, identifier) <- values[row, identifier]
+      }
+      return(out)
+
     }
 
   ),
@@ -2470,9 +2518,12 @@ Nop <- R6::R6Class(
       ### build identifier
       identifier <- character()
       ids <- integer()
+      use_ids <- FALSE # flag to signal that ids along with identifiers are used
 
       ### filter 'which_run'
       if (checkmate::test_character(which_run)) {
+
+        use_ids <- FALSE
 
         for (filter in which_run) {
 
@@ -2523,6 +2574,8 @@ Nop <- R6::R6Class(
         }
 
       } else if (checkmate::test_integerish(which_run)) {
+
+        use_ids <- TRUE
 
         ids <- c(ids, which_run)
         if (verbose) {
@@ -2624,9 +2677,17 @@ Nop <- R6::R6Class(
       }
 
       ### return ids
-      ids <- unique(c(private$.results$indices(identifier = identifier), ids))
+      if (use_ids) {
+        ids <- unique(
+          intersect(private$.results$indices(identifier = identifier), ids)
+        )
+      } else {
+        ids <- private$.results$indices(identifier = identifier)
+      }
+
       if (length(ids) == 0) {
         cli::cli_warn("No optimization results selected.")
+        ids <- integer()
       }
       return(ids)
 

@@ -27,6 +27,7 @@ Imports:
     checkmate (>= 2.2.0),
     future,
     future.apply,
+    numDeriv,
     optimizeR (>= 0.3.2.9000),
     progressr,
     TestFunctions

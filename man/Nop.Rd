@@ -151,7 +151,7 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 \item \href{#method-Nop-initialize_fixed}{\code{Nop$initialize_fixed()}}
 \item \href{#method-Nop-initialize_random}{\code{Nop$initialize_random()}}
 \item \href{#method-Nop-initialize_grid}{\code{Nop$initialize_grid()}}
-\item \href{#method-Nop-initialize_transfer}{\code{Nop$initialize_transfer()}}
+\item \href{#method-Nop-initialize_continue}{\code{Nop$initialize_continue()}}
 \item \href{#method-Nop-initialize_custom}{\code{Nop$initialize_custom()}}
 \item \href{#method-Nop-initialize_promising}{\code{Nop$initialize_promising()}}
 \item \href{#method-Nop-initialize_transform}{\code{Nop$initialize_transform()}}
@@ -168,6 +168,7 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 \item \href{#method-Nop-trace}{\code{Nop$trace()}}
 \item \href{#method-Nop-true}{\code{Nop$true()}}
 \item \href{#method-Nop-best}{\code{Nop$best()}}
+\item \href{#method-Nop-closest}{\code{Nop$closest()}}
 \item \href{#method-Nop-clone}{\code{Nop$clone()}}
 }
 }
@@ -464,12 +465,12 @@ Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-initialize_transfer"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-initialize_transfer}{}}}
-\subsection{Method \code{initialize_transfer()}}{
+\if{html}{\out{<a id="method-Nop-initialize_continue"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_continue}{}}}
+\subsection{Method \code{initialize_continue()}}{
 Defines initial values based on results from previous optimizations.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_transfer(
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(
   which_run = "last",
   which_optimizer = "all",
   which_direction = c("min", "max")
@@ -1087,11 +1088,11 @@ Provides a frequency overview of the identified optimum values.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
   which_run = "comparable",
-  which_direction = c("min", "max"),
+  which_direction = "min",
   which_optimizer = "all",
   group_by = NULL,
   sort_by = "frequency",
-  digits = getOption("digits", default = 7),
+  digits = self$digits,
   print.rows = 0
 )}\if{html}{\out{</div>}}
 }
@@ -1409,7 +1410,7 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 }
 \subsection{Details}{
 In the case that multiple optimization runs led to the best value, only
-the first one of them is considered.
+the first one of them is returned.
 }
 
 \subsection{Returns}{
@@ -1418,6 +1419,91 @@ A \code{numeric} (vector) with two attributes:
 \item \code{.run_id}, the run id that led to the best value,
 \item \code{.optimizer_label}, the optimizer that led to the best value.
 }
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-closest"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-closest}{}}}
+\subsection{Method \code{closest()}}{
+Returns the parameter vector corresponding to an optimum closest
+(in absolute distance) to a reference \code{value}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$closest(
+  value,
+  which_run = "all",
+  which_direction = c("min", "max"),
+  which_optimizer = "all",
+  add_identifier = c(".run_id", ".optimizer_label"),
+  digits = self$digits
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A single \code{numeric}, a reference for the value.}
+
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} for all results.
+
+It can also the filter
+\itemize{
+\item \code{"success"} for the results of successful optimizations,
+\item \code{"comparable"} for the results of comparable optimizations (i.e.,
+results obtained for the original optimization problem without any
+transformations),
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters can be combined and negated (by putting a \code{"!"} in front),
+for example \code{which_run = c("!success", "comparable")} filters for
+comparable runs that failed.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
+
+\item{\code{which_direction}}{Selects the type of optimization. Either:
+\itemize{
+\item \code{"min"} for minimization,
+\item \code{"max"} for maximization.
+}}
+
+\item{\code{which_optimizer}}{Selects numerical optimizers. Either:
+\itemize{
+\item \code{"all"} for all specified optimizers,
+\item a \code{character} (vector) of specified optimizer labels,
+\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+}}
+
+\item{\code{add_identifier}}{Selects identifiers to be added to the output. Can be one or more of:
+\itemize{
+\item \code{".run_id"}, which yields an \code{integer} that identifies the
+optimization run,
+\item \code{".optimization_label"}, which yields a \code{character} that
+identifies custom groups of optimization runs,
+\item \code{".optimizer_label"}, which yields a \code{character} that identifies
+the optimizer,
+\item \code{".comparable"}, which yields a \code{logical} that identifies whether
+the result is comparable,
+\item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
+identifies whether the result corresponds to minimization or maximization.
+}}
+
+\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+This can be defined globally via \code{self$digits}.
+By default, \code{digits = getOption("digits", default = 7)}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+In the case of ties, only one of the closest parameter vectors is
+returned.
+}
+
+\subsection{Returns}{
+A \code{numeric} parameter \code{vector} with attributes defined by
+\code{add_identifier}.
 }
 }
 \if{html}{\out{<hr>}}
