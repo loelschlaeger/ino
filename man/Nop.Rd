@@ -208,7 +208,7 @@ A new \code{Nop} object.
 \subsection{Method \code{print()}}{
 Prints details of the numerical optimization problem.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$print(digits = getOption("digits", default = 7), ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$print(digits = self$digits, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -760,7 +760,8 @@ Returns the number of optimization results.
   which_run = "all",
   which_direction = c("min", "max"),
   which_optimizer = "all",
-  which_element = "all"
+  which_element = "all",
+  verbose = self$verbose
 )}\if{html}{\out{</div>}}
 }
 
@@ -815,6 +816,11 @@ where the following elements are always available:
 \item \code{"error_message"}, the error message (if any).
 }
 }}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1364,7 +1370,8 @@ Returns the best found function value or parameter vector.
   which_run = c("success", "comparable"),
   which_direction = "min",
   which_optimizer = "all",
-  digits = self$digits
+  digits = self$digits,
+  verbose = self$verbose
 )}\if{html}{\out{</div>}}
 }
 
@@ -1405,6 +1412,11 @@ as provided for example by \code{$best()}.}
 \item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 }
 \if{html}{\out{</div>}}
 }

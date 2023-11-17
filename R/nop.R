@@ -266,10 +266,13 @@ Nop <- R6::R6Class(
         npar = npar,
         ...
       )
+      private$.objective$objective_name <- oeli::variable_name(objective)
+      private$.objective_name <- private$.objective$objective_name
+      private$.target_name <- private$.objective$.__enclos_env__$private$.target
 
       ### build result index
       private$.results <- oeli::Index$new()
-      private$.results$missing_identifier <- NA
+      private$.results$missing_identifier <- FALSE
       private$.results$hide_warnings <- TRUE
 
     },
@@ -281,13 +284,13 @@ Nop <- R6::R6Class(
     #' @return
     #' Invisibly the \code{Nop} object.
 
-    print = function(digits = getOption("digits", default = 7), ... ) {
+    print = function(digits = self$digits, ... ) {
 
       ### info on optimization problem
       cli::cli_h2("Optimization problem")
       cli::cli_bullets(c(
-        "*" = "Function: {self$f_name}",
-        "*" = "Optimize over: {private$.f_target} (length {self$npar})"
+        "*" = "Function: {private$.objective_name}",
+        "*" = "Optimize over: {private$.target_name} (length {self$npar})"
       ))
       tv_min <- private$.true_value_min
       if (!is.null(tv_min)) {
@@ -345,7 +348,7 @@ Nop <- R6::R6Class(
       cli::cli_h2("Initial values")
       initial_values <- private$.initial_values
       if (length(initial_values) == 0) {
-        cat(cli::style_italic("No initial values specified.\n\n"))
+        cat(cli::style_italic("No initial values specified currently.\n\n"))
       } else {
         initial_types <- table(private$.initial_type)
         cli::cli_bullets(
@@ -360,14 +363,14 @@ Nop <- R6::R6Class(
       cli::cli_h2("Optimization runs")
       noptimizations <- suppressWarnings(self$runs(verbose = FALSE))
       if (noptimizations == 0) {
-        cat(cli::style_italic("No results.\n\n"))
+        cat(cli::style_italic("No results yet.\n\n"))
       } else {
         suppressWarnings({
           noptimizations <- self$runs(verbose = FALSE)
           ncomparable <- self$runs(which_run = "comparable", verbose = FALSE)
-          nincomparable <- self$runs(which_run = "incomparable", verbose = FALSE)
-          nfailed <- self$runs(which_run = "failed", verbose = FALSE)
-          nsuccess <- self$runs(which_run = "success", verbose = FALSE)
+          nincomparable <- self$runs(which_run = "!comparable", verbose = FALSE)
+          nfailed <- self$runs(which_run = "fail", verbose = FALSE)
+          nsuccess <- self$runs(which_run = "!fail", verbose = FALSE)
         })
         cli::cli_bullets(c(
           "*" = "Total runs: {noptimizations}"
@@ -419,6 +422,7 @@ Nop <- R6::R6Class(
         }
       }
       invisible(self)
+
     },
 
     #' @description
@@ -1241,10 +1245,11 @@ Nop <- R6::R6Class(
               names(
                 unlist(
                   private$.results$get(
-                    c(
+                    identifier = c(
                       paste0("optimization_label:", optimization_label),
                       paste0("optimizer_id:", optimizer_ids)
-                    )
+                    ),
+                    locical = "and"
                   ),
                   recursive = FALSE
                 )
@@ -1258,7 +1263,10 @@ Nop <- R6::R6Class(
             out[[optimizer_label]] <- unique(
               names(
                 unlist(
-                  private$.results$get(paste0("optimizer_label:", optimizer_label)),
+                  private$.results$get(
+                    identifier = paste0("optimizer_label:", optimizer_label),
+                    logical = "and"
+                  ),
                   recursive = FALSE
                 )
               )
@@ -1278,12 +1286,13 @@ Nop <- R6::R6Class(
 
     runs = function(
       which_run = "all", which_direction = c("min", "max"),
-      which_optimizer = "all", which_element = "all"
+      which_optimizer = "all", which_element = "all", verbose = self$verbose
     ) {
       length(
         private$.get_run_ids(
           which_run = which_run, which_direction = which_direction,
-          which_optimizer = which_optimizer, which_element = which_element
+          which_optimizer = which_optimizer, which_element = which_element,
+          verbose = verbose
         )
       )
     },
@@ -1952,7 +1961,8 @@ Nop <- R6::R6Class(
 
     best = function(
       which_element = "value", which_run = c("success", "comparable"),
-      which_direction = "min", which_optimizer = "all", digits = self$digits
+      which_direction = "min", which_optimizer = "all", digits = self$digits,
+      verbose = self$verbose
     ) {
 
       ### check inputs
@@ -2114,6 +2124,8 @@ Nop <- R6::R6Class(
 
     ### storage of the optimization problem details
     .objective = NULL,
+    .objective_name = character(),
+    .target_name = character(),
     .true_parameter_min = NULL,
     .true_parameter_max = NULL,
     .true_value_min = NULL,
@@ -2528,6 +2540,7 @@ Nop <- R6::R6Class(
         for (filter in which_run) {
 
           if (identical(filter, "all")) {
+            identifier <- c(identifier, "all")
             if (verbose) {
               cli::cli_alert_info("Filtered for all optimizations.")
             }
@@ -2589,7 +2602,7 @@ Nop <- R6::R6Class(
 
         if (all(c("min", "max") %in% which_direction)) {
 
-          identifier <- c(identifier, "direction:min", "direction:max")
+          identifier <- c(identifier, "all")
           if (verbose) {
             cli::cli_alert_info("Filtered for minimization and maximization.")
           }
@@ -2620,6 +2633,7 @@ Nop <- R6::R6Class(
         for (filter in which_optimizer) {
 
           if (identical(filter, "all")) {
+            identifier <- c(identifier, "all")
             if (verbose) {
               cli::cli_alert_info("Filtered for all optimizers.")
             }
@@ -2661,6 +2675,7 @@ Nop <- R6::R6Class(
 
         if ("all" %in% which_element) {
 
+          identifier <- c(identifier, "all")
           if (verbose) {
             cli::cli_alert_info("Filtered for all elements.")
           }
@@ -2679,10 +2694,15 @@ Nop <- R6::R6Class(
       ### return ids
       if (use_ids) {
         ids <- unique(
-          intersect(private$.results$indices(identifier = identifier), ids)
+          intersect(
+            private$.results$indices(identifier = identifier, logical = "and"),
+            ids
+          )
         )
       } else {
-        ids <- private$.results$indices(identifier = identifier)
+        ids <- private$.results$indices(
+          identifier = identifier, logical = "and"
+        )
       }
 
       if (length(ids) == 0) {

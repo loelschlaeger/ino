@@ -1039,16 +1039,26 @@
       ],
       "Hash": "8d1938040a05566f4f7a14af4feadd6b"
     },
+    "numDeriv": {
+      "Package": "numDeriv",
+      "Version": "2016.8-1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "df58958f293b166e4ab885ebcad90e02"
+    },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.2.0.9006",
+      "Version": "0.2.0.9008",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oeli",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "07764c42a69a5968802c7c0df7f168c0e02c3441",
+      "RemoteSha": "5e26573f5271c2e10cea4d0c2a6a49ad57277f18",
       "Requirements": [
         "Rcpp",
         "RcppArmadillo",
@@ -1062,7 +1072,7 @@
         "testthat",
         "usethis"
       ],
-      "Hash": "9cf29929fbe1f88e9fb14c6eb7daf1c2"
+      "Hash": "3a2c1be7a478dc4a5d20a1cab41272fa"
     },
     "openssl": {
       "Package": "openssl",
