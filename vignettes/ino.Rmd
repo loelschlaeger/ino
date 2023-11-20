@@ -28,9 +28,9 @@ knitr::opts_chunk$set(
 
 Optimization refers to making something as effective, efficient, or functional as possible. This goal is important in many fields, for example optimal portfolio composition in finance, minimizing air resistance in engineering, or likelihood maximization for model fitting in statistics. In any case, assuming a function can be defined that maps inputs to outputs, the goal of optimization is to find inputs such that the output is in some sense optimal.
 
-In some cases, the function is simple enough that finding the optimal value is possible analytically: for example, if $f:\mathbb{R} \to \mathbb{R},\ f(x) = -x^2$, we find that the first derivative $f'(x) = -2x$ vanishes at $x = 0$, and since $f$ is strictly concave, this $x$ must be the unique point where $f(x)$ is maximal. But often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for derivatives are unknown or do not exist. In these cases, optimization is still possible via a concept called numerical optimization.
+In some cases, the function is simple enough that finding the optimal value is possible analytically: for example, if $f:\mathbb{R} \to \mathbb{R},\ f(x) = -x^2$, we find that the first derivative $f'(x) = -2x$ vanishes at $x = 0$, and since $f$ is strictly concave, this $x$ must be the unique point where $f(x)$ is maximal. But often, the optimization problem at hand cannot be solved analytically, for example when explicit formulas for derivatives are unknown or do not exist. In these cases, optimization is still possible via a concept called **numerical optimization**.
 
-Numerical optimization refers to any algorithm that iteratively explores the parameter space, guaranteeing to improve the function output over each iteration, and eventually converging to a point where no more improvements can be made [@Bonnans:2006]. Several such algorithms are implemented in R.^[The CRAN Task View: Optimization and Mathematical Programming [@Schwendinger:2023] provides a comprehensive list of packages for solving optimization problems numerically.] One thing that all of these algorithms have in common is that initial parameter values must be specified, i.e., the point from where the procedure is started. But choosing initial values is non-trivial and can be a challenging task.
+Numerical optimization refers to any algorithm that iteratively explores the parameter space, guaranteeing to improve the function output over each iteration, and eventually converging to a point where no more improvements can be made [@Bonnans:2006]. Several such algorithms are implemented in R.^[The CRAN Task View: Optimization and Mathematical Programming [@Schwendinger:2023] provides a comprehensive list of packages for solving optimization problems numerically.] One thing that all of these algorithms have in common is that **initial parameter values** must be specified, i.e., the point from where the procedure is started. But choosing initial values is non-trivial and can be a challenging task.
 
 The reason why initialization is so challenging is that starting values can have a large influence on the optimization time and optimization result [@Nocedal:2006]. In general, starting in areas of function saturation increases computation time, starting in areas of non-concavity leads to convergence problems or convergence to local rather than global optima. The increase in computation time is a problem for complex functions where each iteration of the optimizer takes a significant evaluation time, while the concern of convergence issues to the global optimum is problematic in any case. So two questions immediately arise:
 
@@ -48,19 +48,19 @@ We introduce the `{ino}` R package (acronym for initialization of numerical opti
 
 3. comparing different numerical optimizers
 
-The package follows an object-oriented approach^[We make use of the object-oriented framework of the `{R6}` package [@Chang:2021].], treating numerical optimization problems as objects. The object is defined by a real-valued function, the argument over which the function is to be optimized, and one or more optimization algorithms. The object provides methods for choosing initial values, carrying out numerical optimization, and evaluating the optimization results.
+The package follows an object-oriented approach^[We make use of the object-oriented framework of the `{R6}` package [@Chang:2021].], treating numerical optimization problems as objects. The object is defined by a real-valued function, the arguments over which the function is to be optimized, and one or more optimization algorithms. The object provides methods for choosing initial values, carrying out numerical minimization or maximization, and evaluating the optimization results.
 
 The main benefits of using the package are as follows:
 
 - Any optimizer implemented in R can be applied for minimization and maximization tasks. To achieve consistency across implementations of optimization algorithms in R, we make use of the framework provided by the `{optimizeR}` package [@Oelschlaeger:2023]. Below in the appendix, we provide more details on this framework.
 
-- Generally applicable initialization strategies are implemented, and users can extend custom strategies.
+- Generally applicable initialization strategies are readily implemented, and users can extend custom strategies.
 
-- Methods allow for easy comparisons across optimizers and initialization strategies, and to finally extract the best optimization result.
+- Implemented methods allow for easy comparisons across optimizers and initialization strategies, and to finally extract the best optimization result.
 
-- The package supports parallel computation and progress updates.
+- The package supports parallel computation via the `{future}` package [@Bengtsson:2021] and progress updates via the `{progressr}` package [@Bengtsson:2023].
 
-- We put effort into a user-friendly workflow: every input is documented in detail, every user input is validated, and users only interact with a single object. 
+- We put effort into a user-friendly workflow: every input is documented in detail, every user input is validated, and users only interact with a single object. The package also has a verbose mode, printing hints and status messages, which can be useful to new package users. Activating the verbose mode is described in the appendix below.
 
 ## Example workflow
 
@@ -362,6 +362,10 @@ Nop_mixture$plot(
 We conclude that ...
 
 ## Appendix
+
+### Verbose mode
+
+TODO
 
 ### The expectation-maximization algorithm
 
