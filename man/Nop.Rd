@@ -839,8 +839,7 @@ Returns optimization results.
   which_direction = c("min", "max"),
   which_optimizer = "all",
   which_element = "all",
-  add_identifier = character(),
-  group_by = NULL
+  add_identifier = character()
 )}\if{html}{\out{</div>}}
 }
 
@@ -909,19 +908,11 @@ the result is comparable,
 \item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
 identifies whether the result corresponds to minimization or maximization.
 }}
-
-\item{\code{group_by}}{Selects how the output is grouped. Either:
-\itemize{
-\item \code{NULL} to not group (default),
-\item \code{".optimization_label"} to group by optimization label,
-\item \code{".optimizer_label"} to group by optimizer label.
-}}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{list} if \code{group_by = NULL}, otherwise a \code{list} of
-\code{list}s.
+A \code{list}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -936,7 +927,6 @@ Provides an overview of the optimization runs.
   which_optimizer = "all",
   which_direction = c("min", "max"),
   add_identifier = character(),
-  group_by = NULL,
   digits = self$digits
 )}\if{html}{\out{</div>}}
 }
@@ -1005,13 +995,6 @@ the optimizer,
 the result is comparable,
 \item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
 identifies whether the result corresponds to minimization or maximization.
-}}
-
-\item{\code{group_by}}{Selects how the output is grouped. Either:
-\itemize{
-\item \code{NULL} to not group (default),
-\item \code{".optimization_label"} to group by optimization label,
-\item \code{".optimizer_label"} to group by optimizer label.
 }}
 
 \item{\code{digits}}{An \code{integer}, the number of decimal places of interest.

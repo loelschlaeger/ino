@@ -369,8 +369,8 @@ Nop <- R6::R6Class(
           noptimizations <- self$runs(verbose = FALSE)
           ncomparable <- self$runs(which_run = "comparable", verbose = FALSE)
           nincomparable <- self$runs(which_run = "!comparable", verbose = FALSE)
-          nfailed <- self$runs(which_run = "fail", verbose = FALSE)
-          nsuccess <- self$runs(which_run = "!fail", verbose = FALSE)
+          nfailed <- self$runs(which_run = "!success", verbose = FALSE)
+          nsuccess <- self$runs(which_run = "success", verbose = FALSE)
         })
         cli::cli_bullets(c(
           "*" = "Total runs: {noptimizations}"
@@ -855,7 +855,8 @@ Nop <- R6::R6Class(
     ) {
       out <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
-        which_direction = which_direction, which_element = c("parameter", "seconds")
+        which_direction = which_direction,
+        which_element = c("parameter", "seconds")
       )
       at <- lapply(out, `[[`, "parameter")
       seconds <- sapply(out, `[[`, "seconds")
@@ -1273,7 +1274,9 @@ Nop <- R6::R6Class(
             )
           }
         } else {
-          stop("error")
+          oeli::unexpected_error(
+            issue_link = "https://github.com/loelschlaeger/ino/issues"
+          )
         }
       }
       return(out)
@@ -1300,13 +1303,12 @@ Nop <- R6::R6Class(
     #' @description
     #' Returns optimization results.
     #' @return
-    #' A \code{list} if \code{group_by = NULL}, otherwise a \code{list} of
-    #' \code{list}s.
+    #' A \code{list}.
 
     results = function(
       which_run = "all", which_direction = c("min", "max"),
       which_optimizer = "all", which_element = "all",
-      add_identifier = character(), group_by = NULL
+      add_identifier = character()
     ) {
 
       ### check inputs
@@ -1320,7 +1322,6 @@ Nop <- R6::R6Class(
         which_element = which_element, choices = elements, several.ok = TRUE,
         verbose = FALSE
       )
-      group_by <- private$.check_group_by(group_by = group_by)
       add_identifier <- private$.check_add_identifier(
         add_identifier = add_identifier, several.ok = TRUE, none.ok = TRUE
       )
@@ -1337,26 +1338,15 @@ Nop <- R6::R6Class(
         attr(results[[i]], ".run_id") <- run_ids[i]
       }
 
-      ### auxiliary identifier for grouping
-      add_identifier_aux <- c(add_identifier, group_by)
-
       ### filter not required elements out of results and add identifiers
       results <- lapply(results, function(result) {
         result[which(!names(result) %in% which_element)] <- NULL
-        identifier <- attributes(result)[add_identifier_aux]
+        identifier <- attributes(result)[add_identifier]
         result <- append(result, identifier, after = 0)
       })
 
-      ### group results
-      if (is.null(group_by)) {
-        return(results)
-      } else {
-
-        ### TODO split list by `group_by`
-
-        ### TODO remove identifier `group_by` if it is not contained in `add_identifier`
-
-      }
+      ### return results
+      return(results)
 
     },
 
@@ -1368,14 +1358,14 @@ Nop <- R6::R6Class(
     summary = function(
       which_element = c("value", "parameter"), which_run = "all",
       which_optimizer = "all", which_direction = c("min", "max"),
-      add_identifier = character(), group_by = NULL, digits = self$digits
+      add_identifier = character(), digits = self$digits
     ) {
 
       ### get results
       results <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
         which_element = which_element, which_direction = which_direction,
-        add_identifier = add_identifier, group_by = group_by
+        add_identifier = add_identifier
       )
 
       ### save results in data.frame
@@ -1475,6 +1465,7 @@ Nop <- R6::R6Class(
       which_direction <- private$.check_which_direction(
         which_direction = which_direction, both_allowed = FALSE
       )
+      group_by <- private$.check_group_by(group_by = group_by)
       sort_by <- oeli::match_arg(sort_by, c("frequency", "value"))
       checkmate::assert_count(digits)
       checkmate::assert_count(print.rows)
@@ -1483,25 +1474,38 @@ Nop <- R6::R6Class(
       data <- self$summary(
         which_element = "value", which_run = which_run,
         which_direction = which_direction, which_optimizer = which_optimizer,
-        digits = digits, group_by = group_by
+        digits = digits,
+        add_identifier = if (is.null(group_by)) character() else group_by
       )
 
-      ###
-      if (is.null(group_by)) data <- list(data)
+      ### group data
+      if (is.null(group_by)) {
+        data <- list(data)
+      } else {
+        data <- oeli::group_data_frame(
+          df = data, by = group_by, keep_by = FALSE
+        )
+      }
+
+      ### create optima tables
       optima <- list()
       for (i in seq_along(data)) {
-        values <- data[[i]][["value"]]
-        table <- as.data.frame(table(values, useNA = "ifany"))
-        colnames(table) <- c("value", "frequency")
-        decreasing <- identical(sort_by, "frequency") ||
-          identical(which_direction, "max")
-        table <- table[order(table[[sort_by]], decreasing = decreasing), ]
-        rownames(table) <- NULL
+        if (nrow(data[[i]]) == 0) {
+          table <- data.frame()
+        } else {
+          values <- data[[i]][["value"]]
+          table <- as.data.frame(table(values, useNA = "ifany"))
+          colnames(table) <- c("value", "frequency")
+          decreasing <- identical(sort_by, "frequency") ||
+            identical(which_direction, "max")
+          table <- table[order(table[[sort_by]], decreasing = decreasing), ]
+          rownames(table) <- NULL
+        }
         optima[[i]] <- table
       }
       names(optima) <- names(data)
 
-      ###
+      ### print and return tables
       if (print.rows == 0) {
         if (is.null(group_by)) {
           return(optima[[1]])
@@ -1549,6 +1553,7 @@ Nop <- R6::R6Class(
     #' @importFrom forcats fct_reorder
     #' @importFrom rlang .data
     #' @importFrom scales percent
+
     plot = function(
       which_element = "seconds", group_by = NULL, relative = FALSE,
       which_run = "comparable", which_direction = c("min", "max"),
@@ -1556,12 +1561,10 @@ Nop <- R6::R6Class(
     ) {
 
       ### input checks
-      which_element <- oeli::match_arg(which_element, c("seconds", "value"))
-      if (!is.null(group_by)) {
-        group_by <- checkmate::assert_choice(
-          group_by, c(".optimization_label", ".optimizer_label")
-        )
-      }
+      which_element <- private$.check_which_element(
+        which_element = which_element, choices = c("seconds", "value")
+      )
+      group_by <- private$.check_group_by(group_by = group_by)
       checkmate::assert_flag(relative)
       if (identical(which_element, "value") && relative) {
         cli::cli_warn(
@@ -1571,7 +1574,7 @@ Nop <- R6::R6Class(
         relative <- FALSE
       }
 
-      ###
+      ### TODO
       data <- self$summary(
         which_element = which_element, which_run = which_run,
         which_optimizer = which_optimizer, which_direction = which_direction,
@@ -2165,7 +2168,6 @@ Nop <- R6::R6Class(
         objective = private$.objective, initial = initial,
         additional_arguments = list(), direction = direction
       )
-      # TODO: additional arguments?
       structure(
         result,
         ".optimizer_id" = optimizer_id,
@@ -2211,30 +2213,37 @@ Nop <- R6::R6Class(
         } else {
           result[["initial"]] <- NA_real_
         }
+        if ("error" %in% parts) {
+          checkmate::assert_flag(result[["error"]])
+        } else {
+          result[["error"]] <- FALSE
+        }
         if (".error_message" %in% parts) {
           checkmate::assert_string(result[[".error_message"]], na.ok = TRUE)
-          error <- TRUE
         } else {
           result[[".error_message"]] <- NA_character_
-          error <- FALSE
         }
         attr(result, ".optimization_label") <- optimization_label
         optimizer_id <- attr(result, ".optimizer_id")
         optimizer_label <- attr(result, ".optimizer_label")
         comparable <- attr(result, ".comparable")
         direction <- attr(result, ".direction")
+        direction_identifier <- if (direction == "max") {
+          c("direction:max", "!direction:min")
+        } else {
+          c("direction:min", "!direction:max")
+        }
         identifier <- c(
           paste0("optimization_label:", optimization_label),
           paste0("optimizer_id:", optimizer_id),
           paste0("optimizer_label:", optimizer_label),
           paste0(ifelse(comparable, "", "!"), "comparable"),
-          paste0("direction:", direction),
-          paste0(ifelse(error, "", "!"), "fail"),
+          direction_identifier,
+          paste0(ifelse(result[["error"]], "", "!"), "fail"),
           paste0("element:", names(result))
         )
         private$.results$add(
-          x = result, identifier = identifier, confirm = FALSE,
-          missing_identifier = NA
+          x = result, identifier = identifier, confirm = FALSE
         )
         private$.optimization_labels <- unique(
           c(private$.optimization_labels, optimization_label)
@@ -2251,14 +2260,7 @@ Nop <- R6::R6Class(
       ### check `which_run`
       if (checkmate::test_character(which_run)) {
 
-        if ("all" %in% which_run) {
-
-          if (length(unique(which_run)) > 1) {
-            cli::cli_abort(
-              "Filter {.var which_run = {.val all}} cannot be paired with
-              other run filters."
-            )
-          }
+        if (identical(which_run, "all")) {
           if (verbose) {
             cli::cli_alert_info(
               "Selected all optimization runs."
@@ -2622,7 +2624,9 @@ Nop <- R6::R6Class(
           }
 
         } else {
-          stop("error")
+          oeli::unexpected_error(
+            issue_link = "https://github.com/loelschlaeger/ino/issues"
+          )
         }
 
       }
@@ -2710,8 +2714,8 @@ Nop <- R6::R6Class(
         ids <- integer()
       }
       return(ids)
-
     }
+
   )
 )
 
