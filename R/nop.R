@@ -426,12 +426,7 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Manages additional (i.e., in addition to the target argument) arguments
-    #' for \code{f}.
-    #' @details
-    #' Using \code{how = "similar"} or \code{how = "dissimilar"} for subsetting
-    #' applies k-means clustering via \code{\link[stats]{kmeans}} and requires
-    #' that the selected argument is \code{numeric}
+    #' Manages fixed arguments for \code{f}.
     #' @param action
     #' One of:
     #' - \code{"set"} to set an argument,
@@ -439,49 +434,17 @@ Nop <- R6::R6Class(
     #' - \code{"remove"} to remove an argument,
     #' - \code{"reset"} to reset an argument to the original value,
     #' - \code{"modify"} to modify an argument to a new value (the original
-    #'   value is saved and can be recovered via \code{"reset"}),
-    #' - \code{"subset"} to subset an argument,
-    #' - \code{"standardize"} to standardize a \code{numeric} argument.
+    #'   value is saved and can be recovered via \code{"reset"})
     #' @param ...
-    #' Additional parameters depending on the \code{action}:
+    #' Additional parameters depending on \code{action}:
     #' - if \code{action = "set"} or \code{"modify"}, one or more named
     #'   arguments,
     #' - if \code{action = "get"}, \code{"remove"}, or \code{"reset"},
-    #'   the argument \code{name},
-    #' - if \code{action = "subset"},
-    #'   - the argument \code{name},
-    #'   - \code{byrow}, either \code{TRUE} to subset
-    #'     row-wise (default) or \code{FALSE} to subset column-wise,
-    #'   - \code{how}, specifying how to subset, either \code{"random"}
-    #'     (default), \code{"first"}, \code{"last"}, \code{"similar"}, or
-    #'     \code{"dissimilar"}.
-    #'   - \code{proportion}, a \code{numeric} between \code{0} and \code{1},
-    #'     specifying the subset proportion (the default is \code{0.5}),
-    #'   - \code{centers}, passed on to \code{\link[stats]{kmeans}}
-    #'     if \code{how = "(dis)similar"} (by default, \code{centers = 2}),
-    #'   - \code{ignore}, an \code{integer} vector of row indices (or column
-    #'     indices if \code{byrow = FALSE}) to ignore for clustering if
-    #'     \code{how = "(dis)similar"},
-    #'   - \code{seed}, an \code{integer} for reproducibility,
-    #' - if \code{action = "standardize"},
-    #'   - the argument \code{name},
-    #'   - \code{byrow}, either \code{TRUE} to standardize
-    #'     row-wise or \code{FALSE} to standardize column-wise (default),
-    #'   - \code{center}, set to \code{TRUE} (default) for centering, resulting
-    #'     in zero mean,
-    #'   - \code{scale}, set to \code{TRUE} (default) for scaling, resulting in
-    #'     unit variance,
-    #'   - \code{ignore}, an \code{integer} vector of column indices (or row
-    #'     indices if \code{byrow = TRUE}) to not standardize,
-    #'   - \code{jointly}, a \code{list} of \code{integer} vectors with column
-    #'     indices (or row indices if \code{byrow = TRUE}) to standardize
-    #'     jointly.
+    #'   the argument \code{name}, a \code{character} that selects one or more
+    #'   arguments
     #' @return
     #' The argument value if \code{action = "get"} and invisibly the \code{Nop}
-    #' object, else. If \code{action = "standardize"}, the \code{numeric}
-    #' centering and scaling used (if any) are added as
-    #' attributes \code{"standardized:center"} and \code{"standardized:scale"}
-    #' to the argument.
+    #' object, else.
 
     fixed_argument = function(action, ...) {
       if (missing(action)) {
@@ -598,99 +561,6 @@ Nop <- R6::R6Class(
           private$.arguments[[name]] <- args[[name]]
           if (verbose) cli::cli_alert_info("Modified argument {.var {name}}.")
         }
-      }
-      if (action == "subset") {
-        if (!"name" %in% arg_names) {
-          cli::cli_abort(
-            "Please specify {.var name}.",
-            call = NULL
-          )
-        }
-        name <- args[["name"]]
-        checkmate::assert_string(name)
-        original_argument <- self$argument("get", name = name)
-        byrow <- if ("byrow" %in% arg_names) {
-          args[["byrow"]]
-        } else {
-          TRUE
-        }
-        how <- if ("how" %in% arg_names) {
-          args[["how"]]
-        } else {
-          "random"
-        }
-        proportion <- if ("proportion" %in% arg_names) {
-          args[["proportion"]]
-        } else {
-          0.5
-        }
-        centers <- if ("centers" %in% arg_names) {
-          args[["centers"]]
-        } else {
-          2
-        }
-        ignore <- if ("ignore" %in% arg_names) {
-          args[["ignore"]]
-        } else {
-          integer()
-        }
-        if ("seed" %in% arg_names) {
-          set.seed(seed = args[["seed"]])
-        }
-        subsetted_argument <- helper_subset(
-          argument = original_argument, byrow = byrow, how = how,
-          proportion = proportion, centers = centers, ignore = ignore
-        )
-        # TODO add message about subset action
-        private$.arguments[[name]] <- subsetted_argument
-        if (is.null(private$.original_arguments[[name]])) {
-          private$.original_arguments[[name]] <- original_argument
-        }
-      }
-      if (action == "standardize") {
-        if (!"name" %in% arg_names) {
-          cli::cli_abort(
-            "Please specify {.var name}.",
-            call = NULL
-          )
-        }
-        name <- args[["name"]]
-        checkmate::assert_string(name)
-        original_argument <- self$argument("get", name = name)
-        byrow <- if ("byrow" %in% arg_names) {
-          args[["byrow"]]
-        } else {
-          FALSE
-        }
-        center <- if ("center" %in% arg_names) {
-          args[["center"]]
-        } else {
-          TRUE
-        }
-        scale <- if ("scale" %in% arg_names) {
-          args[["scale"]]
-        } else {
-          TRUE
-        }
-        ignore <- if ("ignore" %in% arg_names) {
-          args[["ignore"]]
-        } else {
-          integer()
-        }
-        jointly <- if ("jointly" %in% arg_names) {
-          args[["jointly"]]
-        } else {
-          integer()
-        }
-        standardized_argument <- helper_standardize(
-          argument = original_argument, byrow = byrow, center = center,
-          scale = scale, ignore = ignore, jointly = jointly
-        )
-        private$.arguments[[name]] <- standardized_argument
-        if (is.null(private$.original_arguments[[name]])) {
-          private$.original_arguments[[name]] <- original_argument
-        }
-        if (verbose) cli::cli_alert_info("Standardized {.var {name}}.")
       }
       invisible(self)
     },

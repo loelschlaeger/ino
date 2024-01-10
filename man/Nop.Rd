@@ -230,8 +230,7 @@ Invisibly the \code{Nop} object.
 \if{html}{\out{<a id="method-Nop-fixed_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-fixed_argument}{}}}
 \subsection{Method \code{fixed_argument()}}{
-Manages additional (i.e., in addition to the target argument) arguments
-for \code{f}.
+Manages fixed arguments for \code{f}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$fixed_argument(action, ...)}\if{html}{\out{</div>}}
 }
@@ -246,65 +245,23 @@ for \code{f}.
 \item \code{"remove"} to remove an argument,
 \item \code{"reset"} to reset an argument to the original value,
 \item \code{"modify"} to modify an argument to a new value (the original
-value is saved and can be recovered via \code{"reset"}),
-\item \code{"subset"} to subset an argument,
-\item \code{"standardize"} to standardize a \code{numeric} argument.
+value is saved and can be recovered via \code{"reset"})
 }}
 
-\item{\code{...}}{Additional parameters depending on the \code{action}:
+\item{\code{...}}{Additional parameters depending on \code{action}:
 \itemize{
 \item if \code{action = "set"} or \code{"modify"}, one or more named
 arguments,
 \item if \code{action = "get"}, \code{"remove"}, or \code{"reset"},
-the argument \code{name},
-\item if \code{action = "subset"},
-\itemize{
-\item the argument \code{name},
-\item \code{byrow}, either \code{TRUE} to subset
-row-wise (default) or \code{FALSE} to subset column-wise,
-\item \code{how}, specifying how to subset, either \code{"random"}
-(default), \code{"first"}, \code{"last"}, \code{"similar"}, or
-\code{"dissimilar"}.
-\item \code{proportion}, a \code{numeric} between \code{0} and \code{1},
-specifying the subset proportion (the default is \code{0.5}),
-\item \code{centers}, passed on to \code{\link[stats]{kmeans}}
-if \code{how = "(dis)similar"} (by default, \code{centers = 2}),
-\item \code{ignore}, an \code{integer} vector of row indices (or column
-indices if \code{byrow = FALSE}) to ignore for clustering if
-\code{how = "(dis)similar"},
-\item \code{seed}, an \code{integer} for reproducibility,
-}
-\item if \code{action = "standardize"},
-\itemize{
-\item the argument \code{name},
-\item \code{byrow}, either \code{TRUE} to standardize
-row-wise or \code{FALSE} to standardize column-wise (default),
-\item \code{center}, set to \code{TRUE} (default) for centering, resulting
-in zero mean,
-\item \code{scale}, set to \code{TRUE} (default) for scaling, resulting in
-unit variance,
-\item \code{ignore}, an \code{integer} vector of column indices (or row
-indices if \code{byrow = TRUE}) to not standardize,
-\item \code{jointly}, a \code{list} of \code{integer} vectors with column
-indices (or row indices if \code{byrow = TRUE}) to standardize
-jointly.
-}
+the argument \code{name}, a \code{character} that selects one or more
+arguments
 }}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-Using \code{how = "similar"} or \code{how = "dissimilar"} for subsetting
-applies k-means clustering via \code{\link[stats]{kmeans}} and requires
-that the selected argument is \code{numeric}
-}
-
 \subsection{Returns}{
 The argument value if \code{action = "get"} and invisibly the \code{Nop}
-object, else. If \code{action = "standardize"}, the \code{numeric}
-centering and scaling used (if any) are added as
-attributes \code{"standardized:center"} and \code{"standardized:scale"}
-to the argument.
+object, else.
 }
 }
 \if{html}{\out{<hr>}}

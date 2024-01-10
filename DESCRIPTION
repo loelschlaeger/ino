@@ -32,7 +32,6 @@ Imports:
     progressr,
     TestFunctions
 Suggests:
-    devtools,
     knitr,
     renv,
     testthat (>= 3.0.0)
