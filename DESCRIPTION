@@ -25,15 +25,15 @@ Depends:
     R (>= 4.0.0)
 Imports:
     checkmate (>= 2.2.0),
-    future,
-    future.apply,
-    numDeriv,
-    optimizeR (>= 0.3.2.9000),
-    progressr,
-    TestFunctions
+    future (>= 1.33.0),
+    future.apply (>= 1.11.0),
+    numDeriv (>= 2016.8-1.1),
+    optimizeR (>= 1.0.1.9000),
+    progressr (>= 0.14.0),
+    TestFunctions (>= 0.2.0)
 Suggests:
-    knitr,
-    renv,
+    knitr (>= 1.43),
+    renv (>= 1.0.3),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://loelschlaeger.de/ino/, https://github.com/loelschlaeger/ino

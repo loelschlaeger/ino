@@ -2,17 +2,19 @@
 # Example 1: Ackley function minimization ---------------------------------
 
 ackley <- TestFunctions::TF_ackley
-Nop_ackley <- Nop$new(f = ackley, npar = 2)
+Nop_ackley <- Nop$new(objective = ackley, npar = 2)
 
 test_that("Example 1: Defining the problem works", {
   checkmate::expect_r6(Nop_ackley, "Nop")
   expect_snapshot(Nop_ackley$print())
   expect_snapshot(print(Nop_ackley))
-  expect_identical(Nop_ackley$npar, 2L)
+  expect_identical(Nop_ackley$npar, c("x" = 2))
+  nlm <- optimizeR::Optimizer$new(which = "stats::nlm")
+  optim <- optimizeR::Optimizer$new(which = "stats::optim")
   Nop_ackley$
-    set_optimizer(optimizeR::optimizer_nlm(), optimizer_label = "nlm")$
-    set_optimizer(optimizeR::optimizer_optim())
-  Nop_ackley$true(c(0, 0))
+    set_optimizer(nlm, optimizer_label = "nlm")$
+    set_optimizer(optim)
+  Nop_ackley$evaluate(c(0, 0))
   expect_snapshot(Nop_ackley)
 })
 
@@ -90,7 +92,7 @@ sigma <- c(0.5, 1)
 theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
 hmm_data <- sim_hmm(Tp = 100, N = 2, theta = theta, seed = 1)
 
-Nop_hmm <- Nop$new(f = ll_hmm, npar = 6, N = 2)
+Nop_hmm <- Nop$new(objective = ll_hmm, npar = 6, N = 2)
 
 test_that("Example 2: Defining the problem works", {
   checkmate::expect_r6(Nop_hmm, "Nop")

@@ -14,33 +14,39 @@ A \code{Nop} object defines a numerical optimization problem.
 \section{Getting started}{
 \subsection{Step 1: Create a \code{Nop} object}{
 
-Call \code{object <- Nop$new(f, npar, ...)} where
+Call \code{object <- Nop$new(objective, target, npar, ...)} where
 \itemize{
-\item \code{f} is a single-valued function to be optimized with respect to its
-first argument,
-\item \code{npar} is the length of the first argument of \code{f},
-\item and \code{...} are additional arguments for \code{f} (if any).
-The additional arguments can be managed via the \code{$argument()} method.
+\item \code{objective} is a single-valued function to be optimized,
+\item \code{target} specifies the name(s) of the target argument(s) (if not
+supplied, the first argument of \code{objective} is selected),
+\item \code{npar} specifies the length(s) of the target argument(s),
+\item and \code{...} are additional arguments for \code{objective} that are kept
+fixed during the optimization (if any).
+These arguments can be accessed via the \code{$argument()} method.
 }
 }
 
 \subsection{Step 2: Specify numerical optimizers}{
 
 Call \code{object$set_optimizer(<optimizer object>)}, where
-\code{<optimizer object>} is an object of class \code{optimizer}, which can
-be created with the \code{\link[optimizeR]{define_optimizer}} function.
-Two \code{optimizer} objects are already available:
+\code{<optimizer object>} is an object of class \code{optimizer}. Such
+objects can be created via the \code{{optimizeR}} package, please refer to
+\href{https://loelschlaeger.de/optimizeR/}{the package homepage} for details.
+
+For example,
 \itemize{
-\item \code{\link[optimizeR]{optimizer_nlm}}
-\item \code{\link[optimizeR]{optimizer_optim}}
+\item \code{optimizeR::Optimizer$new(which = "stats::nlm")} defines the
+\code{\link[stats]{nlm}} optimizer,
+\item \code{optimizeR::Optimizer$new(which = "stats::optim")} defines the
+\code{\link[stats]{optim}} optimizer.
 }
 }
 
 \subsection{Step 3: Select initial values}{
 
-Call one of the following methods to define starting values for the
+Call initialization methods to define starting values for the
 optimization (the different initialization strategies are illustrated in the
-package vignettes):
+package vignettes), for example:
 \itemize{
 \item \code{object$initialize_fixed()} for fixed initial values,
 \item \code{object$initialize_random()} for random initial values,
@@ -68,8 +74,8 @@ to access and analyze the results.
 
 \section{Other methods and fields}{
 \itemize{
-\item \code{object$validate()} checks the configurations of a \code{Nop} object,
-\item \code{object$evaluate()} evaluates the target function at some point,
+\item \code{$validate()} checks the configurations of a \code{Nop} object,
+\item \code{$evaluate()} evaluates the target function at some point,
 \item \code{$delete()} deletes optimization results,
 \item \code{$elements()} returns the names of the available elements in the
 optimizer outputs,
@@ -109,9 +115,9 @@ and see \code{\link[future]{plan}} for details.
 # Minimization of the Ackley function
 ackley <- TestFunctions::TF_ackley
 
-Nop_ackley <- Nop$new(f = ackley, npar = 2)$  # define the Nop object
+Nop_ackley <- Nop$new(objective = ackley, npar = 2)$  # define the Nop object
   set_optimizer(
-    optimizeR:Optimizer("stats::nlm")         # select the nlm optimizer
+    optimizeR::Optimizer$new(which = "stats::nlm") # select the nlm optimizer
   )$
   initialize_random(
     sampler = function() rnorm(2, mean = 0, sd = 3),
@@ -187,14 +193,15 @@ Creates a new \code{Nop} object.
 \item{\code{objective}}{The \code{function} to be optimized (the so-called objective function).
 It should return a single \code{numeric} value.}
 
-\item{\code{target}}{The names of the arguments over which \code{f} will be optimized (the
-so-called target arguments).
+\item{\code{target}}{The names of the arguments over which \code{objective} will be optimized
+(the so-called target arguments).
+If not specified, the first argument of \code{objective} is selected.
 Each of these arguments should expect a \code{numeric} \code{vector}.}
 
-\item{\code{npar}}{The lengths of the target arguments.}
+\item{\code{npar}}{The length(s) of the target argument(s).}
 
-\item{\code{...}}{Optionally additional, named arguments for \code{f} which are kept fixed
-during the optimization.}
+\item{\code{...}}{Optionally additional, named arguments for \code{objective} which are
+kept fixed during the optimization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -214,7 +221,7 @@ Prints details of the numerical optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
 
@@ -230,7 +237,7 @@ Invisibly the \code{Nop} object.
 \if{html}{\out{<a id="method-Nop-fixed_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-fixed_argument}{}}}
 \subsection{Method \code{fixed_argument()}}{
-Manages fixed arguments for \code{f}.
+Manages fixed arguments for \code{objective}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$fixed_argument(action, ...)}\if{html}{\out{</div>}}
 }
@@ -342,7 +349,8 @@ Defines fixed initial values for the optimization.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{at}}{A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
-initial parameter vector. It can also be a \code{list} of such vectors.}
+initial parameter vector.
+It can also be a \code{list} of such vectors.}
 }
 \if{html}{\out{</div>}}
 }
@@ -439,9 +447,9 @@ Defines initial values based on results from previous optimizations.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -461,7 +469,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -592,7 +601,8 @@ By default, \code{self$fresh_label} creates a new label.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -649,7 +659,8 @@ from a standard normal distribution.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -685,7 +696,8 @@ Returns the names of available elements in the optimization results.
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{group_by}}{Selects how the output is grouped. Either:
@@ -727,9 +739,9 @@ Returns the number of optimization results.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -755,7 +767,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{which_element}}{Selects elements of optimization results. Either:
@@ -805,9 +818,9 @@ Returns optimization results.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -833,7 +846,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{which_element}}{Selects elements of optimization results. Either:
@@ -909,9 +923,9 @@ where the following elements are always available:
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -931,7 +945,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -954,7 +969,7 @@ the result is comparable,
 identifies whether the result corresponds to minimization or maximization.
 }}
 
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
 }
@@ -984,9 +999,9 @@ Deletes optimization results.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -1006,7 +1021,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{which_direction}}{Selects the type of optimization. Either:
@@ -1048,9 +1064,9 @@ Provides a frequency overview of the identified optimum values.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -1076,7 +1092,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{group_by}}{Selects how the output is grouped. Either:
@@ -1092,7 +1109,7 @@ as provided for example by \code{$best()}.}
 \item \code{"value"} to sort by function value.
 }}
 
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
 
@@ -1145,9 +1162,9 @@ respect to the overall median.}
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -1173,7 +1190,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{...}}{Currently not used.}
@@ -1288,7 +1306,7 @@ where the following elements are always available:
 \item \code{"max"} for maximization.
 }}
 
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
 }
@@ -1322,9 +1340,9 @@ Returns the best found function value or parameter vector.
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -1346,10 +1364,11 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
 
@@ -1397,9 +1416,9 @@ Returns the parameter vector corresponding to an optimum closest
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} for all results.
+By default, \code{which_run = "all"} selects all results.
 
-It can also the filter
+It can also be
 \itemize{
 \item \code{"success"} for the results of successful optimizations,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
@@ -1425,7 +1444,8 @@ as provided for example by \code{$best()}.}
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item a \code{character} (vector) of specified optimizer labels,
-\item an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
 }}
 
 \item{\code{add_identifier}}{Selects identifiers to be added to the output. Can be one or more of:
@@ -1442,7 +1462,7 @@ the result is comparable,
 identifies whether the result corresponds to minimization or maximization.
 }}
 
-\item{\code{digits}}{An \code{integer}, the number of decimal places of interest.
+\item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
 }

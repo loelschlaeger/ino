@@ -2,15 +2,13 @@
 #'
 #' @description
 #' A \code{Nop} object defines a numerical optimization problem.
-
-### Arguments for filtering
-
+#'
 #' @param which_run
 #' Selects results of optimization runs.
 #'
-#' By default, \code{which_run = "all"} for all results.
+#' By default, \code{which_run = "all"} selects all results.
 #'
-#' It can also the filter
+#' It can also be
 #' - \code{"success"} for the results of successful optimizations,
 #' - \code{"comparable"} for the results of comparable optimizations (i.e.,
 #'   results obtained for the original optimization problem without any
@@ -31,7 +29,8 @@
 #' Selects numerical optimizers. Either:
 #' - \code{"all"} for all specified optimizers,
 #' - a \code{character} (vector) of specified optimizer labels,
-#' - an \code{integer} (vector) of optimizer ids as defined in the \code{$print()} output.
+#' - an \code{integer} (vector) of optimizer ids as defined in the
+#'   \code{$print()} output.
 #' @param which_element
 #' Selects elements of optimization results. Either:
 #' - \code{"all"} for all available elements,
@@ -61,9 +60,6 @@
 #' - \code{NULL} to not group (default),
 #' - \code{".optimization_label"} to group by optimization label,
 #' - \code{".optimizer_label"} to group by optimizer label.
-
-### Arguments for convenience
-
 #' @param seed
 #' Passed on to \code{\link{set.seed}} for reproducibility.
 #' Can be \code{NULL} (default) for no seed or to reset the current seed.
@@ -81,10 +77,10 @@
 #' This can be defined globally via \code{self$verbose}.
 #' By default, \code{verbose = getOption("verbose", default = FALSE)}.
 #' @param digits
-#' An \code{integer}, the number of decimal places of interest.
+#' An \code{integer}, the number of decimal places.
 #' This can be defined globally via \code{self$digits}.
 #' By default, \code{digits = getOption("digits", default = 7)}.
-
+#'
 #' @return
 #' Either the \code{Nop} object to allow for method chaining, or a result.
 #' Please refer to the respective documentation for the output of the different
@@ -94,25 +90,31 @@
 #' # Getting started
 #'
 #' ## Step 1: Create a \code{Nop} object
-#' Call \code{object <- Nop$new(f, npar, ...)} where
-#' - \code{f} is a single-valued function to be optimized with respect to its
-#'   first argument,
-#' - \code{npar} is the length of the first argument of \code{f},
-#' - and \code{...} are additional arguments for \code{f} (if any).
-#'   The additional arguments can be managed via the \code{$argument()} method.
+#' Call \code{object <- Nop$new(objective, target, npar, ...)} where
+#' - \code{objective} is a single-valued function to be optimized,
+#' - \code{target} specifies the name(s) of the target argument(s) (if not
+#'   supplied, the first argument of \code{objective} is selected),
+#' - \code{npar} specifies the length(s) of the target argument(s),
+#' - and \code{...} are additional arguments for \code{objective} that are kept
+#'   fixed during the optimization (if any).
+#'   These arguments can be accessed via the \code{$argument()} method.
 #'
 #' ## Step 2: Specify numerical optimizers
 #' Call \code{object$set_optimizer(<optimizer object>)}, where
-#' \code{<optimizer object>} is an object of class \code{optimizer}, which can
-#' be created with the \code{\link[optimizeR]{define_optimizer}} function.
-#' Two \code{optimizer} objects are already available:
-#' - \code{\link[optimizeR]{optimizer_nlm}}
-#' - \code{\link[optimizeR]{optimizer_optim}}
+#' \code{<optimizer object>} is an object of class \code{optimizer}. Such
+#' objects can be created via the \code{{optimizeR}} package, please refer to
+#' [the package homepage](https://loelschlaeger.de/optimizeR/) for details.
+#'
+#' For example,
+#' - \code{optimizeR::Optimizer$new(which = "stats::nlm")} defines the
+#'   \code{\link[stats]{nlm}} optimizer,
+#' - \code{optimizeR::Optimizer$new(which = "stats::optim")} defines the
+#'   \code{\link[stats]{optim}} optimizer.
 #'
 #' ## Step 3: Select initial values
-#' Call one of the following methods to define starting values for the
+#' Call initialization methods to define starting values for the
 #' optimization (the different initialization strategies are illustrated in the
-#' package vignettes):
+#' package vignettes), for example:
 #' - \code{object$initialize_fixed()} for fixed initial values,
 #' - \code{object$initialize_random()} for random initial values,
 #' - \code{object$initialize_continue()} for initial values based on parameter
@@ -130,8 +132,8 @@
 #' - \code{$best()} returns the best found parameter vector or function value.
 #'
 #' # Other methods and fields
-#' - \code{object$validate()} checks the configurations of a \code{Nop} object,
-#' - \code{object$evaluate()} evaluates the target function at some point,
+#' - \code{$validate()} checks the configurations of a \code{Nop} object,
+#' - \code{$evaluate()} evaluates the target function at some point,
 #' - \code{$delete()} deletes optimization results,
 #' - \code{$elements()} returns the names of the available elements in the
 #'   optimizer outputs,
@@ -167,9 +169,9 @@
 #' # Minimization of the Ackley function
 #' ackley <- TestFunctions::TF_ackley
 #'
-#' Nop_ackley <- Nop$new(f = ackley, npar = 2)$  # define the Nop object
+#' Nop_ackley <- Nop$new(objective = ackley, npar = 2)$  # define the Nop object
 #'   set_optimizer(
-#'     optimizeR:Optimizer("stats::nlm")         # select the nlm optimizer
+#'     optimizeR::Optimizer$new(which = "stats::nlm") # select the nlm optimizer
 #'   )$
 #'   initialize_random(
 #'     sampler = function() rnorm(2, mean = 0, sd = 3),
@@ -193,14 +195,15 @@ Nop <- R6::R6Class(
     #' The \code{function} to be optimized (the so-called objective function).
     #' It should return a single \code{numeric} value.
     #' @param target
-    #' The names of the arguments over which \code{f} will be optimized (the
-    #' so-called target arguments).
+    #' The names of the arguments over which \code{objective} will be optimized
+    #' (the so-called target arguments).
+    #' If not specified, the first argument of \code{objective} is selected.
     #' Each of these arguments should expect a \code{numeric} \code{vector}.
     #' @param npar
-    #' The lengths of the target arguments.
+    #' The length(s) of the target argument(s).
     #' @param ...
-    #' Optionally additional, named arguments for \code{f} which are kept fixed
-    #' during the optimization.
+    #' Optionally additional, named arguments for \code{objective} which are
+    #' kept fixed during the optimization.
     #' @return
     #' A new \code{Nop} object.
 
@@ -217,7 +220,8 @@ Nop <- R6::R6Class(
         )
       }
       checkmate::assert_function(objective)
-      if (is.null(formals(objective))) {
+      all_arguments <- oeli::function_arguments(objective, with_ellipsis = FALSE)
+      if (length(all_arguments) == 0) {
         cli::cli_abort(
           c(
             "Function {.var objective} should have at least one argument.",
@@ -227,13 +231,7 @@ Nop <- R6::R6Class(
         )
       }
       if (missing(target)) {
-        cli::cli_abort(
-          c(
-            "Please specify argument {.var target}.",
-            "i" = "It should be the names of the target arguments."
-          ),
-          call = NULL
-        )
+        target <- all_arguments[1]
       }
       checkmate::assert_character(target, any.missing = FALSE, min.len = 1)
       if (!checkmate::test_subset(target, names(formals(objective)))) {
@@ -271,7 +269,7 @@ Nop <- R6::R6Class(
       private$.target_name <- private$.objective$.__enclos_env__$private$.target
 
       ### build result index
-      private$.results <- oeli::Index$new()
+      private$.results <- oeli::Storage$new()
       private$.results$missing_identifier <- FALSE
       private$.results$hide_warnings <- TRUE
 
@@ -426,7 +424,7 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Manages fixed arguments for \code{f}.
+    #' Manages fixed arguments for \code{objective}.
     #' @param action
     #' One of:
     #' - \code{"set"} to set an argument,
@@ -633,11 +631,15 @@ Nop <- R6::R6Class(
     #' Defines fixed initial values for the optimization.
     #' @param at
     #' A \code{numeric} \code{vector} of length \code{self$sum(npar)}, the
-    #' initial parameter vector. It can also be a \code{list} of such vectors.
+    #' initial parameter vector.
+    #' It can also be a \code{list} of such vectors.
     #' @return
     #' Invisibly the \code{Nop} object.
 
     initialize_fixed = function(at) {
+      if (!is.list(at)) {
+        at <- list(at)
+      }
       self$initialize_custom(at, type = "fixed")
     },
 
@@ -811,7 +813,6 @@ Nop <- R6::R6Class(
         }
       }
       invisible(self)
-
     },
 
     #' @description
@@ -887,6 +888,9 @@ Nop <- R6::R6Class(
       optimizer_ids <- private$.check_which_optimizer(
         which_optimizer = which_optimizer, to_id = TRUE, verbose = self$verbose
       )
+      if (length(optimizer_ids) == 0) {
+        return(self)
+      }
       which_direction <- private$.check_which_direction(
         which_direction = which_direction, both_allowed = TRUE,
         verbose = self$verbose
@@ -1284,6 +1288,7 @@ Nop <- R6::R6Class(
     #' \code{FALSE} else.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     delete = function(
       which_run, which_optimizer = "all", which_direction = "min",
       prompt = interactive(), replace = TRUE
