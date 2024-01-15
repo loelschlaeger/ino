@@ -569,12 +569,11 @@ Nop <- R6::R6Class(
     #' A \code{character}, the name of the argument of \code{f} to be
     #' standardized. The argument must a \code{numeric} \code{vector},
     #' \code{matrix}, or \code{data.frame}.
-    #' @param by_column
+    #' @param byrow
     #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
     #' a \code{data.frame}.
-    #' In that case, either \code{TRUE} to standardize column-wise (default) or
-    #' \code{FALSE} to standardize row-wise.
-    #' Currently, only \code{by_column = TRUE} is implemented.
+    #' In that case, either \code{TRUE} to standardize row-wise or
+    #' \code{FALSE} (default) to standardize row-wise.
     #' @param center
     #' Passed to \code{\link[base]{scale}}.
     #' Default is \code{TRUE}.
@@ -583,23 +582,24 @@ Nop <- R6::R6Class(
     #' Default is \code{TRUE}.
     #' @param ignore
     #' A \code{integer} (vector) of column indices (or row indices if
-    #' \code{by_column = FALSE}) to not standardize.
+    #' \code{byrow = TRUE}) to not standardize.
     #' @return
     #' Invisibly the \code{Nop} object.
 
     standardize = function(
-      argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
-      ignore = integer(), verbose = getOption("ino_verbose", default = TRUE)
+      argument_name, byrow = FALSE, center = TRUE, scale = TRUE,
+      ignore = integer()
     ) {
       original_argument <- self$get_argument(argument_name)
-      standardized_argument <- standardize_argument(
-        argument = original_argument, by_column = by_column, center = center,
-        scale = scale, ignore = ignore
+      standardized_argument <- normalize::normalize(
+        x = original_argument, byrow = byrow,
+        center = center, scale = scale, ignore = ignore
       )
-      ino_status(
-        glue::glue("Standardized `{argument_name}`."),
-        verbose = verbose
-      )
+      if (self$verbose) {
+        cli::cli_alert_info(
+          "Standardized `{argument_name}`."
+        )
+      }
       private$.arguments[[argument_name]] <- standardized_argument
       private$.save_original_argument(original_argument, argument_name)
       invisible(self)
@@ -609,12 +609,11 @@ Nop <- R6::R6Class(
     #' Reduces the optimization problem.
     #' @param argument_name
     #' A \code{character}, the name of the argument of \code{f} to be reduced.
-    #' @param by_row
+    #' @param byrow
     #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
     #' a \code{data.frame}.
     #' In that case, either \code{TRUE} to reduce row-wise (default) or
     #' \code{FALSE} to reduce column-wise.
-    #' Currently, only \code{by_row = TRUE} is implemented.
     #' @param how
     #' A \code{character}, specifying how to reduce. Can be one of:
     #' - \code{"random"} (default), reduce at random
@@ -636,46 +635,45 @@ Nop <- R6::R6Class(
     #' @param ignore
     #' Only relevant, if \code{how = "(dis)similar"}.
     #' In that case a \code{integer} (vector) of row indices (or column indices
-    #' if \code{by_row = FALSE}) to ignore for clustering.
+    #' if \code{byrow = FALSE}) to ignore for clustering.
     #' @return
     #' Invisibly the \code{Nop} object.
 
     reduce = function(
-      argument_name, by_row = TRUE, how = "random", proportion = 0.5,
-      centers = 2, ignore = integer(), seed = NULL,
-      verbose = getOption("ino_verbose", default = TRUE)
+      argument_name, byrow = TRUE, how = "random", proportion = 0.5,
+      centers = 2, ignore = integer()
     ) {
       original_argument <- self$get_argument(argument_name)
-      reduced_argument <- subset_argument(
-        argument = original_argument, by_row = by_row, how = how,
-        proportion = proportion, centers = centers, ignore = ignore,
-        seed = seed
+      reduced_argument <- portion::portion(
+        x = original_argument, byrow = byrow, how = how,
+        proportion = proportion, centers = centers, ignore = ignore
       )
-      ino_status(
-        glue::glue(
-          "Reduced '{argument_name}' from ",
-          if (is.vector(original_argument)) {
-            length_old <- length(original_argument)
-            length_new <- length(reduced_argument)
-            "{length_old} to {length_new} {how} element(s)."
-          } else {
-            if (by_row) {
-              nrow_old <- nrow(original_argument)
-              nrow_new <- nrow(reduced_argument)
-              glue::glue(
-                "{nrow_old} to {nrow_new} {how} row(s).",
-              )
+      if (self$verbose) {
+        cli::cli_alert_info(
+          glue::glue(
+            "Reduced '{argument_name}' from ",
+            if (is.vector(original_argument)) {
+              length_old <- length(original_argument)
+              length_new <- length(reduced_argument)
+              "{length_old} to {length_new} {how} element(s)."
             } else {
-              ncol_old <- ncol(original_argument)
-              ncol_new <- ncol(reduced_argument)
-              glue::glue(
-                "{ncol_old} to {ncol_new} {how} column(s).",
-              )
+              if (byrow) {
+                nrow_old <- nrow(original_argument)
+                nrow_new <- nrow(reduced_argument)
+                glue::glue(
+                  "{nrow_old} to {nrow_new} {how} row(s).",
+                )
+              } else {
+                ncol_old <- ncol(original_argument)
+                ncol_new <- ncol(reduced_argument)
+                glue::glue(
+                  "{ncol_old} to {ncol_new} {how} column(s).",
+                )
+              }
             }
-          }
-        ),
-        verbose = verbose
-      )
+          )
+        )
+      }
       private$.arguments[[argument_name]] <- reduced_argument
       private$.save_original_argument(original_argument, argument_name)
       invisible(self)
@@ -813,11 +811,20 @@ Nop <- R6::R6Class(
     #' Invisibly the \code{Nop} object.
 
     initialize_grid = function(
-      lower = rep(0, length(sum(self$npar))),
-      upper = rep(1, length(sum(self$npar))),
-      breaks = rep(3, length(sum(self$npar))),
+      lower = rep(0, sum(self$npar)),
+      upper = rep(1, sum(self$npar)),
+      breaks = rep(3, sum(self$npar)),
       jitter = FALSE, ...
     ) {
+      if (checkmate::test_number(lower)) {
+        lower <- rep(lower, sum(self$npar))
+      }
+      if (checkmate::test_number(upper)) {
+        upper <- rep(upper, sum(self$npar))
+      }
+      if (checkmate::test_number(breaks)) {
+        breaks <- rep(breaks, sum(self$npar))
+      }
       checkmate::assert_numeric(lower, any.missing = FALSE, len = sum(self$npar))
       checkmate::assert_numeric(upper, any.missing = FALSE, len = sum(self$npar))
       if (!all(lower <= upper)) {

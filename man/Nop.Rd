@@ -281,11 +281,10 @@ Standardizes the optimization problem.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$standardize(
   argument_name,
-  by_column = TRUE,
+  byrow = FALSE,
   center = TRUE,
   scale = TRUE,
-  ignore = integer(),
-  verbose = getOption("ino_verbose", default = TRUE)
+  ignore = integer()
 )}\if{html}{\out{</div>}}
 }
 
@@ -296,11 +295,10 @@ Standardizes the optimization problem.
 standardized. The argument must a \code{numeric} \code{vector},
 \code{matrix}, or \code{data.frame}.}
 
-\item{\code{by_column}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
+\item{\code{byrow}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
 a \code{data.frame}.
-In that case, either \code{TRUE} to standardize column-wise (default) or
-\code{FALSE} to standardize row-wise.
-Currently, only \code{by_column = TRUE} is implemented.}
+In that case, either \code{TRUE} to standardize row-wise or
+\code{FALSE} (default) to standardize row-wise.}
 
 \item{\code{center}}{Passed to \code{\link[base]{scale}}.
 Default is \code{TRUE}.}
@@ -309,12 +307,7 @@ Default is \code{TRUE}.}
 Default is \code{TRUE}.}
 
 \item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
-\code{by_column = FALSE}) to not standardize.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{self$verbose}.
-By default, \code{verbose = getOption("verbose", default = FALSE)}.}
+\code{byrow = TRUE}) to not standardize.}
 }
 \if{html}{\out{</div>}}
 }
@@ -330,13 +323,11 @@ Reduces the optimization problem.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$reduce(
   argument_name,
-  by_row = TRUE,
+  byrow = TRUE,
   how = "random",
   proportion = 0.5,
   centers = 2,
-  ignore = integer(),
-  seed = NULL,
-  verbose = getOption("ino_verbose", default = TRUE)
+  ignore = integer()
 )}\if{html}{\out{</div>}}
 }
 
@@ -345,11 +336,10 @@ Reduces the optimization problem.
 \describe{
 \item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be reduced.}
 
-\item{\code{by_row}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
+\item{\code{byrow}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
 a \code{data.frame}.
 In that case, either \code{TRUE} to reduce row-wise (default) or
-\code{FALSE} to reduce column-wise.
-Currently, only \code{by_row = TRUE} is implemented.}
+\code{FALSE} to reduce column-wise.}
 
 \item{\code{how}}{A \code{character}, specifying how to reduce. Can be one of:
 \itemize{
@@ -373,15 +363,7 @@ By default, \code{centers = 2}.}
 
 \item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"}.
 In that case a \code{integer} (vector) of row indices (or column indices
-if \code{by_row = FALSE}) to ignore for clustering.}
-
-\item{\code{seed}}{Passed on to \code{\link{set.seed}} for reproducibility.
-Can be \code{NULL} (default) for no seed or to reset the current seed.}
-
-\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
-such messages.
-This can be defined globally via \code{self$verbose}.
-By default, \code{verbose = getOption("verbose", default = FALSE)}.}
+if \code{byrow = FALSE}) to ignore for clustering.}
 }
 \if{html}{\out{</div>}}
 }
@@ -516,9 +498,9 @@ Invisibly the \code{Nop} object.
 Defines grid initial values for the optimization.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_grid(
-  lower = rep(0, length(sum(self$npar))),
-  upper = rep(1, length(sum(self$npar))),
-  breaks = rep(3, length(sum(self$npar))),
+  lower = rep(0, sum(self$npar)),
+  upper = rep(1, sum(self$npar)),
+  breaks = rep(3, sum(self$npar)),
   jitter = FALSE,
   ...
 )}\if{html}{\out{</div>}}
