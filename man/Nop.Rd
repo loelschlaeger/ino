@@ -152,6 +152,8 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 \item \href{#method-Nop-new}{\code{Nop$new()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-fixed_argument}{\code{Nop$fixed_argument()}}
+\item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
+\item \href{#method-Nop-reduce}{\code{Nop$reduce()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-initialize_fixed}{\code{Nop$initialize_fixed()}}
@@ -269,6 +271,122 @@ arguments
 \subsection{Returns}{
 The argument value if \code{action = "get"} and invisibly the \code{Nop}
 object, else.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-standardize"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-standardize}{}}}
+\subsection{Method \code{standardize()}}{
+Standardizes the optimization problem.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize(
+  argument_name,
+  by_column = TRUE,
+  center = TRUE,
+  scale = TRUE,
+  ignore = integer(),
+  verbose = getOption("ino_verbose", default = TRUE)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be
+standardized. The argument must a \code{numeric} \code{vector},
+\code{matrix}, or \code{data.frame}.}
+
+\item{\code{by_column}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
+a \code{data.frame}.
+In that case, either \code{TRUE} to standardize column-wise (default) or
+\code{FALSE} to standardize row-wise.
+Currently, only \code{by_column = TRUE} is implemented.}
+
+\item{\code{center}}{Passed to \code{\link[base]{scale}}.
+Default is \code{TRUE}.}
+
+\item{\code{scale}}{Passed to \code{\link[base]{scale}}.
+Default is \code{TRUE}.}
+
+\item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
+\code{by_column = FALSE}) to not standardize.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-reduce"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-reduce}{}}}
+\subsection{Method \code{reduce()}}{
+Reduces the optimization problem.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$reduce(
+  argument_name,
+  by_row = TRUE,
+  how = "random",
+  proportion = 0.5,
+  centers = 2,
+  ignore = integer(),
+  seed = NULL,
+  verbose = getOption("ino_verbose", default = TRUE)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be reduced.}
+
+\item{\code{by_row}}{Only relevant if the argument \code{argument_name} is a \code{matrix} or
+a \code{data.frame}.
+In that case, either \code{TRUE} to reduce row-wise (default) or
+\code{FALSE} to reduce column-wise.
+Currently, only \code{by_row = TRUE} is implemented.}
+
+\item{\code{how}}{A \code{character}, specifying how to reduce. Can be one of:
+\itemize{
+\item \code{"random"} (default), reduce at random
+\item \code{"first"}, reduce to the first elements
+\item \code{"last"}, reduce to the last elements
+\item \code{"similar"}, reduce to similar elements
+\item \code{"dissimilar"}, reduce to dissimilar elements
+Note that \code{"similar"} and \code{"dissimilar"} are based on k-means
+clustering via \code{\link[stats]{kmeans}}. To apply these options,
+the argument \code{argument_name} must be \code{numeric}.
+}}
+
+\item{\code{proportion}}{A \code{numeric} between \code{0} and \code{1}, specifying the
+reduction proportion.
+By default, \code{proportion = 0.5}.}
+
+\item{\code{centers}}{Only relevant, if \code{how = "(dis)similar"}.
+In that case, passed to \code{\link[stats]{kmeans}}.
+By default, \code{centers = 2}.}
+
+\item{\code{ignore}}{Only relevant, if \code{how = "(dis)similar"}.
+In that case a \code{integer} (vector) of row indices (or column indices
+if \code{by_row = FALSE}) to ignore for clustering.}
+
+\item{\code{seed}}{Passed on to \code{\link{set.seed}} for reproducibility.
+Can be \code{NULL} (default) for no seed or to reset the current seed.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}

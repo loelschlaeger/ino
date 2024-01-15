@@ -55,18 +55,17 @@ The optimization result depends on the initial value:
 
 ``` r
 library("ino")
-Nop$new(f = f_ackley, npar = 2)$
-  set_optimizer(optimizer_nlm())$
-  optimize(initial = "random", runs = 100, verbose = FALSE)$
-  optima()
+Nop$new(objective = f_ackley, npar = 2)$
+  set_optimizer(optimizeR::optimizer_nlm())$
+  initialize_random(runs = 100)$
+  optimize()$
+  optima(digits = 2)
 #>   value frequency
-#> 1     0        39
-#> 2  2.58        34
-#> 3  3.57        12
-#> 4  5.38         6
-#> 5  4.88         5
-#> 6  6.56         2
-#> 7  6.88         2
+#> 1     0        44
+#> 2  2.58        32
+#> 3  3.57        13
+#> 4  4.88         6
+#> 5  5.38         5
 ```
 
 ## Contact

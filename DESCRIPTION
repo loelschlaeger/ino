@@ -24,17 +24,23 @@ RoxygenNote: 7.2.3
 Depends:
     R (>= 4.0.0)
 Imports:
-    checkmate (>= 2.2.0),
-    future (>= 1.33.0),
-    future.apply (>= 1.11.0),
-    numDeriv (>= 2016.8-1.1),
-    optimizeR (>= 1.0.1.9000),
-    progressr (>= 0.14.0),
-    TestFunctions (>= 0.2.0)
+    checkmate,
+    cli,
+    dplyr,
+    forcats,
+    future.apply,
+    ggplot2,
+    numDeriv,
+    optimizeR (>= 1.0.2),
+    progressr,
+    rlang,
+    scales,
+    stats
 Suggests:
-    knitr (>= 1.43),
-    renv (>= 1.0.3),
-    testthat (>= 3.0.0)
+    knitr,
+    renv,
+    testthat,
+    TestFunctions
 Config/testthat/edition: 3
 URL: https://loelschlaeger.de/ino/, https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues

@@ -170,3 +170,30 @@
       No results yet.
       
 
+---
+
+    Code
+      Nop_hmm
+    Message
+      
+      -- Optimization problem --
+      
+      * Function: ll_hmm
+      * Optimize over: theta (length 6)
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified currently.
+      
+    Message
+      -- Optimization runs --
+      
+    Output
+      No results yet.
+      
+

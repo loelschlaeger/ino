@@ -564,6 +564,124 @@ Nop <- R6::R6Class(
     },
 
     #' @description
+    #' Standardizes the optimization problem.
+    #' @param argument_name
+    #' A \code{character}, the name of the argument of \code{f} to be
+    #' standardized. The argument must a \code{numeric} \code{vector},
+    #' \code{matrix}, or \code{data.frame}.
+    #' @param by_column
+    #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
+    #' a \code{data.frame}.
+    #' In that case, either \code{TRUE} to standardize column-wise (default) or
+    #' \code{FALSE} to standardize row-wise.
+    #' Currently, only \code{by_column = TRUE} is implemented.
+    #' @param center
+    #' Passed to \code{\link[base]{scale}}.
+    #' Default is \code{TRUE}.
+    #' @param scale
+    #' Passed to \code{\link[base]{scale}}.
+    #' Default is \code{TRUE}.
+    #' @param ignore
+    #' A \code{integer} (vector) of column indices (or row indices if
+    #' \code{by_column = FALSE}) to not standardize.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+
+    standardize = function(
+      argument_name, by_column = TRUE, center = TRUE, scale = TRUE,
+      ignore = integer(), verbose = getOption("ino_verbose", default = TRUE)
+    ) {
+      original_argument <- self$get_argument(argument_name)
+      standardized_argument <- standardize_argument(
+        argument = original_argument, by_column = by_column, center = center,
+        scale = scale, ignore = ignore
+      )
+      ino_status(
+        glue::glue("Standardized `{argument_name}`."),
+        verbose = verbose
+      )
+      private$.arguments[[argument_name]] <- standardized_argument
+      private$.save_original_argument(original_argument, argument_name)
+      invisible(self)
+    },
+
+    #' @description
+    #' Reduces the optimization problem.
+    #' @param argument_name
+    #' A \code{character}, the name of the argument of \code{f} to be reduced.
+    #' @param by_row
+    #' Only relevant if the argument \code{argument_name} is a \code{matrix} or
+    #' a \code{data.frame}.
+    #' In that case, either \code{TRUE} to reduce row-wise (default) or
+    #' \code{FALSE} to reduce column-wise.
+    #' Currently, only \code{by_row = TRUE} is implemented.
+    #' @param how
+    #' A \code{character}, specifying how to reduce. Can be one of:
+    #' - \code{"random"} (default), reduce at random
+    #' - \code{"first"}, reduce to the first elements
+    #' - \code{"last"}, reduce to the last elements
+    #' - \code{"similar"}, reduce to similar elements
+    #' - \code{"dissimilar"}, reduce to dissimilar elements
+    #' Note that \code{"similar"} and \code{"dissimilar"} are based on k-means
+    #' clustering via \code{\link[stats]{kmeans}}. To apply these options,
+    #' the argument \code{argument_name} must be \code{numeric}.
+    #' @param proportion
+    #' A \code{numeric} between \code{0} and \code{1}, specifying the
+    #' reduction proportion.
+    #' By default, \code{proportion = 0.5}.
+    #' @param centers
+    #' Only relevant, if \code{how = "(dis)similar"}.
+    #' In that case, passed to \code{\link[stats]{kmeans}}.
+    #' By default, \code{centers = 2}.
+    #' @param ignore
+    #' Only relevant, if \code{how = "(dis)similar"}.
+    #' In that case a \code{integer} (vector) of row indices (or column indices
+    #' if \code{by_row = FALSE}) to ignore for clustering.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+
+    reduce = function(
+      argument_name, by_row = TRUE, how = "random", proportion = 0.5,
+      centers = 2, ignore = integer(), seed = NULL,
+      verbose = getOption("ino_verbose", default = TRUE)
+    ) {
+      original_argument <- self$get_argument(argument_name)
+      reduced_argument <- subset_argument(
+        argument = original_argument, by_row = by_row, how = how,
+        proportion = proportion, centers = centers, ignore = ignore,
+        seed = seed
+      )
+      ino_status(
+        glue::glue(
+          "Reduced '{argument_name}' from ",
+          if (is.vector(original_argument)) {
+            length_old <- length(original_argument)
+            length_new <- length(reduced_argument)
+            "{length_old} to {length_new} {how} element(s)."
+          } else {
+            if (by_row) {
+              nrow_old <- nrow(original_argument)
+              nrow_new <- nrow(reduced_argument)
+              glue::glue(
+                "{nrow_old} to {nrow_new} {how} row(s).",
+              )
+            } else {
+              ncol_old <- ncol(original_argument)
+              ncol_new <- ncol(reduced_argument)
+              glue::glue(
+                "{ncol_old} to {ncol_new} {how} column(s).",
+              )
+            }
+          }
+        ),
+        verbose = verbose
+      )
+      private$.arguments[[argument_name]] <- reduced_argument
+      private$.save_original_argument(original_argument, argument_name)
+      invisible(self)
+    },
+
+    #' @description
     #' Specifies a numerical optimizer.
     #' @param optimizer
     #' An object of class \code{optimizer}, which can be created via
@@ -574,6 +692,7 @@ Nop <- R6::R6Class(
     #' inside \code{optimizer} is used.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     set_optimizer = function(optimizer, optimizer_label = NULL) {
       if (missing(optimizer)) {
         cli::cli_abort(
@@ -953,8 +1072,6 @@ Nop <- R6::R6Class(
       at = stats::rnorm(self$npar), which_optimizer = "all",
       which_direction = "min", seconds = 10
     ) {
-
-      ### TODO use cli::progress_step()
 
       ### input checks
       private$.check_target(at)
@@ -1419,15 +1536,6 @@ Nop <- R6::R6Class(
     #' Currently not used.
     #' @return
     #' A \code{\link[ggplot2]{ggplot}} object.
-    #' @importFrom stats complete.cases median
-    #' @importFrom dplyr summarize mutate
-    #' @importFrom ggplot2 ggplot aes scale_x_continuous theme_minimal theme
-    #' @importFrom ggplot2 geom_boxplot geom_vline annotate element_blank ggtitle
-    #' @importFrom ggplot2 coord_cartesian
-    #' @importFrom scales label_percent
-    #' @importFrom forcats fct_reorder
-    #' @importFrom rlang .data
-    #' @importFrom scales percent
 
     plot = function(
       which_element = "seconds", group_by = NULL, relative = FALSE,
@@ -1449,7 +1557,7 @@ Nop <- R6::R6Class(
         relative <- FALSE
       }
 
-      ### TODO
+      ### prepare plot
       data <- self$summary(
         which_element = which_element, which_run = which_run,
         which_optimizer = which_optimizer, which_direction = which_direction,
@@ -1588,7 +1696,7 @@ Nop <- R6::R6Class(
     #' @return
     #' A \code{data.frame} with iterations in rows, the columns depend on the
     #' specification of \code{which_element}.
-    #' @importFrom stats rnorm nlm
+
     trace = function(
       initial = stats::rnorm(self$npar), iterations = 100, tolerance = 1e-6,
       which_direction = "min",
@@ -2421,7 +2529,6 @@ Nop <- R6::R6Class(
             if (verbose) {
               cli::cli_alert_info("Filtered for all optimizations.")
             }
-            next
           } else if (identical(filter, "success")) {
             identifier <- c(identifier, "!fail")
             if (verbose) {
@@ -2516,7 +2623,6 @@ Nop <- R6::R6Class(
             if (verbose) {
               cli::cli_alert_info("Filtered for all optimizers.")
             }
-            next
           } else {
 
             if (filter %in% names(private$.optimizer)) {
@@ -2558,7 +2664,6 @@ Nop <- R6::R6Class(
           if (verbose) {
             cli::cli_alert_info("Filtered for all elements.")
           }
-          next
 
         } else {
 

@@ -195,14 +195,14 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "3.6.1",
+      "Version": "3.6.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "89e6d8219950eac806ae0c489052048a"
+      "Hash": "1216ac65ac55ec0058a6f75d7ca0fd52"
     },
     "clipr": {
       "Package": "clipr",
@@ -664,14 +664,14 @@
     },
     "glue": {
       "Package": "glue",
-      "Version": "1.6.2",
+      "Version": "1.7.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "methods"
       ],
-      "Hash": "4f2596dfb05dac67b9dc558e5c6fba2e"
+      "Hash": "e0b3a53876554bd45879e596cdb10a52"
     },
     "gridGraphics": {
       "Package": "gridGraphics",
@@ -1062,14 +1062,9 @@
     },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.3.1.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "oeli",
-      "RemoteUsername": "loelschlaeger",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "2bb146fe9e582f985f3ba923639d81d532289b1e",
+      "Version": "0.3.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "Rcpp",
         "RcppArmadillo",
@@ -1085,7 +1080,7 @@
         "testthat",
         "usethis"
       ],
-      "Hash": "0dfaadbe1d9dd8c6268b0d83afcfec83"
+      "Hash": "d832c94d1d45349f8c61023a931312a8"
     },
     "openssl": {
       "Package": "openssl",
@@ -1099,14 +1094,9 @@
     },
     "optimizeR": {
       "Package": "optimizeR",
-      "Version": "1.0.1.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "optimizeR",
-      "RemoteUsername": "loelschlaeger",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "911394f0080c52e6bf066da7a83bba6a53f559c3",
+      "Version": "1.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -1117,7 +1107,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "77cee30892d1579e25a468eebbb5b794"
+      "Hash": "a0ff50fb52a4d3cac34858623f6671ce"
     },
     "parallelly": {
       "Package": "parallelly",
@@ -1404,14 +1394,14 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "1.1.1",
+      "Version": "1.1.3",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "a85c767b55f0bf9b7ad16c6d7baee5bb"
+      "Hash": "42548638fae05fd9a9b5f3f437fbbbe2"
     },
     "rmarkdown": {
       "Package": "rmarkdown",
@@ -1508,21 +1498,23 @@
     },
     "scales": {
       "Package": "scales",
-      "Version": "1.2.1",
+      "Version": "1.3.0",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "R6",
         "RColorBrewer",
+        "cli",
         "farver",
+        "glue",
         "labeling",
         "lifecycle",
         "munsell",
         "rlang",
         "viridisLite"
       ],
-      "Hash": "906cb23d2f1c5680b8ce439b44c6fa63"
+      "Hash": "c19df082ba346b0ffa6f833e92de34d1"
     },
     "sessioninfo": {
       "Package": "sessioninfo",

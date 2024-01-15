@@ -56,10 +56,11 @@ The optimization result depends on the initial value:
 
 ```{r, ackley demo, message = FALSE}
 library("ino")
-Nop$new(f = f_ackley, npar = 2)$
-  set_optimizer(optimizer_nlm())$
-  optimize(initial = "random", runs = 100, verbose = FALSE)$
-  optima()
+Nop$new(objective = f_ackley, npar = 2)$
+  set_optimizer(optimizeR::optimizer_nlm())$
+  initialize_random(runs = 100)$
+  optimize()$
+  optima(digits = 2)
 ```
 
 ## Contact
