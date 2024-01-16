@@ -99,8 +99,9 @@ The `$optimize()` method with argument `initial = sampler` then performs `runs =
 sampler <- function() {
   c(stats::runif(2, -2, -1), stats::rnorm(2), log(stats::runif(2, 0.5, 2)))
 }
+# TODO: set to 100 runs
 Nop_hmm$
-  initialize_random(sampler = sampler, runs = 100, seed = 1)$
+  initialize_random(sampler = sampler, runs = 5, seed = 1)$
   optimize(optimization_label = "random")
 ```
 
@@ -126,10 +127,12 @@ To illustrate the subset initialization strategy, we consider the first quarter 
 
 ```{r, subset initialization first}
 Nop_hmm$
-  reduce("data", how = "first", prop = 0.25)$
-  optimize(initial = sampler, runs = 100, label = "subset")$
-  reset_argument("data")$
-  continue()
+  reduce("observations", how = "first", prop = 0.25)$
+  initialize_random(sampler = sampler, runs = 10, seed = 1)$
+  optimize(optimization_label = "reduced")$
+  fixed_argument("reset", argument_name = "observations")$
+  initialize_continue("reduced")$
+  optimize(optimization_label = "initialized_reduced")
 ```
 
 ## Standardize initialization
@@ -138,9 +141,10 @@ The considered log returns range `r paste(c("from", "to"), round(range(dax$logre
 
 ```{r, standardize initialization}
 Nop_hmm$
-  standardize("data")$
-  optimize(initial = sampler, runs = 100, label = "standardize")$
-  reset_argument("data")
+  standardize("observations")$
+  initialize_random(sampler = sampler, runs = 10, seed = 1)$
+  optimize(optimization_label = "standardized")$
+  fixed_argument(action = "reset", argument_name = "observations")
 ```
 
 Note that we again use `$reset_argument()` to obtain our actual (non-standardized) data set.
@@ -179,13 +183,13 @@ summary(Nop_hmm, which_element = c("value", "parameter", "seconds")) %>%
 The final parameter estimates (i.e., the parameters associated with the global optimum) can be accessed via `$best_parameter()` ...
 
 ```{r, best parameter, eval = TRUE}
-Nop_hmm$best_parameter()
+Nop_hmm$best("parameter")
 ```
 
 .. and the corresponding likelihood value as:
 
 ```{r, best value, eval = TRUE}
-Nop_hmm$best_value()
+Nop_hmm$best("value")
 ```
 
 Note that the attributes `"run"` and `"optimizer"` provide the information, in which optimization run and with which optimizer this estimate was obtained.

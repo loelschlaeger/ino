@@ -152,6 +152,8 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 \item \href{#method-Nop-new}{\code{Nop$new()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-fixed_argument}{\code{Nop$fixed_argument()}}
+\item \href{#method-Nop-set_argument}{\code{Nop$set_argument()}}
+\item \href{#method-Nop-get_argument}{\code{Nop$get_argument()}}
 \item \href{#method-Nop-standardize}{\code{Nop$standardize()}}
 \item \href{#method-Nop-reduce}{\code{Nop$reduce()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
@@ -252,9 +254,9 @@ Manages fixed arguments for \code{objective}.
 \item \code{"set"} to set an argument,
 \item \code{"get"} to extract an argument value,
 \item \code{"remove"} to remove an argument,
-\item \code{"reset"} to reset an argument to the original value,
-\item \code{"modify"} to modify an argument to a new value (the original
-value is saved and can be recovered via \code{"reset"})
+\item \code{"reset"} to reset an argument to the original value (if any),
+\item \code{"modify"} to modify an argument to a new value, but the original
+value is saved and can be recovered via \code{"reset"}.
 }}
 
 \item{\code{...}}{Additional parameters depending on \code{action}:
@@ -262,8 +264,7 @@ value is saved and can be recovered via \code{"reset"})
 \item if \code{action = "set"} or \code{"modify"}, one or more named
 arguments,
 \item if \code{action = "get"}, \code{"remove"}, or \code{"reset"},
-the argument \code{name}, a \code{character} that selects one or more
-arguments
+the \code{argument_name}, a \code{character} that selects an argument
 }}
 }
 \if{html}{\out{</div>}}
@@ -271,6 +272,46 @@ arguments
 \subsection{Returns}{
 The argument value if \code{action = "get"} and invisibly the \code{Nop}
 object, else.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-set_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-set_argument}{}}}
+\subsection{Method \code{set_argument()}}{
+Set a fixed argument for \code{objective}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$set_argument(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{One or more named arguments.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-get_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-get_argument}{}}}
+\subsection{Method \code{get_argument()}}{
+Get a fixed argument for \code{objective}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$get_argument(argument_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{A \code{character} that selects an argument.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly the \code{Nop} object.
 }
 }
 \if{html}{\out{<hr>}}
@@ -291,7 +332,7 @@ Standardizes the optimization problem.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{argument_name}}{A \code{character}, the name of the argument of \code{f} to be
+\item{\code{argument_name}}{A \code{character}, the name of the fixed argument of \code{object} to be
 standardized. The argument must a \code{numeric} \code{vector},
 \code{matrix}, or \code{data.frame}.}
 
@@ -300,11 +341,9 @@ a \code{data.frame}.
 In that case, either \code{TRUE} to standardize row-wise or
 \code{FALSE} (default) to standardize row-wise.}
 
-\item{\code{center}}{Passed to \code{\link[base]{scale}}.
-Default is \code{TRUE}.}
+\item{\code{center}}{Either \code{TRUE} (default) for centering or \code{FALSE}, else.}
 
-\item{\code{scale}}{Passed to \code{\link[base]{scale}}.
-Default is \code{TRUE}.}
+\item{\code{scale}}{Either \code{TRUE} (default) for scaling or \code{FALSE}, else.}
 
 \item{\code{ignore}}{A \code{integer} (vector) of column indices (or row indices if
 \code{byrow = TRUE}) to not standardize.}
@@ -591,7 +630,12 @@ Invisibly the \code{Nop} object.
 \subsection{Method \code{initialize_custom()}}{
 Defines custom initial values for the optimization.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_custom(at, seconds = rep(0, length(at)), type = "custom")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_custom(
+  at,
+  seconds = rep(0, length(at)),
+  type = "custom",
+  check_initials = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -605,6 +649,8 @@ contains the number of seconds it took to obtain these initial values,
 which is added to the overall optimization time.}
 
 \item{\code{type}}{A single \code{character}, the type of the initial values.}
+
+\item{\code{check_initials}}{Either \code{TRUE} to check the initial values, or \code{FALSE} else.}
 }
 \if{html}{\out{</div>}}
 }

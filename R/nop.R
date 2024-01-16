@@ -430,16 +430,15 @@ Nop <- R6::R6Class(
     #' - \code{"set"} to set an argument,
     #' - \code{"get"} to extract an argument value,
     #' - \code{"remove"} to remove an argument,
-    #' - \code{"reset"} to reset an argument to the original value,
-    #' - \code{"modify"} to modify an argument to a new value (the original
-    #'   value is saved and can be recovered via \code{"reset"})
+    #' - \code{"reset"} to reset an argument to the original value (if any),
+    #' - \code{"modify"} to modify an argument to a new value, but the original
+    #'   value is saved and can be recovered via \code{"reset"}.
     #' @param ...
     #' Additional parameters depending on \code{action}:
     #' - if \code{action = "set"} or \code{"modify"}, one or more named
     #'   arguments,
     #' - if \code{action = "get"}, \code{"remove"}, or \code{"reset"},
-    #'   the argument \code{name}, a \code{character} that selects one or more
-    #'   arguments
+    #'   the \code{argument_name}, a \code{character} that selects an argument
     #' @return
     #' The argument value if \code{action = "get"} and invisibly the \code{Nop}
     #' object, else.
@@ -447,7 +446,7 @@ Nop <- R6::R6Class(
     fixed_argument = function(action, ...) {
       if (missing(action)) {
         cli::cli_abort(
-          "Please specify argument {.var action}.",
+          "Please specify the argument {.var action}.",
           call = NULL
         )
       }
@@ -455,82 +454,55 @@ Nop <- R6::R6Class(
       action <- oeli::match_arg(
         action, c("set", "get", "remove", "reset", "modify")
       )
-      checkmate::assert_logical(verbose, len = 1, any.missing = FALSE)
       args <- list(...)
       arg_names <- names(args)
       if (action == "set") {
-        if (length(args) == 0) {
-          cli::cli_warn("No argument to set.")
-        } else if (length(args) > 1) {
-          for (i in 1:length(args)) {
-            arg <- list("set", args[[i]])
-            names(arg) <- c("action", arg_names[i])
-            do.call(self$argument, arg)
-          }
-        } else {
-          name <- arg_names[1]
-          if (!checkmate::test_string(name)) {
-            cli::cli_abort(
-              "All arguments to be set must be named.",
-              call = NULL
-            )
-          }
-          if (name %in% names(private$.arguments)) {
-            private$.arguments[name] <- args
-            if (verbose) {
-              cli::cli_alert_info("Replaced argument {.var {name}}.")
-            }
-          } else {
-            private$.arguments <- c(private$.arguments, args)
-            if (verbose) {
-              cli::cli_alert_info("Set argument {.var {name}}.")
-            }
-          }
-        }
+        self$set_argument(...)
       }
       if (action == "get") {
-        if (!"name" %in% arg_names) {
+        if (!"argument_name" %in% arg_names) {
           cli::cli_abort(
-            "Please specify {.var name}.",
+            "Please specify {.var argument_name}.",
             call = NULL
           )
         }
-        name <- args[["name"]]
-        checkmate::assert_string(name)
-        private$.check_additional_argument_exists(name)
-        return(private$.arguments[[name]])
+        return(self$get_argument(argument_name = args[["argument_name"]]))
       }
       if (action == "remove") {
-        if (!"name" %in% arg_names) {
+        if (!"argument_name" %in% arg_names) {
           cli::cli_abort(
-            "Please specify {.var name}.",
+            "Please specify {.var argument_name}.",
             call = NULL
           )
         }
-        name <- args[["name"]]
-        checkmate::assert_string(name)
-        private$.check_additional_argument_exists(name)
-        arg_id <- which(names(private$.arguments) == name)
-        private$.arguments[arg_id] <- NULL
-        arg_id <- which(names(private$.original_arguments) == name)
-        private$.original_arguments[arg_id] <- NULL
-        if (verbose) cli::cli_alert_info("Removed argument {.var {name}}.")
+        argument_name <- args[["argument_name"]]
+        private$.objective$remove_argument(argument_name)
+        if (argument_name %in% names(private$.original_arguments)) {
+          arg_id <- which(names(private$.original_arguments) == argument_name)
+          private$.original_arguments[arg_id] <- NULL
+        }
+        if (self$verbose) {
+          cli::cli_alert_info("Removed argument {.var {argument_name}}.")
+        }
       }
       if (action == "reset") {
-        if (!"name" %in% arg_names) {
+        if (!"argument_name" %in% arg_names) {
           cli::cli_abort(
-            "Please specify {.var name}.",
+            "Please specify {.var argument_name}.",
             call = NULL
           )
         }
-        name <- args[["name"]]
-        checkmate::assert_string(name)
-        private$.check_additional_argument_exists(name)
-        if (!is.null(private$.original_arguments[[name]])) {
-          original_argument <- private$.original_arguments[[name]]
-          private$.arguments[[name]] <- original_argument
-          private$.original_arguments[[name]] <- NULL
-          if (verbose) cli::cli_alert_info("Reset `{name}`.")
+        argument_name <- args[["argument_name"]]
+        checkmate::assert_string(argument_name)
+        if (!is.null(private$.original_arguments[[argument_name]])) {
+          original_argument <- private$.original_arguments[[argument_name]]
+          arg <- list("set", original_argument)
+          names(arg) <- c("action", argument_name)
+          do.call(self$fixed_argument, arg)
+          private$.original_arguments[[argument_name]] <- NULL
+          if (self$verbose) {
+            cli::cli_alert_info("Reset argument {.var {argument_name}}.")
+          }
         } else {
           cli::cli_warn("Nothing to reset.")
         }
@@ -542,31 +514,64 @@ Nop <- R6::R6Class(
           for (i in 1:length(args)) {
             arg <- list("modify", args[[i]])
             names(arg) <- c("action", arg_names[i])
-            do.call(self$argument, arg)
+            do.call(self$fixed_argument, arg)
           }
         } else {
-          name <- arg_names[1]
-          if (!checkmate::test_string(name)) {
-            cli::cli_abort(
-              "All arguments to be modified must be named.",
-              call = NULL
-            )
+          argument_name <- names(args)[1]
+          if (is.null(private$.original_arguments[[argument_name]])) {
+            original_argument <- private$.objective$get_argument(argument_name)
+            private$.original_arguments[[argument_name]] <- original_argument
           }
-          private$.check_additional_argument_exists(name)
-          if (is.null(private$.original_arguments[[name]])) {
-            private$.original_arguments[[name]] <- private$.arguments[[name]]
+          do.call(
+            private$.objective$set_argument,
+            c(args, list("overwrite" = TRUE, "verbose" = self$verbose))
+          )
+          if (self$verbose) {
+            cli::cli_alert_info("Modified argument {.var {argument_name}}.")
           }
-          private$.arguments[[name]] <- args[[name]]
-          if (verbose) cli::cli_alert_info("Modified argument {.var {name}}.")
         }
       }
       invisible(self)
     },
 
     #' @description
+    #' Set a fixed argument for \code{objective}.
+    #' @param ...
+    #' One or more named arguments.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+
+    set_argument = function(...) {
+      args <- list(...)
+      if (length(args) == 0) {
+        cli::cli_warn("No argument to set.")
+      } else if (length(args) > 1) {
+        for (i in 1:length(args)) {
+          do.call(self$set_argument, args[i])
+        }
+      } else {
+        do.call(
+          private$.objective$set_argument,
+          c(args, list("overwrite" = TRUE, "verbose" = self$verbose))
+        )
+      }
+    },
+
+    #' @description
+    #' Get a fixed argument for \code{objective}.
+    #' @param argument_name
+    #' A \code{character} that selects an argument.
+    #' @return
+    #' Invisibly the \code{Nop} object.
+
+    get_argument = function(argument_name) {
+      private$.objective$get_argument(argument_name)
+    },
+
+    #' @description
     #' Standardizes the optimization problem.
     #' @param argument_name
-    #' A \code{character}, the name of the argument of \code{f} to be
+    #' A \code{character}, the name of the fixed argument of \code{object} to be
     #' standardized. The argument must a \code{numeric} \code{vector},
     #' \code{matrix}, or \code{data.frame}.
     #' @param byrow
@@ -575,11 +580,9 @@ Nop <- R6::R6Class(
     #' In that case, either \code{TRUE} to standardize row-wise or
     #' \code{FALSE} (default) to standardize row-wise.
     #' @param center
-    #' Passed to \code{\link[base]{scale}}.
-    #' Default is \code{TRUE}.
+    #' Either \code{TRUE} (default) for centering or \code{FALSE}, else.
     #' @param scale
-    #' Passed to \code{\link[base]{scale}}.
-    #' Default is \code{TRUE}.
+    #' Either \code{TRUE} (default) for scaling or \code{FALSE}, else.
     #' @param ignore
     #' A \code{integer} (vector) of column indices (or row indices if
     #' \code{byrow = TRUE}) to not standardize.
@@ -600,9 +603,9 @@ Nop <- R6::R6Class(
           "Standardized `{argument_name}`."
         )
       }
-      private$.arguments[[argument_name]] <- standardized_argument
-      private$.save_original_argument(original_argument, argument_name)
-      invisible(self)
+      arg <- list("modify", standardized_argument)
+      names(arg) <- c("action", argument_name)
+      do.call(self$fixed_argument, arg)
     },
 
     #' @description
@@ -674,9 +677,9 @@ Nop <- R6::R6Class(
           )
         )
       }
-      private$.arguments[[argument_name]] <- reduced_argument
-      private$.save_original_argument(original_argument, argument_name)
-      invisible(self)
+      arg <- list("modify", reduced_argument)
+      names(arg) <- c("action", argument_name)
+      do.call(self$fixed_argument, arg)
     },
 
     #' @description
@@ -733,6 +736,7 @@ Nop <- R6::R6Class(
     #' - a \code{numeric} value, the function value at \code{at},
     #' - \code{"time limit reached"} if the time limit was reached,
     #' - the error message if the evaluation failed.
+
     evaluate = function(
       at = stats::rnorm(sum(self$npar)),
       seconds = Inf,
@@ -849,7 +853,8 @@ Nop <- R6::R6Class(
     #' Invisibly the \code{Nop} object.
 
     initialize_continue = function(
-      which_run = "last", which_optimizer = "all", which_direction = c("min", "max")
+      which_run = "last", which_optimizer = "all",
+      which_direction = c("min", "max")
     ) {
       out <- self$results(
         which_run = which_run, which_optimizer = which_optimizer,
@@ -859,7 +864,9 @@ Nop <- R6::R6Class(
       at <- lapply(out, `[[`, "parameter")
       seconds <- sapply(out, `[[`, "seconds")
       runs <- length(at)
-      self$initialize_custom(at = at, seconds = seconds, type = "continued")
+      self$initialize_custom(
+        at = at, seconds = seconds, type = "continued", check_initials = FALSE
+      )
     },
 
     #' @description
@@ -873,14 +880,22 @@ Nop <- R6::R6Class(
     #' which is added to the overall optimization time.
     #' @param type
     #' A single \code{character}, the type of the initial values.
+    #' @param check_initials
+    #' Either \code{TRUE} to check the initial values, or \code{FALSE} else.
     #' @return
     #' Invisibly the \code{Nop} object.
 
-    initialize_custom = function(at, seconds = rep(0, length(at)), type = "custom") {
+    initialize_custom = function(
+      at, seconds = rep(0, length(at)), type = "custom", check_initials = TRUE
+    ) {
       checkmate::assert_list(at)
+      checkmate::assert_string(type)
+      checkmate::assert_flag(check_initials)
       runs <- length(at)
-      lapply(at, private$.check_target, verbose = FALSE)
-      checkmate::assert_numeric(seconds, lower = 0, any.missing = FALSE, len = runs)
+      if (check_initials) {
+        lapply(at, private$.check_target, verbose = FALSE)
+      }
+      checkmate::assert_numeric(seconds, lower = 0, len = runs)
       private$.initial_values <- c(private$.initial_values, at)
       private$.initial_type <- c(private$.initial_type, rep(type, runs))
       private$.initial_seconds <- c(private$.initial_seconds, seconds)
@@ -1075,6 +1090,7 @@ Nop <- R6::R6Class(
     #' from a standard normal distribution.
     #' @return
     #' Invisibly \code{TRUE} if the tests are successful.
+
     validate = function(
       at = stats::rnorm(self$npar), which_optimizer = "all",
       which_direction = "min", seconds = 10
@@ -1082,7 +1098,6 @@ Nop <- R6::R6Class(
 
       ### input checks
       private$.check_target(at)
-
       optimizer_ids <- private$.check_which_optimizer(
         which_optimizer = which_optimizer, to_id = TRUE, verbose = verbose
       )
@@ -2123,7 +2138,6 @@ Nop <- R6::R6Class(
     .true_parameter_max = NULL,
     .true_value_min = NULL,
     .true_value_max = NULL,
-    .arguments = list(),
     .original_arguments = list(),
     .optimizer = list(),
     .results = NULL,

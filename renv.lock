@@ -429,7 +429,7 @@
     },
     "fHMM": {
       "Package": "fHMM",
-      "Version": "1.2.0",
+      "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -448,7 +448,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "dab4c81a3a71fd53441d5dfecc695f7e"
+      "Hash": "e1271d44ba83ecc442efe78a7b3c91cc"
     },
     "fansi": {
       "Package": "fansi",
@@ -1124,6 +1124,16 @@
       ],
       "Hash": "8d1938040a05566f4f7a14af4feadd6b"
     },
+    "normalize": {
+      "Package": "normalize",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "stats"
+      ],
+      "Hash": "9f346fc9fddb1342a848559c71994fef"
+    },
     "numDeriv": {
       "Package": "numDeriv",
       "Version": "2016.8-1.1",
@@ -1304,6 +1314,16 @@
         "withr"
       ],
       "Hash": "903d68319ae9923fb2e2ee7fa8230b91"
+    },
+    "portion": {
+      "Package": "portion",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "stats"
+      ],
+      "Hash": "de0e93903af83d9e0130c4265bb21428"
     },
     "praise": {
       "Package": "praise",

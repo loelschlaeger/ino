@@ -33,103 +33,83 @@ test_that("Example 1: Evaluation and optimization works", {
 
 # Example 2: HMM likelihood maximization ----------------------------------
 
-sim_hmm <- function(Tp, N, theta, seed = NULL) {
-  stopifnot(
-    is.numeric(Tp), length(Tp) == 1, Tp > 0, Tp %% 1 == 0, is.numeric(N),
-    length(N) == 1, N > 0, N %% 1 == 0, is.numeric(theta),
-    length(theta) == N * (N - 1) + 2 * N
-  )
-  if (!is.null(seed)) set.seed(seed)
-  tpm <- matrix(1, N, N)
-  tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
-  tpm <- tpm / rowSums(tpm)
-  mu <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
-  sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
-  delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
-  if (inherits(delta, "try-error")) delta <- rep(1, N) / N
-  s <- numeric(Tp)
-  s[1] <- sample(1:N, size = 1, prob = delta)
-  x <- numeric(Tp)
-  x[1] <- stats::rnorm(1, mean = mu[s[1]], sd = sigma[s[1]])
-  for(t in 2:Tp){
-    s[t] <- sample(1:N, size = 1, prob = tpm[s[t-1],])
-    x[t] <- stats::rnorm(1, mean = mu[s[t-1]], sd = sigma[s[t-1]])
-  }
-  return(x)
-}
+hmm_data <- fHMM::simulate_hmm(seed = 1)$data
 
-ll_hmm <- function(theta, data, N, neg = FALSE) {
-  stopifnot(
-    is.numeric(theta), is.vector(data), is.numeric(data), is.numeric(N),
-    length(N) == 1, N > 0, N %% 1 == 0, length(theta) == N * (N - 1) + 2 * N
-  )
-  Tp <- length(data)
-  tpm <- matrix(1, N, N)
-  tpm[row(tpm) != col(tpm)] <- exp(theta[1:(N * (N - 1))])
-  tpm <- tpm / rowSums(tpm)
-  mu <- theta[(N * (N - 1) + 1):(N * (N - 1) + N)]
-  sigma <- exp(theta[(N - 1) * N + (N + 1):(2 * N)])
-  delta <- try(solve(t(diag(N) - tpm + 1), rep(1, N)), silent = TRUE)
-  if (inherits(delta, "try-error")) delta <- rep(1, N) / N
-  allprobs <- matrix(1, Tp, N)
-  for(n in 1:N){
-    allprobs[, n] <- stats::dnorm(data, mean = mu[n], sd = sigma[n])
-  }
-  foo <- delta %*% diag(allprobs[1,])
-  llk <- log(sum(foo))
-  phi <- foo/sum(foo)
-  for(t in 2:Tp){
-    foo <- phi %*% tpm %*% diag(allprobs[t, ])
-    llk <- llk + log(sum(foo))
-    phi <- foo/sum(foo)
-  }
-  return(ifelse(neg, -llk, llk))
-}
+Nop_hmm <- Nop$new(
+  objective = fHMM::ll_hmm,
+  npar = 6,
+  sdds = "normal",
+  states = 2,
+  negative = TRUE
+)
 
-tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-mu <- c(-2, 2)
-sigma <- c(0.5, 1)
-theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-hmm_data <- sim_hmm(Tp = 100, N = 2, theta = theta, seed = 1)
-
-Nop_hmm <- Nop$new(objective = ll_hmm, npar = 6, N = 2)
+# TODO remove
+self <- Nop_hmm
+private <- self$.__enclos_env__$private
 
 test_that("Example 2: Defining the problem works", {
   checkmate::expect_r6(Nop_hmm, "Nop")
   expect_snapshot(Nop_hmm$print())
   expect_snapshot(print(Nop_hmm))
-  expect_identical(Nop_hmm$npar, c(theta = 6))
+  expect_identical(Nop_hmm$npar, c("parUncon" = 6))
   Nop_hmm$set_optimizer(optimizeR::optimizer_nlm())
   expect_snapshot(Nop_hmm)
 })
 
-# test_that("Example 2: Additional arguments can be modified and reset", {
-#   Nop_hmm$argument("set", data = hmm_data)
-#   expect_snapshot(print(Nop_hmm))
-#   expect_identical(
-#     Nop_hmm$argument("get", name = "data"),
-#     hmm_data
-#   )
-#   Nop_hmm$argument("standardize", name = "data")
-#   Nop_hmm$argument("subset", name = "data")
-#   expect_snapshot(print(Nop_hmm))
-#   Nop_hmm$argument("reset", name = "data")
-#   expect_identical(
-#     Nop_hmm$argument("get", name = "data"),
-#     hmm_data
-#   )
-#   Nop_hmm$argument("modify", "N" = 3)
-#   expect_identical(
-#     Nop_hmm$argument("get", name = "N"),
-#     3
-#   )
-#   Nop_hmm$argument("reset", name = "N")
-#   expect_identical(
-#     Nop_hmm$argument("get", name = "N"),
-#     2
-#   )
-# })
-#
+Nop_hmm$fixed_argument("set", "observations" = hmm_data)
+
+test_that("Example 2: Additional arguments can be modified and reset", {
+  expect_snapshot(print(Nop_hmm))
+  expect_identical(
+    Nop_hmm$fixed_argument("get", argument_name = "observations"),
+    hmm_data
+  )
+  Nop_hmm$fixed_argument("remove", argument_name = "observations")
+  expect_error(
+    Nop_hmm$fixed_argument("get", argument_name = "observations"),
+    "not specified"
+  )
+  Nop_hmm$set_argument("observations" = hmm_data)
+  Nop_hmm$fixed_argument("modify", "observations" = 1:3)
+  expect_identical(
+    Nop_hmm$fixed_argument("get", argument_name = "observations"),
+    1:3
+  )
+  expect_snapshot(print(Nop_hmm))
+  Nop_hmm$fixed_argument("reset", argument_name = "observations")
+  expect_identical(
+    Nop_hmm$fixed_argument("get", argument_name = "observations"),
+    hmm_data
+  )
+})
+
+test_that("Example 2: Observations can be standardized", {
+  Nop_hmm$standardize("observations")
+  out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
+  expect_equal(
+    mean(out), 0, tolerance = 1e-6
+  )
+  expect_equal(
+    sd(out), 1, tolerance = 1e-6
+  )
+  Nop_hmm$fixed_argument("reset", argument_name = "observations")
+  expect_identical(
+    Nop_hmm$fixed_argument("get", argument_name = "observations"),
+    hmm_data
+  )
+})
+
+test_that("Example 2: Observations can be reduced", {
+  Nop_hmm$reduce("observations")
+  out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
+  expect_length(out, 50)
+  Nop_hmm$fixed_argument("reset", argument_name = "observations")
+  expect_length(
+    Nop_hmm$fixed_argument("get", argument_name = "observations"), 100
+  )
+})
+
+
 # test_that("Example 2: True value and parameter can be set", {
 #   Nop_hmm$true(theta, which_direction = "max")
 #   expect_snapshot(print(Nop_hmm))

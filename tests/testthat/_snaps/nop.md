@@ -120,8 +120,8 @@
       
       -- Optimization problem --
       
-      * Function: ll_hmm
-      * Optimize over: theta (length 6)
+      * Function: fHMM::ll_hmm
+      * Optimize over: parUncon (length 6)
       
       -- Optimizer functions --
       
@@ -149,8 +149,8 @@
       
       -- Optimization problem --
       
-      * Function: ll_hmm
-      * Optimize over: theta (length 6)
+      * Function: fHMM::ll_hmm
+      * Optimize over: parUncon (length 6)
       
       -- Optimizer functions --
       
@@ -178,8 +178,62 @@
       
       -- Optimization problem --
       
-      * Function: ll_hmm
-      * Optimize over: theta (length 6)
+      * Function: fHMM::ll_hmm
+      * Optimize over: parUncon (length 6)
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified currently.
+      
+    Message
+      -- Optimization runs --
+      
+    Output
+      No results yet.
+      
+
+# Example 2: Additional arguments can be modified and reset
+
+    Code
+      print(Nop_hmm)
+    Message
+      
+      -- Optimization problem --
+      
+      * Function: fHMM::ll_hmm
+      * Optimize over: parUncon (length 6)
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+      
+      -- Initial values --
+      
+    Output
+      No initial values specified currently.
+      
+    Message
+      -- Optimization runs --
+      
+    Output
+      No results yet.
+      
+
+---
+
+    Code
+      print(Nop_hmm)
+    Message
+      
+      -- Optimization problem --
+      
+      * Function: fHMM::ll_hmm
+      * Optimize over: parUncon (length 6)
       
       -- Optimizer functions --
       
