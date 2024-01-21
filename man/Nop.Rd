@@ -575,7 +575,7 @@ Invisibly the \code{Nop} object.
 Defines initial values based on results from previous optimizations.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(
-  which_run = "last",
+  which_run,
   which_optimizer = "all",
   which_direction = c("min", "max")
 )}\if{html}{\out{</div>}}
@@ -586,20 +586,28 @@ Defines initial values based on results from previous optimizations.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -630,12 +638,7 @@ Invisibly the \code{Nop} object.
 \subsection{Method \code{initialize_custom()}}{
 Defines custom initial values for the optimization.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_custom(
-  at,
-  seconds = rep(0, length(at)),
-  type = "custom",
-  check_initials = TRUE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_custom(at, seconds = rep(0, length(at)), type = "custom")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -649,8 +652,6 @@ contains the number of seconds it took to obtain these initial values,
 which is added to the overall optimization time.}
 
 \item{\code{type}}{A single \code{character}, the type of the initial values.}
-
-\item{\code{check_initials}}{Either \code{TRUE} to check the initial values, or \code{FALSE} else.}
 }
 \if{html}{\out{</div>}}
 }
@@ -885,20 +886,28 @@ Returns the number of optimization results.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -955,7 +964,8 @@ Returns optimization results.
   which_direction = c("min", "max"),
   which_optimizer = "all",
   which_element = "all",
-  add_identifier = character()
+  add_identifier = character(),
+  verbose = self$verbose
 )}\if{html}{\out{</div>}}
 }
 
@@ -964,20 +974,28 @@ Returns optimization results.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -1025,6 +1043,11 @@ the result is comparable,
 \item \code{".direction"}, which yields \code{"min"} or \code{"max"} that
 identifies whether the result corresponds to minimization or maximization.
 }}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1044,7 +1067,8 @@ Provides an overview of the optimization runs.
   which_optimizer = "all",
   which_direction = c("min", "max"),
   add_identifier = character(),
-  digits = self$digits
+  digits = self$digits,
+  verbose = self$verbose
 )}\if{html}{\out{</div>}}
 }
 
@@ -1069,20 +1093,28 @@ where the following elements are always available:
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -1118,6 +1150,11 @@ identifies whether the result corresponds to minimization or maximization.
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1145,20 +1182,28 @@ Deletes optimization results.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -1201,7 +1246,8 @@ Provides a frequency overview of the identified optimum values.
   group_by = NULL,
   sort_by = "frequency",
   digits = self$digits,
-  print.rows = 0
+  print.rows = 0,
+  verbose = self$verbose
 )}\if{html}{\out{</div>}}
 }
 
@@ -1210,20 +1256,28 @@ Provides a frequency overview of the identified optimum values.
 \describe{
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -1261,6 +1315,11 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 
 \item{\code{print.rows}}{An \code{integer}, specifying the maximal number of rows to be
 printed. No printing if \code{print.rows = 0}, which is the default.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1308,20 +1367,28 @@ respect to the overall median.}
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -1486,20 +1553,28 @@ Returns the best found function value or parameter vector.
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}
@@ -1562,20 +1637,28 @@ Returns the parameter vector corresponding to an optimum closest
 
 \item{\code{which_run}}{Selects results of optimization runs.
 
-By default, \code{which_run = "all"} selects all results.
+By default, \code{which_run = "all"} selects all available results.
 
 It can also be
 \itemize{
-\item \code{"success"} for the results of successful optimizations,
+\item \code{"success"} for the results of successful optimization runs,
 \item \code{"comparable"} for the results of comparable optimizations (i.e.,
 results obtained for the original optimization problem without any
 transformations),
 \item a \code{character} (vector) of optimization labels.
 }
 
-Filters can be combined and negated (by putting a \code{"!"} in front),
-for example \code{which_run = c("!success", "comparable")} filters for
-comparable runs that failed.
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
 
 Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
 as provided for example by \code{$best()}.}

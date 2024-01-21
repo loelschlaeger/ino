@@ -6,8 +6,14 @@
       
       -- Optimization problem --
       
-      * Function: ackley
-      * Optimize over: x (length 2)
+      * Objective: ackley
+      * Target: x (length 2)
+      
+      -- Fixed arguments --
+      
+      a
+      b
+      c
       
       -- Optimizer functions --
       
@@ -18,13 +24,13 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 
 ---
@@ -35,8 +41,14 @@
       
       -- Optimization problem --
       
-      * Function: ackley
-      * Optimize over: x (length 2)
+      * Objective: ackley
+      * Target: x (length 2)
+      
+      -- Fixed arguments --
+      
+      a
+      b
+      c
       
       -- Optimizer functions --
       
@@ -47,13 +59,13 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 
 ---
@@ -64,8 +76,14 @@
       
       -- Optimization problem --
       
-      * Function: ackley
-      * Optimize over: x (length 2)
+      * Objective: ackley
+      * Target: x (length 2)
+      
+      -- Fixed arguments --
+      
+      a
+      b
+      c
       
       -- Optimizer functions --
       
@@ -75,13 +93,13 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 
 # Example 1: Evaluation and optimization works
@@ -92,8 +110,14 @@
       
       -- Optimization problem --
       
-      * Function: ackley
-      * Optimize over: x (length 2)
+      * Objective: ackley
+      * Target: x (length 2)
+      
+      -- Fixed arguments --
+      
+      a
+      b
+      c
       
       -- Optimizer functions --
       
@@ -103,13 +127,18 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
+      * Total runs: 20
+      
+      -- Optimization results --
+      
+      * Minimum parameter vector: 0, 0
+      * Minimum function value: 0
     Output
-      No results yet.
       
 
 # Example 2: Defining the problem works
@@ -120,8 +149,17 @@
       
       -- Optimization problem --
       
-      * Function: fHMM::ll_hmm
-      * Optimize over: parUncon (length 6)
+      * Objective: fHMM::ll_hmm
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      sdds
+      states
+      negative
+      controls
+      hierarchy
+      check_controls
       
       -- Optimizer functions --
       
@@ -132,13 +170,13 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 
 ---
@@ -149,8 +187,17 @@
       
       -- Optimization problem --
       
-      * Function: fHMM::ll_hmm
-      * Optimize over: parUncon (length 6)
+      * Objective: fHMM::ll_hmm
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      sdds
+      states
+      negative
+      controls
+      hierarchy
+      check_controls
       
       -- Optimizer functions --
       
@@ -161,13 +208,13 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 
 ---
@@ -178,8 +225,17 @@
       
       -- Optimization problem --
       
-      * Function: fHMM::ll_hmm
-      * Optimize over: parUncon (length 6)
+      * Objective: fHMM::ll_hmm
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      sdds
+      states
+      negative
+      controls
+      hierarchy
+      check_controls
       
       -- Optimizer functions --
       
@@ -188,13 +244,13 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 
 # Example 2: Additional arguments can be modified and reset
@@ -205,8 +261,18 @@
       
       -- Optimization problem --
       
-      * Function: fHMM::ll_hmm
-      * Optimize over: parUncon (length 6)
+      * Objective: fHMM::ll_hmm
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      sdds
+      states
+      negative
+      controls
+      hierarchy
+      check_controls
+      observations
       
       -- Optimizer functions --
       
@@ -215,13 +281,13 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 
 ---
@@ -232,8 +298,22 @@
       
       -- Optimization problem --
       
-      * Function: fHMM::ll_hmm
-      * Optimize over: parUncon (length 6)
+      * Objective: fHMM::ll_hmm
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+        sdds
+        states
+        negative
+        controls
+        hierarchy
+        check_controls
+      ! observations
+    Output
+      
+      Some arguments are currently modified.
+    Message
       
       -- Optimizer functions --
       
@@ -242,12 +322,12 @@
       -- Initial values --
       
     Output
-      No initial values specified currently.
+      No initial values specified.
       
     Message
       -- Optimization runs --
       
     Output
-      No results yet.
+      No results available.
       
 

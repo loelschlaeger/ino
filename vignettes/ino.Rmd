@@ -71,8 +71,7 @@ library("ino")
 ```
 
 ```{r, load ino for real, include = FALSE}
-#library("ino")
-devtools::load_all()
+library("ino")
 ```
 
 ### Gaussian mixture model

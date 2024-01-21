@@ -1,22 +1,18 @@
-## ---- setup, include = FALSE----------------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
   fig.path = "figures/hmm-",
-  fig.dim = c(8, 6), 
+  fig.dim = c(8, 6),
   out.width = "75%",
   # all optimizations are pre-computed to save building time
   eval = FALSE
 )
-library("ino")
-options("ino_verbose" = TRUE) 
-data("hmm_ino")
+devtools::load_all()
+data("Nop_hmm")
 set.seed(1)
 ggplot2::theme_set(ggplot2::theme_minimal())
 
-
-## ---- download dax data, message = FALSE, warning = FALSE, eval = TRUE----------------------------------------------------------------------
 library("fHMM")
 library("dplyr")
 dax <- download_data(symbol = "^GDAXI", from = "1990-01-01", to = "2020-01-01") %>%
@@ -28,8 +24,6 @@ dax <- download_data(symbol = "^GDAXI", from = "1990-01-01", to = "2020-01-01") 
   filter(!is.na(logreturn)) %>%
   print()
 
-
-## ---- plot-dax-data, message = FALSE, warning = FALSE, eval = TRUE--------------------------------------------------------------------------
 library("ggplot2")
 ggplot(dax, aes(x = date, y = logreturn)) +
   geom_point() +
@@ -37,97 +31,103 @@ ggplot(dax, aes(x = date, y = logreturn)) +
   scale_x_date() +
   scale_y_continuous(labels = scales::label_percent())
 
+Nop_hmm <- Nop$new(
+  objective = fHMM::ll_hmm,
+  npar = 6,
+  observations = dax$logreturn,
+  sdds = "normal",
+  states = 2,
+  negative = TRUE
+)
 
-## ---- define ino object---------------------------------------------------------------------------------------------------------------------
-hmm_ino <- Nop$new(
-  f = f_ll_hmm, 
-  npar = 6, 
-  data = dax$logreturn, 
-  N = 2, 
-  neg = TRUE
-)$
-set_optimizer(optimizer_nlm())
+Nop_hmm$set_optimizer(optimizeR::optimizer_nlm())
 
+future::plan(future::multisession, workers = 10)
 
-## ---- random initialization-----------------------------------------------------------------------------------------------------------------
+progressr::handlers(global = TRUE)
+
+Nop_hmm$
+  initialize_random(runs = 100)$
+  optimize(optimization_label = "random_naive")
+
 sampler <- function() {
   c(stats::runif(2, -2, -1), stats::rnorm(2), log(stats::runif(2, 0.5, 2)))
 }
-hmm_ino$optimize(initial = sampler, runs = 100, label = "random")
 
+Nop_hmm$
+  initialize_random(sampler = sampler, runs = 100, seed = 1)$
+  optimize(optimization_label = "random")
 
-## ---- grid of educated guesses, eval = TRUE-------------------------------------------------------------------------------------------------
-tpm_entry_1 <- tpm_entry_2 <- c(-2, -2.5)
-mu_1 <- c(0, -0.05)
-mu_2 <- c(0, 0.05)
-sd_1 <- c(log(0.1), log(0.5))
-sd_2 <- c(log(0.75), log(1))
-starting_values <- asplit(expand.grid(
-  tpm_entry_1, tpm_entry_2, mu_1, mu_2, sd_1, sd_2), 
-  MARGIN = 1
-)
+Nop_hmm$
+  initialize_grid(
+    lower = c(-2, -2, -0.1, -0.1, log(0.1), log(0.1)),
+    upper = c(-1, -1, 0.1, 0.1, log(1), log(1)),
+    breaks = 2
+  )$
+  optimize(optimization_label = "educated_guess")
 
+Nop_hmm$
+  reduce("observations", how = "first", proportion = 0.25)$
+  initialize_random(sampler = sampler, runs = 100, seed = 1)$
+  optimize(optimization_label = "reduced")$
+  fixed_argument("reset", argument_name = "observations")$
+  initialize_continue("reduced")$
+  optimize(optimization_label = "initialized_reduced")
 
-## ---- optimization of educated guesses------------------------------------------------------------------------------------------------------
-hmm_ino$optimize(initial = starting_values, label = "educated_guess")
+Nop_hmm$standardize("observations")
 
+observations <- Nop_hmm$get_argument("observations")
+(center <- attr(observations, "center"))
+(scale <- attr(observations, "scale"))
 
-## ---- subset initialization first-----------------------------------------------------------------------------------------------------------
-hmm_ino$
-  reduce("data", how = "first", prop = 0.25)$
-  optimize(initial = sampler, runs = 100, label = "subset")$
-  reset_argument("data")$
-  continue()
+Nop_hmm$
+  initialize_random(sampler = sampler, runs = 100, seed = 1)$
+  optimize(optimization_label = "standardized")$
+  fixed_argument(action = "reset", argument_name = "observations")
 
+transform <- function(x) {
+  c(x[1:2], x[3:4] * scale + center, log(exp(x[3:4]) * scale + center))
+}
 
-## ---- standardize initialization------------------------------------------------------------------------------------------------------------
-hmm_ino$
-  standardize("data")$
-  optimize(initial = sampler, runs = 100, label = "standardize")$
-  reset_argument("data")
+Nop_hmm$optima(sort_by = "value", digits = 0)
 
-
-## ---- overview of optima, eval = TRUE-------------------------------------------------------------------------------------------------------
-hmm_ino$optima(sort_by = "value", only_comparable = TRUE, digits = 0)
-
-
-## ---- get number of converged runs, include = FALSE, eval = TRUE----------------------------------------------------------------------------
 library("dplyr")
-optima <- hmm_ino$optima(sort_by = "value", only_comparable = TRUE, digits = 0)
+optima <- Nop_hmm$optima(sort_by = "value", digits = 0)
 global <- optima %>% arrange(value) %>% slice(1) %>% pull(frequency)
 total <- sum(optima$frequency)
 local <- total - global
 
-
-## ---- summary of results, eval = TRUE-------------------------------------------------------------------------------------------------------
-summary(hmm_ino, which_element = c("value", "parameter", "seconds")) %>% 
+Nop_hmm$summary(which_element = c("value", "parameter", "seconds"), digits = 2) %>%
   head(n = 10)
 
+Nop_hmm$elements()
 
-## ---- best parameter, eval = TRUE-----------------------------------------------------------------------------------------------------------
-hmm_ino$best_parameter()
+Nop_hmm$best("parameter")
 
+Nop_hmm$best("value")
 
-## ---- best value, eval = TRUE---------------------------------------------------------------------------------------------------------------
-hmm_ino$best_value()
-
-
-## ---- proportion of converged runs, eval = TRUE---------------------------------------------------------------------------------------------
-summary(hmm_ino, c("label", "value", "seconds"), global_optimum = "value < -22445", only_comparable = TRUE) %>% 
-  group_by(label) %>% 
+Nop_hmm$summary(
+  which_element = c("value", "seconds"),
+  which_run = "comparable",
+  add_identifier = ".optimization_label"
+) %>%
+  mutate(global_optimum = value < -22445) %>%
+  group_by(.optimization_label) %>%
   summarise(proportion = mean(global_optimum, na.rm = TRUE))
 
+Nop_hmm$plot(
+  which_run = c("comparable", "standardized", logical = "or"),
+  group_by = ".optimization_label", relative = TRUE
+)
 
-## ---- optimization-time, eval = TRUE--------------------------------------------------------------------------------------------------------
-plot(hmm_ino, by = "label")
-
-
-## ---- summary statistics, warning = FALSE, message = FALSE, eval = TRUE---------------------------------------------------------------------
-summary(hmm_ino, c("label", "seconds")) %>% 
-  group_by(label) %>% 
+Nop_hmm$summary(
+  which_element = "seconds",
+  which_run = c("comparable", "standardized", logical = "or"),
+  add_identifier = ".optimization_label"
+) %>%
+  group_by(.optimization_label) %>%
   summarise(
     median_seconds = median(seconds, na.rm = TRUE),
     sd_seconds = sd(seconds, na.rm = TRUE)
   ) %>%
   arrange(median_seconds)
-
