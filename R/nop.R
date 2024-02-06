@@ -1093,15 +1093,17 @@ Nop <- R6::R6Class(
       progress_step <- progressr::progressor(steps = nrow(combinations))
       results <- future.apply::future_apply(
         combinations, MARGIN = 1, function(x) {
-        progress_step()
-        private$.optimize(
-          initial = x$initial,
-          optimizer_id = x$optimizer_id,
-          direction = x$which_direction,
-          seconds = seconds,
-          hide_warnings = hide_warnings
-        )
-      }, future.seed = TRUE)
+          out <- private$.optimize(
+            initial = x$initial,
+            optimizer_id = x$optimizer_id,
+            direction = x$which_direction,
+            seconds = seconds,
+            hide_warnings = hide_warnings
+          )
+          progress_step()
+          return(out)
+        }, future.seed = TRUE
+      )
 
       ### save results
       private$.save_results(
@@ -1731,6 +1733,49 @@ Nop <- R6::R6Class(
     },
 
     #' @description
+    #' Visualizes deviation of parameters.
+    #' @param reference
+    #' A \code{numeric} of length \code{self$npar}, the reference parameters.
+    #' @param which_element
+    #' Either:
+    #' - \code{"initial"} to compute deviations to the initial values (default)
+    #' - \code{"parameter"} to compute deviations to the estimated parameters
+    #' @param parameter_labels
+    #' A \code{character} of length \code{length(reference)} with labels for the
+    #' parameters.
+    #' @return
+    #' A \code{\link[ggplot2]{ggplot}} object.
+    #' @importFrom ggplot2 ggplot aes geom_point scale_x_discrete
+    #' @importFrom ggplot2 scale_y_continuous geom_hline coord_cartesian
+    #' @importFrom reshape2 melt
+    deviation = function(
+      reference = self$true_parameter, which_element = "initial",
+      which_run = "all", which_optimizer = "all", only_comparable = FALSE,
+      title = "Parameter deviation", ylim = c(NA, NA),
+      parameter_labels = paste0("theta", 1:self$npar)
+    ) {
+      data <- self$summary(
+        which_run = which_run, which_element = c(which_element, "label")
+      )
+      data <- data.frame(
+        "label" = data[["label"]],
+        t(sapply(data[[which_element]], function(x) x - reference))
+      ) |>
+        reshape2::melt(id.vars = "label")
+      data |> ggplot2::ggplot(ggplot2::aes(x = variable, y = value)) +
+        ggplot2::geom_point(ggplot2::aes(color = label), position = "jitter") +
+        ggplot2::scale_x_discrete(
+          labels = parameter_labels,
+          name = which_element
+        ) +
+        ggplot2::scale_y_continuous(
+          name = "deviation"
+        ) +
+        ggplot2::geom_hline(yintercept = 0) +
+        ggplot2::coord_cartesian(ylim = ylim)
+    },
+
+    #' @description
     #' Capture trace of optimization with \code{stats::nlm()}.
     #' @param initial
     #' A \code{numeric} vector of length \code{npar}, the starting point for
@@ -1838,7 +1883,7 @@ Nop <- R6::R6Class(
 
     true = function(
       input = NULL, which_element = "parameter", which_direction = "min",
-      digits = self$digits
+      digits = self$digits, verbose = self$verbose
     ) {
 
       ### input checks
@@ -1936,8 +1981,7 @@ Nop <- R6::R6Class(
             )
             private$.true_parameter_min <- input
             cli::cli_alert_info(
-              "Set true minimum parameter vector to,
-              {round(private$.true_parameter_min, digits = digits)}."
+              "Set true minimum parameter vector to {round(private$.true_parameter_min, digits = digits)}."
             )
           } else {
             checkmate::assert_numeric(input)
@@ -1951,8 +1995,7 @@ Nop <- R6::R6Class(
             }
             private$.true_value_min <- input
             cli::cli_alert_info(
-              "Set true minimum function value to,
-              {round(private$.true_value_min, digits = digits)}."
+              "Set true minimum function value to {round(private$.true_value_min, digits = digits)}."
             )
           }
         } else {
