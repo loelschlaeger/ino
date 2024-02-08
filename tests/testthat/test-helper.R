@@ -353,7 +353,6 @@ test_that("results with one element can be simplified", {
 })
 
 test_that("Nop object can be tested", {
-  options("ino_verbose" = FALSE)
   ackley <- Nop$new(f = f_ackley, npar = 2)
   expect_warning(
     ackley$test(),

@@ -14,8 +14,6 @@
 #' 2. \code{optimizer_id}, which selects the optimizer.
 #'
 #' @keywords internal
-#'
-#' @importFrom glue glue
 
 build_initial <- function(initial, npar, fail_bad_initial = TRUE) {
   is_TRUE_FALSE(fail_bad_initial)
@@ -439,8 +437,6 @@ standardize_argument <- function(argument, by_column, center, scale, ignore) {
 #' The subsetted \code{argument}.
 #'
 #' @keywords internal
-#'
-#' @importFrom utils tail
 
 subset_argument <- function(
     argument, by_row, how, proportion, centers, ignore, seed = NULL) {
@@ -543,21 +539,3 @@ subset_argument <- function(
   ### return argument
   return(argument)
 }
-
-# transfer_nop <- function(
-#     x, var = data.frame(
-#       "old" = c(".f_name", ".arguments", ".original_arguments",
-#                 ".true_parameter", ".true_value", ".show_minimum", ".optimizer",
-#                 ".results", ".runs_last", ".optimization_labels"),
-#       "new" = c(".f_name", ".arguments", ".original_arguments",
-#                 ".true_parameter", ".true_value", ".minimized", ".optimizer",
-#                 ".results", ".runs_last", ".optimization_labels"))
-#   ) {
-#   stopifnot(inherits(x, "Nop"))
-#   private <- x$.__enclos_env__$private
-#   y <- Nop$new(f = private$.f, npar = private$.npar)
-#   for (i in seq_len(nrow(var))) {
-#     y$.__enclos_env__$private[[var[i, "new"]]] <- private[[var[i, "old"]]]
-#   }
-#   return(y)
-# }

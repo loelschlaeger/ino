@@ -22,7 +22,7 @@ Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Imports:
     cli,
     crayon,
@@ -33,9 +33,12 @@ Imports:
     ggplot2,
     glue,
     mvtnorm,
+    parallel,
     reshape2,
     rlang,
-    scales
+    scales,
+    stats,
+    utils
 Suggests:
     fHMM,
     knitr,
@@ -49,4 +52,4 @@ BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR (>= 0.3.3)
+    optimizeR (>= 1.0.4)

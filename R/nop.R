@@ -204,9 +204,9 @@ Nop <- R6::R6Class(
     #' Sets additional arguments for \code{f}.
     #' @param ...
     #' Optionally additional named arguments for \code{f}.
-    #' @importFrom glue glue
     #' @return
     #' Invisibly the \code{Nop} object.
+
     set_argument = function(...) {
       arguments <- list(...)
       argument_names <- names(arguments)
@@ -284,7 +284,7 @@ Nop <- R6::R6Class(
       if (missing(optimizer)) {
         ino_stop("Please specify argument {.var optimizer}.")
       }
-      if (!inherits(optimizer, "optimizer")) {
+      if (!inherits(optimizer, "Optimizer")) {
         ino_stop(
           "Argument {.var optimizer} must be an {.cls optimizer} object.",
           "See {.help optimizeR::define_optimizer} to create such an object.",
@@ -292,7 +292,7 @@ Nop <- R6::R6Class(
         )
       }
       if (is.null(label)) {
-        label <- optimizer$optimizer_name
+        label <- optimizer$label
       }
       is_name(label, error = TRUE)
       if (label %in% names(private$.optimizer)) {
@@ -313,6 +313,7 @@ Nop <- R6::R6Class(
     #' Removes numerical optimizer.
     #' @return
     #' Invisibly the \code{Nop} object.
+
     remove_optimizer = function(
       which_optimizer, verbose = getOption("ino_verbose", default = TRUE)
     ) {
@@ -345,6 +346,7 @@ Nop <- R6::R6Class(
     #' - a \code{numeric} value, the function value at \code{at},
     #' - \code{"time limit reached"} if the time limit was reached,
     #' - the error message if the evaluation failed.
+
     evaluate = function(
       at = rnorm(self$npar), time_limit = NULL, hide_warnings = FALSE
     ) {
@@ -398,9 +400,7 @@ Nop <- R6::R6Class(
     #'         \code{\link[optimizeR]{apply_optimizer}}.
     #'         If \code{simplify = TRUE}, the output is flattened if possible.
     #' }
-    #' @importFrom parallel makeCluster stopCluster
-    #' @importFrom doSNOW registerDoSNOW
-    #' @importFrom foreach foreach %dopar% %do%
+
     optimize = function(
       initial = "random", runs = 1, which_optimizer = "all", seed = NULL,
       return_results = FALSE, save_results = TRUE,
@@ -830,7 +830,7 @@ Nop <- R6::R6Class(
     #' euclidean distance between the estimated and true parameter vector.
     #' @return
     #' A \code{data.frame} with optimization results.
-    #' @importFrom dplyr bind_rows
+
     summary = function(
       which_element = "basic", which_run = "all", which_optimizer = "all",
       digits = getOption("ino_digits", default = 2), only_comparable = FALSE,
@@ -851,6 +851,7 @@ Nop <- R6::R6Class(
     #' - \code{"value"} to sort by value.
     #' @return
     #' A \code{data.frame}.
+
     optima = function(
       digits = getOption("ino_digits", default = 2), sort_by = "frequency",
       which_run = "all", which_optimizer = "all",
@@ -926,9 +927,7 @@ Nop <- R6::R6Class(
     #' parameters.
     #' @return
     #' A \code{\link[ggplot2]{ggplot}} object.
-    #' @importFrom ggplot2 ggplot aes geom_point scale_x_discrete
-    #' @importFrom ggplot2 scale_y_continuous geom_hline coord_cartesian
-    #' @importFrom reshape2 melt
+
     deviation = function(
       reference = self$true_parameter, which_element = "initial",
       which_run = "all", which_optimizer = "all", only_comparable = FALSE,
@@ -985,8 +984,7 @@ Nop <- R6::R6Class(
     #' @return
     #' A \code{data.frame} with iterations in rows, the columns depend on the
     #' specification of \code{which_element}.
-    #' @importFrom stats rnorm nlm
-    #' @importFrom optimizeR optimizer_nlm apply_optimizer
+
     trace = function(
       initial = stats::rnorm(self$npar), iterations = 100, tolerance = 1e-6,
       which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
@@ -1299,43 +1297,52 @@ Nop <- R6::R6Class(
 
     ### cheap function optimization
     .optimize = function(initial, optimizer_id, time_limit, hide_warnings) {
-      if (!is.null(time_limit)) {
-        setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
-        on.exit({
-          setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
-        })
-      }
-      tryCatch(
-        {
-          suppressWarnings(
-            do.call(
-              what = optimizeR::apply_optimizer,
-              args = c(
-                list(
-                  "optimizer" = private$.optimizer[[optimizer_id]],
-                  "objective" = private$.f,
-                  "initial" = initial
-                ),
-                private$.arguments
-              )
-            ),
-            classes = if (hide_warnings) "warning" else ""
-          )
-        },
-        error = function(e) {
-          msg <- e$message
-          tl <- grepl("reached elapsed time limit|reached CPU time limit", msg)
-          return(
-            list(
-              "value" = NA_real_,
-              "parameter" = NA_real_,
-              "seconds" = NA_real_,
-              "initial" = initial,
-              "error" = if (tl) "time limit reached" else msg
-            )
-          )
-        }
+      optimizer <- private$.optimizer[[optimizer_id]]
+      optimizer$seconds <- time_limit
+      optimizer$hide_warnings <- hide_warnings
+      optimizer$.__enclos_env__$private$.optimize(
+        objective = private$.objective,
+        initial = initial,
+        additional_arguments = private$.arguments,
+        direction = "min"
       )
+      # if (!is.null(time_limit)) {
+      #   setTimeLimit(cpu = time_limit, elapsed = time_limit, transient = TRUE)
+      #   on.exit({
+      #     setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+      #   })
+      # }
+      # tryCatch(
+      #   {
+      #     suppressWarnings(
+      #       do.call(
+      #         what = optimizeR::apply_optimizer,
+      #         args = c(
+      #           list(
+      #             "optimizer" = private$.optimizer[[optimizer_id]],
+      #             "objective" = private$.f,
+      #             "initial" = initial
+      #           ),
+      #           private$.arguments
+      #         )
+      #       ),
+      #       classes = if (hide_warnings) "warning" else ""
+      #     )
+      #   },
+      #   error = function(e) {
+      #     msg <- e$message
+      #     tl <- grepl("reached elapsed time limit|reached CPU time limit", msg)
+      #     return(
+      #       list(
+      #         "value" = NA_real_,
+      #         "parameter" = NA_real_,
+      #         "seconds" = NA_real_,
+      #         "initial" = initial,
+      #         "error" = if (tl) "time limit reached" else msg
+      #       )
+      #     )
+      #   }
+      # )
     },
 
     ### label one optimization run

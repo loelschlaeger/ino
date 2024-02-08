@@ -1,8 +1,4 @@
 #' @noRd
-#' @importFrom crayon underline
-#' @importFrom glue glue
-#' @importFrom forcats fct_reorder
-#' @importFrom cli style_italic
 #' @exportS3Method
 
 print.Nop <- function(x, digits = getOption("ino_digits", default = 2), ...) {
@@ -182,15 +178,6 @@ summary.Nop <- function(
 }
 
 #' @noRd
-#' @importFrom stats complete.cases median
-#' @importFrom dplyr summarize mutate
-#' @importFrom ggplot2 ggplot aes scale_x_continuous theme_minimal theme
-#' @importFrom ggplot2 geom_boxplot geom_vline annotate element_blank ggtitle
-#' @importFrom ggplot2 coord_cartesian
-#' @importFrom scales label_percent
-#' @importFrom forcats fct_reorder
-#' @importFrom rlang .data
-#' @importFrom scales percent
 #' @exportS3Method
 
 plot.Nop <- function(

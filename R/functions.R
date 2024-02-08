@@ -135,8 +135,6 @@ f_easom <- function(x) {
 #' data <- sim_hmm(Tp = 100, N = 2, theta = theta)
 #' plot(data, type = "l")
 #'
-#' @importFrom stats rnorm
-#'
 #' @keywords function
 #'
 #' @export
@@ -183,8 +181,6 @@ sim_hmm <- function(Tp, N, theta) {
 #' \donttest{
 #' nlm(f_ll_hmm, p = theta, data = data, N = 2, neg = TRUE)$estimate
 #' }
-#'
-#' @importFrom stats dnorm
 #'
 #' @return
 #' A \code{numeric}, the log-likelihood value at \code{theta} given \code{data}.
@@ -271,8 +267,6 @@ f_ll_hmm <- function(theta, data, N, neg = FALSE) {
 #'
 #' @examples
 #' sim_mnp(N = 3, J = 3, P = 2, b = c(1, -1), Omega = diag(2), Sigma = diag(3))
-#'
-#' @importFrom stats rnorm
 #'
 #' @keywords function
 #'
@@ -399,8 +393,6 @@ sim_mnp <- function(
 #' @keywords function
 #'
 #' @export
-#'
-#' @importFrom mvtnorm pmvnorm
 
 f_ll_mnp <- function(
     theta, data, neg = FALSE, normal_cdf = mvtnorm::pmvnorm, threshold = 1e-6
