@@ -175,6 +175,7 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 \item \href{#method-Nop-delete}{\code{Nop$delete()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
 \item \href{#method-Nop-plot}{\code{Nop$plot()}}
+\item \href{#method-Nop-deviation}{\code{Nop$deviation()}}
 \item \href{#method-Nop-trace}{\code{Nop$trace()}}
 \item \href{#method-Nop-true}{\code{Nop$true()}}
 \item \href{#method-Nop-best}{\code{Nop$best()}}
@@ -1416,6 +1417,80 @@ A \code{\link[ggplot2]{ggplot}} object.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-deviation"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
+\subsection{Method \code{deviation()}}{
+Visualizes deviation of parameters.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
+  reference = self$true_parameter,
+  which_element = "initial",
+  which_run = "all",
+  which_optimizer = "all",
+  only_comparable = FALSE,
+  title = "Parameter deviation",
+  ylim = c(NA, NA),
+  parameter_labels = paste0("theta", 1:self$npar)
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{reference}}{A \code{numeric} of length \code{self$npar}, the reference parameters.}
+
+\item{\code{which_element}}{Either:
+\itemize{
+\item \code{"initial"} to compute deviations to the initial values (default)
+\item \code{"parameter"} to compute deviations to the estimated parameters
+}}
+
+\item{\code{which_run}}{Selects results of optimization runs.
+
+By default, \code{which_run = "all"} selects all available results.
+
+It can also be
+\itemize{
+\item \code{"success"} for the results of successful optimization runs,
+\item \code{"comparable"} for the results of comparable optimizations (i.e.,
+results obtained for the original optimization problem without any
+transformations),
+\item a \code{character} (vector) of optimization labels.
+}
+
+Filters for optimization runs can be negated by putting a \code{"!"} in
+front, for example \code{which_run = "!success"} filters for failed runs.
+
+Filters can be combined (by default via logical \emph{and}), for example
+\code{which_run = c("!success", "comparable")} filters for comparable
+runs that failed.
+
+Filters can also be combined via logical \emph{or} by adding
+\code{"logical" = "or"}, for example
+\code{which_run = c("comparable", "label", "logical" = "or")} filters for
+runs that are either comparable or have the label \code{"label"}.
+
+Alternatively, \code{which_run} can be an \code{integer} (vector) of run ids
+as provided for example by \code{$best()}.}
+
+\item{\code{which_optimizer}}{Selects numerical optimizers. Either:
+\itemize{
+\item \code{"all"} for all specified optimizers,
+\item a \code{character} (vector) of specified optimizer labels,
+\item an \code{integer} (vector) of optimizer ids as defined in the
+\code{$print()} output.
+}}
+
+\item{\code{parameter_labels}}{A \code{character} of length \code{length(reference)} with labels for the
+parameters.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{\link[ggplot2]{ggplot}} object.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-trace"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-trace}{}}}
 \subsection{Method \code{trace()}}{
@@ -1483,7 +1558,8 @@ Stores the true best function value or parameter vector.
   input = NULL,
   which_element = "parameter",
   which_direction = "min",
-  digits = self$digits
+  digits = self$digits,
+  verbose = self$verbose
 )}\if{html}{\out{</div>}}
 }
 
@@ -1522,6 +1598,11 @@ where the following elements are always available:
 \item{\code{digits}}{An \code{integer}, the number of decimal places.
 This can be defined globally via \code{self$digits}.
 By default, \code{digits = getOption("digits", default = 7)}.}
+
+\item{\code{verbose}}{Either \code{TRUE} to print progress and details, or \code{FALSE} to hide
+such messages.
+This can be defined globally via \code{self$verbose}.
+By default, \code{verbose = getOption("verbose", default = FALSE)}.}
 }
 \if{html}{\out{</div>}}
 }

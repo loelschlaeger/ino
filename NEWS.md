@@ -1,4 +1,4 @@
-# 1.0.1.9000
+# 1.0.2
 
 * New `$trace()` method to capture the steps during optimization with `stats::nlm()`.
 
