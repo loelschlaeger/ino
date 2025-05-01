@@ -34,13 +34,17 @@
 NULL
 
 #' @noRd
-#' @importFrom cli style_hyperlink
-#' @importFrom utils packageVersion
 
 .onAttach <- function(lib, pkg) {
+  doc_link <- "https://loelschlaeger.de/ino"
+  issues_link <- "https://github.com/loelschlaeger/ino/issues"
   msg <- c(
-    paste0("Thanks for using {ino} version ", utils::packageVersion("ino")), "!\n",
-    "See ", cli::style_hyperlink("https://loelschlaeger.de/ino", "https://loelschlaeger.de/ino") ," for help."
+    paste0("This is {ao} ", utils::packageVersion("ino")),
+    ", happy initialization!\n",
+    "Documentation? ",
+    cli::style_hyperlink(doc_link, doc_link), "\n",
+    "Any issues? ",
+    cli::style_hyperlink(issues_link, issues_link)
   )
   packageStartupMessage(msg)
   invisible()
