@@ -80,7 +80,6 @@ to access and analyze the results.
 \item \code{$elements()} returns the names of the available elements in the
 optimizer outputs,
 \item \code{$runs()} returns the number of performed optimization runs,
-\item \code{$trace()} calculates the trace of an optimization path,
 \item \code{$initialize_reset()} resets the initial values,
 \item \code{$true()} stores the true best function value and parameter vector
 (if available),
@@ -176,7 +175,6 @@ By default, \code{digits = getOption("digits", default = 7)}.}
 \item \href{#method-Nop-optima}{\code{Nop_old$optima()}}
 \item \href{#method-Nop-plot}{\code{Nop_old$plot()}}
 \item \href{#method-Nop-deviation}{\code{Nop_old$deviation()}}
-\item \href{#method-Nop-trace}{\code{Nop_old$trace()}}
 \item \href{#method-Nop-true}{\code{Nop_old$true()}}
 \item \href{#method-Nop-best}{\code{Nop_old$best()}}
 \item \href{#method-Nop-closest}{\code{Nop_old$closest()}}
@@ -1492,64 +1490,6 @@ parameters.}
 }
 \subsection{Returns}{
 A \code{\link[ggplot2]{ggplot}} object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-trace"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-trace}{}}}
-\subsection{Method \code{trace()}}{
-Capture trace of optimization with \code{stats::nlm()}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop_old$trace(
-  initial = stats::rnorm(self$npar),
-  iterations = 100,
-  tolerance = 1e-06,
-  which_direction = "min",
-  which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
-  ...
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{initial}}{A \code{numeric} vector of length \code{npar}, the starting point for
-the optimization.
-By default, \code{initial = stats::rnorm(self$npar)}, i.e., random
-initial values drawn from a standard normal distribution.}
-
-\item{\code{iterations}}{A positive \code{integer}, the maximum number of iterations before
-termination.
-By default, \code{interations = 100}.}
-
-\item{\code{tolerance}}{A non-negative \code{numeric}, the minimum allowable absolute change in
-the function value before termination.
-By default, \code{tolerance = 1e-6}.}
-
-\item{\code{which_direction}}{Selects the type of optimization. Either:
-\itemize{
-\item \code{"min"} for minimization,
-\item \code{"max"} for maximization.
-}}
-
-\item{\code{which_element}}{A \code{character} (vector) of elements to provide in the output for
-each iteration. Can be one or more of:
-\itemize{
-\item \code{"value"}, the current function value,
-\item \code{"parameter"}, the current value of each parameter,
-\item \code{"gradient"}, the current gradient,
-\item \code{"hessian"}, the current Hessian,
-\item \code{"seconds"}, the computation time in seconds.
-}}
-
-\item{\code{...}}{Additional arguments passed on to \code{\link[stats]{nlm}}.
-The arguments \code{iterlim} and \code{hessian} cannot be specified.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A \code{data.frame} with iterations in rows, the columns depend on the
-specification of \code{which_element}.
 }
 }
 \if{html}{\out{<hr>}}

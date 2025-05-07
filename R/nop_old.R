@@ -146,7 +146,6 @@
 #' - \code{$elements()} returns the names of the available elements in the
 #'   optimizer outputs,
 #' - \code{$runs()} returns the number of performed optimization runs,
-#' - \code{$trace()} calculates the trace of an optimization path,
 #' - \code{$initialize_reset()} resets the initial values,
 #' - \code{$true()} stores the true best function value and parameter vector
 #'   (if available),
@@ -1773,101 +1772,6 @@ Nop_old <- R6::R6Class(
         ) +
         ggplot2::geom_hline(yintercept = 0) +
         ggplot2::coord_cartesian(ylim = ylim)
-    },
-
-    #' @description
-    #' Capture trace of optimization with \code{stats::nlm()}.
-    #' @param initial
-    #' A \code{numeric} vector of length \code{npar}, the starting point for
-    #' the optimization.
-    #' By default, \code{initial = stats::rnorm(self$npar)}, i.e., random
-    #' initial values drawn from a standard normal distribution.
-    #' @param iterations
-    #' A positive \code{integer}, the maximum number of iterations before
-    #' termination.
-    #' By default, \code{interations = 100}.
-    #' @param tolerance
-    #' A non-negative \code{numeric}, the minimum allowable absolute change in
-    #' the function value before termination.
-    #' By default, \code{tolerance = 1e-6}.
-    #' @param which_element
-    #' A \code{character} (vector) of elements to provide in the output for
-    #' each iteration. Can be one or more of:
-    #' - \code{"value"}, the current function value,
-    #' - \code{"parameter"}, the current value of each parameter,
-    #' - \code{"gradient"}, the current gradient,
-    #' - \code{"hessian"}, the current Hessian,
-    #' - \code{"seconds"}, the computation time in seconds.
-    #' @param ...
-    #' Additional arguments passed on to \code{\link[stats]{nlm}}.
-    #' The arguments \code{iterlim} and \code{hessian} cannot be specified.
-    #' @return
-    #' A \code{data.frame} with iterations in rows, the columns depend on the
-    #' specification of \code{which_element}.
-
-    trace = function(
-      initial = stats::rnorm(self$npar), iterations = 100, tolerance = 1e-6,
-      which_direction = "min",
-      which_element = c("value", "parameter", "gradient", "hessian", "seconds"),
-      ...
-    ) {
-
-      ### input checks
-      checkmate::assert_count(iterations)
-      checkmate::assert_number(tolerance, lower = 0)
-      which_element <- oeli::match_arg(
-        which_element,
-        choices = c("value", "parameter", "gradient", "hessian", "seconds"),
-        several.ok = TRUE
-      )
-
-      ### define nlm optimizer
-      args <- list(...)
-      args[["iterlim"]] <- 1
-      args[["hessian"]] <- "hessian" %in% which_element
-      nlm_opt <- do.call(optimizer_nlm, args)
-
-      ### storage for trace
-      out_colnames <- c(
-        if ("value" %in% which_element) "v",
-        if ("parameter" %in% which_element) paste0("p", 1:self$npar),
-        if ("gradient" %in% which_element) paste0("g", 1:self$npar),
-        if ("hessian" %in% which_element)
-          paste0(
-            "h", rep(1:self$npar, times = self$npar),
-            rep(1:self$npar, each = self$npar)
-          ),
-        if ("seconds" %in% which_element) "s"
-      )
-      out <- matrix(NA_real_, nrow = 0, ncol = length(out_colnames))
-      colnames(out) <- out_colnames
-
-      ### track optimization path
-      current_value <- self$evaluate(at = initial)
-      current_initial <- initial
-      for (i in seq_len(iterations)) {
-        step <- self$.__enclos_env__$private$.optimize(
-          initial = current_initial,
-          optimizer = nlm_opt,
-          which_direction = which_direction,
-          seconds = NULL,
-          hide_warnings = TRUE
-        )
-        step_pars <- c(
-          if ("value" %in% which_element) step$value,
-          if ("parameter" %in% which_element) step$parameter,
-          if ("gradient" %in% which_element) step$gradient,
-          if ("hessian" %in% which_element) as.numeric(step$hessian),
-          if ("seconds" %in% which_element) step$seconds
-        )
-        out <- rbind(out, step_pars, deparse.level = 0)
-        deviation <- abs(current_value - step$value)
-        if (deviation < tolerance) break
-        current_value <- step$value
-        current_initial <- step$parameter
-      }
-      as.data.frame(out)
-
     },
 
     #' @description
