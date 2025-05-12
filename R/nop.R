@@ -48,13 +48,13 @@
 #' - \code{npar} specifies the lengths of the target arguments,
 #' - and \code{...} are additional arguments for \code{f}.
 #'
-#' You can try to evaluate the objective function via the `$evaluate()` method.
+#' You can now evaluate the objective function via the `$evaluate()` method.
 #'
 #' ## Step 2: Specify numerical optimizers
 #' Call \code{object$set_optimizer(<optimizer object>)}, where
-#' \code{<optimizer object>} is an object of class \code{optimizer}. Such
-#' objects can be created via the \code{{optimizeR}} package, please refer to
-#' [the package homepage](https://loelschlaeger.de/optimizeR/) for details.
+#' \code{<optimizer object>} is an object of class \code{optimizer}, which can
+#' be created via the \code{{optimizeR}} package (please refer to
+#' [the package homepage](https://loelschlaeger.de/optimizeR/) for details).
 #'
 #' For example,
 #' - \code{optimizeR::Optimizer$new(which = "stats::nlm")} defines the
@@ -75,12 +75,11 @@
 #' Call \code{object$optimize()} for the optimization.
 #'
 #' ## Step 5: Analyze the results
-#' - `$results` returns a `tibble` of all optimization results,
-#' - `$minimum` and `$maximum` return the best minimizer and maximizer,
-#' - `$optima()` lists the identified optima
-#' - `$deviation()` provides parameter deviations to a specified reference.
+#' - `$results` returns a `tibble` of the optimization results,
+#' - `$optima()` lists all identified optima,
+#' - `$minimum` and `$maximum` return the best minimizer and maximizer
 #'
-#' # Progress bar during optimization
+#' # Progress during optimization
 #' Displaying progress during multiple optimization runs via the
 #' \code{{progressr}} package is supported. To get started, run
 #' \preformatted{
@@ -101,12 +100,12 @@
 #' @examples
 #' Nop_ackley <- Nop$new(f = TestFunctions::TF_ackley, npar = 2)$
 #'   set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
-#'   initialize_random(
-#'     sampler = function() rnorm(2, mean = 0, sd = 3), runs = 100
-#'   )$
+#'   initialize_random(runs = 20)$
 #'   optimize(which_direction = "min")
 #'
-#' Nop_ackley$optima()
+#' Nop_ackley |> ggplot2::autoplot(include_initials = TRUE)
+#'
+#' Nop_ackley$optima(digits = 0)
 #' Nop_ackley$minimum
 #'
 #' @export
@@ -135,6 +134,8 @@ Nop <- R6::R6Class(
     #' @param ...
     #' Optionally additional function arguments passed to `f` (and `gradient`
     #' and `hessian`, if specified) that are fixed during the optimization.
+
+    # TODO: autoplot method with initial values
 
     initialize = function(
       f, target = NULL, npar, gradient = NULL, hessian = NULL, ...
@@ -171,6 +172,24 @@ Nop <- R6::R6Class(
 
       ### build Storage object
       private$.results <- oeli::Storage$new()
+
+    },
+
+    # TODO
+
+    fixed_argument = function() {
+
+    },
+
+    # TODO
+
+    standardize_argument = function() {
+
+    },
+
+    # TODO
+
+    subset_argument = function() {
 
     },
 
@@ -447,6 +466,18 @@ Nop <- R6::R6Class(
       invisible(self)
     },
 
+    # TODO
+
+    initialize_continue = function() {
+
+    },
+
+    # TODO
+
+    initialize_promising = function() {
+
+    },
+
     #' @description
     #' Transforms the currently defined initial values.
     #'
@@ -626,18 +657,119 @@ Nop <- R6::R6Class(
 
     # TODO: autoplot method
 
-    optima = function() {
-      # TODO
+    #' @description
+    #' Lists all identified optima.
+    #'
+    #' @param only_original \[`logical(1)\]\cr
+    #' Include only optima obtained on the original problem?
+    #'
+    #' @param group_by \[`character(1)\]\cr
+    #' Selects how the output is grouped. Either:
+    #' - \code{NULL} to not group,
+    #' - \code{"optimization"} to group by optimization label,
+    #' - \code{"optimizer"} to group by optimizer label.
+    #'
+    #' @param sort_by_value \[`logical(1)\]\cr
+    #' Sort by value? Else, sort by frequency.
+    #'
+    #' @param digits \[`integer(1)\]\cr
+    #' The number of decimal places.
+
+    optima = function(
+      which_direction = "min", only_original = TRUE,
+      group_by = NULL, sort_by_value = FALSE,
+      digits = getOption("digits", default = 7)
+    ) {
+
+      ### input checks
+      which_direction <- private$.check_which_direction(
+        which_direction = which_direction, both_allowed = FALSE
+      )
+      oeli::input_check_response(
+        check = checkmate::check_flag(only_original),
+        var_name = "only_original"
+      )
+      group_by <- private$.check_group_by(group_by)
+      oeli::input_check_response(
+        check = checkmate::check_flag(sort_by_value),
+        var_name = "sort_by_value"
+      )
+      oeli::input_check_response(
+        check = checkmate::check_int(digits),
+        var_name = "digits"
+      )
+
+      ### extract optima
+      results <- self$results |> dplyr::filter(.direction == which_direction)
+      if (only_original) results <- results |> dplyr::filter(.original == TRUE)
+      results <- results |>
+        dplyr::mutate(value = round(value, digits = digits))
+      if (is.null(group_by)) {
+        results <- results |> dplyr::count(value)
+        results <- if (sort_by_value && which_direction == "min") {
+          results |> dplyr::arrange(value)
+        } else if (sort_by_value && which_direction == "max") {
+          results |> dplyr::arrange(dplyr::desc(value))
+        } else {
+          results |> dplyr::arrange(dplyr::desc(n))
+        }
+      } else {
+        results <- if (group_by == "optimization") {
+          results |> dplyr::select(value, .optimization_label) |>
+            split(results$.optimization_label)
+        } else {
+          results |> dplyr::select(value, .optimizer_label) |>
+            split(results$.optimizer_label)
+        }
+        results <- if (sort_by_value && which_direction == "min") {
+          results |> purrr::map(
+            ~ dplyr::count(.x, value) |> dplyr::arrange(value)
+          )
+        } else if (sort_by_value && which_direction == "max") {
+          results |> purrr::map(
+            ~ dplyr::count(.x, value) |> dplyr::arrange(dplyr::desc(value))
+          )
+        } else {
+          results |> purrr::map(
+            ~ dplyr::count(.x, value) |> dplyr::arrange(dplyr::desc(n))
+          )
+        }
+      }
+      return(results)
+
     },
 
     # TODO: autoplot method
 
-    deviation = function() {
+    deviation = function(
+      reference, which_element = "initial", which_optimizer = "all",
+      only_original = TRUE,
+      parameter_labels = paste0("x", seq_len(sum(self$npar)))
+    ) {
       # TODO
     }
 
   ),
   active = list(
+
+    #' @field initial_values \[`list()`, read-only\]\cr
+    #' The currently defined initial values.
+    #'
+    #' Use the `initialize_*()` methods to add, transform, and reset values.
+
+    initial_values = function(value) {
+      if (missing(value)) {
+        private$.initial_values
+      } else {
+        cli::cli_abort(
+          paste(
+            "Field {.var $initial_values} is read-only.",
+            "Use the {.fun initialize_*} methods to add, transform, and reset."
+          ),
+          call = NULL
+        )
+      }
+    },
 
     #' @field results \[`tibble`, read-only\]\cr
     #' Optimization results with identifiers:
@@ -693,14 +825,14 @@ Nop <- R6::R6Class(
     minimum = function(value) {
       if (missing(value)) {
         self$results |>
-          filter(.direction == "min", .original == TRUE) |>
+          dplyr::filter(.direction == "min", .original == TRUE) |>
           {\(results) if (nrow(results) == 0) {
             cli::cli_warn("No results available.", call = NULL)
             return(list(value = NA_real_, parameter = numeric()))
           } else {
             results |>
-              slice_min(order_by = value, n = 1) |>
-              select(value, parameter) |>
+              dplyr::slice_min(order_by = value, n = 1) |>
+              dplyr::select(value, parameter) |>
               (\(df) list(value = df$value, parameter = df$parameter[[1]]))()
           }}()
       } else {
@@ -717,14 +849,14 @@ Nop <- R6::R6Class(
     maximum = function(value) {
       if (missing(value)) {
         self$results |>
-          filter(.direction == "max", .original == TRUE) |>
+          dplyr::filter(.direction == "max", .original == TRUE) |>
           {\(results) if (nrow(results) == 0) {
             cli::cli_warn("No results available.", call = NULL)
             return(list(value = NA_real_, parameter = numeric()))
           } else {
             results |>
-              slice_max(order_by = value, n = 1) |>
-              select(value, parameter) |>
+              dplyr::slice_max(order_by = value, n = 1) |>
+              dplyr::select(value, parameter) |>
               (\(df) list(value = df$value, parameter = df$parameter[[1]]))()
           }}()
       } else {
@@ -825,6 +957,21 @@ Nop <- R6::R6Class(
       private$.objective$.__enclos_env__$private$.check_arguments_complete(
         .verbose = verbose
       )
+    },
+    .check_group_by = function(group_by, verbose = self$verbose) {
+      oeli::input_check_response(
+        check = checkmate::check_choice(
+          group_by, choices = c("optimization", "optimizer"),
+          null.ok = TRUE
+        ),
+        var_name = "group_by"
+      )
+      if (!is.null(group_by)) {
+        private$.print_status(
+          "Selected grouping by {.val {group_by}}.", verbose = verbose
+        )
+      }
+      return(group_by)
     },
     .check_which_optimizer = function(
       which_optimizer, to_id, verbose = self$verbose
@@ -942,7 +1089,7 @@ Nop <- R6::R6Class(
         msg = "Saving {length(results)} optimization result{?s}.",
         verbose = verbose
       )
-      original <- length(private$.original_arguments) == 0
+      is_original <- length(private$.original_arguments) == 0
       for (i in seq_along(results)) {
         result <- results[[i]]
         parts <- names(result)
@@ -991,7 +1138,7 @@ Nop <- R6::R6Class(
         optimizer_label <- names(private$.optimizer)[optimizer_id]
         attr(result, ".optimizer_label") <- optimizer_label
         direction <- attr(result, ".direction")
-        attr(result, ".original") <- original
+        attr(result, ".original") <- is_original
         direction_identifier <- if (direction == "max") {
           c("direction:max", "!direction:min")
         } else {
@@ -1003,7 +1150,7 @@ Nop <- R6::R6Class(
           paste0("optimization_label:", optimization_label),
           paste0("optimizer_id:", optimizer_id),
           paste0("optimizer_label:", optimizer_label),
-          paste0(ifelse(original, "", "!"), "original"),
+          paste0(ifelse(is_original, "", "!"), "original"),
           direction_identifier,
           paste0(ifelse(result[["error"]], "", "!"), "fail"),
           paste0("element:", names(result))

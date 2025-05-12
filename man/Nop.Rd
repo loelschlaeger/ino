@@ -6,9 +6,103 @@
 \description{
 A \code{Nop} object defines a numerical optimization problem.
 }
+\section{Getting started}{
+\subsection{Step 1: Create a \code{Nop} object}{
+
+Call \code{object <- Nop$new(f, target, npar, ...)} where
+\itemize{
+\item \code{f} is the objective function,
+\item \code{target} are the names of the target arguments,
+\item \code{npar} specifies the lengths of the target arguments,
+\item and \code{...} are additional arguments for \code{f}.
+}
+
+You can now evaluate the objective function via the \verb{$evaluate()} method.
+}
+
+\subsection{Step 2: Specify numerical optimizers}{
+
+Call \code{object$set_optimizer(<optimizer object>)}, where
+\code{<optimizer object>} is an object of class \code{optimizer}, which can
+be created via the \code{{optimizeR}} package (please refer to
+\href{https://loelschlaeger.de/optimizeR/}{the package homepage} for details).
+
+For example,
+\itemize{
+\item \code{optimizeR::Optimizer$new(which = "stats::nlm")} defines the
+\code{\link[stats]{nlm}} optimizer,
+\item \code{optimizeR::Optimizer$new(which = "stats::optim")} defines the
+\code{\link[stats]{optim}} optimizer.
+}
+}
+
+\subsection{Step 3: Select initial values}{
+
+Call initialization methods to define starting values for the
+optimization (the different initialization strategies are illustrated in the
+package vignettes), for example:
+\itemize{
+\item \code{object$initialize_fixed()} for fixed initial values,
+\item \code{object$initialize_random()} for random initial values,
+\item \code{object$initialize_continue()} for initial values based on parameter
+estimates from previous optimization runs.
+}
+}
+
+\subsection{Step 4: Optimization}{
+
+Call \code{object$optimize()} for the optimization.
+}
+
+\subsection{Step 5: Analyze the results}{
+\itemize{
+\item \verb{$results} returns a \code{tibble} of the optimization results,
+\item \verb{$optima()} lists all identified optima,
+\item \verb{$minimum} and \verb{$maximum} return the best minimizer and maximizer
+}
+}
+}
+
+\section{Progress during optimization}{
+Displaying progress during multiple optimization runs via the
+\code{{progressr}} package is supported. To get started, run
+\preformatted{
+progressr::handlers(global = TRUE)
+}
+and see \code{\link[progressr]{handlers}} for details.
+}
+
+\section{Parallel optimization}{
+Parallel computation of multiple optimization runs via the \code{{future}}
+package is supported. To get started, run one of
+\preformatted{
+future::plan(future::sequential)
+future::plan(future::multisession)
+future::plan(future::multicore)
+}
+and see \code{\link[future]{plan}} for details.
+}
+
+\examples{
+Nop_ackley <- Nop$new(f = TestFunctions::TF_ackley, npar = 2)$
+  set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
+  initialize_random(runs = 20)$
+  optimize(which_direction = "min")
+
+Nop_ackley |> ggplot2::autoplot(include_initials = TRUE)
+
+Nop_ackley$optima(digits = 0)
+Nop_ackley$minimum
+
+}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
+\item{\code{initial_values}}{[\code{list()}, read-only]\cr
+The currently defined initial values.
+
+Use the \verb{initialize_*()} methods to add, transform, and reset values.}
+
 \item{\code{results}}{[\code{tibble}, read-only]\cr
 Optimization results with identifiers:
 \itemize{
@@ -39,6 +133,9 @@ An optimization label that has not been used yet.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Nop-new}{\code{Nop$new()}}
+\item \href{#method-Nop-fixed_argument}{\code{Nop$fixed_argument()}}
+\item \href{#method-Nop-standardize_argument}{\code{Nop$standardize_argument()}}
+\item \href{#method-Nop-subset_argument}{\code{Nop$subset_argument()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
@@ -46,6 +143,9 @@ An optimization label that has not been used yet.}
 \item \href{#method-Nop-initialize_random}{\code{Nop$initialize_random()}}
 \item \href{#method-Nop-initialize_grid}{\code{Nop$initialize_grid()}}
 \item \href{#method-Nop-initialize_custom}{\code{Nop$initialize_custom()}}
+\item \href{#method-Nop-initialize_continue}{\code{Nop$initialize_continue()}}
+\item \href{#method-Nop-initialize_promising}{\code{Nop$initialize_promising()}}
+\item \href{#method-Nop-initialize_transform}{\code{Nop$initialize_transform()}}
 \item \href{#method-Nop-initialize_reset}{\code{Nop$initialize_reset()}}
 \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
 \item \href{#method-Nop-optima}{\code{Nop$optima()}}
@@ -103,6 +203,33 @@ and \code{hessian}, if specified) that are fixed during the optimization.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-fixed_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-fixed_argument}{}}}
+\subsection{Method \code{fixed_argument()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$fixed_argument()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-standardize_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-standardize_argument}{}}}
+\subsection{Method \code{standardize_argument()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize_argument()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-subset_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-subset_argument}{}}}
+\subsection{Method \code{subset_argument()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$subset_argument()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-print"></a>}}
@@ -266,6 +393,43 @@ The type of the initial values.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_continue"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_continue}{}}}
+\subsection{Method \code{initialize_continue()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_promising"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_promising}{}}}
+\subsection{Method \code{initialize_promising()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_promising()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_transform"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_transform}{}}}
+\subsection{Method \code{initialize_transform()}}{
+Transforms the currently defined initial values.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_transform(transformer = function(x) x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{transformer}}{[\verb{function()}]\cr
+A \code{function} that receives and returns a \code{numeric()} of length
+\code{sum(self$npar)}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_reset}{}}}
 \subsection{Method \code{initialize_reset()}}{
@@ -347,19 +511,74 @@ Supports:
 \if{html}{\out{<a id="method-Nop-optima"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
 \subsection{Method \code{optima()}}{
+Lists all identified optima.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optima()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
+  which_direction = "min",
+  only_original = TRUE,
+  group_by = NULL,
+  sort_by_value = FALSE,
+  digits = getOption("digits", default = 7)
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_direction}}{[\code{character()}]\cr
+Selects the direction of optimization. One or both of:
+\itemize{
+\item \code{"min"} for minimization,
+\item \code{"max"} for maximization.
+}}
+
+\item{\code{only_original}}{[`logical(1)]\cr
+Include only optima obtained on the original problem?}
+
+\item{\code{group_by}}{[`character(1)]\cr
+Selects how the output is grouped. Either:
+\itemize{
+\item \code{NULL} to not group,
+\item \code{"optimization"} to group by optimization label,
+\item \code{"optimizer"} to group by optimizer label.
+}}
+
+\item{\code{sort_by_value}}{[`logical(1)]\cr
+Sort by value? Else, sort by frequency.}
+
+\item{\code{digits}}{[`integer(1)]\cr
+The number of decimal places.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-deviation"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
 \subsection{Method \code{deviation()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$deviation()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
+  reference,
+  which_element = "initial",
+  which_optimizer = "all",
+  only_original = TRUE,
+  parameter_labels = paste0("x", seq_len(sum(self$npar)))
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
+Selects numerical optimizers. Either:
+\itemize{
+\item \code{"all"} for all specified optimizers,
+\item specific optimizer labels,
+\item specified optimizer ids as defined in the \code{print()} output.
+}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-clone"></a>}}

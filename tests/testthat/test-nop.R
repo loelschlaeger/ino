@@ -65,7 +65,22 @@ test_that("Example 1: Results can be accessed", {
   checkmate::expect_tibble(Nop_ackley$results)
   checkmate::expect_list(Nop_ackley$minimum, len = 2)
   expect_warning(Nop_ackley$maximum, "No results available.")
-  #checkmate::expect_tibble(Nop_ackley$optima)
+  checkmate::expect_tibble(Nop_ackley$optima())
+  comb <- expand.grid(
+    which_direction = c("min", "max"),
+    only_original = c(TRUE, FALSE),
+    group_by = c(NULL, "optimization", "optimizer"),
+    sort_by_value = c(TRUE, FALSE),
+    stringsAsFactors = FALSE
+  )
+  for (i in seq_len(nrow(comb))) {
+    optima <- Nop_ackley$optima(comb[i, 1], comb[i, 2], comb[i, 3], comb[i, 4])
+    if (is.null(comb[1, 3])) {
+      checkmate::expect_tibble(optima)
+    } else {
+      checkmate::expect_list(optima)
+    }
+  }
 })
 
 test_that("Example 1: Maximization works", {

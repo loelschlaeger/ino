@@ -384,100 +384,6 @@ Nop_old <- R6::R6Class(
     },
 
     #' @description
-    #' Provides a frequency overview of the identified optimum values.
-    #' @param sort_by
-    #' Either:
-    #' - \code{"frequency"} (default) to sort rows by frequency,
-    #' - \code{"value"} to sort by function value.
-    #'
-    #' @param group_by
-    #' Selects how the output is grouped. Either:
-    #' - \code{NULL} to not group (default),
-    #' - \code{".optimization_label"} to group by optimization label,
-    #' - \code{".optimizer_label"} to group by optimizer label.
-    #'
-    #' @param print.rows
-    #' An \code{integer}, specifying the maximal number of rows to be
-    #' printed. No printing if \code{print.rows = 0}, which is the default.
-    #' @return
-    #' A \code{data.frame}. If \code{group_by} is not \code{NULL}, a \code{list}
-    #' of \code{data.frame}s.
-
-    optima = function(
-      which_run = "comparable", which_direction = "min",
-      which_optimizer = "all", group_by = NULL, sort_by = "frequency",
-      print.rows = 0, verbose = self$verbose
-    ) {
-
-      ### input checks
-      which_direction <- private$.check_which_direction(
-        which_direction = which_direction, both_allowed = FALSE, verbose = FALSE
-      )
-      group_by <- private$.check_group_by(group_by = group_by, verbose = FALSE)
-      sort_by <- oeli::match_arg(sort_by, c("frequency", "value"))
-      checkmate::assert_count(print.rows)
-
-      ### access the values of the optimizations
-      data <- self$summary(
-        which_element = "value", which_run = which_run,
-        which_direction = which_direction, which_optimizer = which_optimizer,
-        add_identifier = if (is.null(group_by)) character() else group_by,
-        verbose = verbose
-      )
-
-      ### group data
-      if (is.null(group_by)) {
-        data <- list(data)
-      } else {
-        data <- oeli::group_data_frame(
-          df = data, by = group_by, keep_by = FALSE
-        )
-      }
-
-      ### create optima tables
-      optima <- list()
-      for (i in seq_along(data)) {
-        if (nrow(data[[i]]) == 0) {
-          table <- data.frame()
-        } else {
-          values <- data[[i]][["value"]]
-          table <- as.data.frame(table(values, useNA = "ifany"))
-          colnames(table) <- c("value", "frequency")
-          decreasing <- identical(sort_by, "frequency") ||
-            identical(which_direction, "max")
-          table <- table[order(table[[sort_by]], decreasing = decreasing), ]
-          rownames(table) <- NULL
-        }
-        optima[[i]] <- table
-      }
-      names(optima) <- names(data)
-
-      ### print and return tables
-      if (print.rows == 0) {
-        if (is.null(group_by)) {
-          return(optima[[1]])
-        } else {
-          return(optima)
-        }
-      } else {
-        for (i in seq_along(optima)) {
-          cli::cat_bullet(names(optima[i]), "\n")
-          table <- optima[[i]]
-          n <- min(nrow(table), print.rows)
-          print(table[seq_len(n), ])
-          if (n < nrow(table)) {
-            cli::cli_alert_info(
-              "Omitted {nrow(table) - n} row{?s}."
-            )
-          }
-          cat("\n")
-        }
-        return(invisible(optima))
-      }
-
-    },
-
-    #' @description
     #' Visualizes the optimization time or value.
     #' @param which_element
     #' Either:
@@ -667,31 +573,10 @@ Nop_old <- R6::R6Class(
 
   private = list(
 
-    ### storage of options
-    .verbose = getOption("verbose", default = FALSE),
+    .original_arguments = list()
 
-    ### storage of the optimization problem details
-    .objective = NULL,
-    .original_arguments = list(),
-    .optimizer = list(),
-    .results = NULL,
-    .optimization_labels = character(),
 
-    ### storage of the initial values
-    .initial_values = list(),
-    .initial_type = character(),
-    .initial_seconds = numeric(),
 
-    .check_group_by = function(group_by, verbose = self$verbose) {
-      checkmate::assert_choice(
-        group_by, choices = c(".optimization_label", ".optimizer_label"),
-        null.ok = TRUE
-      )
-      if (verbose && !is.null(group_by)) {
-        cli::cli_alert_info("Selected grouping by {.val {group_by}}.")
-      }
-      return(group_by)
-    }
 
   )
 )
