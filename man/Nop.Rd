@@ -110,7 +110,9 @@ Optimization results with identifiers:
 \item \code{".optimizer_label"} (identifies the optimizer)
 \item \code{".direction"} (identifies the optimization direction)
 \item \code{".original"} (identifies results obtained on the original problem)
-}}
+}
+
+The output has an associated \code{autoplot()} method.}
 
 \item{\code{minimum}}{[\code{list(2)}, read-only]\cr
 Best value and parameter across all (original) minimizations.}
@@ -158,6 +160,8 @@ An optimization label that has not been used yet.}
 \if{latex}{\out{\hypertarget{method-Nop-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new \code{Nop} object.
+
+The output has an associated \code{autoplot()} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$new(f, target = NULL, npar, gradient = NULL, hessian = NULL, ...)}\if{html}{\out{</div>}}
 }
@@ -512,6 +516,8 @@ Supports:
 \if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
 \subsection{Method \code{optima()}}{
 Lists all identified optima.
+
+The output has an associated \code{autoplot()} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
   which_direction = "min",
@@ -556,6 +562,9 @@ The number of decimal places.}
 \if{html}{\out{<a id="method-Nop-deviation"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
 \subsection{Method \code{deviation()}}{
+TODO
+
+The output has an associated \code{autoplot()} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
   reference,
@@ -569,6 +578,19 @@ The number of decimal places.}
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{reference}}{[\code{numeric()}]\cr
+The reference vector of length \code{sum(self$npar)}.}
+
+\item{\code{reference}}{[\code{character()}]\cr
+Labels for the parameters of length \code{sum(self$npar)}.}
+
+\item{\code{which_element}}{[`character(1)]\cr
+Either
+\itemize{
+\item \code{"initial"} for deviations with respect to the initial values,
+\item or \code{"parameter"} for deviations with respect to the estimated parameters.
+}}
+
 \item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
 Selects numerical optimizers. Either:
 \itemize{
@@ -576,6 +598,9 @@ Selects numerical optimizers. Either:
 \item specific optimizer labels,
 \item specified optimizer ids as defined in the \code{print()} output.
 }}
+
+\item{\code{only_original}}{[`logical(1)]\cr
+Include only optima obtained on the original problem?}
 }
 \if{html}{\out{</div>}}
 }

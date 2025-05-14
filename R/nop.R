@@ -38,6 +38,9 @@
 #' - specific optimizer labels,
 #' - specified optimizer ids as defined in the \code{print()} output.
 #'
+#' @param only_original \[`logical(1)\]\cr
+#' Include only optima obtained on the original problem?
+#'
 #' @details
 #' # Getting started
 #'
@@ -117,6 +120,8 @@ Nop <- R6::R6Class(
     #' @description
     #' Creates a new `Nop` object.
     #'
+    #' The output has an associated `autoplot()` method.
+    #'
     #' @param gradient \[`function` | `NULL`\]\cr
     #' Optionally a `function` that returns the gradient of `f`.
     #'
@@ -134,8 +139,6 @@ Nop <- R6::R6Class(
     #' @param ...
     #' Optionally additional function arguments passed to `f` (and `gradient`
     #' and `hessian`, if specified) that are fixed during the optimization.
-
-    # TODO: autoplot method with initial values
 
     initialize = function(
       f, target = NULL, npar, gradient = NULL, hessian = NULL, ...
@@ -237,7 +240,7 @@ Nop <- R6::R6Class(
       }
 
       ### info on optimization results
-      # TODO: number runs, proportion comparable, different optimizers, etc.
+      # TODO: number runs, proportion original, different optimizers, etc.
 
       invisible(self)
 
@@ -655,13 +658,10 @@ Nop <- R6::R6Class(
       invisible(self)
     },
 
-    # TODO: autoplot method
-
     #' @description
     #' Lists all identified optima.
     #'
-    #' @param only_original \[`logical(1)\]\cr
-    #' Include only optima obtained on the original problem?
+    #' The output has an associated `autoplot()` method.
     #'
     #' @param group_by \[`character(1)\]\cr
     #' Selects how the output is grouped. Either:
@@ -735,11 +735,25 @@ Nop <- R6::R6Class(
           )
         }
       }
-      return(results)
+      structure(results, class = c("Nop_optima", class(results)))
 
     },
 
-    # TODO: autoplot method
+    #' @description
+    #' TODO
+    #'
+    #' The output has an associated `autoplot()` method.
+    #'
+    #' @param reference \[`numeric()`\]\cr
+    #' The reference vector of length `sum(self$npar)`.
+    #'
+    #' @param which_element \[`character(1)\]\cr
+    #' Either
+    #' - `"initial"` for deviations with respect to the initial values,
+    #' - or `"parameter"` for deviations with respect to the estimated parameters.
+    #'
+    #' @param reference \[`character()`\]\cr
+    #' Labels for the parameters of length `sum(self$npar)`.
 
     deviation = function(
       reference, which_element = "initial", which_optimizer = "all",
@@ -778,8 +792,8 @@ Nop <- R6::R6Class(
     #' - `".optimizer_label"` (identifies the optimizer)
     #' - `".direction"` (identifies the optimization direction)
     #' - `".original"` (identifies results obtained on the original problem)
-
-    # TODO: autoplot method
+    #'
+    #' The output has an associated `autoplot()` method.
 
     results = function(value) {
       if (missing(value)) {
@@ -803,13 +817,14 @@ Nop <- R6::R6Class(
 
         ### build tibble
         all_names <- unique(purrr::flatten_chr(purrr::map(res, names)))
-        purrr::map(res, function(x) {
+        results <- purrr::map(res, function(x) {
           purrr::map(all_names, function(nm) {
             val <- x[[nm]] %||% NA
             if (is.null(val) || length(val) != 1 || is.matrix(val)) list(val) else val
           }) |>
             rlang::set_names(all_names) |> tibble::as_tibble()
         }) |> dplyr::bind_rows()
+        structure(results, class = c("Nop_results", class(results)))
 
       } else {
         cli::cli_abort(

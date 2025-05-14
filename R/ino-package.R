@@ -39,7 +39,7 @@ NULL
   doc_link <- "https://loelschlaeger.de/ino"
   issues_link <- "https://github.com/loelschlaeger/ino/issues"
   msg <- c(
-    paste0("This is {ao} ", utils::packageVersion("ino")),
+    paste0("This is {ino} ", utils::packageVersion("ino")),
     ", happy initialization!\n",
     "Documentation? ",
     cli::style_hyperlink(doc_link, doc_link), "\n",
