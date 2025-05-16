@@ -562,7 +562,7 @@ The number of decimal places.}
 \if{html}{\out{<a id="method-Nop-deviation"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
 \subsection{Method \code{deviation()}}{
-TODO
+Compute deviations with respect to a reference parameter.
 
 The output has an associated \code{autoplot()} method.
 \subsection{Usage}{

@@ -258,7 +258,7 @@ Nop <- R6::R6Class(
     #' Add gradient / Hessian value as attributes? Only if specified.
 
     evaluate = function(
-      at = stats::rnorm(sum(self$npar)),
+      at = rep(0, self$npar),
       .gradient_as_attribute = FALSE, .hessian_as_attribute = FALSE
     ) {
       private$.objective$evaluate(
@@ -740,7 +740,7 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' TODO
+    #' Compute deviations with respect to a reference parameter.
     #'
     #' The output has an associated `autoplot()` method.
     #'

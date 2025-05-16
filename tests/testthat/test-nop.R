@@ -23,7 +23,7 @@ test_that("Example 0: Defining the problem works", {
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_pol, xlim = c(-1, 1))))
 })
 
-# Example 1: Ackley function minimization ---------------------------------
+# Example 1: Ackley function ----------------------------------------------
 
 ackley <- TestFunctions::TF_ackley
 Nop_ackley <- Nop$new(f = ackley, npar = 2)
@@ -103,3 +103,94 @@ test_that("Example 1: Plotting works", {
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley)))
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$optima())))
 })
+
+# Example 2: Mixture model ------------------------------------------------
+
+normal_mixture_llk <- function(mu, sigma, lambda, data) {
+  sigma <- exp(sigma)
+  lambda <- plogis(lambda)
+  sum(log(lambda * dnorm(data, mu[1], sigma[1]) + (1 - lambda) * dnorm(data, mu[2], sigma[2])))
+}
+
+Nop_mixture <- Nop$new(f = normal_mixture_llk, target = c("mu", "sigma", "lambda"), npar = c(2, 2, 1))
+
+data <- faithful$eruptions
+
+test_that("Example 2: ", {
+  checkmate::expect_r6(Nop_mixture, "Nop")
+})
+
+# Example 3: HMM ----------------------------------------------------------
+
+hmm_data <- fHMM::simulate_hmm(seed = 1)$data
+
+# Nop_hmm <- Nop$new(
+#   objective = fHMM::ll_hmm,
+#   npar = 6,
+#   sdds = "normal",
+#   states = 2,
+#   negative = TRUE
+# )
+# Nop_hmm$verbose <- FALSE
+#
+# test_that("Example 2: Defining the problem works", {
+#   checkmate::expect_r6(Nop_hmm, "Nop")
+#   expect_snapshot(Nop_hmm$print())
+#   expect_snapshot(print(Nop_hmm))
+#   expect_identical(Nop_hmm$npar, c("parUncon" = 6))
+#   Nop_hmm$set_optimizer(optimizeR::optimizer_nlm())
+#   expect_snapshot(Nop_hmm)
+# })
+#
+# Nop_hmm$fixed_argument("set", "observations" = hmm_data)
+#
+# test_that("Example 2: Additional arguments can be modified and reset", {
+#   expect_snapshot(print(Nop_hmm))
+#   expect_identical(
+#     Nop_hmm$fixed_argument("get", argument_name = "observations"),
+#     hmm_data
+#   )
+#   Nop_hmm$fixed_argument("remove", argument_name = "observations")
+#   expect_error(
+#     Nop_hmm$fixed_argument("get", argument_name = "observations"),
+#     "not specified"
+#   )
+#   Nop_hmm$set_argument("observations" = hmm_data)
+#   Nop_hmm$fixed_argument("modify", "observations" = 1:3)
+#   expect_identical(
+#     Nop_hmm$fixed_argument("get", argument_name = "observations"),
+#     1:3
+#   )
+#   expect_snapshot(print(Nop_hmm))
+#   Nop_hmm$fixed_argument("reset", argument_name = "observations")
+#   expect_identical(
+#     Nop_hmm$fixed_argument("get", argument_name = "observations"),
+#     hmm_data
+#   )
+# })
+#
+# test_that("Example 2: Observations can be standardized", {
+#   Nop_hmm$standardize("observations")
+#   out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
+#   expect_equal(
+#     mean(out), 0, tolerance = 1e-6
+#   )
+#   expect_equal(
+#     sd(out), 1, tolerance = 1e-6
+#   )
+#   Nop_hmm$fixed_argument("reset", argument_name = "observations")
+#   expect_identical(
+#     Nop_hmm$fixed_argument("get", argument_name = "observations"),
+#     hmm_data
+#   )
+# })
+#
+# test_that("Example 2: Observations can be reduced", {
+#   Nop_hmm$reduce("observations")
+#   out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
+#   expect_length(out, 50)
+#   Nop_hmm$fixed_argument("reset", argument_name = "observations")
+#   expect_length(
+#     Nop_hmm$fixed_argument("get", argument_name = "observations"), 100
+#   )
+# })

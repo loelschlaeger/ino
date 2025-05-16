@@ -144,6 +144,7 @@ autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
 }
 
 #' @rdname autoplot.Nop
+#' @export
 
 autoplot.Nop_optima <- function(object, ...) {
 
@@ -165,12 +166,14 @@ autoplot.Nop_optima <- function(object, ...) {
 }
 
 #' @rdname autoplot.Nop
+#' @export
 
 autoplot.Nop_deviation <- function(object, ...) {
   # TODO
 }
 
 #' @rdname autoplot.Nop
+#' @export
 
 autoplot.Nop_results <- function(object, ...) {
   # TODO
