@@ -19,8 +19,8 @@ test_that("Example 0: Defining the problem works", {
 
   checkmate::expect_tibble(Nop_pol$results, nrows = 0, ncols = 4)
 
-  expect_error(autoplot(Nop_pol), "Input `xlim` is bad")
-  expect_true(ggplot2::is_ggplot(autoplot(Nop_pol, xlim = c(-1, 1))))
+  expect_error(ggplot2::autoplot(Nop_pol), "Input `xlim` is bad")
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_pol, xlim = c(-1, 1))))
 })
 
 # Example 1: Ackley function minimization ---------------------------------
@@ -96,10 +96,10 @@ test_that("Example 1: Maximization works", {
 })
 
 test_that("Example 1: Plotting works", {
-  expect_error(autoplot(Nop_ackley), "Input `xlim` is bad")
-  expect_error(autoplot(Nop_ackley, xlim = c(-1, 1)), "Input `xlim2` is bad")
-  expect_true(ggplot2::is_ggplot(autoplot(Nop_ackley, xlim = c(-1, 1), xlim2 = c(-1, 1))))
+  expect_error(ggplot2::autoplot(Nop_ackley), "Input `xlim` is bad")
+  expect_error(ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1)), "Input `xlim2` is bad")
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1), xlim2 = c(-1, 1))))
   Nop_ackley$initialize_random(runs = 10)
-  expect_true(ggplot2::is_ggplot(autoplot(Nop_ackley)))
-  expect_true(ggplot2::is_ggplot(autoplot(Nop_ackley$optima())))
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley)))
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$optima())))
 })
