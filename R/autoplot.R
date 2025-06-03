@@ -168,8 +168,28 @@ autoplot.Nop_optima <- function(object, ...) {
 #' @rdname autoplot.Nop
 #' @export
 
-autoplot.Nop_deviation <- function(object, ...) {
-  # TODO
+autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
+
+  ### input checks
+  oeli::input_check_response(
+    check = oeli::check_missing(object),
+    var_name = "object"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_class(object, "Nop_deviation"),
+    var_name = "object"
+  )
+
+  ### produce bar chart
+  object |>
+    tidyr::pivot_longer(cols = - .optimization_label) |>
+    ggplot2::ggplot(ggplot2::aes(x = name, y = value)) +
+    ggplot2::geom_point(
+      ggplot2::aes(color = .optimization_label),
+      position = ifelse(jitter, "jitter", "identity")
+    ) +
+    ggplot2::labs(x = "parameter", y = "deviation") +
+    ggplot2::geom_hline(yintercept = 0)
 }
 
 #' @rdname autoplot.Nop

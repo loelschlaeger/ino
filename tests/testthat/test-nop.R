@@ -104,6 +104,11 @@ test_that("Example 1: Plotting works", {
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$optima())))
 })
 
+test_that("Example 1: Deviation can be computed and visualized", {
+  expect_s3_class(Nop_ackley$deviation(), "Nop_deviation")
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$deviation())))
+})
+
 # Example 2: Mixture model ------------------------------------------------
 
 normal_mixture_llk <- function(mu, sigma, lambda, data) {

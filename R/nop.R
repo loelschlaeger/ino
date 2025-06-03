@@ -258,7 +258,7 @@ Nop <- R6::R6Class(
     #' Add gradient / Hessian value as attributes? Only if specified.
 
     evaluate = function(
-      at = rep(0, self$npar),
+      at = rep(0, sum(self$npar)),
       .gradient_as_attribute = FALSE, .hessian_as_attribute = FALSE
     ) {
       private$.objective$evaluate(
@@ -749,20 +749,50 @@ Nop <- R6::R6Class(
     #'
     #' @param which_element \[`character(1)\]\cr
     #' Either
-    #' - `"initial"` for deviations with respect to the initial values,
-    #' - or `"parameter"` for deviations with respect to the estimated parameters.
+    #' - `"initial"` for deviations with respect to the initial values, or
+    #' - `"parameter"` for deviations with respect to the estimated parameters.
     #'
     #' @param reference \[`character()`\]\cr
     #' Labels for the parameters of length `sum(self$npar)`.
 
     deviation = function(
-      reference, which_element = "initial", which_optimizer = "all",
-      only_original = TRUE,
+      reference = rep(0, sum(self$npar)), which_element = "initial",
+      which_direction = "min", which_optimizer = "all", only_original = TRUE,
       parameter_labels = paste0("x", seq_len(sum(self$npar)))
     ) {
-      # TODO
-    }
 
+      ### input checks
+      private$.check_target(at = reference)
+      which_element <- oeli::match_arg(which_element, c("initial", "parameter"))
+      which_direction <- private$.check_which_direction(which_direction)
+      which_optimizer <- private$.check_which_optimizer(which_optimizer, to_id = FALSE)
+      oeli::input_check_response(
+        check = checkmate::check_flag(only_original),
+        var_name = "only_original"
+      )
+      oeli::input_check_response(
+        check = checkmate::check_character(
+          parameter_labels, unique = TRUE, any.missing = FALSE, len = sum(self$npar)
+        )
+      )
+
+      ### compute deviation
+      results <- self$results |> dplyr::filter(.direction == which_direction)
+      if (only_original) results <- results |> dplyr::filter(.original == TRUE)
+      out <- if (nrow(results) == 0) {
+        c(lapply(seq_len(sum(self$npar)), function(x) numeric(0)), list(character(0))) |>
+          setNames(c(parameter_labels, ".optimization_label")) |>
+          dplyr::as_tibble()
+      } else {
+        results |>
+          dplyr::select(.optimization_label, dplyr::all_of(which_element)) |>
+          dplyr::mutate(diff = purrr::map(.data[[which_element]], ~ .x - reference)) |>
+          tidyr::unnest_wider(diff, names_sep = "_") |>
+          dplyr::rename_with(~ parameter_labels, dplyr::starts_with("diff_")) |>
+          dplyr::select(dplyr::all_of(c(parameter_labels, ".optimization_label")))
+      }
+      structure(out, class = c("Nop_deviation", class(out)))
+    }
   ),
   active = list(
 
