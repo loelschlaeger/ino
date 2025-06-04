@@ -8,18 +8,6 @@
       
       * Objective: f
       * Target: x (length 1)
-      
-      -- Optimizer functions --
-      
-    Output
-      No optimizer specified.
-      
-    Message
-      -- Initial values --
-      
-    Output
-      No initial values specified.
-      
 
 # Example 1: Minimization works
 
@@ -31,6 +19,12 @@
       
       * Objective: f
       * Target: x (length 2)
+      
+      -- Fixed arguments --
+      
+      * a
+      * b
+      * c
       
       -- Optimizer functions --
       

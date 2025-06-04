@@ -4,23 +4,23 @@
 #' A `Nop` object defines a numerical optimization problem.
 #'
 #' @param f \[`function`\]\cr
-#' A \code{function} to be optimized (the so-called objective function).
+#' A `function` to be optimized (the so-called objective function).
 #'
-#' It is expected that \code{f} has at least one \code{numeric} argument.
+#' It is expected that
 #'
-#' Further, it is expected that the return value of \code{f} is of the
-#' structure \code{numeric(1)}, i.e. a single \code{numeric} value.
+#' 1. `f` has at least one `numeric` argument,
+#' 2. the return value of `f` is of the structure `numeric(1)`.
 #'
 #' @param target \[`character()`\]\cr
 #' The argument name(s) that get optimized (the so-called target arguments).
 #'
-#' All target arguments must be \code{numeric}.
+#' All target arguments must be `numeric`.
 #'
-#' Can be \code{NULL} (default), then the first function argument is selected.
+#' Can be `NULL` (default), then the first function argument is selected.
 #'
 #' @param npar \[`integer()`\]\cr
 #' The length of each target argument, i.e., the length(s) of the
-#' \code{numeric} \code{vector} argument(s) specified by \code{target}.
+#' argument(s) specified via `target`.
 #'
 #' @param runs \[`integer(1)`\]\cr
 #' The number of optimization runs.
@@ -28,15 +28,15 @@
 #' @param which_direction \[`character()`\]\cr
 #' Selects the direction of optimization. One or both of:
 #'
-#' - \code{"min"} for minimization,
-#' - \code{"max"} for maximization.
+#' - `"min"` for minimization,
+#' - `"max"` for maximization.
 #'
 #' @param which_optimizer \[`character()` | `integer()`\]\cr
 #' Selects numerical optimizers. Either:
 #'
 #' - `"all"` for all specified optimizers,
 #' - specific optimizer labels,
-#' - specified optimizer ids as defined in the \code{print()} output.
+#' - specified optimizer ids as defined in the `print()` output.
 #'
 #' @param only_original \[`logical(1)\]\cr
 #' Include only optima obtained on the original problem?
@@ -44,38 +44,38 @@
 #' @details
 #' # Getting started
 #'
-#' ## Step 1: Create a \code{Nop} object
-#' Call \code{object <- Nop$new(f, target, npar, ...)} where
-#' - \code{f} is the objective function,
-#' - \code{target} are the names of the target arguments,
-#' - \code{npar} specifies the lengths of the target arguments,
-#' - and \code{...} are additional arguments for \code{f}.
+#' ## Step 1: Create a `Nop` object
+#' Call `object <- Nop$new(f, target, npar, ...)` where
+#' - `f` is the objective function,
+#' - `target` are the names of the target arguments,
+#' - `npar` specifies the lengths of the target arguments,
+#' - and `...` are additional arguments for `f`.
 #'
 #' You can now evaluate the objective function via the `$evaluate()` method.
 #'
 #' ## Step 2: Specify numerical optimizers
-#' Call \code{object$set_optimizer(<optimizer object>)}, where
-#' \code{<optimizer object>} is an object of class \code{optimizer}, which can
-#' be created via the \code{{optimizeR}} package (please refer to
+#' Call `object$set_optimizer(<optimizer object>)`, where
+#' `<optimizer object>` is an object of class `optimizer`, which can
+#' be created via the `{optimizeR}` package (please refer to
 #' [the package homepage](https://loelschlaeger.de/optimizeR/) for details).
 #'
 #' For example,
-#' - \code{optimizeR::Optimizer$new(which = "stats::nlm")} defines the
+#' - `optimizeR::Optimizer$new(which = "stats::nlm")` defines the
 #'   \code{\link[stats]{nlm}} optimizer,
-#' - \code{optimizeR::Optimizer$new(which = "stats::optim")} defines the
+#' - `optimizeR::Optimizer$new(which = "stats::optim")` defines the
 #'   \code{\link[stats]{optim}} optimizer.
 #'
 #' ## Step 3: Select initial values
 #' Call initialization methods to define starting values for the
 #' optimization (the different initialization strategies are illustrated in the
 #' package vignettes), for example:
-#' - \code{object$initialize_fixed()} for fixed initial values,
-#' - \code{object$initialize_random()} for random initial values,
-#' - \code{object$initialize_continue()} for initial values based on parameter
+#' - `object$initialize_fixed()` for fixed initial values,
+#' - `object$initialize_random()` for random initial values,
+#' - `object$initialize_continue()` for initial values based on parameter
 #'   estimates from previous optimization runs.
 #'
 #' ## Step 4: Optimization
-#' Call \code{object$optimize()} for the optimization.
+#' Call `object$optimize()` for the optimization.
 #'
 #' ## Step 5: Analyze the results
 #' - `$results` returns a `tibble` of the optimization results,
@@ -84,20 +84,14 @@
 #'
 #' # Progress during optimization
 #' Displaying progress during multiple optimization runs via the
-#' \code{{progressr}} package is supported. To get started, run
-#' \preformatted{
-#' progressr::handlers(global = TRUE)
-#' }
+#' `{progressr}` package is supported. To get started, run
+#' \preformatted{progressr::handlers(global = TRUE)}
 #' and see \code{\link[progressr]{handlers}} for details.
 #'
 #' # Parallel optimization
-#' Parallel computation of multiple optimization runs via the \code{{future}}
+#' Parallel computation of multiple optimization runs via the `{future}`
 #' package is supported. To get started, run one of
-#' \preformatted{
-#' future::plan(future::sequential)
-#' future::plan(future::multisession)
-#' future::plan(future::multicore)
-#' }
+#' \preformatted{future::plan(future::multisession)}
 #' and see \code{\link[future]{plan}} for details.
 #'
 #' @examples
@@ -114,13 +108,15 @@
 #' @export
 
 Nop <- R6::R6Class(
+
   classname = "Nop",
+
   public = list(
 
     #' @description
     #' Creates a new `Nop` object.
     #'
-    #' The output has an associated `autoplot()` method.
+    #' The output has an associated \code{\link[ggplot2]{autoplot}} method.
     #'
     #' @param gradient \[`function` | `NULL`\]\cr
     #' Optionally a `function` that returns the gradient of `f`.
@@ -178,19 +174,132 @@ Nop <- R6::R6Class(
 
     },
 
-    # TODO
+    #' @description
+    #' Manages fixed arguments for the objective function.
+    #'
+    #' @param action \[`character(1)`\]\cr
+    #' One of:
+    #' - `"set"` to set an argument,
+    #' - `"get"` to extract an argument value,
+    #' - `"remove"` to remove an argument,
+    #' - `"reset"` to reset an argument to its original value,
+    #' - `"modify"` to modify an argument value.
+    #'
+    #' Note that `"set"` overrides an argument value, while `"modify"` preserves
+    #' the original value, which can be recovered via `"reset"`.
+    #'
+    #' @param ...
+    #' Additional parameters depending on `action`:
+    #' - named arguments if `action = "set"` or `"modify"`,
+    #' - a single argument name if `action = "get"`, `"remove"`, or `"reset"`.
 
-    fixed_argument = function() {
+    fixed_argument = function(action, ...) {
+
+      ### input checks
+      oeli::input_check_response(
+        check = oeli::check_missing(action),
+        var_name = "action"
+      )
+      action <- oeli::match_arg(
+        action, choices = c("set", "get", "remove", "reset", "modify")
+      )
+      args <- list(...)
+
+      ### different actions
+      if (action == "set") {
+        oeli::input_check_response(
+          check = checkmate::check_list(args, min.len = 1, names = "unique"),
+          var_name = "..."
+        )
+        for (i in seq_along(args)) {
+          do.call(
+            private$.objective$set_argument,
+            c(args[i], list(".overwrite" = TRUE, ".verbose" = self$verbose))
+          )
+        }
+      }
+      if (action == "get") {
+        arg_name <- unlist(args)
+        oeli::input_check_response(
+          check = checkmate::check_string(arg_name),
+          var_name = "..."
+        )
+        if (arg_name %in% private$.objective$fixed_arguments) {
+          return(
+            private$.objective$get_argument(arg_name, .verbose = FALSE)
+          )
+        } else {
+          cli::cli_abort("Argument {.val {arg_name}} not available.")
+        }
+      }
+      if (action == "remove") {
+        arg_name <- unlist(args)
+        oeli::input_check_response(
+          check = checkmate::check_string(arg_name),
+          var_name = "..."
+        )
+        private$.objective$remove_argument(arg_name, .verbose = FALSE)
+        if (arg_name %in% names(private$.original_arguments)) {
+          arg_id <- which(names(private$.original_arguments) == arg_name)
+          private$.original_arguments[arg_id] <- NULL
+        }
+        private$.print_status("Removed argument {.var {arg_name}}.")
+      }
+      if (action == "modify") {
+        oeli::input_check_response(
+          check = checkmate::check_list(args, min.len = 1, names = "unique"),
+          var_name = "..."
+        )
+        for (i in seq_along(args)) {
+          arg_name <- names(args)[i]
+          current_argument <- self$fixed_argument("get", arg_name)
+          if (!is.null(current_argument)) {
+            if (is.null(private$.original_arguments[[arg_name]])) {
+              private$.original_arguments[[arg_name]] <- current_argument
+            }
+            do.call(
+              private$.objective$set_argument,
+              c(args[i], list(".overwrite" = TRUE, ".verbose" = FALSE))
+            )
+            private$.print_status("Modified argument {.var {arg_name}}.")
+          } else {
+            cli::cli_warn("Argument {.var {arg_name}} not available.")
+          }
+        }
+      }
+      if (action == "reset") {
+        arg_name <- unlist(args)
+        oeli::input_check_response(
+          check = checkmate::check_string(arg_name),
+          var_name = "..."
+        )
+        if (!is.null(private$.original_arguments[[arg_name]])) {
+          original_argument <- private$.original_arguments[[arg_name]]
+          arg <- list("set", original_argument)
+          names(arg) <- c("action", arg_name)
+          do.call(self$fixed_argument, arg)
+          private$.original_arguments[[arg_name]] <- NULL
+          private$.print_status("Reset argument {.var {arg_name}}.")
+        } else {
+          cli::cli_warn("Argument {.var {arg_name}} cannot be reset.")
+        }
+      }
+      invisible(self)
 
     },
 
-    # TODO
+    #' @description
+    #' Standardizes a fixed argument for the objective function.
+    #'
+    #' @param center,scale
+    #' doc
 
-    standardize_argument = function() {
-
+    standardize_argument = function(center, scale) {
+      normalize::normalize()
     },
 
-    # TODO
+    #' @description
+    #' Creates TODO
 
     subset_argument = function() {
 
@@ -213,23 +322,25 @@ Nop <- R6::R6Class(
       ))
 
       ### info on additional arguments
-      # TODO
+      argument_names <- private$.objective$fixed_arguments
+      if (length(argument_names) > 0) {
+        modified <- argument_names %in% names(private$.original_arguments)
+        names(argument_names) <- ifelse(modified, "!", "*")
+        cli::cli_h2("Fixed arguments")
+        cli::cli_bullets(argument_names)
+      }
 
       ### info on optimizer functions
-      cli::cli_h2("Optimizer functions")
       optimizer <- private$.optimizer
-      if (length(optimizer) == 0) {
-        cat(cli::style_italic("No optimizer specified.\n\n"))
-      } else {
+      if (length(optimizer) > 0) {
+        cli::cli_h2("Optimizer functions")
         cli::cli_ol(names(optimizer))
       }
 
       ### info on initial values
-      cli::cli_h2("Initial values")
       initial_values <- private$.initial_values
-      if (length(initial_values) == 0) {
-        cat(cli::style_italic("No initial values specified.\n\n"))
-      } else {
+      if (length(initial_values) > 0) {
+        cli::cli_h2("Initial values")
         initial_types <- table(private$.initial_type)
         cli::cli_bullets(
           structure(
@@ -272,7 +383,7 @@ Nop <- R6::R6Class(
     #' Specifies a numerical optimizer.
     #'
     #' @param optimizer \[`Optimizer`\]\cr
-    #' An \code{Optimizer} object, which can be created via
+    #' An `Optimizer` object, which can be created via
     #' \code{\link[optimizeR]{Optimizer}}.
     #'
     #' @param optimizer_label \[`character(1)`\]\cr
@@ -332,8 +443,8 @@ Nop <- R6::R6Class(
     #' Defines random initial values for the optimization.
     #'
     #' @param sampler \[`function`\]\cr
-    #' A `function` without any arguments that returns a \code{numeric}
-    #' vector of length \code{sum(self$npar)}.
+    #' A `function` without any arguments that returns a `numeric`
+    #' vector of length `sum(self$npar)`.
 
     initialize_random = function(
       sampler = function() stats::rnorm(sum(self$npar)), runs = 1L
@@ -469,13 +580,15 @@ Nop <- R6::R6Class(
       invisible(self)
     },
 
-    # TODO
+    #' @description
+    #' Defines initial values TODO
 
     initialize_continue = function() {
 
     },
 
-    # TODO
+    #' @description
+    #' Defines promising initial values TODO
 
     initialize_promising = function() {
 
@@ -544,12 +657,12 @@ Nop <- R6::R6Class(
     #' Reset the initial values after the optimization?
     #'
     #' @param hide_warnings \[`logical(1)`\]\cr
-    #' Hide any warning messages during optimization?
+    #' Hide any warnings during optimization?
     #'
     #' @param seconds \[`numeric(1)`\]\cr
     #' A time limit in seconds.
     #'
-    #' Optimization is interrupted prematurely if \code{seconds} is exceeded.
+    #' Optimization is interrupted prematurely if `seconds` is exceeded.
     #'
     #' Note the limitations documented in \code{\link[base]{setTimeLimit}}.
 
@@ -661,13 +774,13 @@ Nop <- R6::R6Class(
     #' @description
     #' Lists all identified optima.
     #'
-    #' The output has an associated `autoplot()` method.
+    #' The output has an associated \code{\link[ggplot2]{autoplot}} method.
     #'
     #' @param group_by \[`character(1)\]\cr
     #' Selects how the output is grouped. Either:
-    #' - \code{NULL} to not group,
-    #' - \code{"optimization"} to group by optimization label,
-    #' - \code{"optimizer"} to group by optimizer label.
+    #' - `NULL` to not group,
+    #' - `"optimization"` to group by optimization label,
+    #' - `"optimizer"`` to group by optimizer label.
     #'
     #' @param sort_by_value \[`logical(1)\]\cr
     #' Sort by value? Else, sort by frequency.
@@ -742,7 +855,7 @@ Nop <- R6::R6Class(
     #' @description
     #' Compute deviations with respect to a reference parameter.
     #'
-    #' The output has an associated `autoplot()` method.
+    #' The output has an associated \code{\link[ggplot2]{autoplot}} method.
     #'
     #' @param reference \[`numeric()`\]\cr
     #' The reference vector of length `sum(self$npar)`.
@@ -752,7 +865,7 @@ Nop <- R6::R6Class(
     #' - `"initial"` for deviations with respect to the initial values, or
     #' - `"parameter"` for deviations with respect to the estimated parameters.
     #'
-    #' @param reference \[`character()`\]\cr
+    #' @param parameter_labels \[`character()`\]\cr
     #' Labels for the parameters of length `sum(self$npar)`.
 
     deviation = function(
@@ -794,6 +907,7 @@ Nop <- R6::R6Class(
       structure(out, class = c("Nop_deviation", class(out)))
     }
   ),
+
   active = list(
 
     #' @field initial_values \[`list()`, read-only\]\cr
@@ -823,7 +937,7 @@ Nop <- R6::R6Class(
     #' - `".direction"` (identifies the optimization direction)
     #' - `".original"` (identifies results obtained on the original problem)
     #'
-    #' The output has an associated `autoplot()` method.
+    #' The output has an associated \code{\link[ggplot2]{autoplot}} method.
 
     results = function(value) {
       if (missing(value)) {
@@ -965,25 +1079,19 @@ Nop <- R6::R6Class(
     }
 
   ),
+
   private = list(
 
-    ### global options
     .verbose = getOption("verbose", default = FALSE),
-
-    ### optimization problem
     .objective = NULL,
+    .original_arguments = list(),
     .optimizer = list(),
-
-    ### initial values
     .initial_values = list(),
     .initial_type = character(),
     .initial_seconds = numeric(),
-
-    ### optimization results
     .optimization_labels = character(),
     .results = NULL,
 
-    ### print status
     .print_status = function(msg, verbose = self$verbose) {
       checkmate::assert_string(msg)
       checkmate::assert_flag(verbose)
@@ -992,17 +1100,18 @@ Nop <- R6::R6Class(
       }
     },
 
-    ### checks
     .check_target = function(at, verbose = self$verbose) {
       private$.objective$.__enclos_env__$private$.check_target(
         .at = at, .verbose = verbose
       )
     },
+
     .check_arguments_complete = function(verbose = self$verbose) {
       private$.objective$.__enclos_env__$private$.check_arguments_complete(
         .verbose = verbose
       )
     },
+
     .check_group_by = function(group_by, verbose = self$verbose) {
       oeli::input_check_response(
         check = checkmate::check_choice(
@@ -1018,6 +1127,7 @@ Nop <- R6::R6Class(
       }
       return(group_by)
     },
+
     .check_which_optimizer = function(
       which_optimizer, to_id, verbose = self$verbose
     ) {
@@ -1082,6 +1192,7 @@ Nop <- R6::R6Class(
         )
       }
     },
+
     .check_which_direction = function(
       which_direction, both_allowed = FALSE, verbose = self$verbose
     ) {
@@ -1104,7 +1215,6 @@ Nop <- R6::R6Class(
       }
     },
 
-    ### optimization
     .optimize = function(
       initial, optimizer_id, direction, lower, upper, seconds, hide_warnings
     ) {
@@ -1126,7 +1236,6 @@ Nop <- R6::R6Class(
       )
     },
 
-    ### save optimization results
     .save_results = function(
       results, optimization_label, verbose = self$verbose
     ) {

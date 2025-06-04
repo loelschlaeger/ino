@@ -11,7 +11,7 @@
 
 \method{autoplot}{Nop_optima}(object, ...)
 
-\method{autoplot}{Nop_deviation}(object, ...)
+\method{autoplot}{Nop_deviation}(object, jitter = TRUE, ...)
 
 \method{autoplot}{Nop_results}(object, ...)
 }

@@ -4,21 +4,18 @@ test_that("Example 0: Defining the problem works", {
   f <- function(x) -x^4 - x^3 - x^2 - x
   gradient <- function(x) -4*x^3 - 3*x^2 - 2*x - 1
   hessian <- function(x) -12*x^2 - 6*x - 2
-  Nop_pol <- Nop$new(f = f, target = "x", npar = 1, gradient = gradient, hessian = hessian)
-
+  Nop_pol <- Nop$new(
+    f = f, target = "x", npar = 1, gradient = gradient, hessian = hessian
+  )
   checkmate::expect_r6(Nop_pol, "Nop")
   expect_identical(Nop_pol$npar, c("x" = 1))
   expect_error(Nop_pol$npar <- 2, "read-only")
-
   expect_equal(
     Nop_pol$evaluate(0, TRUE, TRUE),
     structure(0, gradient = -1, hessian = -2)
   )
-
   expect_snapshot(Nop_pol)
-
   checkmate::expect_tibble(Nop_pol$results, nrows = 0, ncols = 4)
-
   expect_error(ggplot2::autoplot(Nop_pol), "Input `xlim` is bad")
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_pol, xlim = c(-1, 1))))
 })
@@ -31,12 +28,8 @@ Nop_ackley$verbose <- FALSE
 nlm_opt <- optimizeR::Optimizer$new(which = "stats::nlm")
 optim_opt <- optimizeR::Optimizer$new(which = "stats::optim")
 
-self <- Nop_ackley
-private <- self$.__enclos_env__$private
-
 test_that("Example 1: Defining optimizers works", {
   expect_error(Nop_ackley$optimize(), "No optimizer specified yet.")
-
   Nop_ackley$
     set_optimizer(nlm_opt, optimizer_label = "nlm")$
     set_optimizer(optim_opt)
@@ -88,17 +81,22 @@ test_that("Example 1: Results can be accessed", {
 
 test_that("Example 1: Maximization works", {
   Nop_ackley$
-    initialize_random(sampler = function() stats::runif(sum(self$npar)))$
+    initialize_random(sampler = function() stats::runif(sum(Nop_ackley$npar)))$
     optimize(
-      which_direction = "max", which_optimizer = "stats::optim", lower = 0.5, upper = 1
+      which_direction = "max", which_optimizer = "stats::optim",
+      lower = 0.5, upper = 1
     )
   checkmate::expect_list(Nop_ackley$maximum, len = 2)
 })
 
 test_that("Example 1: Plotting works", {
   expect_error(ggplot2::autoplot(Nop_ackley), "Input `xlim` is bad")
-  expect_error(ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1)), "Input `xlim2` is bad")
-  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1), xlim2 = c(-1, 1))))
+  expect_error(
+    ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1)), "Input `xlim2` is bad"
+  )
+  expect_true(ggplot2::is_ggplot(
+    ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1), xlim2 = c(-1, 1))
+  ))
   Nop_ackley$initialize_random(runs = 10)
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley)))
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$optima())))
@@ -114,15 +112,64 @@ test_that("Example 1: Deviation can be computed and visualized", {
 normal_mixture_llk <- function(mu, sigma, lambda, data) {
   sigma <- exp(sigma)
   lambda <- plogis(lambda)
-  sum(log(lambda * dnorm(data, mu[1], sigma[1]) + (1 - lambda) * dnorm(data, mu[2], sigma[2])))
+  sum(log(lambda * dnorm(data, mu[1], sigma[1]) +
+            (1 - lambda) * dnorm(data, mu[2], sigma[2])))
 }
 
-Nop_mixture <- Nop$new(f = normal_mixture_llk, target = c("mu", "sigma", "lambda"), npar = c(2, 2, 1))
+Nop_mixture <- Nop$new(
+  f = normal_mixture_llk, target = c("mu", "sigma", "lambda"), npar = c(2, 2, 1)
+)
+Nop_mixture$verbose <- FALSE
+
+self <- Nop_mixture
+private <- self$.__enclos_env__$private
+
+test_that("Example 2: Evaluate with fixed arguments missing", {
+  expect_error(
+    Nop_mixture$evaluate(),
+    "argument \"data\" is missing, with no default"
+  )
+})
 
 data <- faithful$eruptions
 
-test_that("Example 2: ", {
-  checkmate::expect_r6(Nop_mixture, "Nop")
+test_that("Example 2: Fixed arguments can be defined", {
+  expect_error(
+    Nop_mixture$fixed_argument("get", "data"),
+    "not available"
+  )
+  Nop_mixture$fixed_argument("set", data = data)
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    data
+  )
+  Nop_mixture$fixed_argument("remove", "data")
+  expect_error(
+    Nop_mixture$fixed_argument("get", "data"),
+    "not available"
+  )
+})
+
+test_that("Example 2: Fixed arguments can be modified", {
+  Nop_mixture$fixed_argument("set", data = data)
+  Nop_mixture$fixed_argument("modify", data = 1)
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    1
+  )
+  Nop_mixture$fixed_argument("reset", "data")
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    data
+  )
+})
+
+test_that("Example 2: Fixed argument can be standardized", {
+
+})
+
+test_that("Example 2: Fixed argument can be subsetted", {
+
 })
 
 # Example 3: HMM ----------------------------------------------------------

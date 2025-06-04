@@ -22,8 +22,8 @@ You can now evaluate the objective function via the \verb{$evaluate()} method.
 
 \subsection{Step 2: Specify numerical optimizers}{
 
-Call \code{object$set_optimizer(<optimizer object>)}, where
-\code{<optimizer object>} is an object of class \code{optimizer}, which can
+Call \verb{object$set_optimizer(<optimizer object>)}, where
+\verb{<optimizer object>} is an object of class \code{optimizer}, which can
 be created via the \code{{optimizeR}} package (please refer to
 \href{https://loelschlaeger.de/optimizeR/}{the package homepage} for details).
 
@@ -66,20 +66,14 @@ Call \code{object$optimize()} for the optimization.
 \section{Progress during optimization}{
 Displaying progress during multiple optimization runs via the
 \code{{progressr}} package is supported. To get started, run
-\preformatted{
-progressr::handlers(global = TRUE)
-}
+\preformatted{progressr::handlers(global = TRUE)}
 and see \code{\link[progressr]{handlers}} for details.
 }
 
 \section{Parallel optimization}{
 Parallel computation of multiple optimization runs via the \code{{future}}
 package is supported. To get started, run one of
-\preformatted{
-future::plan(future::sequential)
-future::plan(future::multisession)
-future::plan(future::multicore)
-}
+\preformatted{future::plan(future::multisession)}
 and see \code{\link[future]{plan}} for details.
 }
 
@@ -112,7 +106,7 @@ Optimization results with identifiers:
 \item \code{".original"} (identifies results obtained on the original problem)
 }
 
-The output has an associated \code{autoplot()} method.}
+The output has an associated \code{\link[ggplot2]{autoplot}} method.}
 
 \item{\code{minimum}}{[\code{list(2)}, read-only]\cr
 Best value and parameter across all (original) minimizations.}
@@ -161,7 +155,7 @@ An optimization label that has not been used yet.}
 \subsection{Method \code{new()}}{
 Creates a new \code{Nop} object.
 
-The output has an associated \code{autoplot()} method.
+The output has an associated \code{\link[ggplot2]{autoplot}} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$new(f, target = NULL, npar, gradient = NULL, hessian = NULL, ...)}\if{html}{\out{</div>}}
 }
@@ -172,10 +166,11 @@ The output has an associated \code{autoplot()} method.
 \item{\code{f}}{[\code{function}]\cr
 A \code{function} to be optimized (the so-called objective function).
 
-It is expected that \code{f} has at least one \code{numeric} argument.
-
-Further, it is expected that the return value of \code{f} is of the
-structure \code{numeric(1)}, i.e. a single \code{numeric} value.}
+It is expected that
+\enumerate{
+\item \code{f} has at least one \code{numeric} argument,
+\item the return value of \code{f} is of the structure \code{numeric(1)}.
+}}
 
 \item{\code{target}}{[\code{character()}]\cr
 The argument name(s) that get optimized (the so-called target arguments).
@@ -186,7 +181,7 @@ Can be \code{NULL} (default), then the first function argument is selected.}
 
 \item{\code{npar}}{[\code{integer()}]\cr
 The length of each target argument, i.e., the length(s) of the
-\code{numeric} \code{vector} argument(s) specified by \code{target}.}
+argument(s) specified via \code{target}.}
 
 \item{\code{gradient}}{[\code{function} | \code{NULL}]\cr
 Optionally a \code{function} that returns the gradient of \code{f}.
@@ -212,24 +207,58 @@ and \code{hessian}, if specified) that are fixed during the optimization.}
 \if{html}{\out{<a id="method-Nop-fixed_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-fixed_argument}{}}}
 \subsection{Method \code{fixed_argument()}}{
+Manages fixed arguments for the objective function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$fixed_argument()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$fixed_argument(action, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{action}}{[\code{character(1)}]\cr
+One of:
+\itemize{
+\item \code{"set"} to set an argument,
+\item \code{"get"} to extract an argument value,
+\item \code{"remove"} to remove an argument,
+\item \code{"reset"} to reset an argument to its original value,
+\item \code{"modify"} to modify an argument value.
+}
+
+Note that \code{"set"} overrides an argument value, while \code{"modify"} preserves
+the original value, which can be recovered via \code{"reset"}.}
+
+\item{\code{...}}{Additional parameters depending on \code{action}:
+\itemize{
+\item named arguments if \code{action = "set"} or \code{"modify"},
+\item a single argument name if \code{action = "get"}, \code{"remove"}, or \code{"reset"}.
+}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-standardize_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-standardize_argument}{}}}
 \subsection{Method \code{standardize_argument()}}{
+Standardizes a fixed argument for the objective function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize_argument()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize_argument(center, scale)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{center, scale}}{doc}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-subset_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-subset_argument}{}}}
 \subsection{Method \code{subset_argument()}}{
+Creates TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$subset_argument()}\if{html}{\out{</div>}}
 }
@@ -259,7 +288,7 @@ Prints details of the \code{Nop} object.
 Evaluates the objective function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(
-  at = stats::rnorm(sum(self$npar)),
+  at = rep(0, sum(self$npar)),
   .gradient_as_attribute = FALSE,
   .hessian_as_attribute = FALSE
 )}\if{html}{\out{</div>}}
@@ -400,6 +429,7 @@ The type of the initial values.}
 \if{html}{\out{<a id="method-Nop-initialize_continue"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_continue}{}}}
 \subsection{Method \code{initialize_continue()}}{
+Defines initial values TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue()}\if{html}{\out{</div>}}
 }
@@ -409,6 +439,7 @@ The type of the initial values.}
 \if{html}{\out{<a id="method-Nop-initialize_promising"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_promising}{}}}
 \subsection{Method \code{initialize_promising()}}{
+Defines promising initial values TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_promising()}\if{html}{\out{</div>}}
 }
@@ -495,7 +526,7 @@ Optimization is interrupted prematurely if \code{seconds} is exceeded.
 Note the limitations documented in \code{\link[base]{setTimeLimit}}.}
 
 \item{\code{hide_warnings}}{[\code{logical(1)}]\cr
-Hide any warning messages during optimization?}
+Hide any warnings during optimization?}
 
 \item{\code{reset_initial_afterwards}}{[\code{logical(1)}]\cr
 Reset the initial values after the optimization?}
@@ -517,7 +548,7 @@ Supports:
 \subsection{Method \code{optima()}}{
 Lists all identified optima.
 
-The output has an associated \code{autoplot()} method.
+The output has an associated \code{\link[ggplot2]{autoplot}} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
   which_direction = "min",
@@ -546,7 +577,7 @@ Selects how the output is grouped. Either:
 \itemize{
 \item \code{NULL} to not group,
 \item \code{"optimization"} to group by optimization label,
-\item \code{"optimizer"} to group by optimizer label.
+\item `"optimizer"`` to group by optimizer label.
 }}
 
 \item{\code{sort_by_value}}{[`logical(1)]\cr
@@ -564,11 +595,12 @@ The number of decimal places.}
 \subsection{Method \code{deviation()}}{
 Compute deviations with respect to a reference parameter.
 
-The output has an associated \code{autoplot()} method.
+The output has an associated \code{\link[ggplot2]{autoplot}} method.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
-  reference,
+  reference = rep(0, sum(self$npar)),
   which_element = "initial",
+  which_direction = "min",
   which_optimizer = "all",
   only_original = TRUE,
   parameter_labels = paste0("x", seq_len(sum(self$npar)))
@@ -581,14 +613,18 @@ The output has an associated \code{autoplot()} method.
 \item{\code{reference}}{[\code{numeric()}]\cr
 The reference vector of length \code{sum(self$npar)}.}
 
-\item{\code{reference}}{[\code{character()}]\cr
-Labels for the parameters of length \code{sum(self$npar)}.}
-
 \item{\code{which_element}}{[`character(1)]\cr
 Either
 \itemize{
-\item \code{"initial"} for deviations with respect to the initial values,
-\item or \code{"parameter"} for deviations with respect to the estimated parameters.
+\item \code{"initial"} for deviations with respect to the initial values, or
+\item \code{"parameter"} for deviations with respect to the estimated parameters.
+}}
+
+\item{\code{which_direction}}{[\code{character()}]\cr
+Selects the direction of optimization. One or both of:
+\itemize{
+\item \code{"min"} for minimization,
+\item \code{"max"} for maximization.
 }}
 
 \item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
@@ -601,6 +637,9 @@ Selects numerical optimizers. Either:
 
 \item{\code{only_original}}{[`logical(1)]\cr
 Include only optima obtained on the original problem?}
+
+\item{\code{parameter_labels}}{[\code{character()}]\cr
+Labels for the parameters of length \code{sum(self$npar)}.}
 }
 \if{html}{\out{</div>}}
 }
