@@ -34,7 +34,7 @@ Imports:
     glue,
     normalize,
     numDeriv,
-    oeli,
+    oeli (>= 0.7.3),
     optimizeR,
     portion,
     progressr,
