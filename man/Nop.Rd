@@ -130,8 +130,8 @@ An optimization label that has not been used yet.}
 \itemize{
 \item \href{#method-Nop-new}{\code{Nop$new()}}
 \item \href{#method-Nop-fixed_argument}{\code{Nop$fixed_argument()}}
+\item \href{#method-Nop-reduce_argument}{\code{Nop$reduce_argument()}}
 \item \href{#method-Nop-standardize_argument}{\code{Nop$standardize_argument()}}
-\item \href{#method-Nop-subset_argument}{\code{Nop$subset_argument()}}
 \item \href{#method-Nop-print}{\code{Nop$print()}}
 \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
 \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
@@ -238,31 +238,58 @@ the original value, which can be recovered via \code{"reset"}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-standardize_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-standardize_argument}{}}}
-\subsection{Method \code{standardize_argument()}}{
-Standardizes a fixed argument for the objective function.
+\if{html}{\out{<a id="method-Nop-reduce_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-reduce_argument}{}}}
+\subsection{Method \code{reduce_argument()}}{
+Reduces a fixed argument for the objective function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize_argument(center, scale)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$reduce_argument(
+  argument_name,
+  proportion = 0.5,
+  how = "random",
+  centers = 2L,
+  byrow = TRUE,
+  ignore = integer()
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{center, scale}}{doc}
+\item{\code{argument_name}}{[\code{character(1)}]\cr
+The name of a fixed argument for the objective function.}
+
+\item{\code{proportion, how, centers, byrow, ignore}}{Passed on to \code{\link[portion]{portion}}.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-subset_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-subset_argument}{}}}
-\subsection{Method \code{subset_argument()}}{
-Creates TODO
+\if{html}{\out{<a id="method-Nop-standardize_argument"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-standardize_argument}{}}}
+\subsection{Method \code{standardize_argument()}}{
+Standardizes a fixed argument for the objective function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$subset_argument()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize_argument(
+  argument_name,
+  center = TRUE,
+  scale = TRUE,
+  byrow = FALSE,
+  ignore = integer(),
+  jointly = list()
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{argument_name}}{[\code{character(1)}]\cr
+The name of a fixed argument for the objective function.}
+
+\item{\code{center, scale, byrow, ignore, jointly}}{Passed on to \code{\link[normalize]{normalize}}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-print"></a>}}

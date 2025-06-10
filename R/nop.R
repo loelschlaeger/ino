@@ -22,6 +22,9 @@
 #' The length of each target argument, i.e., the length(s) of the
 #' argument(s) specified via `target`.
 #'
+#' @param argument_name \[`character(1)`\]\cr
+#' The name of a fixed argument for the objective function.
+#'
 #' @param runs \[`integer(1)`\]\cr
 #' The number of optimization runs.
 #'
@@ -277,7 +280,7 @@ Nop <- R6::R6Class(
           original_argument <- private$.original_arguments[[arg_name]]
           arg <- list("set", original_argument)
           names(arg) <- c("action", arg_name)
-          do.call(self$fixed_argument, arg)
+          suppressMessages(do.call(self$fixed_argument, arg))
           private$.original_arguments[[arg_name]] <- NULL
           private$.print_status("Reset argument {.var {arg_name}}.")
         } else {
@@ -289,20 +292,71 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Standardizes a fixed argument for the objective function.
+    #' Reduces a fixed argument for the objective function.
     #'
-    #' @param center,scale
-    #' doc
+    #' @param proportion,how,centers,byrow,ignore
+    #' Passed on to \code{\link[portion]{portion}}.
 
-    standardize_argument = function(center, scale) {
-      normalize::normalize()
+    reduce_argument = function(
+      argument_name,
+      proportion = 0.5,
+      how = "random",
+      centers = 2L,
+      byrow = TRUE,
+      ignore = integer()
+    ) {
+      oeli::input_check_response(
+        check = oeli::check_missing(argument_name),
+        var_name = "argument_name"
+      )
+      original_argument <- self$fixed_argument("get", argument_name)
+      reduced_argument <- portion::portion(
+        x = original_argument,
+        proportion = proportion,
+        how = how,
+        centers = centers,
+        byrow = byrow,
+        ignore = ignore
+      )
+      arg <- list("modify", reduced_argument)
+      names(arg) <- c("action", argument_name)
+      suppressMessages(do.call(self$fixed_argument, arg))
+      private$.print_status("Reduced argument {.val {argument_name}}.")
+      invisible(self)
     },
 
     #' @description
-    #' Creates TODO
+    #' Standardizes a fixed argument for the objective function.
+    #'
+    #' @param center,scale,byrow,ignore,jointly
+    #' Passed on to \code{\link[normalize]{normalize}}.
 
-    subset_argument = function() {
-
+    standardize_argument = function(
+      argument_name,
+      center = TRUE,
+      scale = TRUE,
+      byrow = FALSE,
+      ignore = integer(),
+      jointly = list()
+    ) {
+      oeli::input_check_response(
+        check = oeli::check_missing(argument_name),
+        var_name = "argument_name"
+      )
+      original_argument <- self$fixed_argument("get", argument_name)
+      standardized_argument <- normalize::normalize(
+        x = original_argument,
+        center = center,
+        scale = scale,
+        byrow = byrow,
+        ignore = ignore,
+        jointly = jointly,
+      )
+      arg <- list("modify", standardized_argument)
+      names(arg) <- c("action", argument_name)
+      suppressMessages(do.call(self$fixed_argument, arg))
+      private$.print_status("Standardized argument {.val {argument_name}}.")
+      invisible(self)
     },
 
     #' @description

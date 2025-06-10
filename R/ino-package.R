@@ -104,16 +104,18 @@ NULL
 #' @noRd
 
 .onAttach <- function(lib, pkg) {
-  doc_link <- "https://loelschlaeger.de/ino"
-  issues_link <- "https://github.com/loelschlaeger/ino/issues"
-  msg <- c(
-    paste0("This is {ino} ", utils::packageVersion("ino")),
-    ", happy initialization!\n",
-    "Documentation? ",
-    cli::style_hyperlink(doc_link, doc_link), "\n",
-    "Any issues? ",
-    cli::style_hyperlink(issues_link, issues_link)
-  )
-  packageStartupMessage(msg)
+  if(interactive()) {
+    doc_link <- "https://loelschlaeger.de/ino"
+    issues_link <- "https://github.com/loelschlaeger/ino/issues"
+    msg <- c(
+      paste0("This is {ino} ", utils::packageVersion("ino")),
+      ", happy initialization!\n",
+      "Documentation? ",
+      cli::style_hyperlink(doc_link, doc_link), "\n",
+      "Any issues? ",
+      cli::style_hyperlink(issues_link, issues_link)
+    )
+    packageStartupMessage(msg)
+  }
   invisible()
 }

@@ -3358,8 +3358,8 @@
     },
     "normalize": {
       "Package": "normalize",
-      "Version": "0.1.1",
-      "Source": "Repository",
+      "Version": "0.1.2",
+      "Source": "GitHub",
       "Type": "Package",
       "Title": "Centering and Scaling of Numeric Data",
       "Authors@R": "person(\"Lennart\", \"Oelschl\\u00e4ger\", email = \"oelschlaeger.lennart@gmail.com\", role = c(\"aut\", \"cre\"))",
@@ -3367,6 +3367,7 @@
       "License": "GPL (>= 3)",
       "Encoding": "UTF-8",
       "RoxygenNote": "7.3.2",
+      "Roxygen": "list(markdown = TRUE)",
       "Suggests": [
         "testthat (>= 3.0.0)"
       ],
@@ -3376,10 +3377,15 @@
       ],
       "URL": "https://github.com/loelschlaeger/normalize",
       "BugReports": "https://github.com/loelschlaeger/normalize/issues",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "normalize",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "29405f91f0fa6417085d0b33c53dcf9854c30350",
       "NeedsCompilation": "no",
       "Author": "Lennart Oelschläger [aut, cre]",
-      "Maintainer": "Lennart Oelschläger <oelschlaeger.lennart@gmail.com>",
-      "Repository": "CRAN"
+      "Maintainer": "Lennart Oelschläger <oelschlaeger.lennart@gmail.com>"
     },
     "numDeriv": {
       "Package": "numDeriv",
@@ -3867,7 +3873,7 @@
     },
     "portion": {
       "Package": "portion",
-      "Version": "0.1.1",
+      "Version": "0.1.2",
       "Source": "Repository",
       "Type": "Package",
       "Title": "Extracting a Data Portion",

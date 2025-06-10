@@ -35,3 +35,117 @@
       
       * 9x grid
 
+# Example 2: Defining the problem works
+
+    Code
+      Nop_hmm$print()
+    Message
+      
+      -- Optimization problem --
+      
+      * Objective: f
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      * sdds
+      * states
+      * negative
+      * controls
+      * hierarchy
+      * check_controls
+
+---
+
+    Code
+      print(Nop_hmm)
+    Message
+      
+      -- Optimization problem --
+      
+      * Objective: f
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      * sdds
+      * states
+      * negative
+      * controls
+      * hierarchy
+      * check_controls
+
+---
+
+    Code
+      Nop_hmm
+    Message
+      
+      -- Optimization problem --
+      
+      * Objective: f
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      * sdds
+      * states
+      * negative
+      * controls
+      * hierarchy
+      * check_controls
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+
+# Example 2: Additional arguments can be modified and reset
+
+    Code
+      print(Nop_hmm)
+    Message
+      
+      -- Optimization problem --
+      
+      * Objective: f
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      * sdds
+      * states
+      * negative
+      * controls
+      * hierarchy
+      * check_controls
+      * observations
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+
+---
+
+    Code
+      print(Nop_hmm)
+    Message
+      
+      -- Optimization problem --
+      
+      * Objective: f
+      * Target: parUncon (length 6)
+      
+      -- Fixed arguments --
+      
+      * sdds
+      * states
+      * negative
+      * controls
+      * hierarchy
+      * check_controls
+      ! observations
+      
+      -- Optimizer functions --
+      
+      1. stats::nlm
+
