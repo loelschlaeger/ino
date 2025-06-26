@@ -140,6 +140,7 @@ An optimization label that has not been used yet.}
 \item \href{#method-Nop-initialize_grid}{\code{Nop$initialize_grid()}}
 \item \href{#method-Nop-initialize_custom}{\code{Nop$initialize_custom()}}
 \item \href{#method-Nop-initialize_continue}{\code{Nop$initialize_continue()}}
+\item \href{#method-Nop-initialize_filter}{\code{Nop$initialize_filter()}}
 \item \href{#method-Nop-initialize_promising}{\code{Nop$initialize_promising()}}
 \item \href{#method-Nop-initialize_transform}{\code{Nop$initialize_transform()}}
 \item \href{#method-Nop-initialize_reset}{\code{Nop$initialize_reset()}}
@@ -330,7 +331,10 @@ The values for the target argument(s), written in a single vector.
 Must be of length \code{sum(self$npar)}.}
 
 \item{\code{.gradient_as_attribute, .hessian_as_attribute}}{[\code{logical(1)}]\cr
-Add gradient / Hessian value as attributes? Only if specified.}
+Add gradient and / or Hessian value as attributes?
+
+If gradient and / or Hessian function is not specified, numerical
+approximation is used.}
 }
 \if{html}{\out{</div>}}
 }
@@ -384,20 +388,20 @@ It can also be a \code{list} of such vectors.}
 Defines random initial values for the optimization.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_random(
-  sampler = function() stats::rnorm(sum(self$npar)),
-  runs = 1L
+  runs = 1L,
+  sampler = function() stats::rnorm(sum(self$npar))
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{runs}}{[\code{integer(1)}]\cr
+The number of optimization runs.}
+
 \item{\code{sampler}}{[\code{function}]\cr
 A \code{function} without any arguments that returns a \code{numeric}
 vector of length \code{sum(self$npar)}.}
-
-\item{\code{runs}}{[\code{integer(1)}]\cr
-The number of optimization runs.}
 }
 \if{html}{\out{</div>}}
 }
@@ -456,21 +460,72 @@ The type of the initial values.}
 \if{html}{\out{<a id="method-Nop-initialize_continue"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_continue}{}}}
 \subsection{Method \code{initialize_continue()}}{
-Defines initial values TODO
+Defines initial values based on results from previous optimizations.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(optimization_label)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{optimization_label}}{[\code{character(1)}]\cr
+Label of optimization runs from which to select.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Nop-initialize_filter"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize_filter}{}}}
+\subsection{Method \code{initialize_filter()}}{
+Filters initial values from the defined initial values.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_filter(condition)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{condition}}{[\code{character(1)}]\cr
+Defines the condition on which the initial values are filtered, one of:
+\itemize{
+\item \verb{"gradient_negative} for points where the gradient is negative,
+\item \verb{"gradient_positive} for points where the gradient is negative,
+\item \code{"hessian_negative"} for points where the Hessian is negative definite,
+\item \code{"hessian_positive"} for points where the Hessian is positive definite.
+}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_promising"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_promising}{}}}
 \subsection{Method \code{initialize_promising()}}{
-Defines promising initial values TODO
+Selects promising initial values from the defined initial values.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_promising()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_promising(proportion, condition)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{proportion}}{[\code{numeric(1)}]\cr
+The proportion of selected from the defined initial values.}
+
+\item{\code{condition}}{[\code{character(1)}]\cr
+Defines the condition on which the initial values are selected, one of:
+\itemize{
+\item \code{"value_small"} for points where the function value is smallest,
+\item \code{"value_large"} for points where the function value is largest,
+\item \code{"gradient_small"} for points where the gradient norm is smallest,
+\item \code{"gradient_large"} for points where the gradient norm is largest,
+\item \code{"condition_small"} for points where the Hessian condition is smallest,
+\item \code{"condition_large"} for points where the Hessian condition is largest.
+}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_transform"></a>}}
@@ -523,7 +578,9 @@ Optimizes the target function.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{optimization_label}}{[\code{character(1)}]\cr
-A label for the optimization to distinguish optimization runs.}
+A label for the optimization to distinguish optimization runs.
+
+Setting a label is useful when using the \verb{$initialize_continue()} method.}
 
 \item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
 Selects numerical optimizers. Either:

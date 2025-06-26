@@ -420,7 +420,10 @@ Nop <- R6::R6Class(
     #' Must be of length `sum(self$npar)`.
     #'
     #' @param .gradient_as_attribute,.hessian_as_attribute \[`logical(1)`\]\cr
-    #' Add gradient / Hessian value as attributes? Only if specified.
+    #' Add gradient and / or Hessian value as attributes?
+    #'
+    #' If gradient and / or Hessian function is not specified, numerical
+    #' approximation is used.
 
     evaluate = function(
       at = rep(0, sum(self$npar)),
@@ -429,7 +432,9 @@ Nop <- R6::R6Class(
       private$.objective$evaluate(
         .at = at,
         .gradient_as_attribute = .gradient_as_attribute,
-        .hessian_as_attribute = .hessian_as_attribute
+        .hessian_as_attribute = .hessian_as_attribute,
+        .gradient_numeric = !private$.objective$gradient_specified,
+        .hessian_numeric = !private$.objective$hessian_specified
       )
     },
 
@@ -501,7 +506,7 @@ Nop <- R6::R6Class(
     #' vector of length `sum(self$npar)`.
 
     initialize_random = function(
-      sampler = function() stats::rnorm(sum(self$npar)), runs = 1L
+      runs = 1L, sampler = function() stats::rnorm(sum(self$npar))
     ) {
 
       ### input checks
@@ -624,7 +629,7 @@ Nop <- R6::R6Class(
         check = checkmate::check_string(type),
         var_name = "type"
       )
-      lapply(at, private$.check_target)
+      lapply(at, private$.check_target, verbose = FALSE)
 
       ### set initial values
       private$.initial_values <- c(private$.initial_values, at)
@@ -635,17 +640,133 @@ Nop <- R6::R6Class(
     },
 
     #' @description
-    #' Defines initial values TODO
+    #' Defines initial values based on results from previous optimizations.
+    #'
+    #' @param optimization_label \[`character(1)`\]\cr
+    #' Label of optimization runs from which to select.
 
-    initialize_continue = function() {
+    initialize_continue = function(optimization_label) {
+      # TODO
+    },
+
+    #' @description
+    #' Filters initial values from the defined initial values.
+    #'
+    #' @param condition \[`character(1)`\]\cr
+    #' Defines the condition on which the initial values are filtered, one of:
+    #'
+    #' - `"gradient_negative` for points where the gradient is negative,
+    #' - `"gradient_positive` for points where the gradient is negative,
+    #' - `"hessian_negative"` for points where the Hessian is negative definite,
+    #' - `"hessian_positive"` for points where the Hessian is positive definite.
+
+    initialize_filter = function(condition) {
+
+      ### input checks
+      if (length(private$.initial_values) == 0) {
+        cli::cli_warn("No initial values defined by user yet.", call = NULL)
+        return(invisible(self))
+      }
+      condition <- oeli::match_arg(
+        condition, c("gradient_negative", "gradient_positive",
+                     "hessian_negative", "hessian_positive")
+      )
+
+      ### filter for initial values based on condition
+      values <- if (startsWith(condition, "gradient")) {
+        lapply(
+          private$.initial_values, self$evaluate, .gradient_as_attribute = TRUE
+        ) |> lapply(attr, "gradient")
+      } else if (startsWith(condition, "hessian")) {
+        lapply(
+          private$.initial_values, self$evaluate, .hessian_as_attribute = TRUE
+        ) |> lapply(attr, "hessian") |>
+          lapply(function(x) eigen(x, symmetric = TRUE, only.values = TRUE)$values)
+      }
+      filter <- if (endsWith(condition, "negative")) {
+        sapply(values, function(x) all(x < 0))
+      } else {
+        sapply(values, function(x) all(x > 0))
+      }
+
+      ### select initial values
+      n <- length(private$.initial_values[filter])
+      private$.initial_values <- private$.initial_values[filter]
+      private$.initial_seconds <- private$.initial_seconds[filter]
+      private$.initial_type <- private$.initial_type[filter]
+      private$.print_status(
+        "Reduced to {n} initialization{?s} via condition {.val {condition}}."
+      )
+      invisible(self)
 
     },
 
     #' @description
-    #' Defines promising initial values TODO
+    #' Selects promising initial values from the defined initial values.
+    #'
+    #' @param proportion \[`numeric(1)`\]\cr
+    #' The proportion of selected from the defined initial values.
+    #'
+    #' @param condition \[`character(1)`\]\cr
+    #' Defines the condition on which the initial values are selected, one of:
+    #'
+    #' - `"value_small"` for points where the function value is smallest,
+    #' - `"value_large"` for points where the function value is largest,
+    #' - `"gradient_small"` for points where the gradient norm is smallest,
+    #' - `"gradient_large"` for points where the gradient norm is largest,
+    #' - `"condition_small"` for points where the Hessian condition is smallest,
+    #' - `"condition_large"` for points where the Hessian condition is largest.
 
-    initialize_promising = function() {
+    initialize_promising = function(proportion, condition) {
 
+      ### input checks
+      if (length(private$.initial_values) == 0) {
+        cli::cli_warn("No initial values defined by user yet.", call = NULL)
+        return(invisible(self))
+      }
+      oeli::input_check_response(
+        check = checkmate::check_number(proportion, lower = 0, upper = 1)
+      )
+      condition <- oeli::match_arg(
+        condition, c("value_small", "value_large", "gradient_small",
+                     "gradient_large", "condition_small", "condition_large")
+      )
+
+      ### compute ranking of initial values based on condition
+      values <- if (startsWith(condition, "value")) {
+        vapply(
+          private$.initial_values, self$evaluate, FUN.VALUE = numeric(1)
+        )
+      } else if (startsWith(condition, "gradient")) {
+        lapply(
+          private$.initial_values, self$evaluate, .gradient_as_attribute = TRUE
+        ) |> sapply(function(x) sqrt(sum(attr(x, "gradient")^2)))
+      } else if (startsWith(condition, "condition")) {
+        lapply(
+          private$.initial_values, self$evaluate, .hessian_as_attribute = TRUE
+        ) |> sapply(function(x) {
+          ev <- eigen(x, symmetric = TRUE, only.values = TRUE)$values
+          evf <- abs(ev) |> na.omit()
+          if (length(evf) == 0) {
+            Inf
+          } else {
+            max(ev, na.rm = TRUE) / min(ev, na.rm = TRUE)
+          }
+        })
+      }
+      decreasing <- condition == endsWith(condition, "large")
+      ranking <- order(values, decreasing = decreasing)
+
+      ### select initial values
+      n <- ceiling(length(private$.initial_values) * proportion)
+      indices <- ranking[seq_len(n)]
+      private$.initial_values <- private$.initial_values[indices]
+      private$.initial_seconds <- private$.initial_seconds[indices]
+      private$.initial_type <- private$.initial_type[indices]
+      private$.print_status(
+        "Reduced to {n} initialization{?s} via condition {.val {condition}}."
+      )
+      invisible(self)
     },
 
     #' @description
@@ -706,6 +827,8 @@ Nop <- R6::R6Class(
     #'
     #' @param optimization_label \[`character(1)`\]\cr
     #' A label for the optimization to distinguish optimization runs.
+    #'
+    #' Setting a label is useful when using the `$initialize_continue()` method.
     #'
     #' @param reset_initial_afterwards \[`logical(1)`\]\cr
     #' Reset the initial values after the optimization?

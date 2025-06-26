@@ -1,3 +1,6 @@
+# self <- object
+# private <- self$.__enclos_env__$private
+
 # Example 0: Polynomial ---------------------------------------------------
 
 test_that("Example 0: Defining the problem works", {
@@ -107,6 +110,39 @@ test_that("Example 1: Deviation can be computed and visualized", {
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$deviation())))
 })
 
+test_that("Example 2: Initials can be filtered and promising values selected", {
+  Nop_ackley$initialize_reset()
+  expect_length(Nop_ackley$initial_values, 0)
+  Nop_ackley$initialize_random(100)
+  Nop_ackley$initialize_promising(0.9, "value_small")
+  Nop_ackley$initialize_promising(0.9, "value_large")
+  Nop_ackley$initialize_promising(0.9, "gradient_small")
+  Nop_ackley$initialize_promising(0.9, "gradient_large")
+  Nop_ackley$initialize_promising(0.9, "condition_small")
+  Nop_ackley$initialize_promising(0.9, "condition_large")
+  Nop_ackley$initialize_reset()
+  Nop_ackley$initialize_fixed(
+    list(
+      1:2,   # positive gradient
+      -(1:2) # negative gradient
+    )
+  )
+  Nop_ackley$initialize_filter("gradient_negative")
+  expect_length(Nop_ackley$initial_values, 1)
+  Nop_ackley$initialize_filter("gradient_positive")
+  expect_length(Nop_ackley$initial_values, 0)
+  Nop_ackley$initialize_fixed(
+    list(
+      1:2,   # positive eigenvalues
+      c(-0.4, -0.3) # negative eigenvalues
+    )
+  )
+  Nop_ackley$initialize_filter("hessian_negative")
+  expect_length(Nop_ackley$initial_values, 1)
+  Nop_ackley$initialize_filter("hessian_positive")
+  expect_length(Nop_ackley$initial_values, 0)
+})
+
 # Example 2: Mixture model ------------------------------------------------
 
 normal_mixture_llk <- function(mu, sigma, lambda, data) {
@@ -120,13 +156,10 @@ Nop_mixture <- Nop$new(
   f = normal_mixture_llk, target = c("mu", "sigma", "lambda"), npar = c(2, 2, 1)
 )
 
-self <- Nop_mixture
-private <- self$.__enclos_env__$private
-
 test_that("Example 2: Evaluate with fixed arguments missing", {
   expect_error(
     Nop_mixture$evaluate(),
-    "argument \"data\" is missing, with no default"
+    "Function argument `data` is required but not specified yet."
   )
 })
 

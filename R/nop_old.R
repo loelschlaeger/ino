@@ -45,57 +45,6 @@ Nop_old <- R6::R6Class(
     },
 
     #' @description
-    #' Defines a subset of promising initial values for the optimization.
-    #' @param proportion
-    #' A \code{numeric} between 0 and 1, the subset proportion.
-    #' @param condition
-    #' Defines the condition on which the initial values are selected, either
-    #' - \code{"gradient_steep"} for the points where the numerical gradient is steepest,
-    #' - \code{"value_low"} for the points where the function value is lowest,
-    #' - \code{"value_high"} for the points where the function value is highest.
-    #' @return
-    #' Invisibly the \code{Nop} object.
-
-    initialize_promising = function(proportion, condition = "gradient_steep") {
-      checkmate::assert_number(proportion, lower = 0, upper = 1)
-      oeli::match_arg(condition, c("gradient_steep", "value_low", "value_high"))
-      runs <- length(private$.initial_values)
-      if (runs == 0) {
-        if (self$verbose) {
-          cli::cli_alert_info("No initial values defined yet.")
-        }
-      } else {
-        runs <- ceiling(runs * proportion)
-        if (condition == "gradient_steep") {
-          gradient_norms <- sapply(
-            private$.initial_values,
-            function(x) {
-              grad <- numDeriv::grad(
-                func = private$.objective$evaluate,
-                x = x
-              )
-              sqrt(sum(grad^2))
-            }
-          )
-          indices <- order(gradient_norms, decreasing = TRUE)[seq_len(runs)]
-        } else {
-          values <- sapply(private$.initial_values, self$evaluate)
-          indices <- order(values, decreasing = (condition == "value_high"))[seq_len(runs)]
-        }
-        private$.initial_values <- private$.initial_values[indices]
-        private$.initial_seconds <- private$.initial_seconds[indices]
-        private$.initial_type <- private$.initial_type[indices]
-        if (self$verbose) {
-          cli::cli_alert_info(
-            "Reduced to a subset of {runs} initial parameter value{?s} based
-            on the condition {.val {condition}}."
-          )
-        }
-      }
-      invisible(self)
-    },
-
-    #' @description
     #' Visualizes the optimization time or value.
     #' @param which_element
     #' Either:

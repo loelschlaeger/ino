@@ -83,6 +83,8 @@ autoplot.Nop <- function(object, xlim = NULL, xlim2 = NULL, ...) {
     return(NULL)
   }
 
+  # TODO: add to legend of 1D and 2D: red points = initial values
+
 }
 
 #' @keywords internal
