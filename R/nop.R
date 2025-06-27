@@ -405,10 +405,23 @@ Nop <- R6::R6Class(
       }
 
       ### info on optimization results
-      # TODO: number runs, proportion original, different optimizers, etc.
-
+      results <- self$results
+      if (nrow(results) > 0) {
+        cli::cli_h2("Optimization results")
+        occ <- oeli::occurrence_info(
+          x = results |> dplyr::select(
+            error, .optimization_label, .optimizer_label, .direction, .original
+          ),
+          relative = TRUE, named = TRUE
+        )
+        cli::cli_bullets(
+          structure(
+            c(paste("Total:", nrow(results)), occ),
+            names = rep("*", 6)
+          )
+        )
+      }
       invisible(self)
-
     },
 
     #' @description
@@ -591,7 +604,9 @@ Nop <- R6::R6Class(
       )
 
       ### set initial values
-      grid_points <- mapply(seq, from = lower, to = upper, len = breaks, SIMPLIFY = FALSE)
+      grid_points <- mapply(
+        seq, from = lower, to = upper, len = breaks, SIMPLIFY = FALSE
+      )
       at <- lapply(as.list(asplit(expand.grid(grid_points), 1)), as.numeric)
       if (jitter) at <- lapply(at, jitter, ...)
       self$initialize_custom(as.list(at), type = "grid")
@@ -646,7 +661,37 @@ Nop <- R6::R6Class(
     #' Label of optimization runs from which to select.
 
     initialize_continue = function(optimization_label) {
-      # TODO
+
+      ### input checks
+      oeli::input_check_response(
+        check = checkmate::check_string(optimization_label),
+        var_name = "optimization_label"
+      )
+
+      ### extract parameters
+      if (nrow(self$results) == 0) {
+        cli::cli_warn("No results available.", call = NULL)
+        return(invisible(self))
+      }
+      results <- self$results |>
+        dplyr::filter(
+          .optimization_label == optimization_label, !error, !is.na(seconds)
+        )
+
+      ### set initial values
+      if (nrow(results) == 0) {
+        cli::cli_warn(
+          "No (succesful) optimizations for label {.val {optimization_label}}.",
+          call = NULL
+        )
+      } else {
+        self$initialize_custom(
+          at = results |> dplyr::pull(parameter),
+          seconds = results |> dplyr::pull(seconds),
+          type = "continued"
+        )
+      }
+      invisible(self)
     },
 
     #' @description
@@ -908,10 +953,10 @@ Nop <- R6::R6Class(
       ### initial values available?
       if (length(private$.initial_values) == 0) {
         self$initialize_random()
-        cli::cli_warn(paste(
+        cli::cli_warn(
           "No initial values defined by user, random initial values are used.",
-          "Call {.fun $initialize_*} first to customize the initialization."
-        ), call = NULL)
+          call = NULL
+        )
       }
 
       ### build grid of optimization combinations
@@ -1025,7 +1070,11 @@ Nop <- R6::R6Class(
           )
         }
       }
-      structure(results, class = c("Nop_optima", class(results)))
+      structure(
+        results, class = c(
+          "Nop_optima", if (!is.null(group_by)) "group_by", class(results)
+        )
+      )
 
     },
 

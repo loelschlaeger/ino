@@ -1,15 +1,19 @@
 #' @name autoplot.Nop
 #'
-#' @title Nop plotting methods
+#' @title Plotting methods
 #'
 #' @description
-#' - `autoplot.Nop()` # TODO
-#' - `autoplot.Nop_optima()`
-#' - `autoplot.Nop_deviation()`
-#' - `autoplot.Nop_results()`
+#' - `autoplot.Nop()` plots the objective function
+#' - `autoplot.Nop_results()` plots boxplots of optimization results
+#' - `autoplot.Nop_optima()` plots a bar chart of the found optima
+#' - `autoplot.Nop_deviation()` plots deviations per dimension from a reference
 #'
 #' @param object
-#' Either: # TODO
+#' Depends on the method:
+#' - for `autoplot.Nop()`, a `Nop` object
+#' - for `autoplot.Nop_results()`, the value `Nop$results`
+#' - for `autoplot.Nop_optima()`, the value `Nop$optima`
+#' - for `autoplot.Nop_deviation()`, the value `Nop$deviation`
 #'
 #' @param ...
 #' Other arguments passed to specific methods.
@@ -20,6 +24,8 @@
 NULL
 
 #' @rdname autoplot.Nop
+#'
+#' @method autoplot Nop
 #'
 #' @param xlim,xlim2 \[`numeric(2)`\]\cr
 #' Ranges for the first and second parameter to plot.
@@ -82,9 +88,6 @@ autoplot.Nop <- function(object, xlim = NULL, xlim2 = NULL, ...) {
     cli::cli_warn("Currently not available for more than 2 parameter")
     return(NULL)
   }
-
-  # TODO: add to legend of 1D and 2D: red points = initial values
-
 }
 
 #' @keywords internal
@@ -100,15 +103,34 @@ autoplot.Nop_1d <- function(object, xlim, ...) {
   target_name <- objective$target
   f <- function(x) objective$evaluate(x)
   data <- data.frame(x = unlist(initial_values), y = sapply(initial_values, f))
-  if (nrow(data) == 0) data <- data.frame(x = numeric(), y = numeric())
-  ggplot2::ggplot() +
-    ggplot2::geom_function(fun = function(x) sapply(x, f), xlim = xlim) +
+  if (no_initials <- nrow(data) == 0) {
+    data <- data.frame(x = numeric(), y = numeric())
+  }
+  plot <- ggplot2::ggplot() +
+    ggplot2::geom_function(
+      aes(color = "Objective function"),
+      fun = function(x) sapply(x, f),
+      xlim = xlim
+    ) +
     ggplot2::scale_x_continuous(limits = xlim) +
-    ggplot2::geom_point(data, mapping = ggplot2::aes(x = x, y = y), color = "red") +
+    ggplot2::scale_color_manual(
+      values = c("Objective function" = "black", "Initial values" = "red"),
+      name = NULL
+    ) +
     ggplot2::labs(
       x = target_name,
       y = paste0(objective_name, "(", target_name, ")")
+    ) +
+    ggplot2::theme(
+      legend.position = if (no_initials) "none" else "top"
     )
+  if (!no_initials) {
+    plot <- plot + ggplot2::geom_point(
+      data,
+      mapping = ggplot2::aes(x = x, y = y, color = "Initial values")
+    )
+  }
+  return(plot)
 }
 
 #' @keywords internal
@@ -132,17 +154,29 @@ autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
   grid <- expand.grid(x = grid_x, y = grid_y)
   grid$z <- apply(grid, 1, function(row) f(row["x"], row["y"]))
   data <- data.frame(x = sapply(initial_values, `[`, 1), y = sapply(initial_values, `[`, 2))
-  if (nrow(data) == 0) data <- data.frame(x = numeric(), y = numeric())
-  ggplot2::ggplot() +
+  if (no_initials <- nrow(data) == 0) {
+    data <- data.frame(x = numeric(), y = numeric())
+  }
+  plot <- ggplot2::ggplot() +
     ggplot2::geom_contour_filled(data = grid, mapping = ggplot2::aes(x = x, y = y, z = z)) +
     ggplot2::scale_x_continuous(limits = xlim) +
     ggplot2::scale_y_continuous(limits = xlim2) +
-    ggplot2::geom_point(data = data, mapping = ggplot2::aes(x = x, y = y), color = "red") +
     ggplot2::labs(
       x = paste0(target_name, "[1]"),
       y = paste0(target_name, "[2]"),
       fill = paste0(objective_name, "(", target_name, ")")
     )
+  if (!no_initials) {
+    plot <- plot + ggplot2::geom_point(
+        data = data,
+        mapping = ggplot2::aes(x = x, y = y, color = "Initial values")
+      ) +
+      ggplot2::scale_color_manual(
+        values = c("Initial values" = "red"),
+        name = NULL
+      )
+  }
+  return(plot)
 }
 
 #' @rdname autoplot.Nop
@@ -160,6 +194,16 @@ autoplot.Nop_optima <- function(object, ...) {
     var_name = "object"
   )
 
+  ### grouped?
+  if (inherits(object, "group_by")) {
+    return(
+      lapply(object, function(x) {
+        class(x) <- c("Nop_optima", class(x))
+        autoplot(x, ...)
+      })
+    )
+  }
+
   ### produce bar chart
   object |>
     ggplot2::ggplot(ggplot2::aes(x = factor(value), y = n)) +
@@ -168,6 +212,7 @@ autoplot.Nop_optima <- function(object, ...) {
 }
 
 #' @rdname autoplot.Nop
+#' @method autoplot Nop_deviation
 #' @export
 
 autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
@@ -182,7 +227,7 @@ autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
     var_name = "object"
   )
 
-  ### produce bar chart
+  ### produce figure
   object |>
     tidyr::pivot_longer(cols = - .optimization_label) |>
     ggplot2::ggplot(ggplot2::aes(x = name, y = value)) +
@@ -195,8 +240,30 @@ autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
 }
 
 #' @rdname autoplot.Nop
+#' @method autoplot Nop_results
+#'
+#' @param which_element \[`character(1)\]\cr
+#' A column name of `object` to plot.
+#'
+#' @param group_by \[`character(1)\]\cr
+#' Selects how the plot is grouped. Either:
+#' - `NULL` to not group,
+#' - `"optimization"` to group by optimization label,
+#' - `"optimizer"`` to group by optimizer label.
+#'
+#' @param relative \[`logical(1)\]\cr
+#' Plot values relative to the overall median?
+#'
 #' @export
 
-autoplot.Nop_results <- function(object, ...) {
+autoplot.Nop_results <- function(
+    object,
+    which_element = "seconds",
+    group_by = NULL,
+    relative = FALSE,
+    ...
+  ) {
+
+  ### input checks
   # TODO
 }

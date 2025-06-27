@@ -1717,7 +1717,7 @@
     },
     "future": {
       "Package": "future",
-      "Version": "1.49.0",
+      "Version": "1.58.0",
       "Source": "Repository",
       "Title": "Unified Parallel and Distributed Processing in R for Everyone",
       "Depends": [
@@ -1755,15 +1755,15 @@
     },
     "future.apply": {
       "Package": "future.apply",
-      "Version": "1.11.3",
+      "Version": "1.20.0",
       "Source": "Repository",
       "Title": "Apply Function to Elements in Parallel using Futures",
       "Depends": [
         "R (>= 3.2.0)",
-        "future (>= 1.28.0)"
+        "future (>= 1.49.0)"
       ],
       "Imports": [
-        "globals (>= 0.16.1)",
+        "globals",
         "parallel",
         "utils"
       ],
@@ -1771,7 +1771,7 @@
         "datasets",
         "stats",
         "tools",
-        "listenv (>= 0.8.0)",
+        "listenv",
         "R.rsp",
         "markdown"
       ],
@@ -1782,9 +1782,11 @@
       "LazyLoad": "TRUE",
       "URL": "https://future.apply.futureverse.org, https://github.com/futureverse/future.apply",
       "BugReports": "https://github.com/futureverse/future.apply/issues",
+      "Language": "en-US",
+      "Encoding": "UTF-8",
       "RoxygenNote": "7.3.2",
       "NeedsCompilation": "no",
-      "Author": "Henrik Bengtsson [aut, cre, cph] (<https://orcid.org/0000-0002-7579-5165>), R Core Team [cph, ctb]",
+      "Author": "Henrik Bengtsson [aut, cre, cph] (ORCID: <https://orcid.org/0000-0002-7579-5165>), R Core Team [cph, ctb]",
       "Maintainer": "Henrik Bengtsson <henrikb@braju.com>",
       "Repository": "CRAN"
     },
@@ -3403,8 +3405,8 @@
     },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.7.3",
-      "Source": "Repository",
+      "Version": "0.7.4",
+      "Source": "GitHub",
       "Type": "Package",
       "Title": "Some Utilities for Developing Data Science Software",
       "Authors@R": "person(\"Lennart\", \"Oelschl\\u00e4ger\", email = \"oelschlaeger.lennart@gmail.com\", role = c(\"aut\", \"cre\"))",
@@ -3417,12 +3419,18 @@
         "benchmarkme",
         "checkmate",
         "cli",
+        "dplyr",
+        "future",
+        "future.apply",
         "ggplot2",
+        "glue",
         "hexSticker",
+        "progressr",
         "R6",
         "Rcpp",
         "SimMultiCorrData",
         "stats",
+        "tibble",
         "tools",
         "utils"
       ],
@@ -3439,10 +3447,16 @@
       ],
       "URL": "https://github.com/loelschlaeger/oeli, http://loelschlaeger.de/oeli/",
       "BugReports": "https://github.com/loelschlaeger/oeli/issues",
+      "Roxygen": "list(markdown = TRUE)",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "oeli",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "80dc035b68c377b7117a8c0b137976de82efa664",
       "NeedsCompilation": "yes",
       "Author": "Lennart Oelschläger [aut, cre]",
-      "Maintainer": "Lennart Oelschläger <oelschlaeger.lennart@gmail.com>",
-      "Repository": "CRAN"
+      "Maintainer": "Lennart Oelschläger <oelschlaeger.lennart@gmail.com>"
     },
     "openssl": {
       "Package": "openssl",

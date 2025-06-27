@@ -4,45 +4,6 @@ Nop_old <- R6::R6Class(
   classname = "Nop",
   public = list(
 
-    #' @description
-    #' Defines initial values based on results from previous optimizations.
-    #' @return
-    #' Invisibly the \code{Nop} object.
-
-    initialize_continue = function(
-      which_run, which_optimizer = "all", which_direction = c("min", "max")
-    ) {
-      out <- self$results(
-        which_run = which_run, which_optimizer = which_optimizer,
-        which_direction = which_direction,
-        which_element = c("parameter", "seconds")
-      )
-      at <- lapply(out, `[[`, "parameter")
-      seconds <- sapply(out, `[[`, "seconds")
-      runs <- length(at)
-      drop <- integer()
-      for (i in seq_len(runs)) {
-        check <- try(
-          private$.check_target(at[[i]], verbose = FALSE),
-          silent = TRUE
-        )
-        if (inherits(check, "try-error")) {
-          drop <- c(drop, i)
-        }
-      }
-      if (length(drop) > 0) {
-        at <- at[-drop]
-        seconds <- seconds[-drop]
-        if (self$verbose) {
-          cli::cli_alert_info(
-            "{length(drop)} set{?s} of results cannot be continued."
-          )
-        }
-      }
-      self$initialize_custom(
-        at = at, seconds = seconds, type = "continued"
-      )
-    },
 
     #' @description
     #' Visualizes the optimization time or value.

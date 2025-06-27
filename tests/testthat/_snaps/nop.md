@@ -34,8 +34,18 @@
       -- Initial values --
       
       * 9x grid
+      
+      -- Optimization results --
+      
+      * Total: 22
+      * error: 100% FALSE
+      * .optimization_label: 46% unlabeled_2, 28% unlabeled_5, 10% unlabeled_1, 10%
+        unlabeled_3, 10% unlabeled_4
+      * .optimizer_label: 50% nlm, 50% stats::optim
+      * .direction: 100% min
+      * .original: 100% TRUE
 
-# Example 2: Defining the problem works
+# Example 3: Defining the problem works
 
     Code
       Nop_hmm$print()
@@ -99,7 +109,7 @@
       
       1. stats::nlm
 
-# Example 2: Additional arguments can be modified and reset
+# Example 3: Additional arguments can be modified and reset
 
     Code
       print(Nop_hmm)

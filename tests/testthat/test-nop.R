@@ -21,6 +21,8 @@ test_that("Example 0: Defining the problem works", {
   checkmate::expect_tibble(Nop_pol$results, nrows = 0, ncols = 4)
   expect_error(ggplot2::autoplot(Nop_pol), "Input `xlim` is bad")
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_pol, xlim = c(-1, 1))))
+  Nop_pol$initialize_fixed(0.1)
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_pol)))
 })
 
 # Example 1: Ackley function ----------------------------------------------
@@ -103,6 +105,11 @@ test_that("Example 1: Plotting works", {
   Nop_ackley$initialize_random(runs = 10)
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley)))
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$optima())))
+  autoplot_optima_group <- ggplot2::autoplot(Nop_ackley$optima(group_by = "optimizer"))
+  expect_true(is.list(autoplot_optima_group))
+  expect_length(autoplot_optima_group, 2)
+  expect_true(ggplot2::is_ggplot(autoplot_optima_group[[1]]))
+  expect_true(ggplot2::is_ggplot(autoplot_optima_group[[2]]))
 })
 
 test_that("Example 1: Deviation can be computed and visualized", {
@@ -110,7 +117,7 @@ test_that("Example 1: Deviation can be computed and visualized", {
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$deviation())))
 })
 
-test_that("Example 2: Initials can be filtered and promising values selected", {
+test_that("Example 1: Initials can be filtered and promising values selected", {
   Nop_ackley$initialize_reset()
   expect_length(Nop_ackley$initial_values, 0)
   Nop_ackley$initialize_random(100)
@@ -155,6 +162,11 @@ normal_mixture_llk <- function(mu, sigma, lambda, data) {
 Nop_mixture <- Nop$new(
   f = normal_mixture_llk, target = c("mu", "sigma", "lambda"), npar = c(2, 2, 1)
 )
+
+# TODO
+self <- Nop_mixture
+private <- self$.__enclos_env__$private
+self$verbose <- TRUE
 
 test_that("Example 2: Evaluate with fixed arguments missing", {
   expect_error(
@@ -222,6 +234,26 @@ test_that("Example 2: Fixed argument can be subsetted", {
   )
 })
 
+test_that("Example 2: Initialization can be continued", {
+  expect_warning(
+    Nop_mixture$initialize_continue("label"),
+    "No results available."
+  )
+  Nop_mixture$
+    set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
+    initialize_fixed(c(2, 4, 1, 2, -1))$
+    optimize(optimization_label = "continue")
+  Nop_mixture$initialize_continue("continue")
+  expect_identical(
+    Nop_mixture$results |> dplyr::pull(parameter),
+    Nop_mixture$initial_values
+  )
+})
+
+test_that("Example 2: Plotting results works", {
+  ggplot2::autoplot(Nop_mixture$results) # TODO
+})
+
 # Example 3: HMM ----------------------------------------------------------
 
 hmm_data <- fHMM::simulate_hmm(seed = 1)$data
@@ -234,7 +266,7 @@ Nop_hmm <- Nop$new(
   negative = TRUE
 )
 
-test_that("Example 2: Defining the problem works", {
+test_that("Example 3: Defining the problem works", {
   checkmate::expect_r6(Nop_hmm, "Nop")
   expect_snapshot(Nop_hmm$print())
   expect_snapshot(print(Nop_hmm))
@@ -245,7 +277,7 @@ test_that("Example 2: Defining the problem works", {
 
 Nop_hmm$fixed_argument("set", "observations" = hmm_data)
 
-test_that("Example 2: Additional arguments can be modified and reset", {
+test_that("Example 3: Additional arguments can be modified and reset", {
   expect_snapshot(print(Nop_hmm))
   expect_identical(
     Nop_hmm$fixed_argument("get", argument_name = "observations"),
@@ -270,7 +302,7 @@ test_that("Example 2: Additional arguments can be modified and reset", {
   )
 })
 
-test_that("Example 2: Observations can be standardized", {
+test_that("Example 3: Observations can be standardized", {
   Nop_hmm$standardize_argument("observations")
   out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
   expect_equal(
@@ -286,7 +318,7 @@ test_that("Example 2: Observations can be standardized", {
   )
 })
 
-test_that("Example 2: Observations can be reduced", {
+test_that("Example 3: Observations can be reduced", {
   Nop_hmm$reduce_argument("observations")
   out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
   expect_length(out, 50)
