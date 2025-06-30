@@ -37,6 +37,9 @@ If \code{NULL}, they are derived from the specified initial values in \code{obje
 
 \item{...}{Other arguments passed to specific methods.}
 
+\item{jitter}{[\code{logical(1)}]\cr
+Apply jitter to the points?}
+
 \item{which_element}{[\verb{character(1)\]\\cr A column name of }object` to plot.}
 
 \item{group_by}{[`character(1)]\cr

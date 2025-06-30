@@ -78,14 +78,21 @@ and see \code{\link[future]{plan}} for details.
 }
 
 \examples{
+### define objective function, optimizer and initial values
 Nop_ackley <- Nop$new(f = TestFunctions::TF_ackley, npar = 2)$
   set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
-  initialize_random(runs = 20)$
-  optimize(which_direction = "min")
+  initialize_random(runs = 20)
 
-Nop_ackley |> ggplot2::autoplot(include_initials = TRUE)
+### plot function surface and initial values
+Nop_ackley |> ggplot2::autoplot()
 
+### minimize objective function
+Nop_ackley$optimize(which_direction = "min")
+
+### show optima
 Nop_ackley$optima(digits = 0)
+
+### show best value and parameter across all minimizations
 Nop_ackley$minimum
 
 }

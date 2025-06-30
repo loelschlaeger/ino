@@ -212,6 +212,10 @@ autoplot.Nop_optima <- function(object, ...) {
 }
 
 #' @rdname autoplot.Nop
+#'
+#' @param jitter \[`logical(1)`\]\cr
+#' Apply jitter to the points?
+#'
 #' @method autoplot Nop_deviation
 #' @export
 
@@ -225,6 +229,10 @@ autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
   oeli::input_check_response(
     check = checkmate::check_class(object, "Nop_deviation"),
     var_name = "object"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_flag(jitter),
+    var_name = "jitter"
   )
 
   ### produce figure

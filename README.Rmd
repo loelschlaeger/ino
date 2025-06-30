@@ -4,7 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, setup, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -30,7 +30,7 @@ The `{ino}` R package provides a framework for analyzing the role of initializat
 
 You can install the released version from [CRAN](https://CRAN.R-project.org) with:
 
-```{r install released}
+```{r install_released}
 install.packages("ino")
 ```
 
@@ -42,7 +42,7 @@ The [Ackley function](https://en.wikipedia.org/wiki/Ackley_function) features mu
 2. two optimization algorithm (here `stats::nlm()` and `stats::optim()`), and 
 3. 50 initial values (here drawn at random):
 
-```{r ackley def}
+```{r ackley_def}
 library("ino")
 set.seed(1)
 Nop_ackley <- Nop$new(f = TestFunctions::TF_ackley, npar = 2)$
@@ -53,13 +53,13 @@ Nop_ackley <- Nop$new(f = TestFunctions::TF_ackley, npar = 2)$
 
 We can visualize the function surface along with the initial values:
 
-```{r ackley plot}
+```{r ackley_plot}
 ggplot2::autoplot(Nop_ackley)
 ```
 
 Next, we optimize the function using the defined initializations and optimizers:
 
-```{r ackley opt}
+```{r ackley_opt}
 Nop_ackley$
   optimize()$
   optima(digits = 2, group_by = "optimizer")
@@ -67,7 +67,7 @@ Nop_ackley$
 
 In this example, `stats::nlm()` appears to be both faster and more effective at locating the global minimum:
 
-```{r ackley results}
+```{r ackley_results}
 Nop_ackley$results |> 
   ggplot2::autoplot("seconds", group_by = "optimizer", relative = TRUE) +
   ggplot2::scale_x_continuous(labels = scales::percent_format()) +

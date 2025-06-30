@@ -41,7 +41,6 @@
 #' @importFrom dplyr slice_max
 #' @importFrom dplyr slice_min
 #' @importFrom dplyr summarize
-#' @importFrom forcats fct_reorder
 #' @importFrom future multicore
 #' @importFrom future multisession
 #' @importFrom future plan
@@ -68,9 +67,7 @@
 #' @importFrom ggplot2 scale_y_continuous
 #' @importFrom ggplot2 theme
 #' @importFrom ggplot2 theme_minimal
-#' @importFrom glue glue
 #' @importFrom normalize normalize
-#' @importFrom numDeriv grad
 #' @importFrom oeli check_missing
 #' @importFrom oeli check_numeric_vector
 #' @importFrom oeli input_check_response
@@ -85,21 +82,20 @@
 #' @importFrom purrr map
 #' @importFrom purrr map_dfc
 #' @importFrom R6 R6Class
-#' @importFrom reshape2 melt
 #' @importFrom rlang .data
 #' @importFrom rlang set_names
-#' @importFrom scales label_percent
-#' @importFrom scales percent
 #' @importFrom stats complete.cases
 #' @importFrom stats median
 #' @importFrom stats nlm
 #' @importFrom stats optim
 #' @importFrom stats rnorm
-#' @importFrom TestFunctions TF_ackley
-#' @importFrom tibble as_tibble
+#' @importFrom tidyr pivot_longer
+#' @importFrom tidyr unnest_wider
 #' @importFrom utils packageVersion
 ## usethis namespace: end
 NULL
+
+utils::globalVariables(c("x", "y", "z", ".optimization_label", "name", "value", "n"))
 
 #' @noRd
 
@@ -119,3 +115,23 @@ NULL
   }
   invisible()
 }
+
+#' Example application to HMM likelihood
+#'
+#' @description
+#' This object is saved for reproducibility and to save computation time when
+#' building the vignettes.
+#'
+#' See the vignette about the HMM likelihood for details on how this object was
+#' built: <https://loelschlaeger.de/ino/articles/example_hmm.html>
+#'
+#' @docType data
+#'
+#' @usage data("Nop_hmm")
+#'
+#' @format
+#' A \code{\link{Nop}} object.
+#'
+#' @keywords internal
+"Nop_hmm"
+

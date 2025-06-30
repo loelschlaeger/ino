@@ -98,14 +98,21 @@
 #' and see \code{\link[future]{plan}} for details.
 #'
 #' @examples
+#' ### define objective function, optimizer and initial values
 #' Nop_ackley <- Nop$new(f = TestFunctions::TF_ackley, npar = 2)$
 #'   set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
-#'   initialize_random(runs = 20)$
-#'   optimize(which_direction = "min")
+#'   initialize_random(runs = 20)
 #'
-#' Nop_ackley |> ggplot2::autoplot(include_initials = TRUE)
+#' ### plot function surface and initial values
+#' Nop_ackley |> ggplot2::autoplot()
 #'
+#' ### minimize objective function
+#' Nop_ackley$optimize(which_direction = "min")
+#'
+#' ### show optima
 #' Nop_ackley$optima(digits = 0)
+#'
+#' ### show best value and parameter across all minimizations
 #' Nop_ackley$minimum
 #'
 #' @export
@@ -1192,7 +1199,7 @@ Nop <- R6::R6Class(
             val <- x[[nm]] %||% NA
             if (is.null(val) || length(val) != 1 || is.matrix(val)) list(val) else val
           }) |>
-            rlang::set_names(all_names) |> tibble::as_tibble()
+            rlang::set_names(all_names) |> dplyr::as_tibble()
         }) |> dplyr::bind_rows()
         structure(results, class = c("Nop_results", class(results)))
 
@@ -1289,7 +1296,7 @@ Nop <- R6::R6Class(
         default_label <- "unlabeled"
         n <- 1
         while (TRUE) {
-          label <- glue::glue("{default_label}_{n}")
+          label <- paste0(default_label, "_", n)
           if (!label %in% private$.optimization_labels) {
             return(as.character(label))
           } else {
