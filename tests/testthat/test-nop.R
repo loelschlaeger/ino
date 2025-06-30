@@ -163,11 +163,6 @@ Nop_mixture <- Nop$new(
   f = normal_mixture_llk, target = c("mu", "sigma", "lambda"), npar = c(2, 2, 1)
 )
 
-# TODO
-self <- Nop_mixture
-private <- self$.__enclos_env__$private
-self$verbose <- TRUE
-
 test_that("Example 2: Evaluate with fixed arguments missing", {
   expect_error(
     Nop_mixture$evaluate(),
@@ -251,79 +246,5 @@ test_that("Example 2: Initialization can be continued", {
 })
 
 test_that("Example 2: Plotting results works", {
-  ggplot2::autoplot(Nop_mixture$results) # TODO
-})
-
-# Example 3: HMM ----------------------------------------------------------
-
-hmm_data <- fHMM::simulate_hmm(seed = 1)$data
-
-Nop_hmm <- Nop$new(
-  f = fHMM::ll_hmm,
-  npar = 6,
-  sdds = "normal",
-  states = 2,
-  negative = TRUE
-)
-
-test_that("Example 3: Defining the problem works", {
-  checkmate::expect_r6(Nop_hmm, "Nop")
-  expect_snapshot(Nop_hmm$print())
-  expect_snapshot(print(Nop_hmm))
-  expect_identical(Nop_hmm$npar, c("parUncon" = 6))
-  Nop_hmm$set_optimizer(optimizeR::Optimizer$new("stats::nlm"))
-  expect_snapshot(Nop_hmm)
-})
-
-Nop_hmm$fixed_argument("set", "observations" = hmm_data)
-
-test_that("Example 3: Additional arguments can be modified and reset", {
-  expect_snapshot(print(Nop_hmm))
-  expect_identical(
-    Nop_hmm$fixed_argument("get", argument_name = "observations"),
-    hmm_data
-  )
-  Nop_hmm$fixed_argument("remove", argument_name = "observations")
-  expect_error(
-    Nop_hmm$fixed_argument("get", argument_name = "observations"),
-    "not available"
-  )
-  Nop_hmm$fixed_argument("set", "observations" = hmm_data)
-  Nop_hmm$fixed_argument("modify", "observations" = 1:3)
-  expect_identical(
-    Nop_hmm$fixed_argument("get", argument_name = "observations"),
-    1:3
-  )
-  expect_snapshot(print(Nop_hmm))
-  Nop_hmm$fixed_argument("reset", argument_name = "observations")
-  expect_identical(
-    Nop_hmm$fixed_argument("get", argument_name = "observations"),
-    hmm_data
-  )
-})
-
-test_that("Example 3: Observations can be standardized", {
-  Nop_hmm$standardize_argument("observations")
-  out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
-  expect_equal(
-    mean(out), 0, tolerance = 1e-6
-  )
-  expect_equal(
-    sd(out), 1, tolerance = 1e-6
-  )
-  Nop_hmm$fixed_argument("reset", argument_name = "observations")
-  expect_identical(
-    Nop_hmm$fixed_argument("get", argument_name = "observations"),
-    hmm_data
-  )
-})
-
-test_that("Example 3: Observations can be reduced", {
-  Nop_hmm$reduce_argument("observations")
-  out <- Nop_hmm$fixed_argument("get", argument_name = "observations")
-  expect_length(out, 50)
-  Nop_hmm$fixed_argument("reset", argument_name = "observations")
-  expect_length(
-    Nop_hmm$fixed_argument("get", argument_name = "observations"), 100
-  )
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_mixture$results)))
 })

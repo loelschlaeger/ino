@@ -265,5 +265,60 @@ autoplot.Nop_results <- function(
   ) {
 
   ### input checks
-  # TODO
+  oeli::input_check_response(
+    check = oeli::check_missing(object),
+    var_name = "object"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_data_frame(object),
+    var_name = "object"
+  )
+  if (nrow(object) == 0) {
+    cli::cli_warn("No results available.", call = NULL)
+    return(ggplot2::ggplot())
+  }
+  suitable_columns <- !vapply(object, is.list, logical(1)) &
+    vapply(object, is.numeric, logical(1))
+  which_element_selection <- object[suitable_columns] |> colnames()
+  which_element <- oeli::match_arg(
+    which_element, choices = which_element_selection
+  )
+  oeli::input_check_response(
+    check = checkmate::check_choice(
+      group_by, choices = c("optimization", "optimizer"),
+      null.ok = TRUE
+    ),
+    var_name = "group_by"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_flag(relative),
+    var_name = "relative"
+  )
+
+  ### transform data to relative values
+  if (relative) {
+    med <- object[[which_element]] |> median(na.rm = TRUE)
+    object[[which_element]] <- (object[[which_element]] - med) / med
+  }
+
+  ### build graphic
+  mapping <- if (identical(group_by, "optimization")) {
+    ggplot2::aes(
+      x = .data[[which_element]],
+      y = .data[[".optimization_label"]]
+    )
+  } else if (identical(group_by, "optimizer")) {
+    ggplot2::aes(
+      x = .data[[which_element]],
+      y = .data[[".optimizer_label"]]
+    )
+  } else {
+    ggplot2::aes(
+      x = .data[[which_element]],
+      y = NULL
+    )
+  }
+  object |> ggplot2::ggplot() +
+    ggplot2::geom_boxplot(mapping = mapping)
+
 }

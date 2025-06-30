@@ -1,7 +1,7 @@
 ---
 title: "Introduction"
 description: >
-  Learn how to get started with the {ino} package.
+  How to get started with the {ino} package.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEncoding{UTF-8}
@@ -65,12 +65,12 @@ The key advantages of using the `{ino}` package include:
 
 To exemplify the package workflow, let's consider solving a likelihood optimization problem. To begin, obtain `{ino}` from [CRAN](https://CRAN.R-project.org) via:
 
-```{r, load ino, eval = FALSE}
+```{r, load ino demo, eval = FALSE, purl = FALSE}
 install.packages("ino")
 library("ino")
 ```
 
-```{r, load ino for real, include = FALSE}
+```{r, load ino, include = FALSE}
 library("ino")
 ```
 
@@ -120,7 +120,7 @@ We start be defining the optimization problem:^[For further details on the `{R6}
 
 ```{r, initialize Nop}
 Nop_mixture <- Nop$new(
-  objective = normal_mixture_llk,       # the objective function
+  f = normal_mixture_llk,               # the objective function
   target = c("mu", "sigma", "lambda"),  # names of target arguments
   npar = c(2, 2, 1),                    # lengths of target arguments
   data = faithful$eruptions             # values for fixed arguments
@@ -129,7 +129,7 @@ Nop_mixture <- Nop$new(
 
 The call `Nop$new()` creates a `Nop` object that defines a numerical optimization problem. We have saved this object with the name `Nop_mixture`. In the future, we can interact with this object by invoking its methods using the syntax `Nop_mixture$<method name>()`. The arguments are:
 
-- `objective`: the objective function to be optimized.
+- `f`: the objective function to be optimized.
 - `target`: the names of the target arguments over which `objective` is optimized.
 - `npar`: the length of each of these target arguments.
 - Additionally, the argument `data` is provided, which remains constant during optimization.
@@ -153,23 +153,18 @@ Once an optimizer is specified, the process of optimizing the function becomes s
 2. Call `optimize()`.
 
 ```{r, example optimization}
+set.seed(1)
 Nop_mixture$
-  initialize_random(runs = 20, seed = 1)$
+  initialize_random(runs = 20)$
   optimize(which_direction = "max", optimization_label = "random")
 ```
 
 The method `initialize_random(runs = 20)` generates 20 sets of random initial values, with each set independently drawn from a standard normal distribution by default. Subsequently, `optimize(which_direction = "max")` maximizes the function, starting from these generated values.
 
-Accessing the optimization results is achievable through the `results()` method. By default, it returns a list of 20 entries, each containing all the optimization results. The method also offers filter options; for instance, retrieving only the function value and parameter estimate from the first run is possible with:
+Accessing the optimization results is achievable through the `$results` field. By default, it returns a list of 20 entries, each containing all the optimization results. The method also offers filter options; for instance, retrieving only the function value and parameter estimate from the first run is possible with:
 
 ```{r, access results}
 Nop_mixture$results(which_run = 1, which_element = c("value", "parameter"))
-```
-
-The `summary()` method provides a summary of the results in a `data.frame` format:
-
-```{r, summary of results}
-Nop_mixture$summary(which_element = c("value", "seconds", "iterations"))
 ```
 
 For a quick overview of the obtained optima, the `optima()` method provides a frequency table of the function values obtained at optimizer convergence. You can choose to ignore decimal places using `digits = 0`.
@@ -333,7 +328,7 @@ Next, we initialize at 100 random points and optimize the mixture likelihood wit
 
 ```{r, optimizer comparison}
 Nop_mixture$
-  initialize_random(runs = 100, seed = 1)$
+  initialize_random(runs = 100)$
   optimize(which_direction = "max", optimization_label = "optimizer_comparison")
 ```
 

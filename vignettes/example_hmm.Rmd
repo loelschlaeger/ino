@@ -1,7 +1,7 @@
 ---
 title: "Example: Hidden Markov Model"
 description: >
-  See the {ino} package in action for the HMM likelihood optimization.
+  The {ino} package in action for HMM likelihood optimization.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEncoding{UTF-8}
@@ -21,13 +21,12 @@ knitr::opts_chunk$set(
   fig.path = "figures/hmm-",
   fig.dim = c(8, 6), 
   out.width = "75%",
-  # all optimizations are pre-computed to save building time
+  # all optimizations are pre-computed to save building time of the vignette
   eval = FALSE
 )
 library("ino")
 data("Nop_hmm")
 set.seed(1)
-ggplot2::theme_set(ggplot2::theme_minimal())
 ```
 
 HMMs are statistical models used to explain systems that can only be observed indirectly through a sequence of outputs, and have unobservable hidden states. They consist of two processes, a Markov process that describes the hidden states, and an observable process that describes the outputs produced by the system, where the probability of observing an output at a given time depends only on the current state. State-switching models like HMMs are commonly used in speech recognition, animal movement modeling, and finance. For more technical details about HMMs and their scope of application, see, e.g., @Zucchini:2016.
