@@ -14,19 +14,8 @@ authors:
   Dietmar Bauer:
     href: https://de.wikipedia.org/wiki/Dietmar_Bauer
 
-reference:
-- title: Numerical optimization problem object
-  desc: The central objects when working with {ino}.
-  contents:
-  - Nop
-  - Runs
-- title: Demos
-  desc: The following demos are included in the package, see the vignettes.
-  contents:
-  - has_keyword("demo")
-  - has_keyword("function")
-- title: Internal
-  desc: These functions are not user-level.
-  contents:
-  - has_keyword("internal")
-  - has_keyword("checks")
+
+navbar:
+  structure:
+    left: [intro, news]
+    right: [search, github]
