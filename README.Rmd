@@ -88,10 +88,10 @@ Overall, (only) `r Nop_ackley$optima(digits = 2) |> dplyr::filter(value == 0) |>
 
 Have a question, found a bug, request a feature, want to contribute? [Please file an issue](https://github.com/loelschlaeger/ino/issues/new/choose).
 
-## Related `R` packages
+## Related R packages
 
-- The [{trackopt} package](https://CRAN.R-project.org/package=trackopt) tracks parameter value, gradient, and Hessian at each iteration of numerical optimizers in `R`. This can be useful for analyzing optimization progress, diagnosing issues, and studying convergence behavior.
+- The [{trackopt} package](https://CRAN.R-project.org/package=trackopt) tracks parameter value, gradient, and Hessian at each iteration of numerical optimizers in R. This can be useful for analyzing optimization progress, diagnosing issues, and studying convergence behavior.
 
-- The [{optimizeR} package](https://CRAN.R-project.org/package=optimizeR) provides a unified object-oriented framework for numerical optimizers in `R`. Allows for both minimization and maximization with any optimizer, optimization over more than one function argument, measuring of computation time, setting a time limit for long optimization tasks.
+- The [{optimizeR} package](https://CRAN.R-project.org/package=optimizeR) provides a unified object-oriented framework for numerical optimizers in R. Allows for both minimization and maximization with any optimizer, optimization over more than one function argument, measuring of computation time, setting a time limit for long optimization tasks.
 
 - The [{ao} package](https://CRAN.R-project.org/package=ao) implements an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult.

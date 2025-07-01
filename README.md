@@ -116,17 +116,17 @@ Have a question, found a bug, request a feature, want to contribute?
 [Please file an
 issue](https://github.com/loelschlaeger/ino/issues/new/choose).
 
-## Related `R` packages
+## Related R packages
 
 - The [{trackopt} package](https://CRAN.R-project.org/package=trackopt)
   tracks parameter value, gradient, and Hessian at each iteration of
-  numerical optimizers in `R`. This can be useful for analyzing
+  numerical optimizers in R. This can be useful for analyzing
   optimization progress, diagnosing issues, and studying convergence
   behavior.
 
 - The [{optimizeR}
   package](https://CRAN.R-project.org/package=optimizeR) provides a
-  unified object-oriented framework for numerical optimizers in `R`.
+  unified object-oriented framework for numerical optimizers in R.
   Allows for both minimization and maximization with any optimizer,
   optimization over more than one function argument, measuring of
   computation time, setting a time limit for long optimization tasks.

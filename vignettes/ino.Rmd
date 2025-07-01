@@ -13,7 +13,7 @@ bibliography: ref.bib
 link-citations: true
 ---
 
-```{r, setup, include = FALSE, purl = FALSE}
+```{r setup, include = FALSE, purl = FALSE}
 knitr::opts_chunk$set(
   collapse  = TRUE,
   comment   = "#>",
@@ -21,7 +21,8 @@ knitr::opts_chunk$set(
   fig.path  = "figures/ino-",
   out.width = "75%",
   message   = FALSE,
-  warning   = FALSE
+  warning   = FALSE,
+  fig.dim   = c(6, 4)
 )
 ```
 
@@ -31,7 +32,7 @@ Optimization aims to maximize effectiveness, efficiency, or functionality in var
 
 In some scenarios, determining optimality is feasible by analytical means, for example with simple objective functions like $f:\mathbb{R} \to \mathbb{R},\ f(x) = -x^2$. The first derivative $f'(x) = -2x$ vanishes at $x = 0$, and since $f$ is strictly concave, we conclude that $x = 0$ is the unique point where $f(x)$ is maximal. However, many optimization problems lack closed-form solutions, requiring **numerical optimization**.
 
-Numerical optimization encompasses algorithms that iteratively explore the parameter space, seeking improvement in the function output with each iteration and ultimately converging to a point where further improvements are not possible [@Bonnans:2006]. `R` offers various implementations of such algorithms^[The CRAN Task View: Optimization and Mathematical Programming [@Schwendinger:2023] provides an exhaustive list of packages for numerical optimization.]. Common to all these algorithms is the necessity to specify **initial parameter values**.
+Numerical optimization encompasses algorithms that iteratively explore the parameter space, seeking improvement in the function output with each iteration and ultimately converging to a point where further improvements are not possible [@Bonnans:2006]. R offers various implementations of such algorithms^[The CRAN Task View: Optimization and Mathematical Programming [@Schwendinger:2023] provides an exhaustive list of packages for numerical optimization.]. Common to all these algorithms is the necessity to specify **initial parameter values**.
 
 Crucially, initialization can strongly influence optimization time and outcomes [@Nocedal:2006]. Starting in non-concave areas risks convergence issues or settling on local optima instead of the global optimum, while starting in flat regions can slow computation, which is especially critical when function evaluations are costly. This raises two key questions:
 
@@ -41,7 +42,7 @@ Crucially, initialization can strongly influence optimization time and outcomes 
 
 ## Package functionality
 
-We introduce the `{ino}` package (short for **initialization of numerical optimization**), designed to address the aforementioned questions. This package facilitates:
+We introduce `{ino}`, short for **initialization of numerical optimization**, designed to address the aforementioned questions:
 
 1. Investigation into the impact of initial values on optimization.
 
@@ -49,13 +50,13 @@ We introduce the `{ino}` package (short for **initialization of numerical optimi
 
 3. Comparison of different numerical optimizers.
 
-Following an object-oriented approach^[We utilize the object-oriented framework of the `{R6}` package [@Chang:2025].], the package treats numerical optimization problems as objects. These objects are defined by a real-valued function, its target arguments, and one or more optimization algorithms. The object provides methods for selecting initial values, executing numerical minimization or maximization, and evaluating the optimization results.
+Following an **object-oriented approach**^[We utilize the framework of the `{R6}` package [@Chang:2025].], the package treats numerical optimization problems as objects. These objects are defined by a real-valued function, its target arguments, and one or more optimization algorithms. The object provides methods for selecting initial values, executing numerical minimization or maximization, and evaluating the optimization results.
 
 The key advantages of using the `{ino}` package include:
 
 - Straightforward comparisons among optimizers and initialization strategies.
 
-- Compatibility with any optimizer implemented in `R` for both minimization and maximization tasks through the `{optimizeR}` framework [@Oelschlaeger:2025], detailed below.
+- Compatibility with any optimizer implemented in R for both minimization and maximization tasks through the `{optimizeR}` framework [@Oelschlaeger:2025], detailed below.
 
 - Support for parallel computation through the `{future}` package [@Bengtsson:2021] and progress updates via the `{progressr}` package [@Bengtsson:2024].
 
@@ -63,22 +64,22 @@ The key advantages of using the `{ino}` package include:
 
 To begin, obtain `{ino}` from [CRAN](https://CRAN.R-project.org) via:
 
-```{r, load ino demo, eval = FALSE, purl = FALSE}
+```{r load ino demo, eval = FALSE, purl = FALSE}
 install.packages("ino")
 library("ino")
 ```
 
-```{r, load ino, include = FALSE}
+```{r load ino, include = FALSE}
 library("ino")
 ```
 
 ### Gaussian mixture model
 
-In this example, the function to be optimized is a likelihood function, computing the probability of observing given data under a specified model assumption. The parameters that maximize this likelihood function are identified as the model estimates. This method, known as maximum likelihood estimation, is widely used in statistics for fitting models to empirical data.
+In this example, the function to be optimized is a likelihood function, computing the probability of observing given data under a specified model assumption. The parameters that maximize this likelihood function are identified as the model estimates. This method, known as [maximum likelihood estimation](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation), is widely used in statistics for fitting models to empirical data.
 
 We examine eruption times of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA. The data histogram suggests two clusters with short and long eruption times, respectively:
 
-```{r, faithful-plot, warning = FALSE, fig.dim = c(6, 4)}
+```{r faithful-plot}
 library("ggplot2")
 ggplot(faithful, aes(x = eruptions)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30) + 
@@ -93,13 +94,13 @@ $$
 
 Here, the sum covers all observations $1, \dots, n = 272$, $\phi_{\mu_1, \sigma_1^2}$ and $\phi_{\mu_2, \sigma_2^2}$ represent the normal density for the first and second cluster, respectively, and $\lambda$ is the mixing proportion.
 
-Our objective is to find values for the parameter vector \(\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)\) that maximize \(\ell(\boldsymbol{\theta})\). Due to the complexity of the problem, analytical solutions are not feasible, and numerical optimization is necessary.
+Our objective is to find values for the parameter vector \(\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)\) that maximize \(\ell(\boldsymbol{\theta})\). Due to the complexity of the problem, analytical solutions are not available, therefore numerical optimization is required.
 
-> **Remark:** Numerical optimization in this example is notably fast due to the relatively small dataset and a model with only two classes. While initialization might seem less critical in this scenario, it becomes a more significant concern as the problem scales with more data and parameters [@Shireman:2017]. Furthermore, even this seemingly simple optimization problem is susceptible to local optima, depending on the chosen initial values, as we will see below.
+> **Remark:** Numerical optimization in this example is fast due to the relatively small dataset and a model with only two classes. While initialization might seem less critical in this scenario, it becomes a more significant concern as the problem scales with more data and parameters [@Shireman:2017]. Furthermore, even this seemingly simple optimization problem is susceptible to local optima, depending on the chosen initial values, as we will see below.
 
 The following function computes the log-likelihood value $\ell(\boldsymbol{\theta})$ given the parameters `mu`, `sigma`, and `lambda` and the observation vector `data`:
 
-```{r, define mixture ll}
+```{r define mixture ll}
 normal_mixture_llk <- function(mu, sigma, lambda, data) {
   sigma <- exp(sigma)
   lambda <- plogis(lambda)
@@ -116,7 +117,7 @@ Does the choice of initial values have an influence for this optimization proble
 
 We start be defining the optimization problem:^[For further details on the `{R6}` syntax employed by `{ino}`, see @Wickham:2019, Chapter 14.]
 
-```{r, initialize Nop}
+```{r initialize Nop}
 Nop_mixture <- Nop$new(
   f = normal_mixture_llk,               # the objective function
   target = c("mu", "sigma", "lambda"),  # names of target arguments
@@ -125,7 +126,9 @@ Nop_mixture <- Nop$new(
 )
 ```
 
-The call `Nop$new()` creates a `Nop` object that defines a numerical optimization problem. We have saved this object with the name `Nop_mixture`. In the future, we can interact with this object by invoking its methods using the syntax `Nop_mixture$<method name>()`. The arguments are:
+The call `Nop$new()` creates a `Nop` object that defines a numerical optimization problem. We have saved this object with the name `Nop_mixture`. In the future, we can interact with this object by invoking its methods using the syntax `Nop_mixture$<method name>()` or its fields via `Nop_mixture$<field name>`. 
+
+The arguments for creating `Nop_mixture` are:
 
 - `f`: the objective function to be optimized.
 - `target`: the names of the target arguments over which `objective` is optimized.
@@ -136,46 +139,60 @@ Additionally, analytical gradient and Hessian function for `f` can be provided i
 
 Once the `Nop` object is defined, the objective function can be evaluated at a specific value `at` for the collapsed target arguments:
 
-```{r, example evaluation}
-Nop_mixture$evaluate(at = 1:5) # same value as above
+```{r example evaluation}
+Nop_mixture$evaluate(at = 1:5) # same values as above
 ```
 
 Next, we require a numerical optimizer. Here, we choose `stats::nlm()`:
 
-```{r, define optimizer}
+```{r define optimizer}
 nlm <- optimizeR::Optimizer$new(which = "stats::nlm")
 Nop_mixture$set_optimizer(nlm)
 ```
 
 Once an optimizer is specified, the process of optimizing the function becomes straightforward:
 
-1. Define initial values using one of the `initialize_*()` methods (detailed below).
-2. Call `optimize()`.
+1. Define initial values using one of the `$initialize_*()` methods (detailed below).
+2. Call `$optimize()`.
 
-```{r, example optimization}
+```{r example optimization}
 set.seed(1)
 Nop_mixture$
   initialize_random(runs = 20)$
   optimize(which_direction = "max", optimization_label = "random")
 ```
 
-The method `initialize_random(runs = 20)` generates 20 sets of random initial values, with each set independently drawn from a standard normal distribution by default. Subsequently, `optimize(which_direction = "max")` maximizes the function, starting from these generated values.
+The method `$initialize_random(runs = 20)` generates 20 sets of random initial values, with each set independently drawn from a standard normal distribution by default. Subsequently, `$optimize(which_direction = "max")` maximizes the function, starting from these generated values. Setting an `optimization_label` is optional but can be useful if different initialization strategies are compared.
 
-Accessing the optimization results is achievable through the `$results` field:
+The optimization results can be accessed through the `$results` field:
 
-```{r, access results}
-Nop_mixture$results |> head()
+```{r access results}
+Nop_mixture$results
 ```
 
-For a quick overview, the `optima()` method provides a frequency table of the function values obtained at optimizer convergence. You can choose to ignore decimal places using `digits = 0`.
+In this `tibble`,
 
-```{r, overview optima}
+- `value` and `parameter` are the optimization results,
+
+- `seconds` the elapsed optimization time in seconds,
+
+- `initial` the used initial values,
+
+- `error` and `error_message` provide information whether an error occurred,
+
+- `gradient`, `code`, and `iterations` are information provided by the optimizer,
+
+- `.optimization_label`, `.optimizer_label`, `.direction`, and `.original` identify optimization runs.
+
+For a quick overview, the `$optima()` method provides a frequency table of the function values obtained at optimizer convergence. You can choose to ignore decimal places using `digits = 0`:
+
+```{r overview optima}
 Nop_mixture$optima(which_direction = "max", digits = 0)
 ```
 
 The impact of initial values on the outcome is apparent. Now, we might question the implications of the two maxima, $-276$ and $-421$, for our Gaussian mixture model fit to the Geyser data.
 
-```{r, closest parameters}
+```{r global and local optimum}
 global <- Nop_mixture$maximum$parameter
 library("dplyr")
 local <- Nop_mixture$results |>
@@ -186,7 +203,7 @@ local <- Nop_mixture$results |>
 
 Two parameter vectors are stored as objects `global` (presumably the global maximum) and `local` (a local maximum). To interpret the parameter estimates in terms of mean, standard deviation, and mixing proportion, i.e., in the form $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)$, back-transformation to the restricted parameter space $\mathbb{R}^2 \times \mathbb{R}_+^2 \times [0,1]$ is necessary (as mentioned above):
 
-```{r, transform parameter}
+```{r transform parameter}
 transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
 (global <- transform(global))
 (local <- transform(local))
@@ -194,7 +211,7 @@ transform <- function(theta) c(theta[1:2], exp(theta[3:4]), plogis(theta[5]))
 
 The estimates `global` and `local` for $\boldsymbol{\theta}$ correspond to the following mixture densities:
 
-```{r, estimated-mixtures, fig.dim = c(6, 4)}
+```{r estimated-mixtures}
 mixture_density <- function (data, mu, sigma, lambda) {
   lambda * dnorm(data, mu[1], sigma[1]) + (1 - lambda) * dnorm(data, mu[2], sigma[2])
 }
@@ -221,24 +238,24 @@ Different initial values significantly impact the results of numerical likelihoo
 
 | Method                  | Purpose                                                                                                         |
 |-------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `initialize_fixed()`    | Fixed initial values, for example, at the origin or educated guesses.                                           |
-| `initialize_random()`   | Random initial values drawn from a custom distribution.                                                         |
-| `initialize_grid()`     | Initial values as grid points, optionally randomly shuffled.                                                    |
-| `initialize_continue()` | Initial values from previous optimization runs with a different optimizer or a simplified optimization problem. |
-| `initialize_custom()`   | Initial values based on a custom initialization strategy.                                                       |
+| `$initialize_fixed()`    | Fixed initial values, for example at the origin or educated guesses.                                           |
+| `$initialize_random()`   | Random initial values drawn from a custom distribution.                                                         |
+| `$initialize_grid()`     | Initial values as grid points, optionally randomly shuffled.                                                    |
+| `$initialize_continue()` | Initial values from previous optimization runs on a simplified problem. |
+| `$initialize_custom()`   | Initial values based on a custom initialization strategy.                                                       |
 
 To modify initial values, the following methods are available:
 
 | Method                   | Purpose                                                                                                           |
 |--------------------------|-------------------------------------------------------------------------------------------------------------------|
-| `initialize_filter()` | Filters initial values based on positive or negative gradient or Hessian.   |
-| `initialize_promising()` | Selects a proportion of promising initial values corresponding to a steep gradient or large/low function value.   |
-| `initialize_transform()` | Transforms the initial values.                                                                                    |
-| `initialize_reset()`     | Deletes all specified initial values.                                                                             |
+| `$initialize_filter()` | Filters initial values based on conditions.   |
+| `$initialize_promising()` | Selects a proportion of promising initial values.   |
+| `$initialize_transform()` | Transforms the initial values.                                                                                    |
+| `$initialize_reset()`     | Deletes all specified initial values.                                                                             |
 
-We previously applied the `initialize_random()` method. In the following, we will compare it to `initialize_grid()` in combination with `initialize_promising()`. Here, we make "educated guesses" about starting values that are likely close to the global optimum. Based on the histogram above, the means of the two normal distributions may be around $2$ and $4$. We will use sets of starting values where the means are both around $2$ and $4$, respectively. For the variances, we set the starting values close to $1$ (note that we use the log-transformation here since we restrict the standard deviations to be positive by using the exponential function in the likelihood). The starting value for the mixing proportion shall be around $0.5$. We use three grid points in each dimension, which we shuffle via the `jitter = TRUE` argument. This results in a grid of $3^5 = 243$ starting values:
+We previously applied the `$initialize_random()` method. Next, we will compare it to `$initialize_grid()` in combination with `$initialize_promising()`. Here, we make "educated guesses" about starting values that are likely close to the global optimum. Based on the histogram above, the means of the two normal distributions may be around $2$ and $4$. We will use sets of starting values where the means are both around $2$ and $4$, respectively. For the variances, we set the starting values close to $1$ (note that we use the log-transformation here since we restrict the standard deviations to be positive by using the exponential function in the likelihood). The starting value for the mixing proportion shall be around $0.5$. We use three grid points in each dimension, which we shuffle via the `jitter = TRUE` argument. This results in a grid of $3^5 = 243$ starting values:
 
-```{r, grid initial}
+```{r grid initial}
 Nop_mixture$initialize_grid(
   lower = c(1.5, 3.5, log(0.5), log(0.5), qlogis(0.4)), # lower bounds for the grid
   upper = c(2.5, 4.5, log(1.5), log(1.5), qlogis(0.6)), # upper bounds for the grid
@@ -249,27 +266,27 @@ Nop_mixture$initialize_grid(
 
 Out of the 243 grid starting values, we select a 10\% proportion of locations where the objective gradient is steepest and initiate optimization from those points:
 
-```{r, steepest gradient}
+```{r steepest gradient}
 Nop_mixture$
   initialize_promising(proportion = 0.1, condition = "gradient_large")$
   optimize(which_direction = "max", optimization_label = "promising_grid")
 ```
 
-It's evident that the initial values from the initialization strategy concerning the steepest gradient more reliably lead to convergence to the global maximum of $-276$ compared to random initial values:
+It is evident that the initial values from the initialization strategy concerning the steepest gradient more reliably lead to convergence to the global maximum of $-276$ compared to random initial values:
 
-```{r, overview comparison}
+```{r overview comparison}
 Nop_mixture$optima(which_direction = "max", group_by = "optimization", digits = 0)
 ```
 
 ### Comparing optimizer functions
 
-So far, we've only utilized the `stats::nlm` optimizer, employing a Newton-type algorithm. Now, let's compare its results and optimization time to:
+So far, we only utilized the `stats::nlm` optimizer, employing a Newton-type algorithm. Now, we compare its results and optimization time to:
 
-1. `stats::optim`, an alternative `R` optimizer that, by default, applies the Nelder-Mead algorithm [@Nelder:1965], and
+1. `stats::optim`, an alternative R optimizer that, by default, applies the Nelder-Mead algorithm [@Nelder:1965], and
 
 2. The expectation-maximization algorithm `em_optimizer`, an alternative optimization method for mixture models, which we define in the appendix below.
 
-```{r, define em already here, include = FALSE}
+```{r define em, include = FALSE}
 em <- function(f, theta, ..., epsilon = 1e-08, iterlim = 1000, data) {
   llk <- f(theta, ...)
   mu <- theta[1:2]
@@ -292,6 +309,7 @@ em <- function(f, theta, ..., epsilon = 1e-08, iterlim = 1000, data) {
   }
   list("llk" = llk, "estimate" = theta, "iterations" = i)
 }
+
 em_optimizer <- optimizeR::Optimizer$new("custom")
 
 em_optimizer$definition(
@@ -303,14 +321,12 @@ em_optimizer$definition(
   direction = "max"
 )
 
-em_optimizer$set_arguments(
-  "data" = faithful$eruptions
-)
+em_optimizer$set_arguments("data" = faithful$eruptions)
 ```
 
 We will incorporate these two optimizers into our `Nop_mixture` object using the `{optimizeR}` framework (here, `em_optimizer` already is an optimizer in the required framework):
 
-```{r, set optim and em algorithm}
+```{r set optim and em algorithm}
 optim <- optimizeR::Optimizer$new(which = "stats::optim")
 Nop_mixture$
   set_optimizer(optim)$
@@ -319,15 +335,15 @@ Nop_mixture$
 
 Next, we initialize at 100 random points and optimize the mixture likelihood with each of the three optimizers from these points:
 
-```{r, optimizer comparison}
+```{r optimizer comparison}
 Nop_mixture$
   initialize_random(runs = 100)$
   optimize(which_direction = "max", optimization_label = "optimizer_comparison")
 ```
 
-The `autoplot()` method offers a visual comparison of the optimization times:
+The `autoplot()` method offers a visual comparison of the (relative) optimization times:
 
-```{r, plot-seconds, fig.dim = c(6, 4), message = FALSE}
+```{r plot-seconds}
 Nop_mixture$results |> 
   filter(.optimization_label == "optimizer_comparison") |>
   autoplot(which_element = "seconds", group_by = "optimizer", relative = TRUE) +
@@ -340,7 +356,7 @@ Nop_mixture$results |>
 
 Among the three optimizers, the expectation-maximization algorithm is evidently the fastest in this case. Moreover, it most frequently converges to the value $-276$, while `stats::optim` tends to converge to various local optima. However, the expectation-maximization algorithm also encountered failures in a couple of runs:
 
-```{r, overview optima em}
+```{r overview optima em}
 Nop_mixture$optima(which_direction = "max", group_by = "optimizer", digits = 0) 
 ```
 
@@ -356,9 +372,9 @@ Nop_mixture$maximum
 
 ### Verbose mode
 
-The `{ino}` package features a verbose mode, which prints status messages and information during its usage. This mode is primarily designed for new package users to provide feedback and hints about their interactions with the package. Enabling or disabling the verbose mode can be achieved by setting the `verbose` field of a `Nop` object to either `TRUE` or `FALSE`. For example:
+The `{ino}` package features a verbose mode, which prints status messages and information during its usage. This mode is primarily designed for new package users to provide feedback and hints about their interactions with the package. Enabling or disabling the verbose mode can be achieved by setting the `$verbose` field of a `Nop` object to either `TRUE` or `FALSE`. For example:
 
-```{r, eval = FALSE}
+```{r verbose mode, eval = FALSE, purl = FALSE}
 Nop_mixture$verbose <- TRUE
 ```
 
@@ -373,7 +389,7 @@ The likelihood function of the mixture model cannot be maximized analytically. H
 
 The following function implements this algorithm:
 
-```{r, define em algorithm}
+```{r, define em algorithm, purl = FALSE}
 em <- function(f, theta, ..., epsilon = 1e-08, iterlim = 1000, data) {
   llk <- f(theta, ...)
   mu <- theta[1:2]
@@ -402,7 +418,7 @@ em <- function(f, theta, ..., epsilon = 1e-08, iterlim = 1000, data) {
 
 Previously, we integrated the `stats::nlm` and `stats::optim` optimizers into the `{optimizeR}` framework using:
 
-```{r, define nlm and optim demo}
+```{r define nlm and optim demo, purl = FALSE}
 nlm <- optimizeR::Optimizer$new(which = "stats::nlm")
 optim <- optimizeR::Optimizer$new(which = "stats::optim")
 ```
@@ -411,21 +427,19 @@ Employing the `{optimizeR}` framework is crucial for the `{ino}` package to main
 
 The `{optimizeR}` package provides a dictionary of optimizers that can be directly selected via the `which` argument. For an overview of available optimizers, you can use:
 
-```{r, optimizer dictionary}
+```{r optimizer dictionary, purl = FALSE}
 optimizeR::optimizer_dictionary
 ```
 
-Optimizers that are implemented in packages not yet installed will only be shown after you install the required packages, for instance, using the convenience function `optimizeR::install_optimizer_packages()`.
-
 However, any optimizer not contained in the dictionary can be incorporated into the `{optimizeR}` framework by setting `which = "custom"` first:
 
-```{r, define em optimizeR 1}
+```{r define em optimizeR 1, purl = FALSE}
 em_optimizer <- optimizeR::Optimizer$new(which = "custom")
 ```
 
 ... and then using the `definition()` method:
 
-```{r, define em optimizeR 2}
+```{r define em optimizeR 2, purl = FALSE}
 em_optimizer$definition(
   algorithm = em,
   arg_objective = "f",
@@ -438,10 +452,8 @@ em_optimizer$definition(
 
 For the expectation-maximization algorithm, an additional argument `data` needs to be defined:
 
-```{r, define em optimizeR 3}
-em_optimizer$set_arguments(
-  "data" = faithful$eruptions
-)
+```{r, define em optimizeR 3, purl = FALSE}
+em_optimizer$set_arguments("data" = faithful$eruptions)
 ```
 
 For more details on the `{optimizeR}` package, please refer to [the package homepage](https://loelschlaeger.de/optimizeR/).
