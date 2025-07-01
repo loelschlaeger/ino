@@ -1,114 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://loelschlaeger.de/ino/404.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/articles/example_hmm.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/articles/example_probit.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/articles/ino.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/index.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/Nop.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/build_initial.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/f_ackley.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/f_beale.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/f_easom.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/f_ll_hmm.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/f_ll_mnp.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/f_matyas.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/filter_results.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/hmm_ino.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/ino-package.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_TRUE_FALSE.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_count.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_index_vector.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_name.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_name_vector.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_number.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_proportion.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/is_time_limit.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/mixture_ino.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/probit_ino.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/sim_hmm.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/sim_mnp.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/simplify_results.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/standardize_argument.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/subset_argument.html</loc>
-  </url>
-  <url>
-    <loc>https://loelschlaeger.de/ino/reference/test_nop.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://loelschlaeger.de/ino/404.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/LICENSE.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/articles/example_hmm.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/articles/index.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/articles/ino.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/authors.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/index.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/news/index.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/reference/Nop.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/reference/Nop_hmm.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/reference/autoplot.Nop.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/reference/index.html</loc></url>
+<url><loc>https://loelschlaeger.de/ino/reference/ino-package.html</loc></url>
 </urlset>
+

@@ -5,77 +5,52 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="Learn how to get started with the {ino} package.
-">
-<title>Introduction • ino</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<title>Introduction to ino • ino</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction">
-<meta property="og:description" content="Learn how to get started with the {ino} package.
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to ino">
+<meta name="description" content="How to get started with ino
+">
+<meta property="og:description" content="How to get started with ino
 ">
 <meta property="og:image" content="https://loelschlaeger.de/ino/logo.png">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="../index.html">ino</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="active nav-item">
-  <a class="nav-link" href="../articles/ino.html">Get started</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
-</li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/example_hmm.html">Example: Hidden Markov Model</a>
-    <a class="dropdown-item" href="../articles/example_probit.html">Example: Probit Model</a>
-  </div>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="../news/index.html">Changelog</a>
-</li>
+<li class="active nav-item"><a class="nav-link" href="../articles/ino.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav">
-<li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/loelschlaeger/ino/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/loelschlaeger/ino/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -84,10 +59,10 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Introduction</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Introduction to ino</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/loelschlaeger/ino/blob/HEAD/vignettes/ino.Rmd" class="external-link"><code>vignettes/ino.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/loelschlaeger/ino/blob/master/vignettes/ino.Rmd" class="external-link"><code>vignettes/ino.Rmd</code></a></small>
       <div class="d-none name"><code>ino.Rmd</code></div>
     </div>
 
@@ -96,787 +71,686 @@
 <div class="section level2">
 <h2 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
 </h2>
-<p>Optimization is of great relevance in many fields, including finance
-(portfolio optimization), engineering (minimizing air resistance), and
-statistics (likelihood maximization for model fitting). Often, the
-optimization problem at hand cannot be solved analytically, for example
-when explicit formulas for gradient or Hessian are not available. In
-these cases, numerical optimization algorithms are helpful. They
-iteratively explore the parameter space, guaranteeing to improve the
-function value over each iteration, and eventually converge to a point
-where no more improvements can be made <span class="citation">(<a href="#ref-Bonnans:2006" role="doc-biblioref">Bonnans et al.
-2006</a>)</span>. In R, several functions are available that can be
-applied to numerically solve optimization problems, including (quasi)
-Newton (<code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code>, <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">stats::nlminb()</a></code>,
-<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>), direct search
-(<code><a href="https://rdrr.io/pkg/pracma/man/neldermead.html" class="external-link">pracma::nelder_mead()</a></code>), and conjugate gradient methods
-(<code>Rcgmin::Rcgmin()</code>). The <a href="https://CRAN.R-project.org/view=Optimization" class="external-link">CRAN Task View:
-Optimization and Mathematical Programming</a> provides a comprehensive
-list of packages for solving optimization problems.</p>
-<p>One thing that all of these numerical optimizers have in common is
-that initial parameter values must be specified, i.e., the point from
-where the optimization is started. Optimization theory <span class="citation">(<a href="#ref-Nocedal:2006" role="doc-biblioref">Nocedal and Wright 2006</a>)</span> states that the
-choice of an initial point has a large influence on the optimization
-result, in particular convergence time and rate. In general, starting in
-areas of function saturation increases computation time, starting in
-areas of non-concavity leads to convergence problems or convergence to
-local rather than global optima. Consequently, numerical optimization
-can be facilitated by</p>
+<p>Optimization aims to maximize effectiveness, efficiency, or
+functionality in various fields. Examples include portfolio selection in
+finance, minimizing air resistance in engineering, or likelihood
+maximization in statistical modeling. The common goal is to find inputs
+that produce an optimal output.</p>
+<p>In some scenarios, determining optimality is feasible by analytical
+means, for example with simple objective functions like
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo>:</mo><mi>ℝ</mi><mo>→</mo><mi>ℝ</mi><mo>,</mo><mspace width="0.222em"></mspace><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>−</mo><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">f:\mathbb{R} \to \mathbb{R},\ f(x) = -x^2</annotation></semantics></math>.
+The first derivative
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mi>′</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>−</mo><mn>2</mn><mi>x</mi></mrow><annotation encoding="application/x-tex">f'(x) = -2x</annotation></semantics></math>
+vanishes at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x = 0</annotation></semantics></math>,
+and since
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>
+is strictly concave, we conclude that
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x = 0</annotation></semantics></math>
+is the unique point where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f(x)</annotation></semantics></math>
+is maximal. However, many optimization problems lack closed-form
+solutions, requiring <strong>numerical optimization</strong>.</p>
+<p>Numerical optimization encompasses algorithms that iteratively
+explore the parameter space, seeking improvement in the function output
+with each iteration and ultimately converging to a point where further
+improvements are not possible <span class="citation">(<a href="#ref-Bonnans:2006">Bonnans et al. 2006</a>)</span>. <code>R</code>
+offers various implementations of such algorithms<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;The CRAN Task View: Optimization and Mathematical
+Programming &lt;span class="citation"&gt;(&lt;a href="#ref-Schwendinger:2023"&gt;Schwendinger and Borchers 2023&lt;/a&gt;)&lt;/span&gt;
+provides an exhaustive list of packages for numerical optimization.&lt;/p&gt;'><sup>1</sup></a>. Common to all these
+algorithms is the necessity to specify <strong>initial parameter
+values</strong>.</p>
+<p>Crucially, initialization can strongly influence optimization time
+and outcomes <span class="citation">(<a href="#ref-Nocedal:2006">Nocedal
+and Wright 2006</a>)</span>. Starting in non-concave areas risks
+convergence issues or settling on local optima instead of the global
+optimum, while starting in flat regions can slow computation, which is
+especially critical when function evaluations are costly. This raises
+two key questions:</p>
 <ol style="list-style-type: decimal">
-<li><p>analyzing the initialization effect for the optimization problem
-at hand and</p></li>
-<li><p>putting effort on identifying good starting values.</p></li>
-</ol>
-<p>However, it is generally unclear what good initial values are and how
-they might affect the optimization. Therefore, the purpose of the
-<a href="https://loelschlaeger.de/ino/">ino</a> R package<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;&lt;em&gt;ino&lt;/em&gt; is an acronym for
-&lt;strong&gt;&lt;em&gt;i&lt;/em&gt;&lt;/strong&gt;nitialization of
-&lt;strong&gt;&lt;em&gt;n&lt;/em&gt;&lt;/strong&gt;umerical
-&lt;strong&gt;&lt;em&gt;o&lt;/em&gt;&lt;/strong&gt;ptimization.&lt;/p&gt;"><sup>1</sup></a> is to provide a comprehensive toolbox
-for</p>
-<ol style="list-style-type: decimal">
-<li><p>evaluating the effect of the initial values on the
-optimization,</p></li>
-<li><p>comparing different initialization strategies,</p></li>
-<li><p>and comparing different optimizers.</p></li>
+<li><p>Does initialization affect my optimization problem?</p></li>
+<li><p>If so, what initial values ensure fast optimization leading to
+the global optimum?</p></li>
 </ol>
 </div>
 <div class="section level2">
 <h2 id="package-functionality">Package functionality<a class="anchor" aria-label="anchor" href="#package-functionality"></a>
 </h2>
-<p>To specify an optimization problem in <a href="https://loelschlaeger.de/ino/">ino</a>, we use an
-object-oriented framework based on the <a href="https://r6.r-lib.org" class="external-link">R6</a> package <span class="citation">(<a href="#ref-Chang:2021" role="doc-biblioref">Chang
-2021</a>)</span>. The general workflow is to first create a
-<code>Nop</code> object<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;&lt;em&gt;Nop&lt;/em&gt; is an acronym for
-&lt;strong&gt;&lt;em&gt;n&lt;/em&gt;&lt;/strong&gt;umerical
-&lt;strong&gt;&lt;em&gt;o&lt;/em&gt;&lt;/strong&gt;ptimization
-&lt;strong&gt;&lt;em&gt;p&lt;/em&gt;&lt;/strong&gt;roblem.&lt;/p&gt;"><sup>2</sup></a>, and then apply methods to change the
-attributes of that object, e.g., to optimize the function and
-investigate the optimization results:</p>
+<p>We introduce the <a href="https://loelschlaeger.de/ino/">ino</a> package (short for
+<strong>initialization of numerical optimization</strong>), designed to
+address the aforementioned questions. This package facilitates:</p>
+<ol style="list-style-type: decimal">
+<li><p>Investigation into the impact of initial values on
+optimization.</p></li>
+<li><p>Comparison of various initialization strategies.</p></li>
+<li><p>Comparison of different numerical optimizers.</p></li>
+</ol>
+<p>Following an object-oriented approach<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;We utilize the object-oriented framework of the
+&lt;a href="https://r6.r-lib.org" class="external-link"&gt;R6&lt;/a&gt; package &lt;span class="citation"&gt;(&lt;a href="#ref-Chang:2025"&gt;Chang 2025&lt;/a&gt;)&lt;/span&gt;.&lt;/p&gt;'><sup>2</sup></a>, the package treats
+numerical optimization problems as objects. These objects are defined by
+a real-valued function, its target arguments, and one or more
+optimization algorithms. The object provides methods for selecting
+initial values, executing numerical minimization or maximization, and
+evaluating the optimization results.</p>
+<p>The key advantages of using the <a href="https://loelschlaeger.de/ino/">ino</a> package
+include:</p>
 <ul>
-<li><p>The starting point for working with <a href="https://loelschlaeger.de/ino/">ino</a> is to
-initialize a <code>Nop</code> object via
-<code>object &lt;- Nop$new()</code>.</p></li>
-<li><p>Next, use the method <code>$set_optimizer()</code> to define one
-or more numerical optimizer.</p></li>
-<li><p>Then, <code>$evaluate()</code> evaluates and
-<code>$optimize()</code> optimizes the objective function.</p></li>
-<li><p>For analyzing the results, <code>$optima()</code> provides an
-overview of all identified optima, and the <code>$plot()</code> and
-<code>$summary()</code> methods summarize the optimization
-runs.</p></li>
-<li><p>The methods <code>$standardize()</code> and
-<code>$reduce()</code> are available to advantageously transform the
-optimization problem.</p></li>
+<li><p>Straightforward comparisons among optimizers and initialization
+strategies.</p></li>
+<li><p>Compatibility with any optimizer implemented in <code>R</code>
+for both minimization and maximization tasks through the
+<a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> framework <span class="citation">(<a href="#ref-Oelschlaeger:2025">Oelschläger and Ötting 2025</a>)</span>,
+detailed below.</p></li>
+<li><p>Support for parallel computation through the
+<a href="https://future.futureverse.org" class="external-link">future</a> package <span class="citation">(<a href="#ref-Bengtsson:2021">Bengtsson 2021</a>)</span> and progress
+updates via the <a href="https://progressr.futureverse.org" class="external-link">progressr</a> package <span class="citation">(<a href="#ref-Bengtsson:2024">Bengtsson
+2024</a>)</span>.</p></li>
 </ul>
-<p>We illustrate these methods in the following application.</p>
 </div>
 <div class="section level2">
-<h2 id="workflow">Workflow<a class="anchor" aria-label="anchor" href="#workflow"></a>
+<h2 id="example-workflow">Example workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
 </h2>
-<p>We demonstrate the basic <a href="https://loelschlaeger.de/ino/">ino</a> workflow in the context
-of likelihood maximization, where we fit a two-class Gaussian mixture
-model to Geyser eruption times from the popular <code>faithful</code>
-data set that is provided via base R.</p>
-<blockquote>
-<p><strong>Remark:</strong> Optimization in this example is very fast.
-This is because the data set is relatively small and we consider a model
-with two classes only. Therefore, it might not seem relevant to be
-concerned about initialization here. However, the problem scales:
-optimization time will rise with more data and more parameters, in which
-case initialization becomes a greater issue, see for example <span class="citation">Shireman, Steinley, and Brusco (<a href="#ref-Shireman:2017" role="doc-biblioref">2017</a>)</span>.
-Additionally, we will see that even this simple optimization problem
-suffers heavily from local optima, depending on the choice of initial
-values.</p>
-</blockquote>
-<div class="section level3">
-<h3 id="the-optimization-problem">The optimization problem<a class="anchor" aria-label="anchor" href="#the-optimization-problem"></a>
-</h3>
-<p>The <code>faithful</code> data set contains information about
-eruption times (<code>eruptions</code>) of the Old Faithful geyser in
-Yellowstone National Park, Wyoming, USA.</p>
+<p>To begin, obtain <a href="https://loelschlaeger.de/ino/">ino</a> from <a href="https://CRAN.R-project.org" class="external-link">CRAN</a> via:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">faithful</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'data.frame':    272 obs. of  2 variables:</span></span>
-<span><span class="co">#&gt;  $ eruptions: num  3.6 1.8 3.33 2.28 4.53 ...</span></span>
-<span><span class="co">#&gt;  $ waiting  : num  79 54 74 62 85 55 88 85 51 85 ...</span></span></code></pre></div>
-<p>The data histogram hints at two clusters with short and long eruption
-times, respectively.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"ino"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://loelschlaeger.de/ino/">"ino"</a></span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="gaussian-mixture-model">Gaussian mixture model<a class="anchor" aria-label="anchor" href="#gaussian-mixture-model"></a>
+</h3>
+<p>In this example, the function to be optimized is a likelihood
+function, computing the probability of observing given data under a
+specified model assumption. The parameters that maximize this likelihood
+function are identified as the model estimates. This method, known as
+maximum likelihood estimation, is widely used in statistics for fitting
+models to empirical data.</p>
+<p>We examine eruption times of the Old Faithful geyser in Yellowstone
+National Park, Wyoming, USA. The data histogram suggests two clusters
+with short and long eruption times, respectively:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://ggplot2.tidyverse.org" class="external-link">"ggplot2"</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">faithful</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">eruptions</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html" class="external-link">after_stat</a></span><span class="op">(</span><span class="va">density</span><span class="op">)</span><span class="op">)</span>, bins <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"eruption time (min)"</span><span class="op">)</span> </span></code></pre></div>
-<p><img src="figures/ino-faithful-1.png" width="75%" style="display: block; margin: auto;"></p>
-<p>For both clusters, we assume a normal distribution, such that we
-consider a mixture of two Gaussian densities for modeling the overall
-eruption times. The log-likelihood function is defined by</p>
-<p><span class="math display">\[\begin{equation}
-\ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \lambda \phi_{\mu_1,
-\sigma_1^2}(x_i) + (1-\lambda)\phi_{\mu_2,\sigma_2^2} (x_i) \Big),
-\end{equation}\]</span></p>
-<p>where the sum goes over all observations <span class="math inline">\(1, \dots, n = 272\)</span>, <span class="math inline">\(\phi_{\mu_1, \sigma_1^2}\)</span> and <span class="math inline">\(\phi_{\mu_2, \sigma_2^2}\)</span> denote the
-normal density for the first and second cluster, respectively, and <span class="math inline">\(\lambda\)</span> is the mixing proportion. The
-parameter vector to be estimated is thus <span class="math inline">\(\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1,
-\sigma_2, \lambda)\)</span>. As there exists no closed-form solution for
-the maximum likelihood estimator <span class="math inline">\(\boldsymbol{\theta}^* =
-\arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta})\)</span>, we
-need numerical optimization for finding the function optimum.</p>
-<p>The following function calculates the log-likelihood value given the
-parameter vector <code>theta</code> and the observation vector
-<code>data</code>.</p>
+<p><img src="figures/ino-faithful-plot-1.png" width="75%" style="display: block; margin: auto;"></p>
+<p>For both clusters, we assume a normal distribution, representing a
+mixture of two Gaussian densities to model the overall eruption times.
+The log-likelihood function<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Optimizing the log-likelihood function is equivalent to
+optimizing the likelihood function, as likelihoods are non-negative and
+the logarithm is a monotone transformation. However, optimizing the
+log-likelihood function has numerical advantages, particularly in
+avoiding numerical underflow when the likelihood becomes small.&lt;/p&gt;"><sup>3</sup></a> is defined as:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>log</mo><mo minsize="1.8" maxsize="1.8" stretchy="false" form="prefix">(</mo><mi>λ</mi><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>1</mn><mn>2</mn></msubsup></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>2</mn><mn>2</mn></msubsup></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo minsize="1.8" maxsize="1.8" stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \lambda \phi_{\mu_1, \sigma_1^2}(x_i) + (1-\lambda)\phi_{\mu_2,\sigma_2^2} (x_i) \Big)
+</annotation></semantics></math></p>
+<p>Here, the sum covers all observations
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi><mo>=</mo><mn>272</mn></mrow><annotation encoding="application/x-tex">1, \dots, n = 272</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>1</mn><mn>2</mn></msubsup></mrow></msub><annotation encoding="application/x-tex">\phi_{\mu_1, \sigma_1^2}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>2</mn><mn>2</mn></msubsup></mrow></msub><annotation encoding="application/x-tex">\phi_{\mu_2, \sigma_2^2}</annotation></semantics></math>
+represent the normal density for the first and second cluster,
+respectively, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>
+is the mixing proportion.</p>
+<p>Our objective is to find values for the parameter vector
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝛉</mi><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>2</mn></msub><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)</annotation></semantics></math>
+that maximize
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{\theta})</annotation></semantics></math>.
+Due to the complexity of the problem, analytical solutions are not
+feasible, and numerical optimization is necessary.</p>
 <blockquote>
-<p><strong>Remark:</strong> We restrict the standard deviations
-<code>sd</code> to be positive (via the exponential transformation) and
-<code>lambda</code> to be between 0 and 1 (via the logit
-transformation). The function returns the negative log-likelihood value
-by default (<code>neg = TRUE</code>). This is necessary because most R
-optimizers only minimize (e.g., <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code>), where we can
-use the fact that <span class="math inline">\(\arg\max_{\boldsymbol{\theta}}
-\ell(\boldsymbol{\theta}) = \arg\min_{\boldsymbol{\theta}}
--\ell(\boldsymbol{\theta})\)</span>.</p>
+<p><strong>Remark:</strong> Numerical optimization in this example is
+notably fast due to the relatively small dataset and a model with only
+two classes. While initialization might seem less critical in this
+scenario, it becomes a more significant concern as the problem scales
+with more data and parameters <span class="citation">(<a href="#ref-Shireman:2017">Shireman, Steinley, and Brusco
+2017</a>)</span>. Furthermore, even this seemingly simple optimization
+problem is susceptible to local optima, depending on the chosen initial
+values, as we will see below.</p>
 </blockquote>
+<p>The following function computes the log-likelihood value
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{\theta})</annotation></semantics></math>
+given the parameters <code>mu</code>, <code>sigma</code>, and
+<code>lambda</code> and the observation vector <code>data</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">normal_mixture_llk</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">theta</span>, <span class="va">data</span>, <span class="va">neg</span> <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">theta</span><span class="op">)</span> <span class="op">==</span> <span class="fl">5</span><span class="op">)</span></span>
-<span>  <span class="va">mu</span> <span class="op">&lt;-</span> <span class="va">theta</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span>
-<span>  <span class="va">sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="va">llk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span></span>
-<span>    <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>      <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
-<span>    <span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">neg</span>, <span class="op">-</span><span class="va">llk</span>, <span class="va">llk</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">normal_mixture_llk</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">mu</span>, <span class="va">sigma</span>, <span class="va">lambda</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sigma</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">sigma</span><span class="op">)</span></span>
+<span>  <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sigma</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sigma</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu">normal_mixture_llk</span><span class="op">(</span>theta <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, data <span class="op">=</span> <span class="va">faithful</span><span class="op">$</span><span class="va">eruptions</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1069.623</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="another-optimization-approach-the-expectation-maximization-em-algorithm">Another optimization approach: the expectation-maximization (EM)
-algorithm<a class="anchor" aria-label="anchor" href="#another-optimization-approach-the-expectation-maximization-em-algorithm"></a>
-</h3>
-<p>Solving <span class="math inline">\(\boldsymbol{\theta}^* =
-\arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta})\)</span>
-requires numerical aid because <span class="math inline">\(\frac{\text{d}}{\text{d}\boldsymbol{\theta}}
-\ell(\boldsymbol{\theta})\)</span> does not have a closed-form solution.
-However, if we knew the class membership of each observation, the
-optimization problem would collapse to independent maximum likelihood
-estimation of two Gaussian distributions, which then can be solved
-analytically. This observation motivates the so-called
-expectation-maximization (EM) algorithm <span class="citation">(<a href="#ref-Dempster:1977" role="doc-biblioref">Dempster, Laird, and
-Rubin 1977</a>)</span>, which iterates through the following steps:</p>
-<ol style="list-style-type: decimal">
-<li>Initialize <span class="math inline">\(\boldsymbol{\theta}\)</span>
-and compute <span class="math inline">\(\ell(\boldsymbol{\theta})\)</span>.</li>
-<li>Calculate the posterior probabilities for each observation’s class
-membership, conditional on <span class="math inline">\(\boldsymbol{\theta}\)</span>.</li>
-<li>Calculate the maximum likelihood estimate <span class="math inline">\(\boldsymbol{\bar{\theta}}\)</span> conditional on
-the posterior probabilities from step 2.</li>
-<li>Evaluate <span class="math inline">\(\ell(\boldsymbol{\bar{\theta}})\)</span>. Now stop
-if the likelihood improvement <span class="math inline">\(\ell(\boldsymbol{\bar{\theta}}) -
-\ell(\boldsymbol{\theta})\)</span> is smaller than some threshold
-<code>epsilon</code> or some iteration limit <code>iterlim</code> is
-reached. Otherwise, go back to step 2.</li>
-</ol>
-<p>The following function implements this algorithm, which we will
-compare to standard numerical optimization below.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">em</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">normal_mixture_llk</span>, <span class="va">theta</span>, <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">1e-08</span>, <span class="va">iterlim</span> <span class="op">=</span> <span class="fl">1000</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">llk</span> <span class="op">&lt;-</span> <span class="fu">normal_mixture_llk</span><span class="op">(</span><span class="va">theta</span>, <span class="va">data</span>, neg <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span>  <span class="va">mu</span> <span class="op">&lt;-</span> <span class="va">theta</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span>
-<span>  <span class="va">sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">iterlim</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">class_1</span> <span class="op">&lt;-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
-<span>    <span class="va">class_2</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
-<span>    <span class="va">posterior</span> <span class="op">&lt;-</span> <span class="va">class_1</span> <span class="op">/</span> <span class="op">(</span><span class="va">class_1</span> <span class="op">+</span> <span class="va">class_2</span><span class="op">)</span></span>
-<span>    <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">)</span></span>
-<span>    <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">posterior</span> <span class="op">*</span> <span class="va">data</span><span class="op">)</span> <span class="op">/</span> <span class="va">lambda</span></span>
-<span>    <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span></span>
-<span>    <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">posterior</span> <span class="op">*</span> <span class="op">(</span><span class="va">data</span> <span class="op">-</span> <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="va">lambda</span><span class="op">)</span></span>
-<span>    <span class="va">sd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">posterior</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">data</span> <span class="op">-</span> <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">llk_old</span> <span class="op">&lt;-</span> <span class="va">llk</span></span>
-<span>    <span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mu</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sd</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">qlogis</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">llk</span> <span class="op">&lt;-</span> <span class="fu">normal_mixture_llk</span><span class="op">(</span><span class="va">theta</span>, <span class="va">data</span>, neg <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">llk</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"fail"</span><span class="op">)</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">llk</span> <span class="op">-</span> <span class="va">llk_old</span> <span class="op">&lt;</span> <span class="va">epsilon</span><span class="op">)</span> <span class="kw">break</span></span>
-<span>  <span class="op">}</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"neg_llk"</span> <span class="op">=</span> <span class="op">-</span><span class="va">llk</span>, <span class="st">"estimate"</span> <span class="op">=</span> <span class="va">theta</span>, <span class="st">"iterations"</span> <span class="op">=</span> <span class="va">i</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
-</h3>
-<p>The optimization problem is specified as a <code>Nop</code> object
-called <code>mixture_ino</code>, where</p>
-<ul>
-<li>
-<code>f</code> is the function to be optimized (here
-<code>normal_mixture_llk</code>),</li>
-<li>
-<code>npar</code> specifies the length of the parameter vector over
-which <code>f</code> is optimized (five in this case),</li>
-<li>and <code>data</code> gives the observation vector as required by
-our likelihood function.</li>
-</ul>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Nop.html">Nop</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
-<span>  f <span class="op">=</span> <span class="va">normal_mixture_llk</span>, </span>
-<span>  npar <span class="op">=</span> <span class="fl">5</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">faithful</span><span class="op">$</span><span class="va">eruptions</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>The next step concerns specifying the numerical optimizer via the
-<code>$set_optimizer()</code> method.</p>
+<span><span class="fu">normal_mixture_llk</span><span class="op">(</span>mu <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, sigma <span class="op">=</span> <span class="fl">3</span><span class="op">:</span><span class="fl">4</span>, lambda <span class="op">=</span> <span class="fl">5</span>, data <span class="op">=</span> <span class="va">faithful</span><span class="op">$</span><span class="va">eruptions</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] -1069.623</span></span></code></pre></div>
 <blockquote>
-<p><strong>Remark:</strong> Numerical optimizers must be specified
-through the unified framework provided by the <a href="https://CRAN.R-project.org/package=optimizeR" class="external-link">{optimizeR}</a>
-package <span class="citation">(<a href="#ref-Oelschl%C3%A4ger:2023" role="doc-biblioref">Oelschläger and Ötting 2023</a>)</span>. This is
-necessary because there is no a priori consistency across optimization
-functions in R with regard to their function inputs and outputs. This
-would make it impossible to allow for arbitrary optimizers and to
-compare their results, see <a href="https://github.com/loelschlaeger/optimizeR#readme" class="external-link">the {optimizeR}
-README file</a> for details.</p>
+<p><strong>Remark:</strong> To ensure positivity for the standard
+deviations <code>sigma</code>, we apply the exponential transformation.
+Similarly, to constrain <code>lambda</code> between
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0</mn><annotation encoding="application/x-tex">0</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>,
+we use the logit transformation. This approach allows us to optimize
+over the value space
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>ℝ</mi><mn>5</mn></msup><annotation encoding="application/x-tex">\mathbb{R}^5</annotation></semantics></math>
+without the need for box-constrained optimizers.</p>
 </blockquote>
-<p>It is possible to define any numerical optimizer implemented in R
-through the {optimizeR} framework. Here, we select two of the most
-popular ones, <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code> and
-<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span></span>
-<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_optim</a></span><span class="op">(</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"optim"</span><span class="op">)</span></span></code></pre></div>
-<blockquote>
-<p><strong>Remark:</strong> The previous code chunk makes use of a
-technique called “method chaining” <span class="citation">(see <a href="#ref-Wickham:2019" role="doc-biblioref">Wickham 2019</a>,
-ch. 14.2.1)</span>. This means that
-<code>mixture_ino$set_optimizer()</code> returns the modified
-<code>mixture_ino</code> object, for which we can specify a second
-optimizer by calling <code>$set_optimizer()</code> again.</p>
-</blockquote>
-<p>We also want to apply the EM algorithm introduced above:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">em_optimizer</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">define_optimizer</a></span><span class="op">(</span></span>
-<span>  .optimizer <span class="op">=</span> <span class="va">em</span>, .objective <span class="op">=</span> <span class="st">"normal_mixture_llk"</span>,</span>
-<span>  .initial <span class="op">=</span> <span class="st">"theta"</span>, .value <span class="op">=</span> <span class="st">"neg_llk"</span>, .parameter <span class="op">=</span> <span class="st">"estimate"</span>,</span>
-<span>  .direction <span class="op">=</span> <span class="st">"min"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">set_optimizer</span><span class="op">(</span><span class="va">em_optimizer</span>, label <span class="op">=</span> <span class="st">"em"</span><span class="op">)</span></span></code></pre></div>
-<p>Finally, we can validate our specification:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">test</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="function-evaluation">Function evaluation<a class="anchor" aria-label="anchor" href="#function-evaluation"></a>
-</h3>
-<p>Once the <code>Nop</code> object is specified, evaluating
-<code>normal_mixture_llk</code> at some value for the parameter vector
-<code>theta</code> is simple with the <code>$evaluate()</code> method,
-for example:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">evaluate</span><span class="op">(</span>at <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1069.623</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="function-optimization">Function optimization<a class="anchor" aria-label="anchor" href="#function-optimization"></a>
-</h3>
-<p>Optimization of <code>normal_mixture_llk</code> is possible with the
-<code>$optimize()</code> method, for example:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span></span>
-<span>  initial <span class="op">=</span> <span class="st">"random"</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span>, save_result <span class="op">=</span> <span class="cn">FALSE</span>, return_result <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; $value</span></span>
-<span><span class="co">#&gt; [1] NA</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $parameter</span></span>
-<span><span class="co">#&gt; [1] NA</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] NA</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $initial</span></span>
-<span><span class="co">#&gt; [1] -0.6264538  0.1836433 -0.8356286  1.5952808  0.3295078</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $error</span></span>
-<span><span class="co">#&gt; [1] "attempt to select less than one element in get1index"</span></span></code></pre></div>
-<p>The method arguments are:</p>
-<ul>
-<li><p><code>initial = "random"</code> for random starting values drawn
-from a standard normal distribution,</p></li>
-<li><p><code>which_optimizer = "nlm"</code> for optimization with the
-above specified <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code> optimizer,</p></li>
-<li><p><code>save_result = FALSE</code> to not save the optimization
-result inside the <code>mixture_ino</code> object (see below),</p></li>
-<li><p>and <code>return_results = TRUE</code> to directly return the
-optimization result instead.</p></li>
-</ul>
-<p>The return value is a <code>list</code> of:</p>
-<ul>
-<li><p><code>value</code>, the optimum function value,</p></li>
-<li><p><code>parameter</code>, the parameter vector where
-<code>value</code> is obtained,</p></li>
-<li><p><code>seconds</code>, the estimation time in seconds,</p></li>
-<li><p><code>initial</code>, the starting parameter vector for the
-optimization,</p></li>
-<li><p>and <code>gradient</code>, <code>code</code>, and
-<code>iterations</code>, which are outputs specific to the
-<code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code> optimizer.</p></li>
-</ul>
 </div>
 <div class="section level3">
 <h3 id="initialization-effect">Initialization effect<a class="anchor" aria-label="anchor" href="#initialization-effect"></a>
 </h3>
-<p>We are interested in the effect of the starting values on the
-optimization, i.e., whether different initial values lead to different
-results. We therefore optimize the likelihood function
-<code>runs = 100</code> times at different random starting points
-(<code>initial = "random"</code>) and compare the identified optima:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span></span>
-<span>  initial <span class="op">=</span> <span class="st">"random"</span>, runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"random"</span>, save_results <span class="op">=</span> <span class="cn">TRUE</span>, seed <span class="op">=</span> <span class="fl">1</span></span>
+<p>Does the choice of initial values have an influence for this
+optimization problem? In the following, we will use the
+<a href="https://loelschlaeger.de/ino/">ino</a> package to optimize the likelihood function, starting
+from 100 random initial points, and compare the results.</p>
+<p>We start be defining the optimization problem:<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;For further details on the &lt;a href="https://r6.r-lib.org" class="external-link"&gt;R6&lt;/a&gt; syntax
+employed by &lt;a href="https://loelschlaeger.de/ino/"&gt;ino&lt;/a&gt;, see &lt;span class="citation"&gt;Wickham (&lt;a href="#ref-Wickham:2019"&gt;2019&lt;/a&gt;)&lt;/span&gt;, Chapter 14.&lt;/p&gt;'><sup>4</sup></a></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Nop.html">Nop</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  f <span class="op">=</span> <span class="va">normal_mixture_llk</span>,               <span class="co"># the objective function</span></span>
+<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu"</span>, <span class="st">"sigma"</span>, <span class="st">"lambda"</span><span class="op">)</span>,  <span class="co"># names of target arguments</span></span>
+<span>  npar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>,                    <span class="co"># lengths of target arguments</span></span>
+<span>  data <span class="op">=</span> <span class="va">faithful</span><span class="op">$</span><span class="va">eruptions</span>             <span class="co"># values for fixed arguments</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Note:</p>
+<p>The call <code>Nop$new()</code> creates a <code>Nop</code> object
+that defines a numerical optimization problem. We have saved this object
+with the name <code>Nop_mixture</code>. In the future, we can interact
+with this object by invoking its methods using the syntax
+<code>Nop_mixture$&lt;method name&gt;()</code>. The arguments are:</p>
+<ul>
+<li>
+<code>f</code>: the objective function to be optimized.</li>
+<li>
+<code>target</code>: the names of the target arguments over which
+<code>objective</code> is optimized.</li>
+<li>
+<code>npar</code>: the length of each of these target
+arguments.</li>
+<li>The argument <code>data</code> is provided, which remains constant
+during optimization.</li>
+</ul>
+<p>Additionally, analytical gradient and Hessian function for
+<code>f</code> can be provided if available.</p>
+<p>Once the <code>Nop</code> object is defined, the objective function
+can be evaluated at a specific value <code>at</code> for the collapsed
+target arguments:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">evaluate</span><span class="op">(</span>at <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="co"># same value as above</span></span>
+<span><span class="co">#&gt; [1] -1069.623</span></span></code></pre></div>
+<p>Next, we require a numerical optimizer. Here, we choose
+<code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code>:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">nlm</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>which <span class="op">=</span> <span class="st">"stats::nlm"</span><span class="op">)</span></span>
+<span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">set_optimizer</span><span class="op">(</span><span class="va">nlm</span><span class="op">)</span></span></code></pre></div>
+<p>Once an optimizer is specified, the process of optimizing the
+function becomes straightforward:</p>
 <ol style="list-style-type: decimal">
-<li>We label the optimization results with
-<code>label = "random"</code>, which will be useful later for
-comparisons.</li>
-<li>We set <code>save_results = TRUE</code> to save the optimization
-results inside the <code>mixture_ino</code> object (so that we can use
-the <code>$optima()</code>, <code>$summary()</code>, and
-<code>$plot()</code> methods for comparisons, see below).</li>
-<li>The <code>seed = 1</code> argument ensures reproducibility.</li>
+<li>Define initial values using one of the <code>initialize_*()</code>
+methods (detailed below).</li>
+<li>Call <code><a href="https://rdrr.io/r/stats/optimize.html" class="external-link">optimize()</a></code>.</li>
 </ol>
-<p>The <code>$optima()</code> method provides an overview of the
-identified optima. Here, we ignore any decimal places by setting
-<code>digits = 0</code> and sort by the optimum function
-<code>value</code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, which_run <span class="op">=</span> <span class="st">"random"</span>, sort_by <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    value frequency</span></span>
-<span><span class="co">#&gt; 1    276       106</span></span>
-<span><span class="co">#&gt; 2    277         1</span></span>
-<span><span class="co">#&gt; 3    283         1</span></span>
-<span><span class="co">#&gt; 4    290         1</span></span>
-<span><span class="co">#&gt; 5    294         1</span></span>
-<span><span class="co">#&gt; 6    296         1</span></span>
-<span><span class="co">#&gt; 7    316         1</span></span>
-<span><span class="co">#&gt; 8    323         1</span></span>
-<span><span class="co">#&gt; 9    355         1</span></span>
-<span><span class="co">#&gt; 10   364         1</span></span>
-<span><span class="co">#&gt; 11   368         1</span></span>
-<span><span class="co">#&gt; 12   372         1</span></span>
-<span><span class="co">#&gt; 13   374         1</span></span>
-<span><span class="co">#&gt; 14   389         1</span></span>
-<span><span class="co">#&gt; 15   395         2</span></span>
-<span><span class="co">#&gt; 16   397         1</span></span>
-<span><span class="co">#&gt; 17   400         1</span></span>
-<span><span class="co">#&gt; 18   402         2</span></span>
-<span><span class="co">#&gt; 19   406         1</span></span>
-<span><span class="co">#&gt; 20   415         1</span></span>
-<span><span class="co">#&gt; 21   419         2</span></span>
-<span><span class="co">#&gt; 22   420         1</span></span>
-<span><span class="co">#&gt; 23   421       163</span></span>
-<span><span class="co">#&gt; 24  &lt;NA&gt;         7</span></span></code></pre></div>
-<p>The 100 optimization runs with 3 optimizers using random starting
-values led to 23 different optima (minima in this case, because we
-minimized <code>normal_mixture_llk()</code>), while 7 optimization runs
-failed. We therefore can already deduce that the initial values have a
-huge impact on the optimization result.</p>
-<p>Looking at this overview optimizer-wise reveals that the
-<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code> optimizer seems to be most vulnerable to local
-optima:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, which_run <span class="op">=</span> <span class="st">"random"</span>, sort_by <span class="op">=</span> <span class="st">"value"</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   value frequency</span></span>
-<span><span class="co">#&gt; 1   276        20</span></span>
-<span><span class="co">#&gt; 2   402         1</span></span>
-<span><span class="co">#&gt; 3   421        79</span></span>
-<span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, which_run <span class="op">=</span> <span class="st">"random"</span>, sort_by <span class="op">=</span> <span class="st">"value"</span>, which_optimizer <span class="op">=</span> <span class="st">"optim"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    value frequency</span></span>
-<span><span class="co">#&gt; 1    276         4</span></span>
-<span><span class="co">#&gt; 2    277         1</span></span>
-<span><span class="co">#&gt; 3    283         1</span></span>
-<span><span class="co">#&gt; 4    290         1</span></span>
-<span><span class="co">#&gt; 5    294         1</span></span>
-<span><span class="co">#&gt; 6    296         1</span></span>
-<span><span class="co">#&gt; 7    316         1</span></span>
-<span><span class="co">#&gt; 8    323         1</span></span>
-<span><span class="co">#&gt; 9    355         1</span></span>
-<span><span class="co">#&gt; 10   364         1</span></span>
-<span><span class="co">#&gt; 11   368         1</span></span>
-<span><span class="co">#&gt; 12   372         1</span></span>
-<span><span class="co">#&gt; 13   374         1</span></span>
-<span><span class="co">#&gt; 14   389         1</span></span>
-<span><span class="co">#&gt; 15   395         2</span></span>
-<span><span class="co">#&gt; 16   400         1</span></span>
-<span><span class="co">#&gt; 17   402         1</span></span>
-<span><span class="co">#&gt; 18   406         1</span></span>
-<span><span class="co">#&gt; 19   415         1</span></span>
-<span><span class="co">#&gt; 20   419         2</span></span>
-<span><span class="co">#&gt; 21   420         1</span></span>
-<span><span class="co">#&gt; 22   421        74</span></span>
-<span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, which_run <span class="op">=</span> <span class="st">"random"</span>, sort_by <span class="op">=</span> <span class="st">"value"</span>, which_optimizer <span class="op">=</span> <span class="st">"em"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   value frequency</span></span>
-<span><span class="co">#&gt; 1   276        82</span></span>
-<span><span class="co">#&gt; 2   397         1</span></span>
-<span><span class="co">#&gt; 3   421        10</span></span>
-<span><span class="co">#&gt; 4  &lt;NA&gt;         7</span></span></code></pre></div>
-<p>The two most occurring optima are 421 and 276 with total frequencies
-of 163 and 106, respectively. The value 276 is the overall minimum
-(potentially the global minimum), while 421 is significantly worse.</p>
-<p>To compare the parameter vectors that led to these different values,
-we can use the <code>$closest_parameter()</code> method. From the saved
-optimization runs, it extracts the parameter vector corresponding to an
-optimum closest to <code>value</code>. We consider only results from the
-<code>nlm</code> optimizer here:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">(</span><span class="va">mle</span> <span class="op">&lt;-</span> <span class="va">mixture_ino</span><span class="op">$</span><span class="fu">closest_parameter</span><span class="op">(</span>value <span class="op">=</span> <span class="fl">276</span>, which_run <span class="op">=</span> <span class="st">"random"</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]  2.02  4.27 -1.45 -0.83 -0.63</span></span>
-<span><span class="co">#&gt; attr(,"run")</span></span>
-<span><span class="co">#&gt; [1] 99</span></span>
-<span><span class="co">#&gt; attr(,"optimizer")</span></span>
-<span><span class="co">#&gt; [1] "nlm"</span></span>
-<span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">evaluate</span><span class="op">(</span>at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">mle</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 276.3699</span></span>
-<span><span class="va">mle_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">mle</span>, <span class="st">"run"</span><span class="op">)</span></span>
-<span><span class="op">(</span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="va">mixture_ino</span><span class="op">$</span><span class="fu">closest_parameter</span><span class="op">(</span>value <span class="op">=</span> <span class="fl">421</span>, which_run <span class="op">=</span> <span class="st">"random"</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]  3.49  2.11  0.13 -0.09 17.49</span></span>
-<span><span class="co">#&gt; attr(,"run")</span></span>
-<span><span class="co">#&gt; [1] 13</span></span>
-<span><span class="co">#&gt; attr(,"optimizer")</span></span>
-<span><span class="co">#&gt; [1] "nlm"</span></span>
-<span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">evaluate</span><span class="op">(</span>at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">bad</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 421.4176</span></span>
-<span><span class="va">bad_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">bad</span>, <span class="st">"run"</span><span class="op">)</span></span></code></pre></div>
-<p>These two parameter vectors are saved as <code>mle</code> (this shall
-be our maximum likelihood estimate) and <code>bad</code> (this clearly
-is a bad estimate). Two attributes show the run id and the optimizer
-that led to these parameters.</p>
-<p>To understand the values in terms of means, standard deviations, and
-mixing proportion (i.e., in the form <span class="math inline">\(\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1,
-\sigma_2, \lambda)\)</span>), they need transformation (see above):</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">Nop_mixture</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, optimization_label <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></code></pre></div>
+<p>The method <code>initialize_random(runs = 20)</code> generates 20
+sets of random initial values, with each set independently drawn from a
+standard normal distribution by default. Subsequently,
+<code>optimize(which_direction = "max")</code> maximizes the function,
+starting from these generated values.</p>
+<p>Accessing the optimization results is achievable through the
+<code>$results</code> field:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 13</span></span></span>
+<span><span class="co">#&gt;   value parameter seconds initial error gradient   code iterations error_message</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.098<span style="text-decoration: underline;">9</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         36 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.112  <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         71 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.071<span style="text-decoration: underline;">4</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         43 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.039<span style="text-decoration: underline;">7</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         25 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.074<span style="text-decoration: underline;">1</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         48 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.092<span style="text-decoration: underline;">4</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         47 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: .optimization_label &lt;chr&gt;, .optimizer_label &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   .direction &lt;chr&gt;, .original &lt;lgl&gt;</span></span></span></code></pre></div>
+<p>For a quick overview, the <code>optima()</code> method provides a
+frequency table of the function values obtained at optimizer
+convergence. You can choose to ignore decimal places using
+<code>digits = 0</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, digits <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<span><span class="co">#&gt;   value     n</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  -<span style="color: #BB0000;">421</span>    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  -<span style="color: #BB0000;">276</span>     8</span></span></code></pre></div>
+<p>The impact of initial values on the outcome is apparent. Now, we
+might question the implications of the two maxima,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>276</mn></mrow><annotation encoding="application/x-tex">-276</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>421</mn></mrow><annotation encoding="application/x-tex">-421</annotation></semantics></math>,
+for our Gaussian mixture model fit to the Geyser data.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">global</span> <span class="op">&lt;-</span> <span class="va">Nop_mixture</span><span class="op">$</span><span class="va">maximum</span><span class="op">$</span><span class="va">parameter</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://dplyr.tidyverse.org" class="external-link">"dplyr"</a></span><span class="op">)</span></span>
+<span><span class="va">local</span> <span class="op">&lt;-</span> <span class="va">Nop_mixture</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">value</span> <span class="op">-</span> <span class="op">(</span><span class="op">-</span><span class="fl">421</span><span class="op">)</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">parameter</span><span class="op">)</span> <span class="op">|&gt;</span>                       </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span> </span></code></pre></div>
+<p>Two parameter vectors are stored as objects <code>global</code>
+(presumably the global maximum) and <code>local</code> (a local
+maximum). To interpret the parameter estimates in terms of mean,
+standard deviation, and mixing proportion, i.e., in the form
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝛉</mi><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>2</mn></msub><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)</annotation></semantics></math>,
+back-transformation to the restricted parameter space
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>ℝ</mi><mn>2</mn></msup><mo>×</mo><msubsup><mi>ℝ</mi><mo>+</mo><mn>2</mn></msubsup><mo>×</mo><mrow><mo stretchy="true" form="prefix">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">\mathbb{R}^2 \times \mathbb{R}_+^2 \times [0,1]</annotation></semantics></math>
+is necessary (as mentioned above):</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">transform</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">theta</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">(</span><span class="va">mle</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">mle</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2.0200000 4.2700000 0.2345703 0.4360493 0.3475105</span></span>
-<span><span class="op">(</span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">bad</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 3.4900000 2.1100000 1.1388284 0.9139312 1.0000000</span></span></code></pre></div>
-<p>The two estimates <code>mle</code> and <code>bad</code> for <span class="math inline">\(\boldsymbol{\theta}\)</span> correspond to the
-following mixture densities:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_density</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">data</span>, <span class="va">mu</span>, <span class="va">sd</span>, <span class="va">lambda</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">(</span><span class="va">global</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">global</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 4.2733434 2.0186078 0.4370631 0.2356218 0.6515954</span></span>
+<span><span class="op">(</span><span class="va">local</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">local</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3.4877815 0.7821391 1.1392698 0.1367844 1.0000000</span></span></code></pre></div>
+<p>The estimates <code>global</code> and <code>local</code> for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛉</mi><annotation encoding="application/x-tex">\boldsymbol{\theta}</annotation></semantics></math>
+correspond to the following mixture densities:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mixture_density</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">data</span>, <span class="va">mu</span>, <span class="va">sigma</span>, <span class="va">lambda</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sigma</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sigma</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">faithful</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">eruptions</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html" class="external-link">after_stat</a></span><span class="op">(</span><span class="va">density</span><span class="op">)</span><span class="op">)</span>, bins <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"eruption time (min)"</span>, colour <span class="op">=</span> <span class="st">"parameter"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html" class="external-link">stat_function</a></span><span class="op">(</span></span>
 <span>    fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu">mixture_density</span><span class="op">(</span><span class="va">x</span>, mu <span class="op">=</span> <span class="va">mle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, sd <span class="op">=</span> <span class="va">mle</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, lambda <span class="op">=</span> <span class="va">mle</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
-<span>    <span class="op">}</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"mle"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span></span>
+<span>      <span class="fu">mixture_density</span><span class="op">(</span><span class="va">x</span>, mu <span class="op">=</span> <span class="va">global</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, sigma <span class="op">=</span> <span class="va">global</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, lambda <span class="op">=</span> <span class="va">global</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="op">}</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"global"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html" class="external-link">stat_function</a></span><span class="op">(</span></span>
 <span>    fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu">mixture_density</span><span class="op">(</span><span class="va">x</span>, mu <span class="op">=</span> <span class="va">bad</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, sd <span class="op">=</span> <span class="va">bad</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, lambda <span class="op">=</span> <span class="va">bad</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
-<span>    <span class="op">}</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"bad"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span></span>
+<span>      <span class="fu">mixture_density</span><span class="op">(</span><span class="va">x</span>, mu <span class="op">=</span> <span class="va">local</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, sigma <span class="op">=</span> <span class="va">local</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, lambda <span class="op">=</span> <span class="va">local</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="op">}</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"local"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p><img src="figures/ino-estimated-mixtures-1.png" width="75%" style="display: block; margin: auto;"></p>
-<p>The mixture defined by the <code>mle</code> parameter fits much
-better than <code>bad</code>, which practically estimates only a single
-class. However, the gradients at both points are close to zero, which
-explains why the <code>nlm</code> optimizer terminates at both
-points:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">results</span><span class="op">(</span></span>
-<span>  which_run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mle_run</span>, <span class="va">bad_run</span><span class="op">)</span>, which_optimizer <span class="op">=</span> <span class="st">"nlm"</span>, which_element <span class="op">=</span> <span class="st">"gradient"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt;     gradient1     gradient2     gradient3     gradient4     gradient5 </span></span>
-<span><span class="co">#&gt;  3.487745e-05 -5.376563e-08  8.697043e-06  4.604317e-06  6.563244e-07 </span></span>
+<p>It is evident that the mixture defined by the <code>global</code>
+parameter fits much better than the <code>local</code>, which
+essentially estimates only a single class.</p>
+</div>
+<div class="section level3">
+<h3 id="comparing-initialization-strategies">Comparing initialization strategies<a class="anchor" aria-label="anchor" href="#comparing-initialization-strategies"></a>
+</h3>
+<p>Different initial values significantly impact the results of
+numerical likelihood optimization for the mixture model, as demonstrated
+so far. This prompts the question of how to optimally choose initial
+values. The <a href="https://loelschlaeger.de/ino/">ino</a> package offers various initialization
+methods that can be easily compared:</p>
+<table class="table">
+<colgroup>
+<col width="18%">
+<col width="81%">
+</colgroup>
+<thead><tr class="header">
+<th>Method</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>initialize_fixed()</code></td>
+<td>Fixed initial values, for example, at the origin or educated
+guesses.</td>
+</tr>
+<tr class="even">
+<td><code>initialize_random()</code></td>
+<td>Random initial values drawn from a custom distribution.</td>
+</tr>
+<tr class="odd">
+<td><code>initialize_grid()</code></td>
+<td>Initial values as grid points, optionally randomly shuffled.</td>
+</tr>
+<tr class="even">
+<td><code>initialize_continue()</code></td>
+<td>Initial values from previous optimization runs with a different
+optimizer or a simplified optimization problem.</td>
+</tr>
+<tr class="odd">
+<td><code>initialize_custom()</code></td>
+<td>Initial values based on a custom initialization strategy.</td>
+</tr>
+</tbody>
+</table>
+<p>To modify initial values, the following methods are available:</p>
+<table class="table">
+<colgroup>
+<col width="18%">
+<col width="81%">
+</colgroup>
+<thead><tr class="header">
+<th>Method</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>initialize_filter()</code></td>
+<td>Filters initial values based on positive or negative gradient or
+Hessian.</td>
+</tr>
+<tr class="even">
+<td><code>initialize_promising()</code></td>
+<td>Selects a proportion of promising initial values corresponding to a
+steep gradient or large/low function value.</td>
+</tr>
+<tr class="odd">
+<td><code>initialize_transform()</code></td>
+<td>Transforms the initial values.</td>
+</tr>
+<tr class="even">
+<td><code>initialize_reset()</code></td>
+<td>Deletes all specified initial values.</td>
+</tr>
+</tbody>
+</table>
+<p>We previously applied the <code>initialize_random()</code> method. In
+the following, we will compare it to <code>initialize_grid()</code> in
+combination with <code>initialize_promising()</code>. Here, we make
+“educated guesses” about starting values that are likely close to the
+global optimum. Based on the histogram above, the means of the two
+normal distributions may be around
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>2</mn><annotation encoding="application/x-tex">2</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>4</mn><annotation encoding="application/x-tex">4</annotation></semantics></math>.
+We will use sets of starting values where the means are both around
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>2</mn><annotation encoding="application/x-tex">2</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>4</mn><annotation encoding="application/x-tex">4</annotation></semantics></math>,
+respectively. For the variances, we set the starting values close to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>
+(note that we use the log-transformation here since we restrict the
+standard deviations to be positive by using the exponential function in
+the likelihood). The starting value for the mixing proportion shall be
+around
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.5</mn><annotation encoding="application/x-tex">0.5</annotation></semantics></math>.
+We use three grid points in each dimension, which we shuffle via the
+<code>jitter = TRUE</code> argument. This results in a grid of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>3</mn><mn>5</mn></msup><mo>=</mo><mn>243</mn></mrow><annotation encoding="application/x-tex">3^5 = 243</annotation></semantics></math>
+starting values:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">initialize_grid</span><span class="op">(</span></span>
+<span>  lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">3.5</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">qlogis</a></span><span class="op">(</span><span class="fl">0.4</span><span class="op">)</span><span class="op">)</span>, <span class="co"># lower bounds for the grid</span></span>
+<span>  upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.5</span>, <span class="fl">4.5</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1.5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1.5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">qlogis</a></span><span class="op">(</span><span class="fl">0.6</span><span class="op">)</span><span class="op">)</span>, <span class="co"># upper bounds for the grid</span></span>
+<span>  breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span>,                            <span class="co"># breaks for the grid in each dimension</span></span>
+<span>  jitter <span class="op">=</span> <span class="cn">TRUE</span>                                         <span class="co"># random shuffle of the grid points</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Out of the 243 grid starting values, we select a 10% proportion of
+locations where the objective gradient is steepest and initiate
+optimization from those points:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_promising</span><span class="op">(</span>proportion <span class="op">=</span> <span class="fl">0.1</span>, condition <span class="op">=</span> <span class="st">"gradient_large"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, optimization_label <span class="op">=</span> <span class="st">"promising_grid"</span><span class="op">)</span></span></code></pre></div>
+<p>It’s evident that the initial values from the initialization strategy
+concerning the steepest gradient more reliably lead to convergence to
+the global maximum of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>276</mn></mrow><annotation encoding="application/x-tex">-276</annotation></semantics></math>
+compared to random initial values:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, group_by <span class="op">=</span> <span class="st">"optimization"</span>, digits <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $promising_grid</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
+<span><span class="co">#&gt;   value     n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  -<span style="color: #BB0000;">276</span>    25</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[2]]</span></span>
-<span><span class="co">#&gt;     gradient1     gradient2     gradient3     gradient4     gradient5 </span></span>
-<span><span class="co">#&gt; -8.618280e-06  1.882080e-06  1.025954e-06  2.162324e-06  5.474021e-07</span></span></code></pre></div>
+<span><span class="co">#&gt; $random</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<span><span class="co">#&gt;   value     n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  -<span style="color: #BB0000;">421</span>    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  -<span style="color: #BB0000;">276</span>     8</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attr(,"class")</span></span>
+<span><span class="co">#&gt; [1] "Nop_optima" "group_by"   "list"</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="custom-sampler-for-initial-values">Custom sampler for initial values<a class="anchor" aria-label="anchor" href="#custom-sampler-for-initial-values"></a>
+<h3 id="comparing-optimizer-functions">Comparing optimizer functions<a class="anchor" aria-label="anchor" href="#comparing-optimizer-functions"></a>
 </h3>
-<p>Depending on the application and the magnitude of the parameters to
-be estimated, initial values drawn from a standard normal distribution
-(which is the default behavior when calling
-<code>$optimize(initial = "random")</code>) may not be a good guess. We
-can, however, easily modify the distribution that is used to draw the
-initial values. For example, the next code snippet uses starting values
-drawn from a <span class="math inline">\(\mathcal{N}(\mu = 2, \sigma =
-0.5)\)</span> distribution:</p>
+<p>So far, we’ve only utilized the <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code> optimizer,
+employing a Newton-type algorithm. Now, let’s compare its results and
+optimization time to:</p>
+<ol style="list-style-type: decimal">
+<li><p><code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code>, an alternative <code>R</code>
+optimizer that, by default, applies the Nelder-Mead algorithm <span class="citation">(<a href="#ref-Nelder:1965">Nelder and Mead
+1965</a>)</span>, and</p></li>
+<li><p>The expectation-maximization algorithm <code>em_optimizer</code>,
+an alternative optimization method for mixture models, which we define
+in the appendix below.</p></li>
+</ol>
+<p>We will incorporate these two optimizers into our
+<code>Nop_mixture</code> object using the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a>
+framework (here, <code>em_optimizer</code> already is an optimizer in
+the required framework):</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">optim</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>which <span class="op">=</span> <span class="st">"stats::optim"</span><span class="op">)</span></span>
+<span><span class="va">Nop_mixture</span><span class="op">$</span></span>
+<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="va">optim</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="va">em_optimizer</span><span class="op">)</span></span></code></pre></div>
+<p>Next, we initialize at 100 random points and optimize the mixture
+likelihood with each of the three optimizers from these points:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, optimization_label <span class="op">=</span> <span class="st">"optimizer_comparison"</span><span class="op">)</span></span></code></pre></div>
+<p>The <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot()</a></code> method offers a visual comparison of the
+optimization times:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sampler</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">5</span>, mean <span class="op">=</span> <span class="fl">2</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
-<span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="va">sampler</span>, runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"custom_sampler"</span><span class="op">)</span></span></code></pre></div>
-<p>To obtain the first results of these optimization runs, we can use
-the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method. Note that setting
-<code>which_run = "custom_sampler"</code> allows filtering, which is the
-benefit of setting a <code>label</code> when calling
-<code>$optimize()</code>.</p>
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.optimization_label</span> <span class="op">==</span> <span class="st">"optimizer_comparison"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span>which_element <span class="op">=</span> <span class="st">"seconds"</span>, group_by <span class="op">=</span> <span class="st">"optimizer"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/percent_format.html" class="external-link">percent_format</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>      <span class="st">"x"</span> <span class="op">=</span> <span class="st">"optimization time relative to overall median"</span>,</span>
+<span>      <span class="st">"y"</span> <span class="op">=</span> <span class="st">"optimizer"</span></span>
+<span>    <span class="op">)</span></span></code></pre></div>
+<p><img src="figures/ino-plot-seconds-1.png" width="75%" style="display: block; margin: auto;"></p>
+<p>Among the three optimizers, the expectation-maximization algorithm is
+evidently the fastest in this case. Moreover, it most frequently
+converges to the value
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>276</mn></mrow><annotation encoding="application/x-tex">-276</annotation></semantics></math>,
+while <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code> tends to converge to various local
+optima. However, the expectation-maximization algorithm also encountered
+failures in a couple of runs:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mixture_ino</span>, which_run <span class="op">=</span> <span class="st">"custom_sampler"</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     value                        parameter</span></span>
-<span><span class="co">#&gt; 1  421.42   3.49, 2.11, 0.13, -0.16, 16.74</span></span>
-<span><span class="co">#&gt; 2  421.42 3.49, -1.41, 0.13, -10.17, 16.53</span></span>
-<span><span class="co">#&gt; 3  276.36  2.02, 4.27, -1.45, -0.83, -0.63</span></span>
-<span><span class="co">#&gt; 4  276.36   4.27, 2.02, -0.83, -1.45, 0.63</span></span>
-<span><span class="co">#&gt; 5  421.42    3.49, 5.54, 0.13, 1.79, 14.70</span></span>
-<span><span class="co">#&gt; 6  276.36   4.27, 2.02, -0.83, -1.45, 0.63</span></span>
-<span><span class="co">#&gt; 7  276.36   4.27, 2.02, -0.83, -1.45, 0.63</span></span>
-<span><span class="co">#&gt; 8  405.72    4.33, 2.16, 0.06, -0.36, 0.70</span></span>
-<span><span class="co">#&gt; 9  276.36   4.27, 2.02, -0.83, -1.45, 0.63</span></span>
-<span><span class="co">#&gt; 10 276.36   4.27, 2.02, -0.83, -1.45, 0.63</span></span></code></pre></div>
-<p>Again we obtain different optima (even more than before). But in
-contrast, most of the runs here lead to the presumably global optimum of
-276:</p>
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, group_by <span class="op">=</span> <span class="st">"optimizer"</span>, digits <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; $em</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
+<span><span class="co">#&gt;   value     n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  -<span style="color: #BB0000;">276</span>    83</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  -<span style="color: #BB0000;">421</span>    13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>    <span style="color: #BB0000;">NA</span>     4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`stats::nlm`</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<span><span class="co">#&gt;   value     n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  -<span style="color: #BB0000;">421</span>    92</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  -<span style="color: #BB0000;">276</span>    53</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`stats::optim`</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 2</span></span></span>
+<span><span class="co">#&gt;    value     n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>  -<span style="color: #BB0000;">421</span>    65</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>  -<span style="color: #BB0000;">276</span>     8</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>  -<span style="color: #BB0000;">278</span>     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>  -<span style="color: #BB0000;">277</span>     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>  -<span style="color: #BB0000;">293</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>  -<span style="color: #BB0000;">453</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>  -<span style="color: #BB0000;">417</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>  -<span style="color: #BB0000;">416</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>  -<span style="color: #BB0000;">415</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>  -<span style="color: #BB0000;">403</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attr(,"class")</span></span>
+<span><span class="co">#&gt; [1] "Nop_optima" "group_by"   "list"</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="the-solution-to-the-optimization-problem">The solution to the optimization problem<a class="anchor" aria-label="anchor" href="#the-solution-to-the-optimization-problem"></a>
+</h3>
+<p>Finally, the best identified optimum can be extracted via:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, sort_by <span class="op">=</span> <span class="st">"value"</span>, which_run <span class="op">=</span> <span class="st">"custom_sampler"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    value frequency</span></span>
-<span><span class="co">#&gt; 1    276       184</span></span>
-<span><span class="co">#&gt; 2    277         1</span></span>
-<span><span class="co">#&gt; 3    278         1</span></span>
-<span><span class="co">#&gt; 4    283         1</span></span>
-<span><span class="co">#&gt; 5    288         1</span></span>
-<span><span class="co">#&gt; 6    289         1</span></span>
-<span><span class="co">#&gt; 7    291         1</span></span>
-<span><span class="co">#&gt; 8    292         1</span></span>
-<span><span class="co">#&gt; 9    295         1</span></span>
-<span><span class="co">#&gt; 10   297         1</span></span>
-<span><span class="co">#&gt; 11   303         1</span></span>
-<span><span class="co">#&gt; 12   314         1</span></span>
-<span><span class="co">#&gt; 13   316         1</span></span>
-<span><span class="co">#&gt; 14   317         1</span></span>
-<span><span class="co">#&gt; 15   320         1</span></span>
-<span><span class="co">#&gt; 16   321         1</span></span>
-<span><span class="co">#&gt; 17   329         1</span></span>
-<span><span class="co">#&gt; 18   331         1</span></span>
-<span><span class="co">#&gt; 19   333         1</span></span>
-<span><span class="co">#&gt; 20   335         1</span></span>
-<span><span class="co">#&gt; 21   337         1</span></span>
-<span><span class="co">#&gt; 22   338         1</span></span>
-<span><span class="co">#&gt; 23   339         1</span></span>
-<span><span class="co">#&gt; 24   347         1</span></span>
-<span><span class="co">#&gt; 25   351         1</span></span>
-<span><span class="co">#&gt; 26   352         1</span></span>
-<span><span class="co">#&gt; 27   359         1</span></span>
-<span><span class="co">#&gt; 28   368         1</span></span>
-<span><span class="co">#&gt; 29   376         1</span></span>
-<span><span class="co">#&gt; 30   377         1</span></span>
-<span><span class="co">#&gt; 31   380         2</span></span>
-<span><span class="co">#&gt; 32   390         3</span></span>
-<span><span class="co">#&gt; 33   395         1</span></span>
-<span><span class="co">#&gt; 34   397         1</span></span>
-<span><span class="co">#&gt; 35   398         1</span></span>
-<span><span class="co">#&gt; 36   401         1</span></span>
-<span><span class="co">#&gt; 37   402         1</span></span>
-<span><span class="co">#&gt; 38   403         1</span></span>
-<span><span class="co">#&gt; 39   405         1</span></span>
-<span><span class="co">#&gt; 40   406         2</span></span>
-<span><span class="co">#&gt; 41   409         2</span></span>
-<span><span class="co">#&gt; 42   411         2</span></span>
-<span><span class="co">#&gt; 43   415         1</span></span>
-<span><span class="co">#&gt; 44   416         2</span></span>
-<span><span class="co">#&gt; 45   417         1</span></span>
-<span><span class="co">#&gt; 46   419         1</span></span>
-<span><span class="co">#&gt; 47   421        64</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="va">maximum</span></span>
+<span><span class="co">#&gt; $value</span></span>
+<span><span class="co">#&gt; [1] -276.36</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $parameter</span></span>
+<span><span class="co">#&gt; [1]  2.0186078  4.2733434 -1.4455274 -0.8276776 -0.6260592</span></span></code></pre></div>
 </div>
+</div>
+<div class="section level2">
+<h2 id="appendix">Appendix<a class="anchor" aria-label="anchor" href="#appendix"></a>
+</h2>
 <div class="section level3">
-<h3 id="educated-guesses">Educated guesses<a class="anchor" aria-label="anchor" href="#educated-guesses"></a>
+<h3 id="verbose-mode">Verbose mode<a class="anchor" aria-label="anchor" href="#verbose-mode"></a>
 </h3>
-<p>Next we make “educated guesses” about starting values that are
-probably close to the global optimum. Based on the histogram above, the
-means of the two normal distributions may be somewhere around 2 and 4.
-We will use sets of starting values where the means are lower and larger
-than 2 and 4, respectively. For the variances, we set the starting
-values close to 1 (note that we use the log transformation here since we
-restrict the standard deviations to be positive by using
-<code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code> in the log-likelihood function). The starting value
-for the mixing proportion shall be around 0.5. This leads to the
-following 32 combinations of starting values:</p>
+<p>The <a href="https://loelschlaeger.de/ino/">ino</a> package features a verbose mode, which prints
+status messages and information during its usage. This mode is primarily
+designed for new package users to provide feedback and hints about their
+interactions with the package. Enabling or disabling the verbose mode
+can be achieved by setting the <code>verbose</code> field of a
+<code>Nop</code> object to either <code>TRUE</code> or
+<code>FALSE</code>. For example:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mu_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.7</span>, <span class="fl">2.3</span><span class="op">)</span></span>
-<span><span class="va">mu_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4.3</span>, <span class="fl">3.7</span><span class="op">)</span></span>
-<span><span class="va">sd_1</span> <span class="op">&lt;-</span> <span class="va">sd_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1.2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">qlogis</a></span><span class="op">(</span><span class="fl">0.4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">qlogis</a></span><span class="op">(</span><span class="fl">0.6</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">starting_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/asplit.html" class="external-link">asplit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span><span class="va">mu_1</span>, <span class="va">mu_2</span>, <span class="va">sd_1</span>, <span class="va">sd_2</span>, <span class="va">lambda</span><span class="op">)</span>, MARGIN <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p>In the <code>$optimize()</code> method, instead of
-<code>initial = "random"</code>, we can set <code>initial</code> to a
-numeric vector of length <code>npar</code>, or, for convenience, to a
-<code>list</code> of such vectors, like
-<code>starting_values</code>:</p>
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="va">verbose</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="the-expectation-maximization-algorithm">The expectation-maximization algorithm<a class="anchor" aria-label="anchor" href="#the-expectation-maximization-algorithm"></a>
+</h3>
+<p>The likelihood function of the mixture model cannot be maximized
+analytically. However, if we knew the class membership of each
+observation, the optimization problem would collapse to the independent
+maximum likelihood estimation of two Gaussian distributions, which can
+be solved analytically. This insight motivates the
+expectation-maximization (EM) algorithm <span class="citation">(<a href="#ref-Dempster:1977">Dempster, Laird, and Rubin 1977</a>)</span>,
+which iterates through the following steps:</p>
+<ol style="list-style-type: decimal">
+<li>Initialize
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛉</mi><annotation encoding="application/x-tex">\boldsymbol{\theta}</annotation></semantics></math>
+and compute
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{\theta})</annotation></semantics></math>.</li>
+<li>Calculate the posterior probabilities for each observation’s class
+membership, conditional on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛉</mi><annotation encoding="application/x-tex">\boldsymbol{\theta}</annotation></semantics></math>.</li>
+<li>Calculate the maximum likelihood estimate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>𝛉</mi><mo accent="true">‾</mo></mover><annotation encoding="application/x-tex">\boldsymbol{\bar{\theta}}</annotation></semantics></math>
+conditional on the posterior probabilities from step 2.</li>
+<li>Evaluate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛉</mi><mo accent="true">‾</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{\bar{\theta}})</annotation></semantics></math>
+and either stop if the likelihood improvement
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛉</mi><mo accent="true">‾</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{\bar{\theta}}) - \ell(\boldsymbol{\theta})</annotation></semantics></math>
+is smaller than some threshold <code>epsilon</code> or if some iteration
+limit <code>iterlim</code> is reached. Otherwise, return to step 2.</li>
+</ol>
+<p>The following function implements this algorithm:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="va">starting_values</span>, label <span class="op">=</span> <span class="st">"educated_guess"</span><span class="op">)</span></span></code></pre></div>
-<p>These “educated guesses” lead to a way more stable optimization:</p>
+<code class="sourceCode R"><span><span class="va">em</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">f</span>, <span class="va">theta</span>, <span class="va">...</span>, <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">1e-08</span>, <span class="va">iterlim</span> <span class="op">=</span> <span class="fl">1000</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">llk</span> <span class="op">&lt;-</span> <span class="fu">f</span><span class="op">(</span><span class="va">theta</span>, <span class="va">...</span><span class="op">)</span></span>
+<span>  <span class="va">mu</span> <span class="op">&lt;-</span> <span class="va">theta</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span>
+<span>  <span class="va">sigma</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">theta</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">iterlim</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">class_1</span> <span class="op">&lt;-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sigma</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">class_2</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sigma</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">posterior</span> <span class="op">&lt;-</span> <span class="va">class_1</span> <span class="op">/</span> <span class="op">(</span><span class="va">class_1</span> <span class="op">+</span> <span class="va">class_2</span><span class="op">)</span></span>
+<span>    <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">)</span></span>
+<span>    <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">posterior</span> <span class="op">*</span> <span class="va">data</span><span class="op">)</span> <span class="op">/</span> <span class="va">lambda</span></span>
+<span>    <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span></span>
+<span>    <span class="va">sigma</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">posterior</span> <span class="op">*</span> <span class="op">(</span><span class="va">data</span> <span class="op">-</span> <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="va">lambda</span><span class="op">)</span></span>
+<span>    <span class="va">sigma</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">posterior</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">data</span> <span class="op">-</span> <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">llk_old</span> <span class="op">&lt;-</span> <span class="va">llk</span></span>
+<span>    <span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mu</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sigma</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">qlogis</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">llk</span> <span class="op">&lt;-</span> <span class="fu">f</span><span class="op">(</span><span class="va">theta</span>, <span class="va">...</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">llk</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"em failed"</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">llk</span> <span class="op">-</span> <span class="va">llk_old</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">epsilon</span><span class="op">)</span> <span class="kw">break</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"llk"</span> <span class="op">=</span> <span class="va">llk</span>, <span class="st">"estimate"</span> <span class="op">=</span> <span class="va">theta</span>, <span class="st">"iterations"</span> <span class="op">=</span> <span class="va">i</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="defining-optimizers-via-the-optimizer-framework">Defining optimizers via the <code>{optimizeR}</code> framework<a class="anchor" aria-label="anchor" href="#defining-optimizers-via-the-optimizer-framework"></a>
+</h3>
+<p>Previously, we integrated the <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code> and
+<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code> optimizers into the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a>
+framework using:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, which_run <span class="op">=</span> <span class="st">"educated_guess"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   value frequency</span></span>
-<span><span class="co">#&gt; 1   276        95</span></span>
-<span><span class="co">#&gt; 2   277         1</span></span></code></pre></div>
-<p>For comparison, we consider a set of implausible starting values…</p>
+<code class="sourceCode R"><span><span class="va">nlm</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>which <span class="op">=</span> <span class="st">"stats::nlm"</span><span class="op">)</span></span>
+<span><span class="va">optim</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>which <span class="op">=</span> <span class="st">"stats::optim"</span><span class="op">)</span></span></code></pre></div>
+<p>Employing the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> framework is crucial for the
+<a href="https://loelschlaeger.de/ino/">ino</a> package to maintain consistently named inputs and
+outputs across different optimizers for interpretation purposes (which
+is generally not the case).</p>
+<p>The <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> package provides a dictionary of
+optimizers that can be directly selected via the <code>which</code>
+argument. For an overview of available optimizers, you can use:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>, label <span class="op">=</span> <span class="st">"bad_guess"</span><span class="op">)</span></span></code></pre></div>
-<p>… which lead to local optima:</p>
+<code class="sourceCode R"><span><span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/optimizer_dictionary.html" class="external-link">optimizer_dictionary</a></span></span>
+<span><span class="co">#&gt; &lt;Dictionary&gt; optimization algorithms </span></span>
+<span><span class="co">#&gt; Keys: </span></span>
+<span><span class="co">#&gt; - lbfgsb3c::lbfgsb3c</span></span>
+<span><span class="co">#&gt; - lbfgsb3c::lbfgsb3</span></span>
+<span><span class="co">#&gt; - lbfgsb3c::lbfgsb3f</span></span>
+<span><span class="co">#&gt; - lbfgsb3c::lbfgsb3x</span></span>
+<span><span class="co">#&gt; - stats::nlm</span></span>
+<span><span class="co">#&gt; - stats::nlminb</span></span>
+<span><span class="co">#&gt; - stats::optim</span></span>
+<span><span class="co">#&gt; - ucminf::ucminf</span></span></code></pre></div>
+<p>Optimizers that are implemented in packages not yet installed will
+only be shown after you install the required packages, for instance,
+using the convenience function
+<code>optimizeR::install_optimizer_packages()</code>.</p>
+<p>However, any optimizer not contained in the dictionary can be
+incorporated into the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> framework by setting
+<code>which = "custom"</code> first:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mixture_ino</span>, which_run <span class="op">=</span> <span class="st">"bad_guess"</span><span class="op">)</span> </span>
-<span><span class="co">#&gt;    value                       parameter</span></span>
-<span><span class="co">#&gt; 1 421.42    3.49, 3.49, 0.13, 0.13, 0.00</span></span>
-<span><span class="co">#&gt; 2 384.78 1.84, 3.64, -2.92, -0.03, -3.00</span></span>
-<span><span class="co">#&gt; 3 421.42    3.49, 3.49, 0.13, 0.13, 0.00</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="standardizing-the-optimization-problem">Standardizing the optimization problem<a class="anchor" aria-label="anchor" href="#standardizing-the-optimization-problem"></a>
-</h3>
-<p>In some situations, it is possible to consider a standardized version
-of the optimization problem, which could potentially improve the
-performance of the numerical optimizer. In our example, we can
-standardize the data before running the optimization via the
-<code>$standardize()</code> method:</p>
+<code class="sourceCode R"><span><span class="va">em_optimizer</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>which <span class="op">=</span> <span class="st">"custom"</span><span class="op">)</span></span></code></pre></div>
+<p>… and then using the <code>definition()</code> method:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">standardize</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">get_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>To optimize the likelihood using the standardized data set, we again
-use <code>$optmize()</code>, which by default uses random starting
-values. Below, we will compare these results with those obtained on the
-original optimization problem.</p>
+<code class="sourceCode R"><span><span class="va">em_optimizer</span><span class="op">$</span><span class="fu">definition</span><span class="op">(</span></span>
+<span>  algorithm <span class="op">=</span> <span class="va">em</span>,</span>
+<span>  arg_objective <span class="op">=</span> <span class="st">"f"</span>,</span>
+<span>  arg_initial <span class="op">=</span> <span class="st">"theta"</span>,</span>
+<span>  out_value <span class="op">=</span> <span class="st">"llk"</span>,</span>
+<span>  out_parameter <span class="op">=</span> <span class="st">"estimate"</span>,</span>
+<span>  direction <span class="op">=</span> <span class="st">"max"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For the expectation-maximization algorithm, an additional argument
+<code>data</code> needs to be defined:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span></span>
-<span>  <span class="fu">optimize</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"data_standardized"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span></code></pre></div>
-<p>The usage of <code>$reset_argument("data")</code> is important: to
-perform further optimization runs after having applied standardized
-initialization, we undo the standardization of the data and obtain the
-original data set. If we would not use <code>$reset_argument()</code>,
-all further optimization runs will be carried out on the standardized
-data set.</p>
-</div>
-<div class="section level3">
-<h3 id="reducing-the-optimization-problem">Reducing the optimization problem<a class="anchor" aria-label="anchor" href="#reducing-the-optimization-problem"></a>
-</h3>
-<p>In some situations, it is possible to first optimize a sub-problem
-and use those results as an initialization for the full optimization
-problem. For example, in the context of likelihood maximization, if the
-data set considered shows some complex structures or is very large,
-numerical optimization may become computationally costly. In such cases,
-it can be beneficial to initially consider a reduced data set. The
-following application of the <code>$reduce()</code> method transforms
-<code>"data"</code> by selecting a proportion of 30% data points at
-random:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">reduce</span><span class="op">(</span>argument_name <span class="op">=</span> <span class="st">"data"</span>, how <span class="op">=</span> <span class="st">"random"</span>, prop <span class="op">=</span> <span class="fl">0.3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">get_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Similar to the standardizing above, calling <code>$optimize()</code>
-now optimizes on the reduced data set:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span></span>
-<span>  <span class="fu">optimize</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"data_subset"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">continue</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Again, we use <code>$reset_argument("data")</code> to obtain the
-original data set. The <code>$continue()</code> method now optimizes on
-the whole data set using the estimates obtained on the reduced data as
-initial values.</p>
-<p>In addition to selecting sub samples at random
-(<code>how = "random"</code>), four other options exist via specifying
-the argument <code>how</code>:</p>
-<ul>
-<li>
-<code>"first"</code> selects the top data points,</li>
-<li>
-<code>"last"</code> selects the last data points,</li>
-<li>
-<code>"similar</code> selects similar data points based on k-means
-clustering,</li>
-<li>
-<code>"dissimilar"</code> is similar to <code>"similar"</code> but
-selects dissimilar data points.</li>
-</ul>
-<p>See the other two vignettes for demonstrations of these options.</p>
-</div>
-<div class="section level3">
-<h3 id="optimization-times">Optimization times<a class="anchor" aria-label="anchor" href="#optimization-times"></a>
-</h3>
-<p>The <code>$plot()</code> method provides an overview of the
-optimization times. Setting <code>by = "label"</code> allows for
-comparison across initialization strategies, setting
-<code>relative = TRUE</code> plots relative differences to the median of
-the top boxplot:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>by <span class="op">=</span> <span class="st">"label"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span>, xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Dropped 15 results with missing data.</span></span></code></pre></div>
-<p><img src="figures/ino-plot-by-label-1.png" width="75%" style="display: block; margin: auto;"></p>
-<p>Setting <code>by = "optimizer"</code> allows comparison across
-optimizers:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>by <span class="op">=</span> <span class="st">"optimizer"</span>, relative <span class="op">=</span> <span class="cn">FALSE</span>, xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Dropped 15 results with missing data.</span></span></code></pre></div>
-<p><img src="figures/ino-plot-by-optimizer-1.png" width="75%" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level3">
-<h3 id="the-global-optimum">The global optimum<a class="anchor" aria-label="anchor" href="#the-global-optimum"></a>
-</h3>
-<p>The best optimization result can be extracted via:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">best_value</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 248.98</span></span>
-<span><span class="co">#&gt; attr(,"run")</span></span>
-<span><span class="co">#&gt; [1] 421</span></span>
-<span><span class="co">#&gt; attr(,"optimizer")</span></span>
-<span><span class="co">#&gt; [1] "em"</span></span>
-<span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">best_parameter</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]   3.53   1.75   0.11 -32.71   3.79</span></span>
-<span><span class="co">#&gt; attr(,"run")</span></span>
-<span><span class="co">#&gt; [1] 421</span></span>
-<span><span class="co">#&gt; attr(,"optimizer")</span></span>
-<span><span class="co">#&gt; [1] "em"</span></span></code></pre></div>
-<p>The best function value of 248.98 is unique:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">0</span>, sort_by <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   value frequency</span></span>
-<span><span class="co">#&gt; 1   249         1</span></span>
-<span><span class="co">#&gt; 2   276       516</span></span>
-<span><span class="co">#&gt; 3   277         4</span></span>
-<span><span class="co">#&gt; 4   278         1</span></span>
-<span><span class="co">#&gt; 5   283         2</span></span>
-<span><span class="co">#&gt; 6   288         1</span></span></code></pre></div>
-<p>Furthermore, it does not produce a two-class mixture, since one class
-variance is practically zero, see the output of
-<code>mixture_ino$best_parameter()</code>. We could therefore delete
-this result from our <code>Nop</code> object:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">clear</span><span class="op">(</span>which_run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">mixture_ino</span><span class="op">$</span><span class="fu">best_value</span><span class="op">(</span><span class="op">)</span>, <span class="st">"run"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>The final <code>Nop</code> object then looks as follows:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mixture_ino</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="text-decoration: underline;">Optimization problem:</span></span></span>
-<span><span class="co">#&gt; - Function: normal_mixture_llk</span></span>
-<span><span class="co">#&gt; - Optimize over: theta (length 5) </span></span>
-<span><span class="co">#&gt; - Additional arguments: data </span></span>
-<span><span class="co">#&gt; <span style="text-decoration: underline;">Numerical optimizer:</span></span></span>
-<span><span class="co"><span style="text-decoration: underline;">#&gt; </span>- 1: nlm </span></span>
-<span><span class="co">#&gt; - 2: optim </span></span>
-<span><span class="co">#&gt; - 3: em </span></span>
-<span><span class="co">#&gt; <span style="text-decoration: underline;">Optimization results:</span></span></span>
-<span><span class="co"><span style="text-decoration: underline;">#&gt; </span>- Total runs (comparable): 433 (332)</span></span>
-<span><span class="co">#&gt; - Best parameter: 2.02 4.27 -1.45 -0.83 -0.63</span></span>
-<span><span class="co">#&gt; - Best value: 276.36</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">em_optimizer</span><span class="op">$</span><span class="fu">set_arguments</span><span class="op">(</span></span>
+<span>  <span class="st">"data"</span> <span class="op">=</span> <span class="va">faithful</span><span class="op">$</span><span class="va">eruptions</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For more details on the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> package, please
+refer to <a href="https://loelschlaeger.de/optimizeR/" class="external-link">the package
+homepage</a>.</p>
 </div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-Bengtsson:2021" class="csl-entry">
+Bengtsson, Henrik. 2021. <span>“A Unifying Framework for Parallel and
+Distributed Processing in <span>R</span> Using Futures.”</span> <em>The
+R Journal</em> 13 (2): 208–27. <a href="https://doi.org/10.32614/RJ-2021-048" class="external-link">https://doi.org/10.32614/RJ-2021-048</a>.
+</div>
+<div id="ref-Bengtsson:2024" class="csl-entry">
+———. 2024. <em>Progressr: An Inclusive, Unifying API for Progress
+Updates</em>. <a href="https://CRAN.R-project.org/package=progressr" class="external-link">https://CRAN.R-project.org/package=progressr</a>.
+</div>
 <div id="ref-Bonnans:2006" class="csl-entry">
 Bonnans, J.-F., J. C. Gilbert, C. Lemaréchal, and C. A. Sagastizábal.
 2006. <em>Numerical Optimization: Theoretical and Practical
 Aspects</em>. Springer Science &amp; Business Media.
 </div>
-<div id="ref-Chang:2021" class="csl-entry">
-Chang, W. 2021. <em>R6: Encapsulated Classes with Reference
+<div id="ref-Chang:2025" class="csl-entry">
+Chang, W. 2025. <em>R6: Encapsulated Classes with Reference
 Semantics</em>. <a href="https://CRAN.R-project.org/package=R6" class="external-link">https://CRAN.R-project.org/package=R6</a>.
 </div>
 <div id="ref-Dempster:1977" class="csl-entry">
@@ -885,13 +759,22 @@ Likelihood from Incomplete Data via the EM Algorithm.”</span>
 <em>Journal of the Royal Statistical Society: Series B</em> 39 (1):
 1–22.
 </div>
+<div id="ref-Nelder:1965" class="csl-entry">
+Nelder, J. A., and R. Mead. 1965. <span>“<span class="nocase">A Simplex
+Method for Function Minimization</span>.”</span> <em>The Computer
+Journal</em> 7 (4). <a href="https://doi.org/10.1093/comjnl/7.4.308" class="external-link">https://doi.org/10.1093/comjnl/7.4.308</a>.
+</div>
 <div id="ref-Nocedal:2006" class="csl-entry">
 Nocedal, J., and S. J. Wright. 2006. <span>“Quadratic
 Programming.”</span> <em>Numerical Optimization</em>, 448–92.
 </div>
-<div id="ref-Oelschläger:2023" class="csl-entry">
-Oelschläger, L., and M. Ötting. 2023. <em>optimizeR: Unified Framework
+<div id="ref-Oelschlaeger:2025" class="csl-entry">
+Oelschläger, L., and M. Ötting. 2025. <em>optimizeR: Unified Framework
 for Numerical Optimizer</em>. <a href="https://CRAN.R-project.org/package=optimizeR" class="external-link">https://CRAN.R-project.org/package=optimizeR</a>.
+</div>
+<div id="ref-Schwendinger:2023" class="csl-entry">
+Schwendinger, F., and H. W. Borchers. 2023. <span>“CRAN Task View:
+Optimization and Mathematical Programming.”</span> <a href="https://CRAN.R-project.org/view=Optimization" class="external-link">https://CRAN.R-project.org/view=Optimization</a>.
 </div>
 <div id="ref-Shireman:2017" class="csl-entry">
 Shireman, E., D. Steinley, and M. J. Brusco. 2017. <span>“Examining the
@@ -905,28 +788,26 @@ Wickham, H. 2019. <em>Advanced <span>R</span></em>. CRC press. <a href="https://
 </div>
 </div>
 
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
 
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p>
-<p>Developed by <a href="https://loelschlaeger.de" class="external-link">Lennart Oelschläger</a>, <a href="https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc.)/" class="external-link">Marius Ötting</a>.</p>
+  <p>Developed by <a href="https://loelschlaeger.de" class="external-link">Lennart Oelschläger</a>, <a href="https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc.)/" class="external-link">Marius Ötting</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>

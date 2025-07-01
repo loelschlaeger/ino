@@ -5,77 +5,52 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="See the {ino} package in action for the HMM likelihood optimization.
-">
-<title>Example: Hidden Markov Model • ino</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<title>Package demo: Hidden Markov Model • ino</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Example: Hidden Markov Model">
-<meta property="og:description" content="See the {ino} package in action for the HMM likelihood optimization.
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Package demo: Hidden Markov Model">
+<meta name="description" content="Using ino for HMM likelihood optimization
+">
+<meta property="og:description" content="Using ino for HMM likelihood optimization
 ">
 <meta property="og:image" content="https://loelschlaeger.de/ino/logo.png">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="../index.html">ino</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="../articles/ino.html">Get started</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
-</li>
-<li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/example_hmm.html">Example: Hidden Markov Model</a>
-    <a class="dropdown-item" href="../articles/example_probit.html">Example: Probit Model</a>
-  </div>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="../news/index.html">Changelog</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../articles/ino.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav">
-<li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/loelschlaeger/ino/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/loelschlaeger/ino/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -84,39 +59,39 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Example: Hidden Markov Model</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Package demo: Hidden Markov Model</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/loelschlaeger/ino/blob/HEAD/vignettes/example_hmm.Rmd" class="external-link"><code>vignettes/example_hmm.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/loelschlaeger/ino/blob/master/vignettes/example_hmm.Rmd" class="external-link"><code>vignettes/example_hmm.Rmd</code></a></small>
       <div class="d-none name"><code>example_hmm.Rmd</code></div>
     </div>
 
     
     
-<p>In this vignette<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;The vignette was build using R 4.3.1 with the
-&lt;a href="https://loelschlaeger.de/ino/"&gt;ino&lt;/a&gt; 1.0.2 package.&lt;/p&gt;'><sup>1</sup></a> we describe the workflow of the
-<a href="https://loelschlaeger.de/ino/">ino</a> package for fitting a hidden Markov model (HMM)
-through likelihood optimization. HMMs are statistical models used to
-explain systems that can only be observed indirectly through a sequence
-of outputs, and have unobservable hidden states. They consist of two
-processes, a Markov process that describes the hidden states, and an
-observable process that describes the outputs produced by the system,
-where the probability of observing an output at a given time depends
-only on the current state. State-switching models like HMMs are commonly
-used in speech recognition, animal movement modeling, bioinformatics,
-and finance. For more technical details about HMMs and their scope of
-application, see, e.g., <span class="citation">Zucchini, MacDonald, and
-Langrock (<a href="#ref-Zucchini:2016" role="doc-biblioref">2016</a>)</span>.</p>
+<p>HMMs are statistical models used to explain systems that can only be
+observed indirectly through a sequence of outputs, and have unobservable
+hidden states. They consist of two processes, a Markov process that
+describes the hidden states, and an observable process that describes
+the outputs produced by the system, where the probability of observing
+an output at a given time depends only on the current state.
+State-switching models like HMMs are commonly used in speech
+recognition, animal movement modeling, and finance. For more technical
+details about HMMs and their scope of application, see, e.g., <span class="citation">Zucchini, MacDonald, and Langrock (<a href="#ref-Zucchini:2016">2016</a>)</span>.</p>
+<p>Numerical likelihood optimization is a prominent method for fitting
+HMMs to empirical data. In this vignette<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;The vignette was build using R 4.5.1 with the
+&lt;a href="https://loelschlaeger.de/ino/"&gt;ino&lt;/a&gt; 1.1.0 package.&lt;/p&gt;'><sup>1</sup></a> we describe the
+workflow of using the <a href="https://loelschlaeger.de/ino/">ino</a> package for analyzing the
+initialization effect in this optimization task.</p>
 <div class="section level2">
 <h2 id="application-to-financial-data">Application to financial data<a class="anchor" aria-label="anchor" href="#application-to-financial-data"></a>
 </h2>
 <p>The example data set considered throughout this vignette covers a
 time series of log returns from the <a href="https://en.wikipedia.org/wiki/DAX" class="external-link">German stock index DAX</a> over
-30 years. The DAX closing prices are freely accessible via Yahoo Finance
-and can be downloaded via the <code><a href="https://loelschlaeger.de/fHMM/reference/download_data.html" class="external-link">download_data()</a></code> function from
-the <a href="https://loelschlaeger.de/fHMM/" class="external-link">fHMM</a> package <span class="citation">(<a href="#ref-Oelschl%C3%A4ger:2023b" role="doc-biblioref">Oelschläger, Adam,
-and Michels 2023</a>)</span>. They can easily be transformed to log
-returns using the <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> package <span class="citation">(<a href="#ref-Wickham:2023" role="doc-biblioref">Wickham et al. 2023</a>)</span>:</p>
+30 years. The DAX closing prices are freely accessible via <a href="https://finance.yahoo.com" class="external-link">Yahoo Finance</a> and can be downloaded
+via the <code><a href="https://loelschlaeger.de/fHMM/reference/download_data.html" class="external-link">download_data()</a></code> function from the
+<a href="https://loelschlaeger.de/fHMM/" class="external-link">fHMM</a> package <span class="citation">(<a href="#ref-Oelschlaeger:2024">Oelschläger, Adam, and Michels
+2024</a>)</span>. We transform them to log-returns using the
+<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> package <span class="citation">(<a href="#ref-Wickham:2023">Wickham et al. 2023</a>)</span>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://loelschlaeger.de/fHMM/" class="external-link">"fHMM"</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://dplyr.tidyverse.org" class="external-link">"dplyr"</a></span><span class="op">)</span></span>
@@ -151,134 +126,193 @@ returns using the <a href="https://dplyr.tidyverse.org" class="external-link">dp
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_date.html" class="external-link">scale_x_date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html" class="external-link">label_percent</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/hmm-plot-dax-data-1.png" width="75%" style="display: block; margin: auto;"></p>
-<p>As the log returns are continuous and can take both negative and
+<p>As the log-returns are continuous and can take both negative and
 positive values, we consider an HMM with Gaussian state-dependent
 distributions — note that some applications instead use t-distributions
-to also model the kurtosis <span class="citation">(<a href="#ref-Oelschl%C3%A4ger:2021" role="doc-biblioref">Oelschläger and Adam
-2021</a>)</span>.</p>
+to also model the kurtosis <span class="citation">(<a href="#ref-Oelschlaeger:2021">Oelschläger and Adam 2021</a>)</span>.</p>
 </div>
 <div class="section level2">
 <h2 id="likelihood-optimization">Likelihood optimization<a class="anchor" aria-label="anchor" href="#likelihood-optimization"></a>
 </h2>
-<p>We consider a 2-state (<code>N = 2</code>) Gaussian-HMM here to model
-bearish and bullish market periods. This results in six parameters
-(<code>npar = 6</code>) to be estimated:</p>
+<p>We consider a 2-state (<code>states = 2</code>) Gaussian-HMM
+(<code>sdds = "normal"</code>) here to model bearish and bullish market
+periods. This results in six parameters (<code>npar = 6</code>) to be
+estimated (to be optimized, respectively):</p>
 <ul>
-<li>two identified parameters for the transition probability matrix
-(t.p.m.),</li>
+<li>two identified parameters for the transition probability
+matrix,</li>
 <li>two for the means of the state-dependent distributions,</li>
 <li>two for the standard deviations of the state-dependent
 distributions.</li>
 </ul>
-<p>The likelihood for a Gaussian-HMM is given by the function
-<code><a href="../reference/f_ll_hmm.html">f_ll_hmm()</a></code> provided by the <a href="https://loelschlaeger.de/ino/">ino</a> package. The
-argument <code>neg = TRUE</code> indicates that we minimize the negative
-log-likelihood, and <code>set_optimizer(optimizer_nlm())</code> selects
-the optimizer <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code> (see the introductory vignette
-for more details on how to specify optimizers).</p>
+<p>The likelihood function <code><a href="https://loelschlaeger.de/fHMM/reference/ll_hmm.html" class="external-link">ll_hmm()</a></code> is provided by the
+<a href="https://loelschlaeger.de/fHMM/" class="external-link">fHMM</a> package. The argument <code>negative = TRUE</code>
+indicates that we minimize the negative log-likelihood.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hmm_ino</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Nop.html">Nop</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
-<span>  f <span class="op">=</span> <span class="va">f_ll_hmm</span>, </span>
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Nop.html">Nop</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  f <span class="op">=</span> <span class="fu">fHMM</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/fHMM/reference/ll_hmm.html" class="external-link">ll_hmm</a></span>, </span>
 <span>  npar <span class="op">=</span> <span class="fl">6</span>, </span>
-<span>  data <span class="op">=</span> <span class="va">dax</span><span class="op">$</span><span class="va">logreturn</span>, </span>
-<span>  N <span class="op">=</span> <span class="fl">2</span>, </span>
-<span>  neg <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span><span class="op">$</span></span>
-<span><span class="fu">set_optimizer</span><span class="op">(</span><span class="fu"><a href="https://loelschlaeger.de/optimizeR/reference/define_optimizer.html" class="external-link">optimizer_nlm</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  observations <span class="op">=</span> <span class="va">dax</span><span class="op">$</span><span class="va">logreturn</span>,</span>
+<span>  sdds <span class="op">=</span> <span class="st">"normal"</span>,</span>
+<span>  states <span class="op">=</span> <span class="fl">2</span>, </span>
+<span>  negative <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>In this example, we optimize using the optimizer
+<code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code> (see the introductory vignette for more
+details on how to specify optimizers):</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="fu">set_optimizer</span><span class="op">(</span><span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"stats::nlm"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="parallel-optimization-and-progress-updates">Parallel optimization and progress updates<a class="anchor" aria-label="anchor" href="#parallel-optimization-and-progress-updates"></a>
+</h3>
+<p>For convenience, The <a href="https://loelschlaeger.de/ino/">ino</a> package supports parallel
+computation of optimization runs based on the <a href="https://future.futureverse.org" class="external-link">future</a>
+package <span class="citation">(<a href="#ref-Bengtsson:2021">Bengtsson
+2021</a>)</span> and printing progress messages based on the
+<a href="https://progressr.futureverse.org" class="external-link">progressr</a> package <span class="citation">(<a href="#ref-Bengtsson:2024">Bengtsson 2024</a>)</span>.</p>
+<p>For example, calling</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, workers <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>uses parallel computation in 10 parallel R sessions, and calling</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">progressr</span><span class="fu">::</span><span class="fu"><a href="https://progressr.futureverse.org/reference/handlers.html" class="external-link">handlers</a></span><span class="op">(</span>global <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>prints a progress bar.</p>
+</div>
 <div class="section level3">
 <h3 id="random-initialization">Random initialization<a class="anchor" aria-label="anchor" href="#random-initialization"></a>
 </h3>
-<p>Randomly chosen starting values is a first initialization
-approach:</p>
-<ul>
-<li>As the first two starting values belong to the off-diagonal of the
-t.p.m., we draw starting values from a <span class="math inline">\(\mathcal{U}(-2,-1)\)</span> distribution — as we
-use the multinomial logit link to ensure that the probabilities are
-between 0 and 1, a value of -1.5 correspond to probabilities of staying
-in state 1 or 2 of about 80%.</li>
-<li>For the two means, we draw two random numbers from the standard
-normal distribution, as the time series above indicates that the most of
-the returns are fairly close to zero.</li>
-<li>The starting values for the standard deviations are drawn from a
-<span class="math inline">\(\mathcal{U}(0.5,2)\)</span> distribution
-(note that we exponentiate the standard deviations in the likelihood as
-they are constrained to be positive, and hence we log-transform the
-starting values).</li>
-</ul>
-<p>The <code>$optimize()</code> method with argument
-<code>initial = sampler</code> then performs <code>runs = 100</code>
-optimization runs with starting values drawn from the specified
-distributions:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>Choosing random starting values is a first naive initialization
+approach, which can be tested as follows:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>optimization_label <span class="op">=</span> <span class="st">"random_naive"</span><span class="op">)</span></span></code></pre></div>
+<p>The method <code>initialize_random()</code> selects
+<code>runs = 100</code> random initial values, which are drawn from a
+standard normal distribution by default. Next, the
+<code><a href="https://rdrr.io/r/stats/optimize.html" class="external-link">optimize()</a></code> method initiates optimization of the likelihood
+function starting from these values. The results are labeled as
+<code>"random_naive"</code> to facilitate comparison later.</p>
+<p>Instead of drawing initial values from a standard normal
+distribution, users can define a custom sampler function, for
+example:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sampler</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0.5</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="va">hmm_ino</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="va">sampler</span>, runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">}</span></span></code></pre></div>
+<p>This sampler is based on the following ideas:</p>
+<ul>
+<li>As the first two starting values belong to the off-diagonal of the
+transition probability matrix, we draw starting values from a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒰</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo>−</mo><mn>2</mn><mo>,</mo><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal{U}(-2,-1)</annotation></semantics></math>
+distribution — the likelihood function uses the multinomial logit link
+to ensure that the probabilities are between
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0</mn><annotation encoding="application/x-tex">0</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>,
+a value of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>1.5</mn></mrow><annotation encoding="application/x-tex">-1.5</annotation></semantics></math>
+correspond to probabilities of staying in state 1 or 2 of about
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>80</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">80\%</annotation></semantics></math>.</li>
+<li>For the two means, we draw two random numbers from the standard
+normal distribution, as the time series above indicates that the
+log-returns vary around zero.</li>
+<li>The starting values for the standard deviations are drawn from a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒰</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0.5</mn><mo>,</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal{U}(0.5,2)</annotation></semantics></math>
+distribution (note that the likelihood function exponentiates the
+standard deviations as they are constrained to be positive, and hence we
+log-transform the starting values).</li>
+</ul>
+<p>The <code><a href="https://rdrr.io/r/stats/optimize.html" class="external-link">optimize()</a></code> method then performs
+<code>runs = 100</code> optimizations with starting values drawn from
+the specified distributions:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_random</span><span class="op">(</span>sampler <span class="op">=</span> <span class="va">sampler</span>, runs <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>optimization_label <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="educated-guesses">Educated guesses<a class="anchor" aria-label="anchor" href="#educated-guesses"></a>
+<h3 id="grid-initialization-with-educated-guesses">Grid initialization with educated guesses<a class="anchor" aria-label="anchor" href="#grid-initialization-with-educated-guesses"></a>
 </h3>
-<p>For selecting fixed starting values, we consider sets of starting
-values that fall in the ranges considered above. These can be considered
-as “educated guesses” and are likely to be close to the global
-optimum:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tpm_entry_1</span> <span class="op">&lt;-</span> <span class="va">tpm_entry_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">2.5</span><span class="op">)</span></span>
-<span><span class="va">mu_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">0.05</span><span class="op">)</span></span>
-<span><span class="va">mu_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span><span class="op">)</span></span>
-<span><span class="va">sd_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">sd_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.75</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">starting_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/asplit.html" class="external-link">asplit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span></span>
-<span>  <span class="va">tpm_entry_1</span>, <span class="va">tpm_entry_2</span>, <span class="va">mu_1</span>, <span class="va">mu_2</span>, <span class="va">sd_1</span>, <span class="va">sd_2</span><span class="op">)</span>, </span>
-<span>  MARGIN <span class="op">=</span> <span class="fl">1</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>This grid results in a total of 64 starting values, which can be
-specified as the <code>initial</code> argument:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hmm_ino</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="va">starting_values</span>, label <span class="op">=</span> <span class="st">"educated_guess"</span><span class="op">)</span></span></code></pre></div>
+<p>Another initialization strategy that closely relates to specifying a
+custom sampler for the initial values is to make “educated guesses” and
+to consider a grid of these values as initialization. This can be
+implemented via the <code>initialize_grid()</code> method, where and
+<code>lower</code> and <code>upper</code> limits and <code>breaks</code>
+can be specified. Here, we consider a grid of 64 starting values that
+fall in the ranges considered above:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_grid</span><span class="op">(</span></span>
+<span>    lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">0.1</span>, <span class="op">-</span><span class="fl">0.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    breaks <span class="op">=</span> <span class="fl">2</span></span>
+<span>  <span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>optimization_label <span class="op">=</span> <span class="st">"educated_guess"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="subset-initialization">Subset initialization<a class="anchor" aria-label="anchor" href="#subset-initialization"></a>
 </h3>
-<p>Since the data set is large, containing a total of 7475 share return
+<p>Since the data set is large, containing a total of 7475 log-return
 observations, it might be beneficial to obtain initial values by first
 fitting the model to a data subset. If the data subset is chosen small
 enough, estimation with the subset will be much faster. On the other
 hand, if the data subset is chosen large enough to still contain enough
 information, the estimates on the subset will already lie close to the
-estimates for the full model.</p>
+estimates for the full model and provide good initial values for the
+full optimization.</p>
 <p>To illustrate the subset initialization strategy, we consider the
 first quarter of observations, which can be extracted using the
-<code>$reduce()</code> method with arguments <code>how = "first"</code>
-and <code>prop = 0.25</code>. The starting values for the optimizations
-on this subset are drawn from the <code>sampler()</code> function
-defined above. We again use <code>$optimize()</code> to fit the HMM, but
-now to the data subset. With <code>$continue()</code>, we then use the
-estimates obtained from the optimization on the subset as initial values
-to fit the model to the entire data set. The entire data set is restored
-via <code>$reset_argument("data")</code>.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;If we were to skip the &lt;code&gt;$reset_argument()&lt;/code&gt;
-step, all future optimization runs would be made on the subset.&lt;/p&gt;"><sup>2</sup></a></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hmm_ino</span><span class="op">$</span></span>
-<span>  <span class="fu">reduce</span><span class="op">(</span><span class="st">"data"</span>, how <span class="op">=</span> <span class="st">"first"</span>, prop <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="va">sampler</span>, runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"subset"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">continue</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code>reduce()</code> method with arguments <code>how = "first"</code>
+and <code>proportion = 0.25</code>. The starting values for the
+optimizations on this subset are drawn from the <code>sampler()</code>
+function defined above. We again use <code><a href="https://rdrr.io/r/stats/optimize.html" class="external-link">optimize()</a></code> to fit the
+HMM, but now to the data subset. With
+<code>initialize_continue()</code>, we then use the estimates obtained
+from the optimization on the subset as initial values to fit the model
+to the entire data set.</p>
+<p>Finally, the entire data set is recovered via
+<code>fixed_argument("reset", argument_name = "observations")</code>. If
+we were to skip this step, all future optimization runs would be made on
+the subset.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
+<span>  <span class="fu">reduce_argument</span><span class="op">(</span><span class="st">"observations"</span>, how <span class="op">=</span> <span class="st">"first"</span>, proportion <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_random</span><span class="op">(</span>sampler <span class="op">=</span> <span class="va">sampler</span>, runs <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>optimization_label <span class="op">=</span> <span class="st">"reduced"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">fixed_argument</span><span class="op">(</span><span class="st">"reset"</span>, argument_name <span class="op">=</span> <span class="st">"observations"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_continue</span><span class="op">(</span><span class="st">"reduced"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>optimization_label <span class="op">=</span> <span class="st">"initialized_reduced"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="standardize-initialization">Standardize initialization<a class="anchor" aria-label="anchor" href="#standardize-initialization"></a>
 </h2>
-<p>The considered log returns range from -0.1 to 0.1. Optimization might
+<p>The considered log-returns range from -0.1 to 0.1. Optimization might
 be facilitated by standardizing the data first. This idea can be tested
-via the <code>$standardize()</code> method:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hmm_ino</span><span class="op">$</span></span>
-<span>  <span class="fu">standardize</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">optimize</span><span class="op">(</span>initial <span class="op">=</span> <span class="va">sampler</span>, runs <span class="op">=</span> <span class="fl">100</span>, label <span class="op">=</span> <span class="st">"standardize"</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">reset_argument</span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span></code></pre></div>
-<p>Note that we again use <code>$reset_argument()</code> to obtain our
-actual (non-standardized) data set.</p>
+via the <code>standardize()</code> method:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="fu">standardize_argument</span><span class="op">(</span><span class="st">"observations"</span><span class="op">)</span></span></code></pre></div>
+<p>The values used for the standardization can be extracted as
+follows:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">observations</span> <span class="op">&lt;-</span> <span class="va">Nop_hmm</span><span class="op">$</span><span class="fu">fixed_argument</span><span class="op">(</span><span class="st">"get"</span>, <span class="st">"observations"</span><span class="op">)</span></span>
+<span><span class="op">(</span><span class="va">center</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">observations</span>, <span class="st">"center"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.0002183963</span></span>
+<span><span class="op">(</span><span class="va">scale</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">observations</span>, <span class="st">"scale"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.01387009</span></span></code></pre></div>
+<p>Optimization proceeds as usual:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
+<span>  <span class="fu">initialize_random</span><span class="op">(</span>sampler <span class="op">=</span> <span class="va">sampler</span>, runs <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">optimize</span><span class="op">(</span>optimization_label <span class="op">=</span> <span class="st">"standardized"</span><span class="op">)</span><span class="op">$</span></span>
+<span>  <span class="fu">fixed_argument</span><span class="op">(</span>action <span class="op">=</span> <span class="st">"reset"</span>, argument_name <span class="op">=</span> <span class="st">"observations"</span><span class="op">)</span></span></code></pre></div>
+<p>Note that the results obtained on the standardized optimization
+problem could be back-transformed via:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">transform</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="va">x</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="va">scale</span> <span class="op">+</span> <span class="va">center</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="va">scale</span> <span class="op">+</span> <span class="va">center</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="evaluating-the-optimization-runs">Evaluating the optimization runs<a class="anchor" aria-label="anchor" href="#evaluating-the-optimization-runs"></a>
@@ -288,148 +322,142 @@ actual (non-standardized) data set.</p>
 </h3>
 <p>Selecting the starting values for the HMM likelihood optimization is
 a well-known issue, as poor starting values may likely result in local
-optima.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Other R packages designed to fit HMMs discuss this topic
-in more detail, see, e.g., &lt;span class="citation"&gt;Michelot, Langrock,
-and Patterson (&lt;a href="#ref-Michelot:2016" role="doc-biblioref"&gt;2016&lt;/a&gt;)&lt;/span&gt;.&lt;/p&gt;'><sup>3</sup></a>
-We thus first evaluate the optimizations by comparing the likelihood
-values at convergence, which can be displayed using the
-<code>$optima()</code> method. Here,</p>
+optima. We thus first evaluate the optimizations by comparing the
+likelihood values at convergence, which can be displayed using the
+<code>optima()</code> method. Here,</p>
 <ul>
 <li>
-<code>sort_by = "value"</code> sorts the table by function value (in
-decreasing order<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;By default, optimization is assumed to involve
-minimizing the target function. If instead the function is maximized,
-set &lt;code&gt;hmm_ino$minimized &amp;lt;- FALSE&lt;/code&gt; to reverse the ordering
-in the &lt;code&gt;$optima()&lt;/code&gt; output.&lt;/p&gt;"><sup>4</sup></a>),</li>
-<li>
-<code>only_comparable = TRUE</code> excludes optimization results on
-the standardized or reduced data set,</li>
+<code>sort_by = "value"</code> sorts the table by function
+value,</li>
 <li>
 <code>digitis = 0</code> ignores any decimal places.</li>
 </ul>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hmm_ino</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>sort_by <span class="op">=</span> <span class="st">"value"</span>, only_comparable <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    value frequency</span></span>
-<span><span class="co">#&gt; 1 -22446        76</span></span>
-<span><span class="co">#&gt; 2 -22445        40</span></span>
-<span><span class="co">#&gt; 3 -21780         3</span></span>
-<span><span class="co">#&gt; 4 -21372       144</span></span>
-<span><span class="co">#&gt; 5 -21353         1</span></span></code></pre></div>
-<p>The frequency table indicates that 76 out of 264 runs converged to
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>sort_by_value <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 2</span></span></span>
+<span><span class="co">#&gt;     value     n</span></span>
+<span><span class="co">#&gt;  <span style="color: #BCBCBC;">*</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446</span>   168</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">445</span>    37</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">804</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">803</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">423</span>    22</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">421</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">372</span>   128</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">371</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">351</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">349</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">295</span>     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span>  <span style="text-decoration: underline;">41</span>293     1</span></span></code></pre></div>
+<p>The frequency table indicates that 168 out of 364 runs converged to
 the smallest (negative) log-likelihood value, which appears to be the
 global optimum (note that these are the negative log-likelihood values).
-However, in 188 runs we apparantly got stuck in local optima.</p>
-<p>Using <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, we now can investigate the optimum
+However, in 196 runs we apparently got stuck in local optima.</p>
+<p>Using <code>$results</code>, we now can investigate the optimum
 values (<code>"value"</code>), the corresponding parameter vectors
 (<code>"parameter"</code>), and the optimization times
-(<code>"seconds"</code>) of all runs (here, only the first ten are
-shown):<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;The &lt;code&gt;$elements_available()&lt;/code&gt; method provides
-an overview of all available optimization result elements.&lt;/p&gt;"><sup>5</sup></a></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">hmm_ino</span>, which_element <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"value"</span>, <span class="st">"parameter"</span>, <span class="st">"seconds"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        value                                 parameter seconds</span></span>
-<span><span class="co">#&gt; 1  -21372.14  -2.05, -18.88, 0.00, -2.35, -4.28, -4.64   12.81</span></span>
-<span><span class="co">#&gt; 2  -22445.58    -3.70, -4.52, 0.00, 0.00, -4.72, -3.86   14.84</span></span>
-<span><span class="co">#&gt; 3  -21372.14   -15.59, -2.08, 5.06, 0.00, -7.44, -4.28    9.57</span></span>
-<span><span class="co">#&gt; 4  -22445.58    -3.70, -4.52, 0.00, 0.00, -4.72, -3.86   20.73</span></span>
-<span><span class="co">#&gt; 5  -22445.58    -4.52, -3.70, 0.00, 0.00, -3.86, -4.72   21.37</span></span>
-<span><span class="co">#&gt; 6  -21352.70 -15.92, -35.48, 14.12, 0.00, -8.09, -4.28   18.44</span></span>
-<span><span class="co">#&gt; 7  -22445.58    -4.52, -3.70, 0.00, 0.00, -3.86, -4.72   32.38</span></span>
-<span><span class="co">#&gt; 8  -21372.14 -30.36, -3.62, -22.03, 0.00, -4.71, -4.28   24.00</span></span>
-<span><span class="co">#&gt; 9  -21372.13  -2.88, -13.94, 0.00, 1.46, -4.28, -12.26    8.39</span></span>
-<span><span class="co">#&gt; 10 -22445.58    -3.70, -4.52, 0.00, 0.00, -4.72, -3.86   23.36</span></span></code></pre></div>
+(<code>"seconds"</code>) of all runs (here, only the first are
+shown):</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">value</span>, <span class="va">parameter</span>, <span class="va">seconds</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 564 × 3</span></span></span>
+<span><span class="co">#&gt;      value parameter seconds</span></span>
+<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.682</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.570</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.439</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.583</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.470</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">372.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.298</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.411</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> -<span style="color: #BB0000; text-decoration: underline;">22</span><span style="color: #BB0000;">446.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.462</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">372.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.327</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">372.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.344</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 554 more rows</span></span></span></code></pre></div>
 <p>The final parameter estimates (i.e., the parameters associated with
-the global optimum) can be accessed via <code>$best_parameter()</code>
-…</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hmm_ino</span><span class="op">$</span><span class="fu">best_parameter</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -3.70 -4.52  0.00  0.00 -4.72 -3.86</span></span>
-<span><span class="co">#&gt; attr(,"run")</span></span>
-<span><span class="co">#&gt; [1] 89</span></span>
-<span><span class="co">#&gt; attr(,"optimizer")</span></span>
-<span><span class="co">#&gt; [1] "stats::nlm"</span></span></code></pre></div>
-<p>.. and the corresponding likelihood value as:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hmm_ino</span><span class="op">$</span><span class="fu">best_value</span><span class="op">(</span><span class="op">)</span></span>
+the global optimum) can be accessed:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">minimum</span></span>
+<span><span class="co">#&gt; $value</span></span>
 <span><span class="co">#&gt; [1] -22445.58</span></span>
-<span><span class="co">#&gt; attr(,"run")</span></span>
-<span><span class="co">#&gt; [1] 89</span></span>
-<span><span class="co">#&gt; attr(,"optimizer")</span></span>
-<span><span class="co">#&gt; [1] "stats::nlm"</span></span></code></pre></div>
-<p>Note that the attributes <code>"run"</code> and
-<code>"optimizer"</code> provide the information, in which optimization
-run and with which optimizer this estimate was obtained.</p>
-<p>We can compute the proportion of runs that lead to the apparent
-global optimum of -22445.58 as follows:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">hmm_ino</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label"</span>, <span class="st">"value"</span>, <span class="st">"seconds"</span><span class="op">)</span>, global_optimum <span class="op">=</span> <span class="st">"value &lt; -22445"</span>, only_comparable <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">label</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $parameter</span></span>
+<span><span class="co">#&gt; [1] -3.7009455944 -4.5228904822  0.0008467132 -0.0012013768 -4.7213010302</span></span>
+<span><span class="co">#&gt; [6] -3.8587575292</span></span></code></pre></div>
+<p>Next, we can compute the proportion of runs that lead to the apparent
+global optimum as follows (note that the standardized initialization
+approach cannot be compared to the other approaches here):</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.original</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>global_optimum <span class="op">=</span> <span class="va">value</span> <span class="op">&lt;</span> <span class="op">-</span><span class="fl">22445</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">.optimization_label</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>proportion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">global_optimum</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
-<span><span class="co">#&gt;   label          proportion</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> educated_guess      0.562</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> random              0.4  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> subset              0.4</span></span></code></pre></div>
-<p>While for the educated guesses about 55% of the runs converge to the
-global optimum, the random initialization and subset initialization
-strategies get stuck more often in local optima. Note that the
-standardized initialization approach cannot be compared to the other
-approaches here.</p>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
+<span><span class="co">#&gt;   .optimization_label proportion</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> educated_guess           0.891</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> initialized_reduced      0.37 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> random                   0.47 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> random_naive             0.64</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="optimization-time">Optimization time<a class="anchor" aria-label="anchor" href="#optimization-time"></a>
 </h3>
-<p>The <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> function can be used to investigate the
+<p>The <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot()</a></code> method can be used to investigate the
 optimization times across initialization strategies
-(<code>by = "label"</code>).<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Setting &lt;code&gt;relative = FALSE&lt;/code&gt; in the
-&lt;code&gt;&lt;a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link"&gt;plot()&lt;/a&gt;&lt;/code&gt; call shows the absolute times.&lt;/p&gt;'><sup>6</sup></a></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hmm_ino</span>, by <span class="op">=</span> <span class="st">"label"</span><span class="op">)</span></span></code></pre></div>
+(<code>group_by = ".optimization_label"</code>).<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Setting &lt;code&gt;relative = FALSE&lt;/code&gt; in the
+&lt;code&gt;&lt;a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link"&gt;plot()&lt;/a&gt;&lt;/code&gt; call would show the absolute times.&lt;/p&gt;'><sup>2</sup></a></p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span>group_by <span class="op">=</span> <span class="st">"optimization"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/hmm-optimization-time-1.png" width="75%" style="display: block; margin: auto;"></p>
-<p>Using the output provided by <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and some data
-manipulation functions provided by the package <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a>, we
-can also compute summary statistics of interest, like the median
+<p>We can also compute summary statistics of interest, like the median
 computation time or standard deviation per strategy:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">hmm_ino</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label"</span>, <span class="st">"seconds"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">label</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">.optimization_label</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    median_seconds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">seconds</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    sd_seconds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">seconds</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">median_seconds</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
-<span><span class="co">#&gt;   label          median_seconds sd_seconds</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> subset                   8.37       6.16</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> standardize              9.85       1.48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> educated_guess          14.8        7.28</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> random                  15.9        7.30</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<span><span class="co">#&gt;   .optimization_label median_seconds sd_seconds</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> standardized                 0.296      0.115</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> reduced                      0.317      0.165</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> initialized_reduced          0.438      0.266</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> random                       0.579      0.325</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> random_naive                 0.614      0.229</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> educated_guess               0.897      0.367</span></span></code></pre></div>
 <p>The subset and the standardize approach can improve the median
 optimization time by a factor of about 2 in this example compared to the
-random initialization approach.</p>
+random initialization approach. Standardization also reduces standard
+deviation in computation time, indicating more stable optimization.</p>
 </div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent">
-<div id="ref-Michelot:2016" class="csl-entry">
-Michelot, T., R. Langrock, and T. A. Patterson. 2016. <span>“<span class="nocase">moveHMM</span>: An <span>R</span> Package for the
-Statistical Modelling of Animal Movement Data Using Hidden Markov
-Models.”</span> <em>Methods in Ecology and Evolution</em> 7 (11):
-1308–15. <a href="https://doi.org/10.1111/2041-210X.12578" class="external-link">https://doi.org/10.1111/2041-210X.12578</a>.
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-Bengtsson:2021" class="csl-entry">
+Bengtsson, Henrik. 2021. <span>“A Unifying Framework for Parallel and
+Distributed Processing in <span>R</span> Using Futures.”</span> <em>The
+R Journal</em> 13 (2): 208–27. <a href="https://doi.org/10.32614/RJ-2021-048" class="external-link">https://doi.org/10.32614/RJ-2021-048</a>.
 </div>
-<div id="ref-Oelschläger:2021" class="csl-entry">
+<div id="ref-Bengtsson:2024" class="csl-entry">
+———. 2024. <em>Progressr: An Inclusive, Unifying API for Progress
+Updates</em>. <a href="https://CRAN.R-project.org/package=progressr" class="external-link">https://CRAN.R-project.org/package=progressr</a>.
+</div>
+<div id="ref-Oelschlaeger:2021" class="csl-entry">
 Oelschläger, L., and T. Adam. 2021. <span>“Detecting Bearish and Bullish
 Markets in Financial Time Series Using Hierarchical Hidden Markov
 Models.”</span> <em>Statistical Modelling</em>. <a href="https://doi.org/10.1177/1471082X211034048" class="external-link">https://doi.org/10.1177/1471082X211034048</a>.
 </div>
-<div id="ref-Oelschläger:2023b" class="csl-entry">
-Oelschläger, L., T. Adam, and R. Michels. 2023. <em>fHMM: Fitting Hidden
-Markov Models to Financial Data</em>. <a href="https://loelschlaeger.de/fHMM/" class="external-link">https://loelschlaeger.de/fHMM/</a>.
+<div id="ref-Oelschlaeger:2024" class="csl-entry">
+Oelschläger, L., T. Adam, and R. Michels. 2024. <span>“<span class="nocase">fHMM: Hidden Markov Models for Financial Time Series in
+R</span>.”</span> <em>Journal of Statistical Software</em> 109 (9). <a href="https://doi.org/10.18637/jss.v109.i09" class="external-link">https://doi.org/10.18637/jss.v109.i09</a>.
 </div>
 <div id="ref-Wickham:2023" class="csl-entry">
 Wickham, H., R. François, L. Henry, K. Müller, and D. Vaughan. 2023.
@@ -445,28 +473,26 @@ Chapman &amp; Hall/CRC.
 </div>
 </div>
 
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
 
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p>
-<p>Developed by <a href="https://loelschlaeger.de" class="external-link">Lennart Oelschläger</a>, <a href="https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc.)/" class="external-link">Marius Ötting</a>.</p>
+  <p>Developed by <a href="https://loelschlaeger.de" class="external-link">Lennart Oelschläger</a>, <a href="https://www.uni-bielefeld.de/fakultaeten/wirtschaftswissenschaften/lehrbereiche/stats/team/marius-otting-(m.sc.)/" class="external-link">Marius Ötting</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>
