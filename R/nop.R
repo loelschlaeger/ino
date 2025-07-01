@@ -44,6 +44,9 @@
 #' @param only_original \[`logical(1)\]\cr
 #' Include only optima obtained on the original problem?
 #'
+#' @param digits \[`integer(1)\]\cr
+#' The number of decimal places.
+#'
 #' @details
 #' # Getting started
 #'
@@ -677,7 +680,7 @@ Nop <- R6::R6Class(
 
       ### extract parameters
       if (nrow(self$results) == 0) {
-        cli::cli_warn("No results available.", call = NULL)
+        private$.print_status("No results available.")
         return(invisible(self))
       }
       results <- self$results |>
@@ -975,7 +978,11 @@ Nop <- R6::R6Class(
 
       ### optimize
       private$.print_status("Start optimization {.val {optimization_label}}.")
-      progress_step <- progressr::progressor(steps = nrow(combinations))
+      if (requireNamespace("progressr", quietly = TRUE)) {
+        progress_step <- progressr::progressor(steps = nrow(combinations))
+      } else {
+        progress_step <- function() NULL
+      }
       results <- future.apply::future_apply(
         combinations, MARGIN = 1, function(x) {
           out <- private$.optimize(
@@ -1013,9 +1020,6 @@ Nop <- R6::R6Class(
     #'
     #' @param sort_by_value \[`logical(1)\]\cr
     #' Sort by value? Else, sort by frequency.
-    #'
-    #' @param digits \[`integer(1)\]\cr
-    #' The number of decimal places.
 
     optima = function(
       which_direction = "min", only_original = TRUE,
@@ -1044,8 +1048,8 @@ Nop <- R6::R6Class(
       ### extract optima
       results <- self$results |> dplyr::filter(.direction == which_direction)
       if (only_original) results <- results |> dplyr::filter(.original == TRUE)
-      results <- results |>
-        dplyr::mutate(value = round(value, digits = digits))
+      results <- results |> dplyr::mutate(value = round(value, digits = digits))
+
       if (is.null(group_by)) {
         results <- results |> dplyr::count(value)
         results <- if (sort_by_value && which_direction == "min") {
@@ -1063,18 +1067,19 @@ Nop <- R6::R6Class(
           results |> dplyr::select(value, .optimizer_label) |>
             split(results$.optimizer_label)
         }
+
         results <- if (sort_by_value && which_direction == "min") {
-          results |> purrr::map(
-            ~ dplyr::count(.x, value) |> dplyr::arrange(value)
-          )
+          lapply(results, function(x) {
+            dplyr::count(x, value) |> dplyr::arrange(value)
+          })
         } else if (sort_by_value && which_direction == "max") {
-          results |> purrr::map(
-            ~ dplyr::count(.x, value) |> dplyr::arrange(dplyr::desc(value))
-          )
+          lapply(results, function(x) {
+            dplyr::count(x, value) |> dplyr::arrange(dplyr::desc(value))
+          })
         } else {
-          results |> purrr::map(
-            ~ dplyr::count(.x, value) |> dplyr::arrange(dplyr::desc(n))
-          )
+          lapply(results, function(x) {
+            dplyr::count(x, value) |> dplyr::arrange(dplyr::desc(n))
+          })
         }
       }
       structure(
@@ -1132,13 +1137,17 @@ Nop <- R6::R6Class(
       } else {
         results |>
           dplyr::select(.optimization_label, dplyr::all_of(which_element)) |>
-          dplyr::mutate(diff = purrr::map(.data[[which_element]], ~ .x - reference)) |>
+          dplyr::mutate(
+            diff = lapply(results[[which_element]], function(x) x - reference)
+          ) |>
           tidyr::unnest_wider(diff, names_sep = "_") |>
           dplyr::rename_with(~ parameter_labels, dplyr::starts_with("diff_")) |>
           dplyr::select(dplyr::all_of(c(parameter_labels, ".optimization_label")))
+
       }
       structure(out, class = c("Nop_deviation", class(out)))
     }
+
   ),
 
   active = list(
@@ -1182,8 +1191,9 @@ Nop <- R6::R6Class(
         )
         if (length(res) == 0) {
           return(
-            add_identifier |>
-              purrr::map_dfc(setNames, object = list(character()))
+            setNames(
+              rep(list(character(0)), length(add_identifier)), add_identifier
+            ) |> dplyr::as_tibble()
           )
         }
         res <- private$.results$get("all") |>
@@ -1193,13 +1203,18 @@ Nop <- R6::R6Class(
           })
 
         ### build tibble
-        all_names <- unique(purrr::flatten_chr(purrr::map(res, names)))
-        results <- purrr::map(res, function(x) {
-          purrr::map(all_names, function(nm) {
-            val <- x[[nm]] %||% NA
+        all_names <- unique(unlist(lapply(res, names), use.names = FALSE))
+        results <- lapply(res, function(x) {
+          values <- lapply(all_names, function(nm) {
+            if (!is.null(x[[nm]])) {
+              val <- x[[nm]]
+            } else {
+              val <- NA
+            }
             if (is.null(val) || length(val) != 1 || is.matrix(val)) list(val) else val
-          }) |>
-            rlang::set_names(all_names) |> dplyr::as_tibble()
+          })
+          names(values) <- all_names
+          dplyr::as_tibble(values)
         }) |> dplyr::bind_rows()
         structure(results, class = c("Nop_results", class(results)))
 
@@ -1219,7 +1234,7 @@ Nop <- R6::R6Class(
         self$results |>
           dplyr::filter(.direction == "min", .original == TRUE) |>
           {\(results) if (nrow(results) == 0) {
-            cli::cli_warn("No results available.", call = NULL)
+            private$.print_status("No results available.")
             return(list(value = NA_real_, parameter = numeric()))
           } else {
             results |>
@@ -1229,7 +1244,7 @@ Nop <- R6::R6Class(
           }}()
       } else {
         cli::cli_abort(
-          "Field {.var $maximum} is read-only.",
+          "Field {.var $minimum} is read-only.",
           call = NULL
         )
       }
@@ -1243,7 +1258,7 @@ Nop <- R6::R6Class(
         self$results |>
           dplyr::filter(.direction == "max", .original == TRUE) |>
           {\(results) if (nrow(results) == 0) {
-            cli::cli_warn("No results available.", call = NULL)
+            private$.print_status("No results available.")
             return(list(value = NA_real_, parameter = numeric()))
           } else {
             results |>

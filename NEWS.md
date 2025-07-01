@@ -1,6 +1,10 @@
 # 1.1.0
 
-*
+* Adapted to the new `{optimizeR}` version.
+
+* `$trace()` method transferred to the `{trackopt}` package.
+
+* Some changes in the API.
 
 # 1.0.2
 

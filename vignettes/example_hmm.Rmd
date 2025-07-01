@@ -1,11 +1,11 @@
 ---
-title: "Example: Hidden Markov Model"
+title: "Package demo: Hidden Markov Model"
 description: >
-  The {ino} package in action for HMM likelihood optimization.
+  Using ino for HMM likelihood optimization
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Example: Hidden Markov Model}
+  %\VignetteIndexEntry{Package demo: Hidden Markov Model}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -13,7 +13,7 @@ bibliography: ref.bib
 link-citations: true
 ---
 
-```{r, setup, include = FALSE}
+```{r, setup, include = FALSE, purl = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -35,7 +35,7 @@ Numerical likelihood optimization is a prominent method for fitting HMMs to empi
 
 ## Application to financial data
 
-The example data set considered throughout this vignette covers a time series of log returns from the [German stock index DAX](https://en.wikipedia.org/wiki/DAX) over 30 years. The DAX closing prices are freely accessible via [Yahoo Finance](https://finance.yahoo.com) and can be downloaded via the `download_data()` function from the `{fHMM}` package [@Oelschläger:2023b]. We transform them to log-returns using the `{dplyr}` package [@Wickham:2023]:
+The example data set considered throughout this vignette covers a time series of log returns from the [German stock index DAX](https://en.wikipedia.org/wiki/DAX) over 30 years. The DAX closing prices are freely accessible via [Yahoo Finance](https://finance.yahoo.com) and can be downloaded via the `download_data()` function from the `{fHMM}` package [@Oelschlaeger:2024]. We transform them to log-returns using the `{dplyr}` package [@Wickham:2023]:
 
 ```{r, download dax data, message = FALSE, warning = FALSE, eval = TRUE}
 library("fHMM")
@@ -61,7 +61,7 @@ ggplot(dax, aes(x = date, y = logreturn)) +
   scale_y_continuous(labels = scales::label_percent())
 ```
 
-As the log-returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions --- note that some applications instead use t-distributions to also model the kurtosis [@Oelschläger:2021].
+As the log-returns are continuous and can take both negative and positive values, we consider an HMM with Gaussian state-dependent distributions --- note that some applications instead use t-distributions to also model the kurtosis [@Oelschlaeger:2021].
 
 ## Likelihood optimization
 
@@ -75,7 +75,7 @@ The likelihood function `ll_hmm()` is provided by the `{fHMM}` package. The argu
 
 ```{r, define ino object}
 Nop_hmm <- Nop$new(
-  objective = fHMM::ll_hmm, 
+  f = fHMM::ll_hmm, 
   npar = 6, 
   observations = dax$logreturn,
   sdds = "normal",
@@ -87,12 +87,12 @@ Nop_hmm <- Nop$new(
 In this example, we optimize using the optimizer `stats::nlm()` (see the introductory vignette for more details on how to specify optimizers):
 
 ```{r, set optimizer}
-Nop_hmm$set_optimizer(optimizeR::optimizer_nlm())
+Nop_hmm$set_optimizer(optimizeR::Optimizer$new("stats::nlm"))
 ```
 
 ### Parallel optimization and progress updates
 
-For convenience, The `{ino}` package supports parallel computation of optimization runs based on the `{future}` package [@Bengtsson:2021] and printing progress messages based on the `{progressr}` package [@Bengtsson:2023]. 
+For convenience, The `{ino}` package supports parallel computation of optimization runs based on the `{future}` package [@Bengtsson:2021] and printing progress messages based on the `{progressr}` package [@Bengtsson:2024]. 
 
 For example, calling
 
@@ -138,7 +138,7 @@ The `optimize()` method then performs `runs = 100` optimizations with starting v
 
 ```{r, random initialization}
 Nop_hmm$
-  initialize_random(sampler = sampler, runs = 100, seed = 1)$
+  initialize_random(sampler = sampler, runs = 100)$
   optimize(optimization_label = "random")
 ```
 
@@ -166,8 +166,8 @@ Finally, the entire data set is recovered via `fixed_argument("reset", argument_
 
 ```{r, subset initialization}
 Nop_hmm$
-  reduce("observations", how = "first", proportion = 0.25)$
-  initialize_random(sampler = sampler, runs = 100, seed = 1)$
+  reduce_argument("observations", how = "first", proportion = 0.25)$
+  initialize_random(sampler = sampler, runs = 100)$
   optimize(optimization_label = "reduced")$
   fixed_argument("reset", argument_name = "observations")$
   initialize_continue("reduced")$
@@ -179,13 +179,13 @@ Nop_hmm$
 The considered log-returns range `r paste(c("from", "to"), round(range(dax$logreturn), 1), collapse = " ")`. Optimization might be facilitated by standardizing the data first. This idea can be tested via the `standardize()` method:
 
 ```{r, standardize initialization 1, eval = TRUE}
-Nop_hmm$standardize("observations")
+Nop_hmm$standardize_argument("observations")
 ```
 
 The values used for the standardization can be extracted as follows:
 
 ```{r, standardize initialization values, eval = TRUE}
-observations <- Nop_hmm$get_argument("observations")
+observations <- Nop_hmm$fixed_argument("get", "observations")
 (center <- attr(observations, "center"))
 (scale <- attr(observations, "scale"))
 ```
@@ -194,7 +194,7 @@ Optimization proceeds as usual:
 
 ```{r, standardize initialization 2}
 Nop_hmm$
-  initialize_random(sampler = sampler, runs = 100, seed = 1)$
+  initialize_random(sampler = sampler, runs = 100)$
   optimize(optimization_label = "standardized")$
   fixed_argument(action = "reset", argument_name = "observations")
 ```
@@ -217,78 +217,54 @@ Selecting the starting values for the HMM likelihood optimization is a well-know
 - `digitis = 0` ignores any decimal places.
 
 ```{r, overview of optima, eval = TRUE}
-Nop_hmm$optima(sort_by = "value", digits = 0)
+Nop_hmm$optima(sort_by_value = TRUE, digits = 0)
 ```
 
 ```{r, get number of converged runs, include = FALSE, eval = TRUE}
 library("dplyr")
-optima <- Nop_hmm$optima(sort_by = "value", digits = 0)
-global <- optima %>% arrange(value) %>% slice(1) %>% pull(frequency)
-total <- sum(optima$frequency)
+optima <- Nop_hmm$optima(sort_by_value = TRUE, digits = 0)
+global <- optima |> arrange(value) |> slice(1) |> pull(n)
+total <- sum(optima$n)
 local <- total - global
 ```
 
 The frequency table indicates that `r global` out of `r total` runs converged to the smallest (negative) log-likelihood value, which appears to be the global optimum (note that these are the negative log-likelihood values). However, in `r local` runs we apparently got stuck in local optima.
 
-Using `summary()`, we now can investigate the optimum values (`"value"`), the corresponding parameter vectors (`"parameter"`), and the optimization times (`"seconds"`) of all runs (here, only the first ten are shown):
+Using `$results`, we now can investigate the optimum values (`"value"`), the corresponding parameter vectors (`"parameter"`), and the optimization times (`"seconds"`) of all runs (here, only the first are shown):
 
 ```{r, summary of results, eval = TRUE}
-Nop_hmm$summary(which_element = c("value", "parameter", "seconds"), digits = 2) %>%
-  head(n = 10)
+Nop_hmm$results |> select(value, parameter, seconds)
 ```
 
-In addition, the `elements()` method provides an overview of all available optimization result elements:
-
-```{r, elements available, eval = TRUE}
-Nop_hmm$elements()
-```
-
-The final parameter estimates (i.e., the parameters associated with the global optimum) can be accessed via `best("parameter")` ...
+The final parameter estimates (i.e., the parameters associated with the global optimum) can be accessed:
 
 ```{r, best parameter, eval = TRUE}
-Nop_hmm$best("parameter")
+Nop_hmm$minimum
 ```
 
-.. and the corresponding likelihood value as:
-
-```{r, best value, eval = TRUE}
-Nop_hmm$best("value")
-```
-
-Note that the attributes `".run_id"` and `".optimizer_label"` provide the information, in which optimization run and with which optimizer this result was obtained.
-
-Next, we can compute the proportion of runs that lead to the apparent global optimum of `r format(as.numeric(Nop_hmm$best("value")), scientific = FALSE)` as follows (note that the standardized initialization approach cannot be compared to the other approaches here):
+Next, we can compute the proportion of runs that lead to the apparent global optimum as follows (note that the standardized initialization approach cannot be compared to the other approaches here):
 
 ```{r, proportion of converged runs, eval = TRUE}
-Nop_hmm$summary(
-  which_element = c("value", "seconds"), 
-  which_run = "comparable", 
-  add_identifier = ".optimization_label"
-) %>%
-  mutate(global_optimum = value < -22445) %>%
-  group_by(.optimization_label) %>%
+Nop_hmm$results |> 
+  filter(.original) |>
+  mutate(global_optimum = value < -22445) |>
+  group_by(.optimization_label) |>
   summarise(proportion = mean(global_optimum, na.rm = TRUE))
 ```
 
 ### Optimization time
 
-The `plot()` method can be used to investigate the optimization times across initialization strategies (`group_by = ".optimization_label"`).^[Setting `relative = FALSE` in the `plot()` call would show the absolute times.]  
+The `autoplot()` method can be used to investigate the optimization times across initialization strategies (`group_by = ".optimization_label"`).^[Setting `relative = FALSE` in the `plot()` call would show the absolute times.]  
 
 ```{r, optimization-time, eval = TRUE, warning = FALSE, message = FALSE}
-Nop_hmm$plot(
-  which_run = c("comparable", "standardized", logical = "or"), 
-  group_by = ".optimization_label", relative = TRUE
-)
+Nop_hmm$results |> 
+  autoplot(group_by = "optimization", relative = TRUE)
 ```
 
 We can also compute summary statistics of interest, like the median computation time or standard deviation per strategy:
 
 ```{r, summary statistics, warning = FALSE, message = FALSE, eval = TRUE}
-Nop_hmm$summary(
-  which_element = "seconds", 
-  which_run = c("comparable", "standardized", logical = "or"), 
-  add_identifier = ".optimization_label"
-) %>%
+Nop_hmm$results |>
   group_by(.optimization_label) %>%
   summarise(
     median_seconds = median(seconds, na.rm = TRUE),

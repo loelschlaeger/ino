@@ -19,7 +19,7 @@ initialization in numerical optimization. It allows for systematic
 comparisons of different initialization strategies and optimization
 algorithms using a unified `R6` object called `Nop`. For detailed
 examples and usage guidance, see the [package
-vignette](https://loelschlaeger.de/ino/articles/).
+vignettes](https://loelschlaeger.de/ino/articles/).
 
 ## Installation
 
@@ -56,7 +56,7 @@ We can visualize the function surface along with the initial values:
 ggplot2::autoplot(Nop_ackley)
 ```
 
-<img src="man/figures/README-ackley plot-1.png" width="70%" />
+<img src="man/figures/README-ackley_plot-1.png" width="70%" />
 
 Next, we optimize the function using the defined initializations and
 optimizers:
@@ -102,7 +102,7 @@ Nop_ackley$results |>
   )
 ```
 
-<img src="man/figures/README-ackley results-1.png" width="70%" />
+<img src="man/figures/README-ackley_results-1.png" width="70%" />
 
 Overall, (only) 34% of of the initializations successfully converged to
 the global minimum.

@@ -127,7 +127,9 @@ autoplot.Nop_1d <- function(object, xlim, ...) {
   if (!no_initials) {
     plot <- plot + ggplot2::geom_point(
       data,
-      mapping = ggplot2::aes(x = x, y = y, color = "Initial values")
+      mapping = ggplot2::aes(
+        x = .data[["x"]], y = .data[["y"]], color = "Initial values"
+      )
     )
   }
   return(plot)
@@ -158,7 +160,10 @@ autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
     data <- data.frame(x = numeric(), y = numeric())
   }
   plot <- ggplot2::ggplot() +
-    ggplot2::geom_contour_filled(data = grid, mapping = ggplot2::aes(x = x, y = y, z = z)) +
+    ggplot2::geom_contour_filled(
+      data = grid,
+      mapping = ggplot2::aes(x = .data[["x"]], y = .data[["y"]], z = .data[["z"]])
+    ) +
     ggplot2::scale_x_continuous(limits = xlim) +
     ggplot2::scale_y_continuous(limits = xlim2) +
     ggplot2::labs(
@@ -169,7 +174,9 @@ autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
   if (!no_initials) {
     plot <- plot + ggplot2::geom_point(
         data = data,
-        mapping = ggplot2::aes(x = x, y = y, color = "Initial values")
+        mapping = ggplot2::aes(
+          x = .data[["x"]], y = .data[["y"]], color = "Initial values"
+        )
       ) +
       ggplot2::scale_color_manual(
         values = c("Initial values" = "red"),
@@ -206,7 +213,7 @@ autoplot.Nop_optima <- function(object, ...) {
 
   ### produce bar chart
   object |>
-    ggplot2::ggplot(ggplot2::aes(x = factor(value), y = n)) +
+    ggplot2::ggplot(ggplot2::aes(x = factor(.data[["value"]]), y = .data[["n"]])) +
     ggplot2::geom_bar(stat = "identity") +
     ggplot2::labs(x = "Value", y = "Frequency")
 }
@@ -237,10 +244,10 @@ autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
 
   ### produce figure
   object |>
-    tidyr::pivot_longer(cols = - .optimization_label) |>
-    ggplot2::ggplot(ggplot2::aes(x = name, y = value)) +
+    tidyr::pivot_longer(cols = -dplyr::all_of(".optimization_label")) |>
+    ggplot2::ggplot(ggplot2::aes(x = .data[["name"]], y = .data[["value"]])) +
     ggplot2::geom_point(
-      ggplot2::aes(color = .optimization_label),
+      ggplot2::aes(color = .data[[".optimization_label"]]),
       position = ifelse(jitter, "jitter", "identity")
     ) +
     ggplot2::labs(x = "parameter", y = "deviation") +
@@ -282,7 +289,6 @@ autoplot.Nop_results <- function(
     var_name = "object"
   )
   if (nrow(object) == 0) {
-    cli::cli_warn("No results available.", call = NULL)
     return(ggplot2::ggplot())
   }
   suitable_columns <- !vapply(object, is.list, logical(1)) &
@@ -305,7 +311,7 @@ autoplot.Nop_results <- function(
 
   ### transform data to relative values
   if (relative) {
-    med <- object[[which_element]] |> median(na.rm = TRUE)
+    med <- object[[which_element]] |> stats::median(na.rm = TRUE)
     object[[which_element]] <- (object[[which_element]] - med) / med
   }
 

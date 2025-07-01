@@ -65,7 +65,6 @@ test_that("Example 1: Minimization works", {
 test_that("Example 1: Results can be accessed", {
   checkmate::expect_tibble(Nop_ackley$results)
   checkmate::expect_list(Nop_ackley$minimum, len = 2)
-  expect_warning(Nop_ackley$maximum, "No results available.")
   checkmate::expect_tibble(Nop_ackley$optima())
   comb <- expand.grid(
     which_direction = c("min", "max"),
@@ -230,10 +229,6 @@ test_that("Example 2: Fixed argument can be subsetted", {
 })
 
 test_that("Example 2: Initialization can be continued", {
-  expect_warning(
-    Nop_mixture$initialize_continue("label"),
-    "No results available."
-  )
   Nop_mixture$
     set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
     initialize_fixed(c(2, 4, 1, 2, -1))$
