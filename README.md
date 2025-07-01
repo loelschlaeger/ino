@@ -17,8 +17,9 @@ coverage](https://codecov.io/gh/loelschlaeger/ino/branch/master/graph/badge.svg)
 The `{ino}` R package provides a framework for analyzing the role of
 initialization in numerical optimization. It allows for systematic
 comparisons of different initialization strategies and optimization
-algorithms using a unified `R6` object called `Nop`. For detailed
-examples and usage guidance, see the [package
+algorithms using a unified `R6` object called
+[`Nop`](https://loelschlaeger.de/ino/reference/Nop.html). For detailed
+examples and usage guidance, please have a look at the [package
 vignettes](https://loelschlaeger.de/ino/articles/).
 
 ## Installation
@@ -30,16 +31,14 @@ You can install the released version from
 install.packages("ino")
 ```
 
-## Toy example
+## Example
 
-The [Ackley function](https://en.wikipedia.org/wiki/Ackley_function)
-features multiple local minima and one global minimum at the origin. We
-define
+The [Ackley function](https://en.wikipedia.org/wiki/Ackley_function) has
+multiple local minima and one global minimum at the origin. We define
 
 1.  the numerical optimization problem as a `Nop` object,
-2.  two optimization algorithm (here `stats::nlm()` and
-    `stats::optim()`), and
-3.  50 initial values (here drawn at random):
+2.  two optimization algorithms `stats::nlm()` and `stats::optim()`, and
+3.  40 randomly drawn initial values:
 
 ``` r
 library("ino")
@@ -47,50 +46,26 @@ set.seed(1)
 Nop_ackley <- Nop$new(f = TestFunctions::TF_ackley, npar = 2)$
   set_optimizer(optimizeR::Optimizer$new("stats::nlm"))$
   set_optimizer(optimizeR::Optimizer$new("stats::optim"))$
-  initialize_random(runs = 50)
+  initialize_random(runs = 40)
 ```
 
 We can visualize the function surface along with the initial values:
 
 ``` r
-ggplot2::autoplot(Nop_ackley)
+library("ggplot2")
+Nop_ackley |> autoplot()
 ```
 
 <img src="man/figures/README-ackley_plot-1.png" width="70%" />
 
-Next, we optimize the function using the defined initializations and
-optimizers:
+Next, we optimize the function via the previously defined initial values
+and optimizers:
 
 ``` r
-Nop_ackley$
-  optimize()$
-  optima(digits = 2, group_by = "optimizer")
-#> $`stats::nlm`
-#> # A tibble: 5 × 2
-#>   value     n
-#>   <dbl> <int>
-#> 1  0       18
-#> 2  2.58    18
-#> 3  3.57    10
-#> 4  5.38     3
-#> 5  4.88     1
-#> 
-#> $`stats::optim`
-#> # A tibble: 5 × 2
-#>   value     n
-#>   <dbl> <int>
-#> 1  2.58    21
-#> 2  0       16
-#> 3  3.57     7
-#> 4  4.88     3
-#> 5  5.38     3
-#> 
-#> attr(,"class")
-#> [1] "Nop_optima" "group_by"   "list"
+Nop_ackley$optimize()
 ```
 
-In this example, `stats::nlm()` appears to be both faster and more
-effective at locating the global minimum:
+In this example, `stats::nlm()` appears to be both faster…
 
 ``` r
 Nop_ackley$results |> 
@@ -102,9 +77,37 @@ Nop_ackley$results |>
   )
 ```
 
-<img src="man/figures/README-ackley_results-1.png" width="70%" />
+<img src="man/figures/README-ackley_time-1.png" width="70%" />
 
-Overall, (only) 34% of of the initializations successfully converged to
+… and more effective at locating the global minimum:
+
+``` r
+Nop_ackley$optima(digits = 2, group_by = "optimizer")
+#> $`stats::nlm`
+#> # A tibble: 5 × 2
+#>   value     n
+#>   <dbl> <int>
+#> 1  0       13
+#> 2  2.58    13
+#> 3  3.57    10
+#> 4  5.38     3
+#> 5  4.88     1
+#> 
+#> $`stats::optim`
+#> # A tibble: 5 × 2
+#>   value     n
+#>   <dbl> <int>
+#> 1  2.58    17
+#> 2  0       12
+#> 3  3.57     5
+#> 4  4.88     3
+#> 5  5.38     3
+#> 
+#> attr(,"class")
+#> [1] "Nop_optima" "group_by"   "list"
+```
+
+Overall, (only) 25% of of the initializations successfully converged to
 the global minimum.
 
 ## Contact
