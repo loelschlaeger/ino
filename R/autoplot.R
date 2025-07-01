@@ -35,7 +35,6 @@ NULL
 #' @export
 
 autoplot.Nop <- function(object, xlim = NULL, xlim2 = NULL, ...) {
-
   ### input checks
   oeli::input_check_response(
     check = oeli::check_missing(object),
@@ -53,7 +52,8 @@ autoplot.Nop <- function(object, xlim = NULL, xlim2 = NULL, ...) {
   oeli::input_check_response(
     check = list(
       checkmate::check_numeric(
-        xlim, any.missing = FALSE, len = 2, sorted = TRUE, null.ok = FALSE,
+        xlim,
+        any.missing = FALSE, len = 2, sorted = TRUE, null.ok = FALSE,
         finite = TRUE
       ),
       if (is.null(xlim) && length(object$initial_values) > 0) {
@@ -72,7 +72,8 @@ autoplot.Nop <- function(object, xlim = NULL, xlim2 = NULL, ...) {
     oeli::input_check_response(
       check = list(
         checkmate::check_numeric(
-          xlim2, any.missing = FALSE, len = 2, sorted = TRUE, null.ok = FALSE,
+          xlim2,
+          any.missing = FALSE, len = 2, sorted = TRUE, null.ok = FALSE,
           finite = TRUE
         ),
         if (is.null(xlim2) && length(object$initial_values) > 0) {
@@ -173,11 +174,11 @@ autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
     )
   if (!no_initials) {
     plot <- plot + ggplot2::geom_point(
-        data = data,
-        mapping = ggplot2::aes(
-          x = .data[["x"]], y = .data[["y"]], color = "Initial values"
-        )
-      ) +
+      data = data,
+      mapping = ggplot2::aes(
+        x = .data[["x"]], y = .data[["y"]], color = "Initial values"
+      )
+    ) +
       ggplot2::scale_color_manual(
         values = c("Initial values" = "red"),
         name = NULL
@@ -190,7 +191,6 @@ autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
 #' @export
 
 autoplot.Nop_optima <- function(object, ...) {
-
   ### input checks
   oeli::input_check_response(
     check = oeli::check_missing(object),
@@ -227,7 +227,6 @@ autoplot.Nop_optima <- function(object, ...) {
 #' @export
 
 autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
-
   ### input checks
   oeli::input_check_response(
     check = oeli::check_missing(object),
@@ -276,9 +275,7 @@ autoplot.Nop_results <- function(
     which_element = "seconds",
     group_by = NULL,
     relative = FALSE,
-    ...
-  ) {
-
+    ...) {
   ### input checks
   oeli::input_check_response(
     check = oeli::check_missing(object),
@@ -295,11 +292,13 @@ autoplot.Nop_results <- function(
     vapply(object, is.numeric, logical(1))
   which_element_selection <- object[suitable_columns] |> colnames()
   which_element <- oeli::match_arg(
-    which_element, choices = which_element_selection
+    which_element,
+    choices = which_element_selection
   )
   oeli::input_check_response(
     check = checkmate::check_choice(
-      group_by, choices = c("optimization", "optimizer"),
+      group_by,
+      choices = c("optimization", "optimizer"),
       null.ok = TRUE
     ),
     var_name = "group_by"
@@ -334,5 +333,4 @@ autoplot.Nop_results <- function(
   }
   object |> ggplot2::ggplot() +
     ggplot2::geom_boxplot(mapping = mapping)
-
 }

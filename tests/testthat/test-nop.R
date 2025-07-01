@@ -5,8 +5,8 @@
 
 test_that("Example 0: Defining the problem works", {
   f <- function(x) -x^4 - x^3 - x^2 - x
-  gradient <- function(x) -4*x^3 - 3*x^2 - 2*x - 1
-  hessian <- function(x) -12*x^2 - 6*x - 2
+  gradient <- function(x) -4 * x^3 - 3 * x^2 - 2 * x - 1
+  hessian <- function(x) -12 * x^2 - 6 * x - 2
   Nop_pol <- Nop$new(
     f = f, target = "x", npar = 1, gradient = gradient, hessian = hessian
   )
@@ -87,9 +87,9 @@ test_that("Example 1: Maximization works", {
   Nop_ackley$
     initialize_random(sampler = function() stats::runif(sum(Nop_ackley$npar)))$
     optimize(
-      which_direction = "max", which_optimizer = "stats::optim",
-      lower = 0.5, upper = 1
-    )
+    which_direction = "max", which_optimizer = "stats::optim",
+    lower = 0.5, upper = 1
+  )
   checkmate::expect_list(Nop_ackley$maximum, len = 2)
 })
 
@@ -129,7 +129,7 @@ test_that("Example 1: Initials can be filtered and promising values selected", {
   Nop_ackley$initialize_reset()
   Nop_ackley$initialize_fixed(
     list(
-      1:2,   # positive gradient
+      1:2, # positive gradient
       -(1:2) # negative gradient
     )
   )
@@ -139,7 +139,7 @@ test_that("Example 1: Initials can be filtered and promising values selected", {
   expect_length(Nop_ackley$initial_values, 0)
   Nop_ackley$initialize_fixed(
     list(
-      1:2,   # positive eigenvalues
+      1:2, # positive eigenvalues
       c(-0.4, -0.3) # negative eigenvalues
     )
   )
@@ -155,7 +155,7 @@ normal_mixture_llk <- function(mu, sigma, lambda, data) {
   sigma <- exp(sigma)
   lambda <- plogis(lambda)
   sum(log(lambda * dnorm(data, mu[1], sigma[1]) +
-            (1 - lambda) * dnorm(data, mu[2], sigma[2])))
+    (1 - lambda) * dnorm(data, mu[2], sigma[2])))
 }
 
 Nop_mixture <- Nop$new(

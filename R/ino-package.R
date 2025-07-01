@@ -80,7 +80,7 @@ NULL
 #' @noRd
 
 .onAttach <- function(lib, pkg) {
-  if(interactive()) {
+  if (interactive()) {
     doc_link <- "https://loelschlaeger.de/ino"
     issues_link <- "https://github.com/loelschlaeger/ino/issues"
     msg <- c(
@@ -114,4 +114,3 @@ NULL
 #'
 #' @keywords internal
 "Nop_hmm"
-
