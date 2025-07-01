@@ -60,7 +60,7 @@
 </div>
 <!-- badges: start -->
 
-<p>The <a href="https://loelschlaeger.de/ino/">ino</a> R package provides a framework for analyzing the role of initialization in numerical optimization. It allows for systematic comparisons of different initialization strategies and optimization algorithms using a unified <code>R6</code> object called <code>Nop</code>. For detailed examples and usage guidance, see the <a href="https://loelschlaeger.de/ino/articles/">package vignettes</a>.</p>
+<p>The <a href="https://loelschlaeger.de/ino/">ino</a> R package provides a framework for analyzing the role of initialization in numerical optimization. It allows for systematic comparisons of different initialization strategies and optimization algorithms using a unified <code>R6</code> object called <a href="https://loelschlaeger.de/ino/reference/Nop.html"><code>Nop</code></a>. For detailed examples and usage guidance, please have a look at the <a href="https://loelschlaeger.de/ino/articles/">package vignettes</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -69,13 +69,13 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"ino"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="toy-example">Toy example<a class="anchor" aria-label="anchor" href="#toy-example"></a>
+<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>The <a href="https://en.wikipedia.org/wiki/Ackley_function" class="external-link">Ackley function</a> features multiple local minima and one global minimum at the origin. We define</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Ackley_function" class="external-link">Ackley function</a> has multiple local minima and one global minimum at the origin. We define</p>
 <ol style="list-style-type: decimal">
 <li>the numerical optimization problem as a <code>Nop</code> object,</li>
-<li>two optimization algorithm (here <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code> and <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>), and</li>
-<li>50 initial values (here drawn at random):</li>
+<li>two optimization algorithms <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code> and <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>, and</li>
+<li>40 randomly drawn initial values:</li>
 </ol>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://loelschlaeger.de/ino/">"ino"</a></span><span class="op">)</span></span>
@@ -83,39 +83,16 @@
 <span><span class="va">Nop_ackley</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Nop.html">Nop</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>f <span class="op">=</span> <span class="fu">TestFunctions</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/TestFunctions/man/TF_ackley.html" class="external-link">TF_ackley</a></span>, npar <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"stats::nlm"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">set_optimizer</span><span class="op">(</span><span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"stats::optim"</span><span class="op">)</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span></code></pre></div>
 <p>We can visualize the function surface along with the initial values:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">Nop_ackley</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://ggplot2.tidyverse.org" class="external-link">"ggplot2"</a></span><span class="op">)</span></span>
+<span><span class="va">Nop_ackley</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-ackley_plot-1.png" width="70%"></p>
-<p>Next, we optimize the function using the defined initializations and optimizers:</p>
+<p>Next, we optimize the function via the previously defined initial values and optimizers:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Nop_ackley</span><span class="op">$</span></span>
-<span>  <span class="fu">optimize</span><span class="op">(</span><span class="op">)</span><span class="op">$</span></span>
-<span>  <span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">2</span>, group_by <span class="op">=</span> <span class="st">"optimizer"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $`stats::nlm`</span></span>
-<span><span class="co">#&gt; # A tibble: 5 × 2</span></span>
-<span><span class="co">#&gt;   value     n</span></span>
-<span><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1  0       18</span></span>
-<span><span class="co">#&gt; 2  2.58    18</span></span>
-<span><span class="co">#&gt; 3  3.57    10</span></span>
-<span><span class="co">#&gt; 4  5.38     3</span></span>
-<span><span class="co">#&gt; 5  4.88     1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`stats::optim`</span></span>
-<span><span class="co">#&gt; # A tibble: 5 × 2</span></span>
-<span><span class="co">#&gt;   value     n</span></span>
-<span><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1  2.58    21</span></span>
-<span><span class="co">#&gt; 2  0       16</span></span>
-<span><span class="co">#&gt; 3  3.57     7</span></span>
-<span><span class="co">#&gt; 4  4.88     3</span></span>
-<span><span class="co">#&gt; 5  5.38     3</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attr(,"class")</span></span>
-<span><span class="co">#&gt; [1] "Nop_optima" "group_by"   "list"</span></span></code></pre></div>
-<p>In this example, <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code> appears to be both faster and more effective at locating the global minimum:</p>
+<code class="sourceCode R"><span><span class="va">Nop_ackley</span><span class="op">$</span><span class="fu">optimize</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>In this example, <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code> appears to be both faster…</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_ackley</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="st">"seconds"</span>, group_by <span class="op">=</span> <span class="st">"optimizer"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
@@ -124,8 +101,33 @@
 <span>    <span class="st">"x"</span> <span class="op">=</span> <span class="st">"optimization time relative to overall median"</span>,</span>
 <span>    <span class="st">"y"</span> <span class="op">=</span> <span class="st">"optimizer"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-ackley_results-1.png" width="70%"></p>
-<p>Overall, (only) 34% of of the initializations successfully converged to the global minimum.</p>
+<p><img src="reference/figures/README-ackley_time-1.png" width="70%"></p>
+<p>… and more effective at locating the global minimum:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Nop_ackley</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">2</span>, group_by <span class="op">=</span> <span class="st">"optimizer"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $`stats::nlm`</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 2</span></span>
+<span><span class="co">#&gt;   value     n</span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1  0       13</span></span>
+<span><span class="co">#&gt; 2  2.58    13</span></span>
+<span><span class="co">#&gt; 3  3.57    10</span></span>
+<span><span class="co">#&gt; 4  5.38     3</span></span>
+<span><span class="co">#&gt; 5  4.88     1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`stats::optim`</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 2</span></span>
+<span><span class="co">#&gt;   value     n</span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1  2.58    17</span></span>
+<span><span class="co">#&gt; 2  0       12</span></span>
+<span><span class="co">#&gt; 3  3.57     5</span></span>
+<span><span class="co">#&gt; 4  4.88     3</span></span>
+<span><span class="co">#&gt; 5  5.38     3</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attr(,"class")</span></span>
+<span><span class="co">#&gt; [1] "Nop_optima" "group_by"   "list"</span></span></code></pre></div>
+<p>Overall, (only) 25% of of the initializations successfully converged to the global minimum.</p>
 </div>
 <div class="section level2">
 <h2 id="contact">Contact<a class="anchor" aria-label="anchor" href="#contact"></a>
