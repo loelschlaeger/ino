@@ -70,18 +70,20 @@
     
 <p>HMMs are statistical models used to explain systems that can only be
 observed indirectly through a sequence of outputs, and have unobservable
-hidden states. They consist of two processes, a Markov process that
-describes the hidden states, and an observable process that describes
-the outputs produced by the system, where the probability of observing
-an output at a given time depends only on the current state.
-State-switching models like HMMs are commonly used in speech
+hidden states. They consist of two processes,</p>
+<ol style="list-style-type: decimal">
+<li><p>a Markov process that describes the hidden states, and</p></li>
+<li><p>an observable process that describes the outputs produced by the
+system, where the probability of observing an output at a given time
+depends only on the current state.</p></li>
+</ol>
+<p>State-switching models like HMMs are commonly used in speech
 recognition, animal movement modeling, and finance. For more technical
-details about HMMs and their scope of application, see, e.g., <span class="citation">Zucchini, MacDonald, and Langrock (<a href="#ref-Zucchini:2016">2016</a>)</span>.</p>
+details about HMMs and their scope of application, see <span class="citation">Zucchini, MacDonald, and Langrock (<a href="#ref-Zucchini:2016">2016</a>)</span>.</p>
 <p>Numerical likelihood optimization is a prominent method for fitting
-HMMs to empirical data. In this vignette<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;The vignette was build using R 4.5.1 with the
-&lt;a href="https://loelschlaeger.de/ino/"&gt;ino&lt;/a&gt; 1.1.0 package.&lt;/p&gt;'><sup>1</sup></a> we describe the
-workflow of using the <a href="https://loelschlaeger.de/ino/">ino</a> package for analyzing the
-initialization effect in this optimization task.</p>
+HMMs to empirical data. In this vignette we describe the workflow of
+using the <a href="https://loelschlaeger.de/ino/">ino</a> package for analyzing the initialization
+effect in this optimization task.</p>
 <div class="section level2">
 <h2 id="application-to-financial-data">Application to financial data<a class="anchor" aria-label="anchor" href="#application-to-financial-data"></a>
 </h2>
@@ -187,10 +189,10 @@ approach, which can be tested as follows:</p>
 <code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
 <span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">optimize</span><span class="op">(</span>optimization_label <span class="op">=</span> <span class="st">"random_naive"</span><span class="op">)</span></span></code></pre></div>
-<p>The method <code>initialize_random()</code> selects
+<p>The method <code>$initialize_random()</code> selects
 <code>runs = 100</code> random initial values, which are drawn from a
 standard normal distribution by default. Next, the
-<code><a href="https://rdrr.io/r/stats/optimize.html" class="external-link">optimize()</a></code> method initiates optimization of the likelihood
+<code>$optimize()</code> method initiates optimization of the likelihood
 function starting from these values. The results are labeled as
 <code>"random_naive"</code> to facilitate comparison later.</p>
 <p>Instead of drawing initial values from a standard normal
@@ -237,7 +239,7 @@ the specified distributions:</p>
 <p>Another initialization strategy that closely relates to specifying a
 custom sampler for the initial values is to make “educated guesses” and
 to consider a grid of these values as initialization. This can be
-implemented via the <code>initialize_grid()</code> method, where and
+implemented via the <code>$initialize_grid()</code> method, where and
 <code>lower</code> and <code>upper</code> limits and <code>breaks</code>
 can be specified. Here, we consider a grid of 64 starting values that
 fall in the ranges considered above:</p>
@@ -263,18 +265,18 @@ estimates for the full model and provide good initial values for the
 full optimization.</p>
 <p>To illustrate the subset initialization strategy, we consider the
 first quarter of observations, which can be extracted using the
-<code>reduce()</code> method with arguments <code>how = "first"</code>
-and <code>proportion = 0.25</code>. The starting values for the
-optimizations on this subset are drawn from the <code>sampler()</code>
-function defined above. We again use <code><a href="https://rdrr.io/r/stats/optimize.html" class="external-link">optimize()</a></code> to fit the
-HMM, but now to the data subset. With
-<code>initialize_continue()</code>, we then use the estimates obtained
-from the optimization on the subset as initial values to fit the model
-to the entire data set.</p>
+<code>$reduce_argument()</code> method with arguments
+<code>how = "first"</code> and <code>proportion = 0.25</code>. The
+starting values for the optimizations on this subset are drawn from the
+<code>sampler()</code> function defined above. We again use
+<code>$optimize()</code> to fit the HMM, but now to the data subset.
+With <code>$initialize_continue()</code>, we then use the estimates
+obtained from the optimization on the subset as initial values to fit
+the model to the entire data set.</p>
 <p>Finally, the entire data set is recovered via
-<code>fixed_argument("reset", argument_name = "observations")</code>. If
-we were to skip this step, all future optimization runs would be made on
-the subset.</p>
+<code>$fixed_argument("reset", argument_name = "observations")</code>.
+If we were to skip this step, all future optimization runs would be made
+on the subset.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
 <span>  <span class="fu">reduce_argument</span><span class="op">(</span><span class="st">"observations"</span>, how <span class="op">=</span> <span class="st">"first"</span>, proportion <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">$</span></span>
@@ -290,17 +292,15 @@ the subset.</p>
 </h2>
 <p>The considered log-returns range from -0.1 to 0.1. Optimization might
 be facilitated by standardizing the data first. This idea can be tested
-via the <code>standardize()</code> method:</p>
+via the <code>$standardize_argument()</code> method:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="fu">standardize_argument</span><span class="op">(</span><span class="st">"observations"</span><span class="op">)</span></span></code></pre></div>
 <p>The values used for the standardization can be extracted as
 follows:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">observations</span> <span class="op">&lt;-</span> <span class="va">Nop_hmm</span><span class="op">$</span><span class="fu">fixed_argument</span><span class="op">(</span><span class="st">"get"</span>, <span class="st">"observations"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">observations</span> <span class="op">&lt;-</span> <span class="va">Nop_hmm</span><span class="op">$</span><span class="fu">fixed_argument</span><span class="op">(</span><span class="st">"get"</span>, argument_name <span class="op">=</span> <span class="st">"observations"</span><span class="op">)</span></span>
 <span><span class="op">(</span><span class="va">center</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">observations</span>, <span class="st">"center"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.0002183963</span></span>
-<span><span class="op">(</span><span class="va">scale</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">observations</span>, <span class="st">"scale"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.01387009</span></span></code></pre></div>
+<span><span class="op">(</span><span class="va">scale</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">observations</span>, <span class="st">"scale"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Optimization proceeds as usual:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span></span>
@@ -324,7 +324,7 @@ problem could be back-transformed via:</p>
 a well-known issue, as poor starting values may likely result in local
 optima. We thus first evaluate the optimizations by comparing the
 likelihood values at convergence, which can be displayed using the
-<code>optima()</code> method. Here,</p>
+<code>$optima()</code> method. Here,</p>
 <ul>
 <li>
 <code>sort_by = "value"</code> sorts the table by function
@@ -374,8 +374,7 @@ shown):</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">372.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.327</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> -<span style="color: #BB0000; text-decoration: underline;">21</span><span style="color: #BB0000;">372.</span> <span style="color: #949494;">&lt;dbl [6]&gt;</span>   0.344</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 554 more rows</span></span></span></code></pre></div>
-<p>The final parameter estimates (i.e., the parameters associated with
-the global optimum) can be accessed:</p>
+<p>The final parameter estimates can be accessed:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">minimum</span></span>
 <span><span class="co">#&gt; $value</span></span>
@@ -386,7 +385,8 @@ the global optimum) can be accessed:</p>
 <span><span class="co">#&gt; [6] -3.8587575292</span></span></code></pre></div>
 <p>Next, we can compute the proportion of runs that lead to the apparent
 global optimum as follows (note that the standardized initialization
-approach cannot be compared to the other approaches here):</p>
+approach cannot be compared to the other approaches here and is filtered
+via the <code>.original</code> identifier):</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.original</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -405,12 +405,10 @@ approach cannot be compared to the other approaches here):</p>
 <h3 id="optimization-time">Optimization time<a class="anchor" aria-label="anchor" href="#optimization-time"></a>
 </h3>
 <p>The <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot()</a></code> method can be used to investigate the
-optimization times across initialization strategies
-(<code>group_by = ".optimization_label"</code>).<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Setting &lt;code&gt;relative = FALSE&lt;/code&gt; in the
-&lt;code&gt;&lt;a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link"&gt;plot()&lt;/a&gt;&lt;/code&gt; call would show the absolute times.&lt;/p&gt;'><sup>2</sup></a></p>
+optimization times across initialization strategies by setting
+<code>group_by = "optimization"</code>:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span>group_by <span class="op">=</span> <span class="st">"optimization"</span>, relative <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">Nop_hmm</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span>group_by <span class="op">=</span> <span class="st">"optimization"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/hmm-optimization-time-1.png" width="75%" style="display: block; margin: auto;"></p>
 <p>We can also compute summary statistics of interest, like the median
 computation time or standard deviation per strategy:</p>
@@ -472,7 +470,6 @@ Chapman &amp; Hall/CRC.
 </div>
 </div>
 </div>
-
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
