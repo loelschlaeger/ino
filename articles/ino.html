@@ -94,8 +94,8 @@ solutions, requiring <strong>numerical optimization</strong>.</p>
 <p>Numerical optimization encompasses algorithms that iteratively
 explore the parameter space, seeking improvement in the function output
 with each iteration and ultimately converging to a point where further
-improvements are not possible <span class="citation">(<a href="#ref-Bonnans:2006">Bonnans et al. 2006</a>)</span>. <code>R</code>
-offers various implementations of such algorithms<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;The CRAN Task View: Optimization and Mathematical
+improvements are not possible <span class="citation">(<a href="#ref-Bonnans:2006">Bonnans et al. 2006</a>)</span>. R offers
+various implementations of such algorithms<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;The CRAN Task View: Optimization and Mathematical
 Programming &lt;span class="citation"&gt;(&lt;a href="#ref-Schwendinger:2023"&gt;Schwendinger and Borchers 2023&lt;/a&gt;)&lt;/span&gt;
 provides an exhaustive list of packages for numerical optimization.&lt;/p&gt;'><sup>1</sup></a>. Common to all these
 algorithms is the necessity to specify <strong>initial parameter
@@ -116,17 +116,18 @@ the global optimum?</p></li>
 <div class="section level2">
 <h2 id="package-functionality">Package functionality<a class="anchor" aria-label="anchor" href="#package-functionality"></a>
 </h2>
-<p>We introduce the <a href="https://loelschlaeger.de/ino/">ino</a> package (short for
-<strong>initialization of numerical optimization</strong>), designed to
-address the aforementioned questions. This package facilitates:</p>
+<p>We introduce <a href="https://loelschlaeger.de/ino/">ino</a>, short for <strong>initialization of
+numerical optimization</strong>, designed to address the aforementioned
+questions:</p>
 <ol style="list-style-type: decimal">
 <li><p>Investigation into the impact of initial values on
 optimization.</p></li>
 <li><p>Comparison of various initialization strategies.</p></li>
 <li><p>Comparison of different numerical optimizers.</p></li>
 </ol>
-<p>Following an object-oriented approach<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;We utilize the object-oriented framework of the
-&lt;a href="https://r6.r-lib.org" class="external-link"&gt;R6&lt;/a&gt; package &lt;span class="citation"&gt;(&lt;a href="#ref-Chang:2025"&gt;Chang 2025&lt;/a&gt;)&lt;/span&gt;.&lt;/p&gt;'><sup>2</sup></a>, the package treats
+<p>Following an <strong>object-oriented approach</strong><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;We utilize the framework of the &lt;a href="https://r6.r-lib.org" class="external-link"&gt;R6&lt;/a&gt;
+package &lt;span class="citation"&gt;(&lt;a href="#ref-Chang:2025"&gt;Chang
+2025&lt;/a&gt;)&lt;/span&gt;.&lt;/p&gt;'><sup>2</sup></a>, the package treats
 numerical optimization problems as objects. These objects are defined by
 a real-valued function, its target arguments, and one or more
 optimization algorithms. The object provides methods for selecting
@@ -137,9 +138,9 @@ include:</p>
 <ul>
 <li><p>Straightforward comparisons among optimizers and initialization
 strategies.</p></li>
-<li><p>Compatibility with any optimizer implemented in <code>R</code>
-for both minimization and maximization tasks through the
-<a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> framework <span class="citation">(<a href="#ref-Oelschlaeger:2025">Oelschläger and Ötting 2025</a>)</span>,
+<li><p>Compatibility with any optimizer implemented in R for both
+minimization and maximization tasks through the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a>
+framework <span class="citation">(<a href="#ref-Oelschlaeger:2025">Oelschläger and Ötting 2025</a>)</span>,
 detailed below.</p></li>
 <li><p>Support for parallel computation through the
 <a href="https://future.futureverse.org" class="external-link">future</a> package <span class="citation">(<a href="#ref-Bengtsson:2021">Bengtsson 2021</a>)</span> and progress
@@ -160,8 +161,8 @@ updates via the <a href="https://progressr.futureverse.org" class="external-link
 <p>In this example, the function to be optimized is a likelihood
 function, computing the probability of observing given data under a
 specified model assumption. The parameters that maximize this likelihood
-function are identified as the model estimates. This method, known as
-maximum likelihood estimation, is widely used in statistics for fitting
+function are identified as the model estimates. This method, known as <a href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation" class="external-link">maximum
+likelihood estimation</a>, is widely used in statistics for fitting
 models to empirical data.</p>
 <p>We examine eruption times of the Old Faithful geyser in Yellowstone
 National Park, Wyoming, USA. The data histogram suggests two clusters
@@ -196,13 +197,13 @@ is the mixing proportion.</p>
 that maximize
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{\theta})</annotation></semantics></math>.
 Due to the complexity of the problem, analytical solutions are not
-feasible, and numerical optimization is necessary.</p>
+available, therefore numerical optimization is required.</p>
 <blockquote>
 <p><strong>Remark:</strong> Numerical optimization in this example is
-notably fast due to the relatively small dataset and a model with only
-two classes. While initialization might seem less critical in this
-scenario, it becomes a more significant concern as the problem scales
-with more data and parameters <span class="citation">(<a href="#ref-Shireman:2017">Shireman, Steinley, and Brusco
+fast due to the relatively small dataset and a model with only two
+classes. While initialization might seem less critical in this scenario,
+it becomes a more significant concern as the problem scales with more
+data and parameters <span class="citation">(<a href="#ref-Shireman:2017">Shireman, Steinley, and Brusco
 2017</a>)</span>. Furthermore, even this seemingly simple optimization
 problem is susceptible to local optima, depending on the chosen initial
 values, as we will see below.</p>
@@ -252,7 +253,9 @@ employed by &lt;a href="https://loelschlaeger.de/ino/"&gt;ino&lt;/a&gt;, see &lt
 that defines a numerical optimization problem. We have saved this object
 with the name <code>Nop_mixture</code>. In the future, we can interact
 with this object by invoking its methods using the syntax
-<code>Nop_mixture$&lt;method name&gt;()</code>. The arguments are:</p>
+<code>Nop_mixture$&lt;method name&gt;()</code> or its fields via
+<code>Nop_mixture$&lt;field name&gt;</code>.</p>
+<p>The arguments for creating <code>Nop_mixture</code> are:</p>
 <ul>
 <li>
 <code>f</code>: the objective function to be optimized.</li>
@@ -271,7 +274,7 @@ during optimization.</li>
 can be evaluated at a specific value <code>at</code> for the collapsed
 target arguments:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">evaluate</span><span class="op">(</span>at <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="co"># same value as above</span></span>
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">evaluate</span><span class="op">(</span>at <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="co"># same values as above</span></span>
 <span><span class="co">#&gt; [1] -1069.623</span></span></code></pre></div>
 <p>Next, we require a numerical optimizer. Here, we choose
 <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code>:</p>
@@ -281,39 +284,71 @@ target arguments:</p>
 <p>Once an optimizer is specified, the process of optimizing the
 function becomes straightforward:</p>
 <ol style="list-style-type: decimal">
-<li>Define initial values using one of the <code>initialize_*()</code>
+<li>Define initial values using one of the <code>$initialize_*()</code>
 methods (detailed below).</li>
-<li>Call <code><a href="https://rdrr.io/r/stats/optimize.html" class="external-link">optimize()</a></code>.</li>
+<li>Call <code>$optimize()</code>.</li>
 </ol>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">Nop_mixture</span><span class="op">$</span></span>
 <span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">optimize</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, optimization_label <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></code></pre></div>
-<p>The method <code>initialize_random(runs = 20)</code> generates 20
+<p>The method <code>$initialize_random(runs = 20)</code> generates 20
 sets of random initial values, with each set independently drawn from a
 standard normal distribution by default. Subsequently,
-<code>optimize(which_direction = "max")</code> maximizes the function,
-starting from these generated values.</p>
-<p>Accessing the optimization results is achievable through the
+<code>$optimize(which_direction = "max")</code> maximizes the function,
+starting from these generated values. Setting an
+<code>optimization_label</code> is optional but can be useful if
+different initialization strategies are compared.</p>
+<p>The optimization results can be accessed through the
 <code>$results</code> field:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 13</span></span></span>
-<span><span class="co">#&gt;   value parameter seconds initial error gradient   code iterations error_message</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.100  <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         36 <span style="color: #BB0000;">NA</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.113  <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         71 <span style="color: #BB0000;">NA</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.072<span style="text-decoration: underline;">2</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         43 <span style="color: #BB0000;">NA</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.039<span style="text-decoration: underline;">8</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         25 <span style="color: #BB0000;">NA</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.073<span style="text-decoration: underline;">3</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         48 <span style="color: #BB0000;">NA</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.093<span style="text-decoration: underline;">6</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl [5]&gt;</span>     1         47 <span style="color: #BB0000;">NA</span>           </span></span>
+<code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="va">results</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 13</span></span></span>
+<span><span class="co">#&gt;    value parameter seconds initial error gradient  code iterations error_message</span></span>
+<span><span class="co">#&gt;  <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.097<span style="text-decoration: underline;">0</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         36 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.115  <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         71 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.071<span style="text-decoration: underline;">3</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         43 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.040<span style="text-decoration: underline;">2</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         25 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.073<span style="text-decoration: underline;">4</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         48 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.091<span style="text-decoration: underline;">8</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         47 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.057<span style="text-decoration: underline;">9</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         38 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.052<span style="text-decoration: underline;">2</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         29 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.044<span style="text-decoration: underline;">5</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         28 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.061<span style="text-decoration: underline;">8</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         39 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.070<span style="text-decoration: underline;">1</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         45 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.049<span style="text-decoration: underline;">7</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         31 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.045<span style="text-decoration: underline;">0</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         28 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.068<span style="text-decoration: underline;">1</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         43 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.061<span style="text-decoration: underline;">3</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         40 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.063<span style="text-decoration: underline;">1</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         41 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.062<span style="text-decoration: underline;">9</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         42 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.084<span style="text-decoration: underline;">3</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         49 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> -<span style="color: #BB0000;">276.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.060<span style="text-decoration: underline;">5</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         40 <span style="color: #BB0000;">NA</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> -<span style="color: #BB0000;">421.</span> <span style="color: #949494;">&lt;dbl [5]&gt;</span>  0.065<span style="text-decoration: underline;">9</span> <span style="color: #949494;">&lt;dbl&gt;</span>   FALSE <span style="color: #949494;">&lt;dbl&gt;</span>        1         43 <span style="color: #BB0000;">NA</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: .optimization_label &lt;chr&gt;, .optimizer_label &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   .direction &lt;chr&gt;, .original &lt;lgl&gt;</span></span></span></code></pre></div>
-<p>For a quick overview, the <code>optima()</code> method provides a
+<p>In this <code>tibble</code>,</p>
+<ul>
+<li><p><code>value</code> and <code>parameter</code> are the
+optimization results,</p></li>
+<li><p><code>seconds</code> the elapsed optimization time in
+seconds,</p></li>
+<li><p><code>initial</code> the used initial values,</p></li>
+<li><p><code>error</code> and <code>error_message</code> provide
+information whether an error occurred,</p></li>
+<li><p><code>gradient</code>, <code>code</code>, and
+<code>iterations</code> are information provided by the
+optimizer,</p></li>
+<li><p><code>.optimization_label</code>, <code>.optimizer_label</code>,
+<code>.direction</code>, and <code>.original</code> identify
+optimization runs.</p></li>
+</ul>
+<p>For a quick overview, the <code>$optima()</code> method provides a
 frequency table of the function values obtained at optimizer
 convergence. You can choose to ignore decimal places using
-<code>digits = 0</code>.</p>
+<code>digits = 0</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="fu">optima</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, digits <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
@@ -392,25 +427,25 @@ methods that can be easily compared:</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>initialize_fixed()</code></td>
-<td>Fixed initial values, for example, at the origin or educated
+<td><code>$initialize_fixed()</code></td>
+<td>Fixed initial values, for example at the origin or educated
 guesses.</td>
 </tr>
 <tr class="even">
-<td><code>initialize_random()</code></td>
+<td><code>$initialize_random()</code></td>
 <td>Random initial values drawn from a custom distribution.</td>
 </tr>
 <tr class="odd">
-<td><code>initialize_grid()</code></td>
+<td><code>$initialize_grid()</code></td>
 <td>Initial values as grid points, optionally randomly shuffled.</td>
 </tr>
 <tr class="even">
-<td><code>initialize_continue()</code></td>
-<td>Initial values from previous optimization runs with a different
-optimizer or a simplified optimization problem.</td>
+<td><code>$initialize_continue()</code></td>
+<td>Initial values from previous optimization runs on a simplified
+problem.</td>
 </tr>
 <tr class="odd">
-<td><code>initialize_custom()</code></td>
+<td><code>$initialize_custom()</code></td>
 <td>Initial values based on a custom initialization strategy.</td>
 </tr>
 </tbody>
@@ -427,28 +462,26 @@ optimizer or a simplified optimization problem.</td>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>initialize_filter()</code></td>
-<td>Filters initial values based on positive or negative gradient or
-Hessian.</td>
+<td><code>$initialize_filter()</code></td>
+<td>Filters initial values based on conditions.</td>
 </tr>
 <tr class="even">
-<td><code>initialize_promising()</code></td>
-<td>Selects a proportion of promising initial values corresponding to a
-steep gradient or large/low function value.</td>
+<td><code>$initialize_promising()</code></td>
+<td>Selects a proportion of promising initial values.</td>
 </tr>
 <tr class="odd">
-<td><code>initialize_transform()</code></td>
+<td><code>$initialize_transform()</code></td>
 <td>Transforms the initial values.</td>
 </tr>
 <tr class="even">
-<td><code>initialize_reset()</code></td>
+<td><code>$initialize_reset()</code></td>
 <td>Deletes all specified initial values.</td>
 </tr>
 </tbody>
 </table>
-<p>We previously applied the <code>initialize_random()</code> method. In
-the following, we will compare it to <code>initialize_grid()</code> in
-combination with <code>initialize_promising()</code>. Here, we make
+<p>We previously applied the <code>$initialize_random()</code> method.
+Next, we will compare it to <code>$initialize_grid()</code> in
+combination with <code>$initialize_promising()</code>. Here, we make
 “educated guesses” about starting values that are likely close to the
 global optimum. Based on the histogram above, the means of the two
 normal distributions may be around
@@ -484,9 +517,9 @@ optimization from those points:</p>
 <code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span></span>
 <span>  <span class="fu">initialize_promising</span><span class="op">(</span>proportion <span class="op">=</span> <span class="fl">0.1</span>, condition <span class="op">=</span> <span class="st">"gradient_large"</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">optimize</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, optimization_label <span class="op">=</span> <span class="st">"promising_grid"</span><span class="op">)</span></span></code></pre></div>
-<p>It’s evident that the initial values from the initialization strategy
-concerning the steepest gradient more reliably lead to convergence to
-the global maximum of
+<p>It is evident that the initial values from the initialization
+strategy concerning the steepest gradient more reliably lead to
+convergence to the global maximum of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>276</mn></mrow><annotation encoding="application/x-tex">-276</annotation></semantics></math>
 compared to random initial values:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -510,13 +543,12 @@ compared to random initial values:</p>
 <div class="section level3">
 <h3 id="comparing-optimizer-functions">Comparing optimizer functions<a class="anchor" aria-label="anchor" href="#comparing-optimizer-functions"></a>
 </h3>
-<p>So far, we’ve only utilized the <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code> optimizer,
-employing a Newton-type algorithm. Now, let’s compare its results and
+<p>So far, we only utilized the <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code> optimizer,
+employing a Newton-type algorithm. Now, we compare its results and
 optimization time to:</p>
 <ol style="list-style-type: decimal">
-<li><p><code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code>, an alternative <code>R</code>
-optimizer that, by default, applies the Nelder-Mead algorithm <span class="citation">(<a href="#ref-Nelder:1965">Nelder and Mead
-1965</a>)</span>, and</p></li>
+<li><p><code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code>, an alternative R optimizer that, by
+default, applies the Nelder-Mead algorithm <span class="citation">(<a href="#ref-Nelder:1965">Nelder and Mead 1965</a>)</span>, and</p></li>
 <li><p>The expectation-maximization algorithm <code>em_optimizer</code>,
 an alternative optimization method for mixture models, which we define
 in the appendix below.</p></li>
@@ -537,7 +569,7 @@ likelihood with each of the three optimizers from these points:</p>
 <span>  <span class="fu">initialize_random</span><span class="op">(</span>runs <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span></span>
 <span>  <span class="fu">optimize</span><span class="op">(</span>which_direction <span class="op">=</span> <span class="st">"max"</span>, optimization_label <span class="op">=</span> <span class="st">"optimizer_comparison"</span><span class="op">)</span></span></code></pre></div>
 <p>The <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot()</a></code> method offers a visual comparison of the
-optimization times:</p>
+(relative) optimization times:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Nop_mixture</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.optimization_label</span> <span class="op">==</span> <span class="st">"optimizer_comparison"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -614,7 +646,7 @@ failures in a couple of runs:</p>
 status messages and information during its usage. This mode is primarily
 designed for new package users to provide feedback and hints about their
 interactions with the package. Enabling or disabling the verbose mode
-can be achieved by setting the <code>verbose</code> field of a
+can be achieved by setting the <code>$verbose</code> field of a
 <code>Nop</code> object to either <code>TRUE</code> or
 <code>FALSE</code>. For example:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
@@ -701,10 +733,6 @@ argument. For an overview of available optimizers, you can use:</p>
 <span><span class="co">#&gt; - stats::nlminb</span></span>
 <span><span class="co">#&gt; - stats::optim</span></span>
 <span><span class="co">#&gt; - ucminf::ucminf</span></span></code></pre></div>
-<p>Optimizers that are implemented in packages not yet installed will
-only be shown after you install the required packages, for instance,
-using the convenience function
-<code>optimizeR::install_optimizer_packages()</code>.</p>
 <p>However, any optimizer not contained in the dictionary can be
 incorporated into the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> framework by setting
 <code>which = "custom"</code> first:</p>
@@ -723,9 +751,7 @@ incorporated into the <a href="https://loelschlaeger.de/optimizeR/" class="exter
 <p>For the expectation-maximization algorithm, an additional argument
 <code>data</code> needs to be defined:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">em_optimizer</span><span class="op">$</span><span class="fu">set_arguments</span><span class="op">(</span></span>
-<span>  <span class="st">"data"</span> <span class="op">=</span> <span class="va">faithful</span><span class="op">$</span><span class="va">eruptions</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">em_optimizer</span><span class="op">$</span><span class="fu">set_arguments</span><span class="op">(</span><span class="st">"data"</span> <span class="op">=</span> <span class="va">faithful</span><span class="op">$</span><span class="va">eruptions</span><span class="op">)</span></span></code></pre></div>
 <p>For more details on the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> package, please
 refer to <a href="https://loelschlaeger.de/optimizeR/" class="external-link">the package
 homepage</a>.</p>
@@ -736,7 +762,7 @@ homepage</a>.</p>
 </h2>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-Bengtsson:2021" class="csl-entry">
-Bengtsson, Henrik. 2021. <span>“A Unifying Framework for Parallel and
+Bengtsson, H. 2021. <span>“A Unifying Framework for Parallel and
 Distributed Processing in <span>R</span> Using Futures.”</span> <em>The
 R Journal</em> 13 (2): 208–27. <a href="https://doi.org/10.32614/RJ-2021-048" class="external-link">https://doi.org/10.32614/RJ-2021-048</a>.
 </div>
