@@ -1,745 +1,245 @@
-test_that("Nop object can be initialized", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_s3_class(ackley, c("Nop", "R6"), exact = TRUE)
-  expect_error(
-    Nop$new(),
-    "specify argument"
-  )
-  expect_error(
-    Nop$new(f = 1),
-    "is not a"
-  )
-  expect_error(
-    Nop$new(f = f_ackley),
-    "specify argument"
-  )
-  expect_error(
-    Nop$new(f = f_ackley, npar = 0),
-    "must be a single, positive"
-  )
-  expect_identical(ackley$f, f_ackley)
-  expect_identical(ackley$npar, 2L)
-  expect_error(
-    {
-      ackley$f <- function(x) x
-    },
-    "is read only"
-  )
-  expect_error(
-    {
-      ackley$npar <- 1
-    },
-    "is read only"
-  )
-  expect_error(
-    Nop$new(f = function() 1, npar = 0),
-    "should have at least one argument"
-  )
-})
+# self <- object
+# private <- self$.__enclos_env__$private
 
-test_that("Nop object can be printed", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_snapshot(print(ackley))
-  expect_snapshot(ackley$print())
-})
+# Example 0: Polynomial ---------------------------------------------------
 
-test_that("Parameters for Nop object can be set", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data)
-  expect_s3_class(hmm, c("Nop", "R6"), exact = TRUE)
-  expect_error(
-    hmm$set_argument(data),
-    "Please name argument 1."
+test_that("Example 0: Defining the problem works", {
+  f <- function(x) -x^4 - x^3 - x^2 - x
+  gradient <- function(x) -4*x^3 - 3*x^2 - 2*x - 1
+  hessian <- function(x) -12*x^2 - 6*x - 2
+  Nop_pol <- Nop$new(
+    f = f, target = "x", npar = 1, gradient = gradient, hessian = hessian
   )
-  expect_error(
-    hmm$set_argument("data" = data),
-    "already exists"
-  )
-  expect_snapshot(print(hmm))
-})
-
-test_that("Parameters for Nop object can be get", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data, test_arg = 6)
-  expect_error(
-    hmm$get_argument(),
-    "Please specify"
-  )
-  expect_equal(hmm$get_argument("test_arg"), 6)
-  expect_error(
-    hmm$get_argument("does_not_exist"),
-    "is not yet specified"
-  )
-  expect_error(
-    hmm$get_argument(1),
-    "must be a single"
-  )
-})
-
-test_that("Parameters for Nop object can be removed", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, data = data)
-  expect_error(
-    hmm$remove_argument("arg_does_not_exist"),
-    "is not yet specified"
-  )
-  expect_s3_class(hmm$remove_argument("data"), "Nop")
-  expect_error(
-    hmm$remove_argument(),
-    "Please specify"
-  )
-  expect_error(
-    hmm$remove_argument(argument_name = 1:2),
-    "must be a"
-  )
-})
-
-test_that("optimizer can be set", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(
-    ackley$set_optimizer(),
-    "Please specify argument"
-  )
-  expect_error(
-    ackley$set_optimizer(
-      "not_an_optimizer_object"
-    ),
-    "must be an"
-  )
-  expect_error(
-    ackley$set_optimizer(optimizer_nlm(), label = 1),
-    "must be a"
-  )
-  ackley$set_optimizer(optimizer_nlm(), label = "nlm")
-  expect_snapshot(ackley)
-  expect_error(
-    ackley$set_optimizer(optimizer_nlm(), label = "nlm"),
-    "already exists, please choose another one"
-  )
-  ackley$set_optimizer(optimizer_optim())
-  expect_snapshot(ackley)
-})
-
-test_that("optimizer can be removed", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm(), label = "A")
-  ackley$set_optimizer(optimizer_nlm(), label = "B")
-  ackley$set_optimizer(optimizer_nlm(), label = "C")
-  ackley$set_optimizer(optimizer_nlm())
-  expect_snapshot(ackley)
-  expect_error(
-    ackley$remove_optimizer(),
-    "Please specify"
-  )
-  ackley2 <- ackley$clone()
-  ackley2$remove_optimizer("all")
-  expect_snapshot(ackley2)
-  ackley$remove_optimizer(2)
-  expect_warning(
-    ackley$remove_optimizer(2),
-    "has already been removed"
-  )
-  expect_snapshot(ackley)
-  ackley$remove_optimizer(c("stats::nlm", "A"))
-  expect_snapshot(ackley)
-  expect_warning(
-    ackley$remove_optimizer("does_not_exist"),
-    "No optimizer selected."
-  )
-})
-
-test_that("ackley function can be evaluated", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(
-    ackley$evaluate(1),
-    "must be of length 2"
-  )
-  expect_equal(ackley$evaluate(c(0, 1)), f_ackley(c(0, 1)))
-})
-
-test_that("long function evaluations can be interrupted", {
-  skip_if_not(.Platform$OS.type == "windows")
-  expect_warning(
-    long_f <- Nop$new(f = function(x) {
-      for (i in 1:7) Sys.sleep(0.1)
-      x
-    }, npar = 1),
-    "is unnamed"
-  )
+  checkmate::expect_r6(Nop_pol, "Nop")
+  expect_identical(Nop_pol$npar, c("x" = 1))
+  expect_error(Nop_pol$npar <- 2, "read-only")
   expect_equal(
-    long_f$evaluate(at = 1, time_limit = 0.5),
-    "time limit reached"
+    Nop_pol$evaluate(0, TRUE, TRUE),
+    structure(0, gradient = -1, hessian = -2)
   )
-  expect_equal(
-    long_f$evaluate(at = 1, time_limit = 1),
-    1
-  )
+  expect_snapshot(Nop_pol)
+  checkmate::expect_tibble(Nop_pol$results, nrows = 0, ncols = 4)
+  expect_error(ggplot2::autoplot(Nop_pol), "Input `xlim` is bad")
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_pol, xlim = c(-1, 1))))
+  Nop_pol$initialize_fixed(0.1)
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_pol)))
 })
 
-test_that("warnings in function evaluation can be hidden", {
-  expect_warning(
-    warning_f <- Nop$new(f = function(x) {
-      warning("huhu")
-      x
-    }, npar = 1),
-    "is unnamed"
-  )
-  expect_warning(
-    warning_f$evaluate(at = 1),
-    "huhu"
-  )
-  expect_warning(
-    warning_f$evaluate(at = 1, hide_warnings = TRUE),
-    regexp = NA
-  )
+# Example 1: Ackley function ----------------------------------------------
+
+ackley <- TestFunctions::TF_ackley
+Nop_ackley <- Nop$new(f = ackley, npar = 2)
+Nop_ackley$verbose <- FALSE
+nlm_opt <- optimizeR::Optimizer$new(which = "stats::nlm")
+optim_opt <- optimizeR::Optimizer$new(which = "stats::optim")
+
+test_that("Example 1: Defining optimizers works", {
+  expect_error(Nop_ackley$optimize(), "No optimizer specified yet.")
+  Nop_ackley$
+    set_optimizer(nlm_opt, optimizer_label = "nlm")$
+    set_optimizer(optim_opt)
 })
 
-test_that("errors in function evaluation can be returned", {
-  expect_warning(
-    error_f <- Nop$new(f = function(x) {
-      stop("shit")
-      x
-    }, npar = 1),
-    "is unnamed"
-  )
-  expect_equal(
-    error_f$evaluate(at = 1),
-    "shit"
-  )
-})
-
-test_that("HMM likelihood function can be evaluated", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6, "data" = data)
-  at <- rnorm(6)
+test_that("Example 1: Minimization works", {
+  Nop_ackley$initialize_reset()
   expect_error(
-    hmm$evaluate(),
-    "is not yet specified"
-  )
-  hmm$set_argument("N" = 2, "neg" = TRUE)
-  expect_equal(
-    hmm$evaluate(at = at),
-    f_ll_hmm(theta = at, data = data, N = 2, neg = TRUE)
-  )
-  hmm$remove_argument("neg")
-  expect_equal(
-    hmm$evaluate(at = at),
-    f_ll_hmm(theta = at, data = data, N = 2)
-  )
-})
-
-test_that("ackley function can be optimized", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_error(
-    ackley$optimize(runs = -1),
-    "must be a single, positive"
-  )
-  expect_error(
-    ackley$optimize(verbose = "yes"),
-    "must be"
-  )
-  expect_error(
-    ackley$optimize(hide_warnings = "bad"),
-    "must be"
-  )
-  ackley$optimize(runs = 5)
-  ackley$optimize(runs = 1, initial = runif(2))
-  ackley$optimize(runs = 3, initial = function() runif(2), seed = 1)
-  ackley$optimize(initial = c(0, 0))
-  ackley$optimize(initial = list(1:2, 2:3, 3:4))
-  expect_snapshot(ackley)
-  expect_error(
-    ackley$optimize(save_results = "TRUE"),
-    "must be"
-  )
-  expect_error(
-    ackley$optimize(return_results = "TRUE"),
-    "must be"
-  )
-  expect_error(
-    ackley$optimize(return_results = TRUE, simplify = "TRUE"),
-    "must be"
-  )
-  out <- ackley$optimize(runs = 5, return_results = TRUE, save_results = FALSE)
-  expect_type(out, "list")
-  expect_length(out, 5)
-  expect_true(all(sapply(out, length) == 2))
-  ackley$remove_optimizer(2)
-  out <- ackley$optimize(
-    runs = 1, return_results = TRUE, save_results = FALSE
-  )
-  expect_type(out, "list")
-  out <- ackley$optimize(
-    runs = 1, return_results = TRUE, save_results = FALSE, simplify = FALSE
-  )
-  expect_type(out, "list")
-  ackley
-})
-
-test_that("parallel optimization works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_error(
-    ackley$optimize(ncores = 1.4),
-    "must be a single, positive"
-  )
-  skip_on_cran()
-  ackley$optimize(
-    runs = 40, ncores = 2, save_results = FALSE
-  )
-})
-
-test_that("Nop object can be tested", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_error(
-    ackley$test(at = 1),
-    "must be of length 2"
+    Nop_ackley$fresh_label <- "label",
+    "read-only"
   )
   expect_warning(
-    ackley$test(),
-    "No optimizer specified, testing optimizer is skipped."
+    Nop_ackley$optimize(),
+    "No initial values defined by user"
   )
-  ackley$set_optimizer(optimizer_nlm())
-  expect_true(ackley$test(verbose = FALSE))
-})
-
-test_that("standardization works", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )
-  expect_error(
-    hmm$standardize(),
-    "Please specify"
-  )
-  expect_error(
-    hmm$standardize(1),
-    "must be a single"
-  )
-  expect_s3_class(hmm$standardize("data"), c("Nop", "R6"), exact = TRUE)
-})
-
-test_that("reduction works", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )
-  expect_error(
-    hmm$reduce(),
-    "Please specify"
-  )
-  expect_error(
-    hmm$reduce(1),
-    "must be a single"
-  )
-  expect_s3_class(hmm$reduce("data"), c("Nop", "R6"), exact = TRUE)
-})
-
-test_that("argument can be reset", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )
-  hmm$standardize("data")
-  expect_error(
-    hmm$reset_argument(),
-    "Please specify"
-  )
-  hmm$reset_argument("data")
-  expect_equal(data, hmm$get_argument("data"))
-  hmm$reduce("data")
-  hmm$reset_argument("data")
-  expect_equal(data, hmm$get_argument("data"))
-})
-
-test_that("continue optimization works", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(
-    f = f_ll_hmm, npar = 6, "data" = data, "N" = 2, "neg" = TRUE
-  )$set_optimizer(optimizer_nlm())$
-    standardize("data")$
-    optimize(runs = 2)$
-    reset_argument("data")$
-    continue()
-  expect_s3_class(hmm, "Nop")
-})
-
-test_that("results can be accessed", {
-  runs <- 10
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = runs, save_results = TRUE, return_results = FALSE)
-  results <- ackley$results()
-  expect_type(results, "list")
-  expect_length(results, runs)
-})
-
-test_that("number of results can be accessed", {
-  runs <- 10
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = runs, save_results = TRUE, return_results = FALSE)
-  expect_equal(ackley$number_runs(), runs)
-})
-
-test_that("overview of available elements can be created", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())
+  Nop_ackley$
+    initialize_random(runs = 5)$optimize()$
+    initialize_random(sampler = function() runif(2))$optimize()$
+    initialize_fixed(0:1)$optimize()$
+    initialize_fixed(list(1:2, 2:3, 3:4))$optimize()$
+    initialize_grid()
   expect_warning(
-    ackley$elements_available(),
-    "No optimization results saved yet"
+    Nop_ackley$optimize(which_optimizer = 3)
   )
-  ackley$optimize(runs = 10)
-  expect_equal(
-    ackley$elements_available(),
-    list("stats::nlm" = c(
-      "value", "parameter", "seconds", "initial", "gradient", "code",
-      "iterations", "label", "run", "optimizer", "comparable"
-    ))
-  )
+  expect_snapshot(Nop_ackley)
 })
 
-test_that("results can be cleared", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())
-  expect_warning(
-    ackley$clear(which_run = 1),
-    "No optimization results saved yet"
-  )
-  ackley$optimize(runs = 10)
-  ackley$clear(which_run = 1)
-})
-
-test_that("results can be summarized", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_warning(
-    ackley$summary(),
-    "No optimization results saved yet."
-  )
-})
-
-test_that("overview of optima works", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_warning(
-    ackley$optima(),
-    "No optimization results saved yet."
-  )
-  ackley$optimize(runs = 10)
-  expect_true(is.data.frame(ackley$optima()))
-  expect_error(
-    ackley$optima(sort_by = "bad_input"),
-    "must be"
-  )
-})
-
-test_that("optimization times and values can be plotted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = 100, label = "1")$
-    optimize(runs = 100, label = "2")
-  combinations <- expand.grid(
-    which_element = c("seconds", "value"),
-    by = list("label", "optimizer", NULL),
-    relative = c(TRUE, FALSE),
-    which_run = "all",
-    which_optimizer = "all",
-    only_comparable = c(TRUE, FALSE),
+test_that("Example 1: Results can be accessed", {
+  checkmate::expect_tibble(Nop_ackley$results)
+  checkmate::expect_list(Nop_ackley$minimum, len = 2)
+  checkmate::expect_tibble(Nop_ackley$optima())
+  comb <- expand.grid(
+    which_direction = c("min", "max"),
+    only_original = c(TRUE, FALSE),
+    group_by = c(NULL, "optimization", "optimizer"),
+    sort_by_value = c(TRUE, FALSE),
     stringsAsFactors = FALSE
   )
-  for (i in 1:nrow(combinations)) {
-    which_element <- combinations[i, "which_element"]
-    by <- combinations[[i, "by"]]
-    relative <- combinations[i, "relative"]
-    which_run <- combinations[i, "which_run"]
-    which_optimizer <- combinations[i, "which_optimizer"]
-    only_comparable <- combinations[i, "only_comparable"]
-    expect_s3_class(
-      ackley$plot(
-        which_element = which_element, by = by, relative = relative,
-        which_run = which_run, which_optimizer = which_optimizer,
-        only_comparable = only_comparable
-      ),
-      "ggplot"
-    )
+  for (i in seq_len(nrow(comb))) {
+    optima <- Nop_ackley$optima(comb[i, 1], comb[i, 2], comb[i, 3], comb[i, 4])
+    if (is.null(comb[1, 3])) {
+      checkmate::expect_tibble(optima)
+    } else {
+      checkmate::expect_list(optima)
+    }
   }
 })
 
-test_that("optimization trace can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_s3_class(ackley$trace(), "data.frame")
+test_that("Example 1: Maximization works", {
+  Nop_ackley$
+    initialize_random(sampler = function() stats::runif(sum(Nop_ackley$npar)))$
+    optimize(
+      which_direction = "max", which_optimizer = "stats::optim",
+      lower = 0.5, upper = 1
+    )
+  checkmate::expect_list(Nop_ackley$maximum, len = 2)
 })
 
-test_that("best value can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_warning(
-    expect_null(ackley$best_value()),
-    "No optimization results saved yet."
-  )
-  ackley$optimize(runs = 10)
-  expect_length(
-    ackley$best_value(), 1
-  )
-})
-
-test_that("best parameter can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_warning(
-    expect_null(ackley$best_parameter()),
-    "No optimization results saved yet."
-  )
-  ackley$optimize(runs = 10)
-  expect_length(
-    ackley$best_parameter(), 2
-  )
-})
-
-test_that("closest parameter can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())$
-    optimize(runs = 10)
-  expect_length(
-    ackley$closest_parameter(0), 2
-  )
-})
-
-test_that("existence of additional argument can be checked", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  private <- hmm$.__enclos_env__$private
+test_that("Example 1: Plotting works", {
+  expect_error(ggplot2::autoplot(Nop_ackley), "Input `xlim` is bad")
   expect_error(
-    private$.check_additional_argument_exists("data"),
-    "is not yet specified"
+    ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1)), "Input `xlim2` is bad"
   )
-  hmm$set_argument("data" = data)
+  expect_true(ggplot2::is_ggplot(
+    ggplot2::autoplot(Nop_ackley, xlim = c(-1, 1), xlim2 = c(-1, 1))
+  ))
+  Nop_ackley$initialize_random(runs = 10)
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley)))
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$optima())))
+  autoplot_optima_group <- ggplot2::autoplot(Nop_ackley$optima(group_by = "optimizer"))
+  expect_true(is.list(autoplot_optima_group))
+  expect_length(autoplot_optima_group, 2)
+  expect_true(ggplot2::is_ggplot(autoplot_optima_group[[1]]))
+  expect_true(ggplot2::is_ggplot(autoplot_optima_group[[2]]))
 })
 
-test_that("run ids can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm(), "nlm")$
-    optimize(runs = 10, label = "label")
-  private <- ackley$.__enclos_env__$private
-  expect_equal(private$.get_run_ids(which_run = "label"), 1:10)
-  expect_warning(
-    private$.get_run_ids(which_run = "label_does_not_exist"),
-    "Please check argument"
-  )
+test_that("Example 1: Deviation can be computed and visualized", {
+  expect_s3_class(Nop_ackley$deviation(), "Nop_deviation")
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$deviation())))
 })
 
-test_that("optimizer ids can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  ackley$set_optimizer(optimizer_nlm(), "nlm")
-  ackley$set_optimizer(optimizer_optim(), "optim")
-  ackley$remove_optimizer("optim")
-  private <- ackley$.__enclos_env__$private
-  expect_equal(private$.get_optimizer_ids(which_optimizer = "removed"), 2)
+test_that("Example 1: Initials can be filtered and promising values selected", {
+  Nop_ackley$initialize_reset()
+  expect_length(Nop_ackley$initial_values, 0)
+  Nop_ackley$initialize_random(100)
+  Nop_ackley$initialize_promising(0.9, "value_small")
+  Nop_ackley$initialize_promising(0.9, "value_large")
+  Nop_ackley$initialize_promising(0.9, "gradient_small")
+  Nop_ackley$initialize_promising(0.9, "gradient_large")
+  Nop_ackley$initialize_promising(0.9, "condition_small")
+  Nop_ackley$initialize_promising(0.9, "condition_large")
+  Nop_ackley$initialize_reset()
+  Nop_ackley$initialize_fixed(
+    list(
+      1:2,   # positive gradient
+      -(1:2) # negative gradient
+    )
+  )
+  Nop_ackley$initialize_filter("gradient_negative")
+  expect_length(Nop_ackley$initial_values, 1)
+  Nop_ackley$initialize_filter("gradient_positive")
+  expect_length(Nop_ackley$initial_values, 0)
+  Nop_ackley$initialize_fixed(
+    list(
+      1:2,   # positive eigenvalues
+      c(-0.4, -0.3) # negative eigenvalues
+    )
+  )
+  Nop_ackley$initialize_filter("hessian_negative")
+  expect_length(Nop_ackley$initial_values, 1)
+  Nop_ackley$initialize_filter("hessian_positive")
+  expect_length(Nop_ackley$initial_values, 0)
+})
+
+# Example 2: Mixture model ------------------------------------------------
+
+normal_mixture_llk <- function(mu, sigma, lambda, data) {
+  sigma <- exp(sigma)
+  lambda <- plogis(lambda)
+  sum(log(lambda * dnorm(data, mu[1], sigma[1]) +
+            (1 - lambda) * dnorm(data, mu[2], sigma[2])))
+}
+
+Nop_mixture <- Nop$new(
+  f = normal_mixture_llk, target = c("mu", "sigma", "lambda"), npar = c(2, 2, 1)
+)
+
+test_that("Example 2: Evaluate with fixed arguments missing", {
   expect_error(
-    private$.get_optimizer_ids(which_optimizer = list()),
-    "is misspecified"
-  )
-})
-
-test_that("f can be extracted", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  expect_equal(hmm$f, f_ll_hmm)
-  expect_error(
-    {
-      hmm$f <- "function"
-    },
-    "read only"
-  )
-})
-
-test_that("f_name can be extracted and set", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  expect_equal(hmm$f_name, "f_ll_hmm")
-  hmm$f_name <- "name"
-  expect_equal(hmm$f_name, "name")
-  expect_error(
-    {
-      hmm$f_name <- 1
-    },
-    "must be a single"
-  )
-})
-
-test_that("f_target can be extracted", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  expect_equal(hmm$f_target, "theta")
-  expect_error(
-    {
-      hmm$f_target <- "par"
-    },
-    "read only"
-  )
-})
-
-test_that("npar can be extracted", {
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  expect_equal(hmm$npar, 6)
-  expect_error(
-    {
-      hmm$npar <- 5
-    },
-    "read only"
+    Nop_mixture$evaluate(),
+    "Function argument `data` is required but not specified yet."
   )
 })
 
-test_that("arguments can be extracted", {
-  tpm <- matrix(c(0.8, 0.1, 0.2, 0.9), nrow = 2)
-  mu <- c(-2, 2)
-  sigma <- c(0.5, 1)
-  theta <- c(log(tpm[row(tpm) != col(tpm)]), mu, log(sigma))
-  data <- sim_hmm(Tp = 100, N = 2, theta = theta)
-  hmm <- Nop$new(f = f_ll_hmm, npar = 6)
-  expect_warning(
-    hmm$arguments,
-    "No function arguments have been specified yet"
-  )
-  hmm$set_argument("data" = data)
-  expect_equal(
-    hmm$arguments,
-    list(data = data)
-  )
+data <- faithful$eruptions
+
+test_that("Example 2: Fixed arguments can be defined", {
   expect_error(
-    {
-      hmm$arguments <- "argument"
-    },
-    "read only"
+    Nop_mixture$fixed_argument("get", "data"),
+    "not available"
+  )
+  Nop_mixture$fixed_argument("set", data = data)
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    data
+  )
+  Nop_mixture$fixed_argument("remove", "data")
+  expect_error(
+    Nop_mixture$fixed_argument("get", "data"),
+    "not available"
   )
 })
 
-test_that("true value can be extracted and modified", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_null(ackley$true_value)
-  expect_error(
-    {
-      ackley$true_value <- 1:2
-    },
-    "must be a single"
+test_that("Example 2: Fixed arguments can be modified", {
+  Nop_mixture$fixed_argument("set", data = data)
+  Nop_mixture$fixed_argument("modify", data = 1)
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    1
   )
-  ackley$true_value <- 0
-  expect_equal(ackley$true_value, 0)
-  ackley$true_value <- NULL
-  expect_null(ackley$true_value)
-})
-
-test_that("true parameter can be extracted and modified", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_null(ackley$true_parameter)
-  expect_error(
-    {
-      ackley$true_parameter <- 1:4
-    },
-    "must be of length 2"
-  )
-  ackley$true_parameter <- c(0, 0)
-  expect_equal(ackley$true_value, 0)
-  expect_equal(ackley$true_value, 0)
-  expect_error(
-    {
-      ackley$true_value <- 2
-    },
-    "Please update"
-  )
-  ackley$true_parameter <- NULL
-  expect_null(ackley$true_parameter)
-})
-
-test_that("show minimum can be extracted and modified", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_true(ackley$minimized)
-  ackley$minimized <- FALSE
-  expect_false(ackley$minimized)
-  expect_error(
-    {
-      ackley$minimized <- "TRUE"
-    },
-    "must be"
+  Nop_mixture$fixed_argument("reset", "data")
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    data
   )
 })
 
-test_that("optimizer can be extracted", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)
-  expect_warning(
-    ackley$optimizer,
-    "No optimizer specified yet"
+test_that("Example 2: Fixed argument can be standardized", {
+  Nop_mixture$standardize_argument("data")
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    normalize::normalize(data)
   )
-  ackley$
-    set_optimizer(optimizer_nlm())$
-    set_optimizer(optimizer_optim())
-  expect_type(ackley$optimizer, "list")
-  expect_length(ackley$optimizer, 2)
-  expect_error(
-    {
-      ackley$optimizer <- "optimizer"
-    },
-    "read only"
+  Nop_mixture$fixed_argument("reset", "data")
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    data
   )
 })
 
-test_that("new label can be generated", {
-  ackley <- Nop$new(f = f_ackley, npar = 2)$
-    set_optimizer(optimizer_nlm())
-  label <- ackley$new_label
-  expect_true(is_name(label))
-  ackley$optimize()
-  label_new <- ackley$new_label
-  expect_false(identical(label, label_new))
-  expect_error(
-    {
-      ackley$new_label <- "label"
-    },
-    "read only"
+test_that("Example 2: Fixed argument can be subsetted", {
+  Nop_mixture$reduce_argument("data", proportion = 0.5, how = "first")
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    portion::portion(data, proportion = 0.5, how = "first")
   )
+  Nop_mixture$fixed_argument("reset", "data")
+  expect_identical(
+    Nop_mixture$fixed_argument("get", "data"),
+    data
+  )
+})
+
+test_that("Example 2: Initialization can be continued", {
+  Nop_mixture$
+    set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
+    initialize_fixed(c(2, 4, 1, 2, -1))$
+    optimize(optimization_label = "continue")
+  Nop_mixture$initialize_continue("continue")
+  expect_identical(
+    Nop_mixture$results |> dplyr::pull(parameter),
+    Nop_mixture$initial_values
+  )
+})
+
+test_that("Example 2: Plotting results works", {
+  expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_mixture$results)))
 })

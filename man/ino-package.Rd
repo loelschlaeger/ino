@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Analysis of the initialization for numerical optimization of real-valued functions, including likelihood functions of statistical models. See \url{https://loelschlaeger.de/ino/} for more details.
+Analysis of the initialization for numerical optimization of real-valued functions, particularly likelihood functions of statistical models. See \url{https://loelschlaeger.de/ino/} for more details.
 }
 \seealso{
 Useful links:
