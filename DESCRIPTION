@@ -38,7 +38,7 @@ Imports:
     utils
 Suggests:
     knitr,
-    fHMM (>= 1.3.1),
+    fHMM (>= 1.4.2),
     progressr,
     renv,
     rmarkdown,

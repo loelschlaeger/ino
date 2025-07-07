@@ -82,6 +82,7 @@ We consider a 2-state (`states = 2`) Gaussian-HMM (`sdds = "normal"`) here to mo
 The likelihood function `ll_hmm()` is provided by the `{fHMM}` package. The argument `negative = TRUE` indicates that we minimize the negative log-likelihood.
 
 ```{r define ino object}
+library("ino")
 Nop_hmm <- Nop$new(
   f = fHMM::ll_hmm, 
   npar = 6, 
@@ -104,13 +105,13 @@ For convenience, The `{ino}` package supports parallel computation of optimizati
 
 For example, calling
 
-```{r parallel setting}
+```{r parallel setting, purl = FALSE}
 future::plan(future::multisession, workers = 10)
 ```
 
 uses parallel computation in 10 parallel R sessions, and calling
 
-```{r progress setting}
+```{r progress setting, purl = FALSE}
 progressr::handlers(global = TRUE)
 ```
 
