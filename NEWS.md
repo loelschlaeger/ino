@@ -1,3 +1,7 @@
+# ino 1.1.1
+
+* Added safeguard to `example_hmm.Rmd` to conditionally load `Nop_hmm` only if `{fHMM}` namespace is available to avoid CRAN checks failing.
+
 # ino 1.1.0
 
 * Adapted to the new `{optimizeR}` version.
