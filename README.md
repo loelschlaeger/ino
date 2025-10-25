@@ -18,9 +18,7 @@ The `{ino}` R package provides a framework for analyzing the role of
 initialization in numerical optimization. It allows for systematic
 comparisons of different initialization strategies and optimization
 algorithms using a unified `R6` object called
-[`Nop`](https://loelschlaeger.de/ino/reference/Nop.html). For detailed
-examples and usage guidance, please have a look at the [package
-vignettes](https://loelschlaeger.de/ino/articles/).
+[`Nop`](https://loelschlaeger.de/ino/reference/Nop.html).
 
 ## Installation
 

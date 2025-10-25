@@ -73,8 +73,7 @@
 #'
 #' ## Step 3: Select initial values
 #' Call initialization methods to define starting values for the
-#' optimization (the different initialization strategies are illustrated in the
-#' package vignettes), for example:
+#' optimization, for example:
 #' - `object$initialize_fixed()` for fixed initial values,
 #' - `object$initialize_random()` for random initial values,
 #' - `object$initialize_continue()` for initial values based on parameter

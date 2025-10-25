@@ -1,6 +1,6 @@
 Package: ino
 Title: Initialization of Numerical Optimization
-Version: 1.1.1
+Version: 1.2.0
 Authors@R: c(
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
@@ -38,7 +38,6 @@ Imports:
     utils
 Suggests:
     knitr,
-    fHMM (>= 1.4.2),
     progressr,
     renv,
     rmarkdown,
@@ -49,4 +48,3 @@ Config/testthat/edition: 3
 URL: https://loelschlaeger.de/ino/, https://github.com/loelschlaeger/ino
 BugReports: https://github.com/loelschlaeger/ino/issues
 VignetteBuilder: knitr
-LazyData: true

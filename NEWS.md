@@ -1,6 +1,6 @@
-# ino 1.1.1
+# ino 1.2.0
 
-* Added safeguard to `example_hmm.Rmd` to conditionally load `Nop_hmm` only if `{fHMM}` namespace is available to avoid CRAN checks failing.
+* Removed `example_hmm.Rmd` vignette to avoid CRAN check failure for flavor r-devel-linux-x86_64-debian-gcc (namespace 'fHMM' not available).
 
 # ino 1.1.0
 

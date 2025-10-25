@@ -39,8 +39,7 @@ For example,
 \subsection{Step 3: Select initial values}{
 
 Call initialization methods to define starting values for the
-optimization (the different initialization strategies are illustrated in the
-package vignettes), for example:
+optimization, for example:
 \itemize{
 \item \code{object$initialize_fixed()} for fixed initial values,
 \item \code{object$initialize_random()} for random initial values,
