@@ -248,26 +248,26 @@ Nop_mixture$results
 #> # A tibble: 20 × 13
 #>    value parameter seconds initial error gradient  code iterations error_message
 #>  * <dbl> <list>      <dbl> <list>  <lgl> <list>   <int>      <int> <chr>        
-#>  1 -421. <dbl [5]>  0.0857 <dbl>   FALSE <dbl>        1         36 NA           
-#>  2 -276. <dbl [5]>  0.133  <dbl>   FALSE <dbl>        1         71 NA           
-#>  3 -421. <dbl [5]>  0.0799 <dbl>   FALSE <dbl>        1         43 NA           
-#>  4 -276. <dbl [5]>  0.0441 <dbl>   FALSE <dbl>        1         25 NA           
-#>  5 -421. <dbl [5]>  0.0814 <dbl>   FALSE <dbl>        1         48 NA           
-#>  6 -421. <dbl [5]>  0.0860 <dbl>   FALSE <dbl>        1         47 NA           
-#>  7 -421. <dbl [5]>  0.0635 <dbl>   FALSE <dbl>        1         38 NA           
-#>  8 -276. <dbl [5]>  0.0612 <dbl>   FALSE <dbl>        1         29 NA           
-#>  9 -276. <dbl [5]>  0.0497 <dbl>   FALSE <dbl>        1         28 NA           
-#> 10 -421. <dbl [5]>  0.0643 <dbl>   FALSE <dbl>        1         39 NA           
-#> 11 -421. <dbl [5]>  0.0820 <dbl>   FALSE <dbl>        1         45 NA           
-#> 12 -276. <dbl [5]>  0.0546 <dbl>   FALSE <dbl>        1         31 NA           
-#> 13 -276. <dbl [5]>  0.0492 <dbl>   FALSE <dbl>        1         28 NA           
-#> 14 -421. <dbl [5]>  0.0759 <dbl>   FALSE <dbl>        1         43 NA           
-#> 15 -421. <dbl [5]>  0.0677 <dbl>   FALSE <dbl>        1         40 NA           
-#> 16 -421. <dbl [5]>  0.0730 <dbl>   FALSE <dbl>        1         41 NA           
-#> 17 -421. <dbl [5]>  0.0694 <dbl>   FALSE <dbl>        1         42 NA           
-#> 18 -276. <dbl [5]>  0.0930 <dbl>   FALSE <dbl>        1         49 NA           
-#> 19 -276. <dbl [5]>  0.0675 <dbl>   FALSE <dbl>        1         40 NA           
-#> 20 -421. <dbl [5]>  0.0791 <dbl>   FALSE <dbl>        1         43 NA           
+#>  1 -421. <dbl [5]>  0.0842 <dbl>   FALSE <dbl>        1         36 NA           
+#>  2 -276. <dbl [5]>  0.131  <dbl>   FALSE <dbl>        1         71 NA           
+#>  3 -421. <dbl [5]>  0.0788 <dbl>   FALSE <dbl>        1         43 NA           
+#>  4 -276. <dbl [5]>  0.0440 <dbl>   FALSE <dbl>        1         25 NA           
+#>  5 -421. <dbl [5]>  0.0803 <dbl>   FALSE <dbl>        1         48 NA           
+#>  6 -421. <dbl [5]>  0.0841 <dbl>   FALSE <dbl>        1         47 NA           
+#>  7 -421. <dbl [5]>  0.0641 <dbl>   FALSE <dbl>        1         38 NA           
+#>  8 -276. <dbl [5]>  0.0606 <dbl>   FALSE <dbl>        1         29 NA           
+#>  9 -276. <dbl [5]>  0.0490 <dbl>   FALSE <dbl>        1         28 NA           
+#> 10 -421. <dbl [5]>  0.0636 <dbl>   FALSE <dbl>        1         39 NA           
+#> 11 -421. <dbl [5]>  0.0816 <dbl>   FALSE <dbl>        1         45 NA           
+#> 12 -276. <dbl [5]>  0.0547 <dbl>   FALSE <dbl>        1         31 NA           
+#> 13 -276. <dbl [5]>  0.0489 <dbl>   FALSE <dbl>        1         28 NA           
+#> 14 -421. <dbl [5]>  0.0751 <dbl>   FALSE <dbl>        1         43 NA           
+#> 15 -421. <dbl [5]>  0.0671 <dbl>   FALSE <dbl>        1         40 NA           
+#> 16 -421. <dbl [5]>  0.0726 <dbl>   FALSE <dbl>        1         41 NA           
+#> 17 -421. <dbl [5]>  0.0691 <dbl>   FALSE <dbl>        1         42 NA           
+#> 18 -276. <dbl [5]>  0.0927 <dbl>   FALSE <dbl>        1         49 NA           
+#> 19 -276. <dbl [5]>  0.0670 <dbl>   FALSE <dbl>        1         40 NA           
+#> 20 -421. <dbl [5]>  0.0762 <dbl>   FALSE <dbl>        1         43 NA           
 #> # ℹ 4 more variables: .optimization_label <chr>, .optimizer_label <chr>,
 #> #   .direction <chr>, .original <lgl>
 ```
