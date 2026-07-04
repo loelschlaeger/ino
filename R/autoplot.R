@@ -91,6 +91,7 @@ autoplot.Nop <- function(object, xlim = NULL, xlim2 = NULL, ...) {
   }
 }
 
+#' @exportS3Method
 #' @keywords internal
 
 autoplot.Nop_1d <- function(object, xlim, ...) {
@@ -136,6 +137,7 @@ autoplot.Nop_1d <- function(object, xlim, ...) {
   return(plot)
 }
 
+#' @exportS3Method
 #' @keywords internal
 
 autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
@@ -156,14 +158,19 @@ autoplot.Nop_2d <- function(object, xlim, xlim2, ...) {
   grid_y <- seq(xlim2[1], xlim2[2], length.out = 100)
   grid <- expand.grid(x = grid_x, y = grid_y)
   grid$z <- apply(grid, 1, function(row) f(row["x"], row["y"]))
-  data <- data.frame(x = sapply(initial_values, `[`, 1), y = sapply(initial_values, `[`, 2))
+  data <- data.frame(
+    x = sapply(initial_values, `[`, 1),
+    y = sapply(initial_values, `[`, 2)
+  )
   if (no_initials <- nrow(data) == 0) {
     data <- data.frame(x = numeric(), y = numeric())
   }
   plot <- ggplot2::ggplot() +
     ggplot2::geom_contour_filled(
       data = grid,
-      mapping = ggplot2::aes(x = .data[["x"]], y = .data[["y"]], z = .data[["z"]])
+      mapping = ggplot2::aes(
+        x = .data[["x"]], y = .data[["y"]], z = .data[["z"]]
+      )
     ) +
     ggplot2::scale_x_continuous(limits = xlim) +
     ggplot2::scale_y_continuous(limits = xlim2) +
@@ -213,7 +220,9 @@ autoplot.Nop_optima <- function(object, ...) {
 
   ### produce bar chart
   object |>
-    ggplot2::ggplot(ggplot2::aes(x = factor(.data[["value"]]), y = .data[["n"]])) +
+    ggplot2::ggplot(
+      ggplot2::aes(x = factor(.data[["value"]]), y = .data[["n"]])
+    ) +
     ggplot2::geom_bar(stat = "identity") +
     ggplot2::labs(x = "Value", y = "Frequency")
 }
@@ -256,16 +265,16 @@ autoplot.Nop_deviation <- function(object, jitter = TRUE, ...) {
 #' @rdname autoplot.Nop
 #' @method autoplot Nop_results
 #'
-#' @param which_element \[`character(1)\]\cr
+#' @param which_element \[`character(1)`\]\cr
 #' A column name of `object` to plot.
 #'
-#' @param group_by \[`character(1)\]\cr
+#' @param group_by \[`character(1)`\]\cr
 #' Selects how the plot is grouped. Either:
 #' - `NULL` to not group,
 #' - `"optimization"` to group by optimization label,
-#' - `"optimizer"`` to group by optimizer label.
+#' - `"optimizer"` to group by optimizer label.
 #'
-#' @param relative \[`logical(1)\]\cr
+#' @param relative \[`logical(1)`\]\cr
 #' Plot values relative to the overall median?
 #'
 #' @export
@@ -311,6 +320,15 @@ autoplot.Nop_results <- function(
   ### transform data to relative values
   if (relative) {
     med <- object[[which_element]] |> stats::median(na.rm = TRUE)
+    if (!is.finite(med) || med == 0) {
+      cli::cli_abort(
+        paste(
+          "Cannot compute relative values for {.var {which_element}}.",
+          "The median must be finite and different from zero."
+        ),
+        call = NULL
+      )
+    }
     object[[which_element]] <- (object[[which_element]] - med) / med
   }
 

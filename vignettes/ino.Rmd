@@ -104,9 +104,14 @@ The following function computes the log-likelihood value $\ell(\boldsymbol{\thet
 normal_mixture_llk <- function(mu, sigma, lambda, data) {
   sigma <- exp(sigma)
   lambda <- plogis(lambda)
-  sum(log(lambda * dnorm(data, mu[1], sigma[1]) + (1 - lambda) * dnorm(data, mu[2], sigma[2])))
+  sum(log(
+    lambda * dnorm(data, mu[1], sigma[1]) +
+      (1 - lambda) * dnorm(data, mu[2], sigma[2])
+  ))
 }
-normal_mixture_llk(mu = 1:2, sigma = 3:4, lambda = 5, data = faithful$eruptions)
+normal_mixture_llk(
+  mu = 1:2, sigma = 3:4, lambda = 5, data = faithful$eruptions
+)
 ```
 
 > **Remark:** To ensure positivity for the standard deviations `sigma`, we apply the exponential transformation. Similarly, to constrain `lambda` between $0$ and $1$, we use the logit transformation. This approach allows us to optimize over the value space $\mathbb{R}^5$ without the need for box-constrained optimizers.
@@ -115,7 +120,7 @@ normal_mixture_llk(mu = 1:2, sigma = 3:4, lambda = 5, data = faithful$eruptions)
 
 Does the choice of initial values have an influence for this optimization problem? In the following, we will use the `{ino}` package to optimize the likelihood function, starting from 100 random initial points, and compare the results. 
 
-We start be defining the optimization problem:^[For further details on the `{R6}` syntax employed by `{ino}`, see @Wickham:2019, Chapter 14.]
+We start by defining the optimization problem:^[For further details on the `{R6}` syntax employed by `{ino}`, see @Wickham:2019, Chapter 14.]
 
 ```{r initialize Nop}
 Nop_mixture <- Nop$new(
@@ -213,19 +218,24 @@ The estimates `global` and `local` for $\boldsymbol{\theta}$ correspond to the f
 
 ```{r estimated-mixtures}
 mixture_density <- function (data, mu, sigma, lambda) {
-  lambda * dnorm(data, mu[1], sigma[1]) + (1 - lambda) * dnorm(data, mu[2], sigma[2])
+  lambda * dnorm(data, mu[1], sigma[1]) +
+    (1 - lambda) * dnorm(data, mu[2], sigma[2])
 }
 ggplot(faithful, aes(x = eruptions)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30) + 
   labs(x = "eruption time (min)", colour = "parameter") +
   stat_function(
     fun = function(x) {
-      mixture_density(x, mu = global[1:2], sigma = global[3:4], lambda = global[5])
+      mixture_density(
+        x, mu = global[1:2], sigma = global[3:4], lambda = global[5]
+      )
     }, aes(color = "global"), linewidth = 1
   ) +
   stat_function(
     fun = function(x) {
-      mixture_density(x, mu = local[1:2], sigma = local[3:4], lambda = local[5])
+      mixture_density(
+        x, mu = local[1:2], sigma = local[3:4], lambda = local[5]
+      )
     }, aes(color = "local"), linewidth = 1
   )
 ```
@@ -257,10 +267,10 @@ We previously applied the `$initialize_random()` method. Next, we will compare i
 
 ```{r grid initial}
 Nop_mixture$initialize_grid(
-  lower = c(1.5, 3.5, log(0.5), log(0.5), qlogis(0.4)), # lower bounds for the grid
-  upper = c(2.5, 4.5, log(1.5), log(1.5), qlogis(0.6)), # upper bounds for the grid
-  breaks = c(3, 3, 3, 3, 3),                            # breaks for the grid in each dimension
-  jitter = TRUE                                         # random shuffle of the grid points
+  lower = c(1.5, 3.5, log(0.5), log(0.5), qlogis(0.4)),
+  upper = c(2.5, 4.5, log(1.5), log(1.5), qlogis(0.6)),
+  breaks = c(3, 3, 3, 3, 3),
+  jitter = TRUE
 )
 ```
 
@@ -275,7 +285,9 @@ Nop_mixture$
 It is evident that the initial values from the initialization strategy concerning the steepest gradient more reliably lead to convergence to the global maximum of $-276$ compared to random initial values:
 
 ```{r overview comparison}
-Nop_mixture$optima(which_direction = "max", group_by = "optimization", digits = 0)
+Nop_mixture$optima(
+  which_direction = "max", group_by = "optimization", digits = 0
+)
 ```
 
 ### Comparing optimizer functions
@@ -300,7 +312,9 @@ em <- function(f, theta, ..., epsilon = 1e-08, iterlim = 1000, data) {
     mu[1] <- mean(posterior * data) / lambda
     mu[2] <- (mean(data) - lambda * mu[1]) / (1 - lambda)
     sigma[1] <- sqrt(mean(posterior * (data - mu[1])^2) / lambda)
-    sigma[2] <- sqrt(mean((1 - posterior) * (data - mu[2])^2) / (1 - lambda))
+    sigma[2] <- sqrt(
+      mean((1 - posterior) * (data - mu[2])^2) / (1 - lambda)
+    )
     llk_old <- llk
     theta <- c(mu, log(sigma), qlogis(lambda))
     llk <- f(theta, ...)
@@ -338,7 +352,10 @@ Next, we initialize at 100 random points and optimize the mixture likelihood wit
 ```{r optimizer comparison}
 Nop_mixture$
   initialize_random(runs = 100)$
-  optimize(which_direction = "max", optimization_label = "optimizer_comparison")
+  optimize(
+    which_direction = "max",
+    optimization_label = "optimizer_comparison"
+  )
 ```
 
 The `autoplot()` method offers a visual comparison of the (relative) optimization times:
@@ -357,7 +374,9 @@ Nop_mixture$results |>
 Among the three optimizers, the expectation-maximization algorithm is evidently the fastest in this case. Moreover, it most frequently converges to the value $-276$, while `stats::optim` tends to converge to various local optima. However, the expectation-maximization algorithm also encountered failures in a couple of runs:
 
 ```{r overview optima em}
-Nop_mixture$optima(which_direction = "max", group_by = "optimizer", digits = 0) 
+Nop_mixture$optima(
+  which_direction = "max", group_by = "optimizer", digits = 0
+)
 ```
 
 ### The solution to the optimization problem
@@ -403,7 +422,9 @@ em <- function(f, theta, ..., epsilon = 1e-08, iterlim = 1000, data) {
     mu[1] <- mean(posterior * data) / lambda
     mu[2] <- (mean(data) - lambda * mu[1]) / (1 - lambda)
     sigma[1] <- sqrt(mean(posterior * (data - mu[1])^2) / lambda)
-    sigma[2] <- sqrt(mean((1 - posterior) * (data - mu[2])^2) / (1 - lambda))
+    sigma[2] <- sqrt(
+      mean((1 - posterior) * (data - mu[2])^2) / (1 - lambda)
+    )
     llk_old <- llk
     theta <- c(mu, log(sigma), qlogis(lambda))
     llk <- f(theta, ...)

@@ -40,17 +40,18 @@ If \code{NULL}, they are derived from the specified initial values in \code{obje
 \item{jitter}{[\code{logical(1)}]\cr
 Apply jitter to the points?}
 
-\item{which_element}{[\verb{character(1)\]\\cr A column name of }object` to plot.}
+\item{which_element}{[\code{character(1)}]\cr
+A column name of \code{object} to plot.}
 
-\item{group_by}{[`character(1)]\cr
+\item{group_by}{[\code{character(1)}]\cr
 Selects how the plot is grouped. Either:
 \itemize{
 \item \code{NULL} to not group,
 \item \code{"optimization"} to group by optimization label,
-\item `"optimizer"`` to group by optimizer label.
+\item \code{"optimizer"} to group by optimizer label.
 }}
 
-\item{relative}{[`logical(1)]\cr
+\item{relative}{[\code{logical(1)}]\cr
 Plot values relative to the overall median?}
 }
 \value{

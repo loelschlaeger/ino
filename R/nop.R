@@ -41,10 +41,10 @@
 #' - specific optimizer labels,
 #' - specified optimizer ids as defined in the `print()` output.
 #'
-#' @param only_original \[`logical(1)\]\cr
+#' @param only_original \[`logical(1)`\]\cr
 #' Include only optima obtained on the original problem?
 #'
-#' @param digits \[`integer(1)\]\cr
+#' @param digits \[`integer(1)`\]\cr
 #' The number of decimal places.
 #'
 #' @details
@@ -86,6 +86,13 @@
 #' - `$results` returns a `tibble` of the optimization results,
 #' - `$optima()` lists all identified optima,
 #' - `$minimum` and `$maximum` return the best minimizer and maximizer
+#'
+#' # Input validation and errors
+#' Public methods validate selector arguments, parameter bounds, and initial
+#' values before they are passed to optimizers. Invalid user input aborts with
+#' an error that identifies the affected argument. Errors raised by optimizers
+#' are captured in `$results` via the `error` and `error_message` columns when
+#' supported by the selected `Optimizer`.
 #'
 #' # Progress during optimization
 #' Displaying progress during multiple optimization runs via the
@@ -501,7 +508,7 @@ Nop <- R6::R6Class(
     #' @description
     #' Defines fixed initial values for the optimization.
     #'
-    #' @param at \[`integer(self$sum(npar))` | `list()`\]\cr
+    #' @param at \[`numeric(sum(self$npar))` | `list()`\]\cr
     #' The fixed initial parameter vector.
     #'
     #' It can also be a `list` of such vectors.
@@ -546,11 +553,30 @@ Nop <- R6::R6Class(
       seconds <- numeric(runs)
       for (run in seq_len(runs)) {
         t_start <- Sys.time()
-        value <- try(sampler(), silent = TRUE)
+        value <- tryCatch(
+          sampler(),
+          error = function(e) {
+            cli::cli_abort(
+              c(
+                paste(
+                  "Argument {.var sampler} failed while drawing initial",
+                  "value {run}."
+                ),
+                "i" = paste(
+                  "It must be a zero-argument function that returns a numeric",
+                  "vector of length {sum(self$npar)}."
+                ),
+                "x" = conditionMessage(e)
+              ),
+              call = NULL
+            )
+          }
+        )
         t_end <- Sys.time()
         seconds[run] <- as.numeric(difftime(t_end, t_start, units = "secs"))
         at[[run]] <- value
       }
+      private$.check_initial_values(at, source = "argument `sampler`")
       self$initialize_custom(at, seconds = seconds, type = "random")
 
     },
@@ -558,10 +584,10 @@ Nop <- R6::R6Class(
     #' @description
     #' Defines a grid of initial values for the optimization.
     #'
-    #' @param lower,upper \[`numeric(1)` | `numeric(self$sum(npar))`\]\cr
+    #' @param lower,upper \[`numeric(1)` | `numeric(sum(self$npar))`\]\cr
     #' Lower and upper grid bounds for each parameter dimension.
     #'
-    #' @param breaks \[`integer(1)` | `integer(self$sum(npar))`\]\cr
+    #' @param breaks \[`integer(1)` | `integer(sum(self$npar))`\]\cr
     #' The number of breaks for each parameter dimension.
     #'
     #' @param jitter
@@ -598,7 +624,8 @@ Nop <- R6::R6Class(
       )
       if (!all(lower <= upper)) {
         cli::cli_abort(
-          "Lower bounds must be smaller than upper bounds.", call = NULL
+          "Lower bounds must be less than or equal to upper bounds.",
+          call = NULL
         )
       }
       oeli::input_check_response(
@@ -644,6 +671,13 @@ Nop <- R6::R6Class(
         check = oeli::check_missing(at),
         var_name = "at"
       )
+      if (!checkmate::test_list(at)) {
+        at <- as.list(at)
+      }
+      oeli::input_check_response(
+        check = checkmate::check_list(at),
+        var_name = "at"
+      )
       runs <- length(at)
       oeli::input_check_response(
         check = checkmate::check_numeric(seconds, lower = 0, len = runs),
@@ -653,7 +687,7 @@ Nop <- R6::R6Class(
         check = checkmate::check_string(type),
         var_name = "type"
       )
-      lapply(at, private$.check_target, verbose = FALSE)
+      private$.check_initial_values(at, source = "argument `at`")
 
       ### set initial values
       private$.initial_values <- c(private$.initial_values, at)
@@ -690,7 +724,7 @@ Nop <- R6::R6Class(
       ### set initial values
       if (nrow(results) == 0) {
         cli::cli_warn(
-          "No (succesful) optimizations for label {.val {optimization_label}}.",
+          "No successful optimizations for label {.val {optimization_label}}.",
           call = NULL
         )
       } else {
@@ -709,8 +743,8 @@ Nop <- R6::R6Class(
     #' @param condition \[`character(1)`\]\cr
     #' Defines the condition on which the initial values are filtered, one of:
     #'
-    #' - `"gradient_negative` for points where the gradient is negative,
-    #' - `"gradient_positive` for points where the gradient is negative,
+    #' - `"gradient_negative"` for points where the gradient is negative,
+    #' - `"gradient_positive"` for points where the gradient is positive,
     #' - `"hessian_negative"` for points where the Hessian is negative definite,
     #' - `"hessian_positive"` for points where the Hessian is positive definite.
 
@@ -735,7 +769,9 @@ Nop <- R6::R6Class(
         lapply(
           private$.initial_values, self$evaluate, .hessian_as_attribute = TRUE
         ) |> lapply(attr, "hessian") |>
-          lapply(function(x) eigen(x, symmetric = TRUE, only.values = TRUE)$values)
+          lapply(function(x) {
+            eigen(x, symmetric = TRUE, only.values = TRUE)$values
+          })
       }
       filter <- if (endsWith(condition, "negative")) {
         sapply(values, function(x) all(x < 0))
@@ -800,15 +836,16 @@ Nop <- R6::R6Class(
           private$.initial_values, self$evaluate, .hessian_as_attribute = TRUE
         ) |> sapply(function(x) {
           ev <- eigen(x, symmetric = TRUE, only.values = TRUE)$values
-          evf <- abs(ev) |> na.omit()
-          if (length(evf) == 0) {
+          ev <- abs(ev)
+          ev <- ev[!is.na(ev)]
+          if (length(ev) == 0 || any(ev == 0)) {
             Inf
           } else {
-            max(ev, na.rm = TRUE) / min(ev, na.rm = TRUE)
+            max(ev) / min(ev)
           }
         })
       }
-      decreasing <- condition == endsWith(condition, "large")
+      decreasing <- endsWith(condition, "large")
       ranking <- order(values, decreasing = decreasing)
 
       ### select initial values
@@ -826,7 +863,7 @@ Nop <- R6::R6Class(
     #' @description
     #' Transforms the currently defined initial values.
     #'
-    #' @param transformer \[`function()`\]\cr
+    #' @param transformer \[`function`\]\cr
     #' A `function` that receives and returns a `numeric()` of length
     #' `sum(self$npar)`.
 
@@ -843,7 +880,31 @@ Nop <- R6::R6Class(
       if (runs == 0) {
         private$.print_status("No initial values defined yet.")
       } else {
-        private$.initial_values <- lapply(private$.initial_values, transformer)
+        initial_values <- lapply(
+          seq_along(private$.initial_values),
+          function(i) {
+            tryCatch(
+              transformer(private$.initial_values[[i]]),
+              error = function(e) {
+                cli::cli_abort(
+                  c(
+                    "Argument {.var transformer} failed for initial value {i}.",
+                    "i" = paste(
+                      "It must return a numeric vector of length",
+                      "{sum(self$npar)}."
+                    ),
+                    "x" = conditionMessage(e)
+                  ),
+                  call = NULL
+                )
+              }
+            )
+          }
+        )
+        private$.check_initial_values(
+          initial_values, source = "argument `transformer`"
+        )
+        private$.initial_values <- initial_values
         private$.print_status("Transformed {runs} initial parameter value{?s}.")
       }
       invisible(self)
@@ -920,30 +981,15 @@ Nop <- R6::R6Class(
       which_direction <- private$.check_which_direction(
         which_direction = which_direction, both_allowed = TRUE
       )
-      oeli::input_check_response(
-        check = oeli::check_numeric_vector(lower, any.missing = FALSE, null.ok = TRUE),
-        var_name = "lower"
-      )
-      if (!is.null(lower)) {
-        if (length(lower) == 1) {
-          lower <- rep(lower, self$npar)
-        }
-        oeli::input_check_response(
-          check = oeli::check_numeric_vector(lower, len = self$npar),
-          var_name = "lower"
-        )
-      }
-      oeli::input_check_response(
-        check = oeli::check_numeric_vector(upper, any.missing = FALSE, null.ok = TRUE),
-        var_name = "upper"
-      )
-      if (!is.null(upper)) {
-        if (length(upper) == 1) {
-          upper <- rep(upper, self$npar)
-        }
-        oeli::input_check_response(
-          check = oeli::check_numeric_vector(upper, len = self$npar),
-          var_name = "upper"
+      lower <- private$.check_bounds(lower, var_name = "lower")
+      upper <- private$.check_bounds(upper, var_name = "upper")
+      if (!is.null(lower) && !is.null(upper) && !all(lower <= upper)) {
+        cli::cli_abort(
+          paste(
+            "Arguments {.var lower} and {.var upper} define invalid bounds.",
+            "Each lower bound must be less than or equal to its upper bound."
+          ),
+          call = NULL
         )
       }
       oeli::input_check_response(
@@ -1011,13 +1057,13 @@ Nop <- R6::R6Class(
     #'
     #' The output has an associated \code{\link[ggplot2]{autoplot}} method.
     #'
-    #' @param group_by \[`character(1)\]\cr
+    #' @param group_by \[`character(1)`\]\cr
     #' Selects how the output is grouped. Either:
     #' - `NULL` to not group,
     #' - `"optimization"` to group by optimization label,
-    #' - `"optimizer"`` to group by optimizer label.
-    #'
-    #' @param sort_by_value \[`logical(1)\]\cr
+    #' - `"optimizer"` to group by optimizer label.
+#'
+    #' @param sort_by_value \[`logical(1)`\]\cr
     #' Sort by value? Else, sort by frequency.
 
     optima = function(
@@ -1097,7 +1143,7 @@ Nop <- R6::R6Class(
     #' @param reference \[`numeric()`\]\cr
     #' The reference vector of length `sum(self$npar)`.
     #'
-    #' @param which_element \[`character(1)\]\cr
+    #' @param which_element \[`character(1)`\]\cr
     #' Either
     #' - `"initial"` for deviations with respect to the initial values, or
     #' - `"parameter"` for deviations with respect to the estimated parameters.
@@ -1115,22 +1161,32 @@ Nop <- R6::R6Class(
       private$.check_target(at = reference)
       which_element <- oeli::match_arg(which_element, c("initial", "parameter"))
       which_direction <- private$.check_which_direction(which_direction)
-      which_optimizer <- private$.check_which_optimizer(which_optimizer, to_id = FALSE)
+      which_optimizer <- private$.check_which_optimizer(
+        which_optimizer, to_id = FALSE
+      )
       oeli::input_check_response(
         check = checkmate::check_flag(only_original),
         var_name = "only_original"
       )
       oeli::input_check_response(
         check = checkmate::check_character(
-          parameter_labels, unique = TRUE, any.missing = FALSE, len = sum(self$npar)
+          parameter_labels, unique = TRUE, any.missing = FALSE,
+          len = sum(self$npar)
         )
       )
 
       ### compute deviation
       results <- self$results |> dplyr::filter(.direction == which_direction)
+      if (!identical(which_optimizer, "all")) {
+        results <- results |>
+          dplyr::filter(.optimizer_label %in% which_optimizer)
+      }
       if (only_original) results <- results |> dplyr::filter(.original == TRUE)
       out <- if (nrow(results) == 0) {
-        c(lapply(seq_len(sum(self$npar)), function(x) numeric(0)), list(character(0))) |>
+        c(
+          lapply(seq_len(sum(self$npar)), function(x) numeric(0)),
+          list(character(0))
+        ) |>
           setNames(c(parameter_labels, ".optimization_label")) |>
           dplyr::as_tibble()
       } else {
@@ -1141,7 +1197,9 @@ Nop <- R6::R6Class(
           ) |>
           tidyr::unnest_wider(diff, names_sep = "_") |>
           dplyr::rename_with(~ parameter_labels, dplyr::starts_with("diff_")) |>
-          dplyr::select(dplyr::all_of(c(parameter_labels, ".optimization_label")))
+          dplyr::select(
+            dplyr::all_of(c(parameter_labels, ".optimization_label"))
+          )
 
       }
       structure(out, class = c("Nop_deviation", class(out)))
@@ -1210,7 +1268,11 @@ Nop <- R6::R6Class(
             } else {
               val <- NA
             }
-            if (is.null(val) || length(val) != 1 || is.matrix(val)) list(val) else val
+            if (is.null(val) || length(val) != 1 || is.matrix(val)) {
+              list(val)
+            } else {
+              val
+            }
           })
           names(values) <- all_names
           dplyr::as_tibble(values)
@@ -1373,6 +1435,55 @@ Nop <- R6::R6Class(
         )
       }
       return(group_by)
+    },
+
+    .check_bounds = function(x, var_name) {
+      oeli::input_check_response(
+        check = oeli::check_numeric_vector(
+          x, any.missing = FALSE, null.ok = TRUE
+        ),
+        var_name = var_name
+      )
+      if (is.null(x)) {
+        return(NULL)
+      }
+      n_parameters <- sum(self$npar)
+      if (length(x) == 1) {
+        x <- rep(x, n_parameters)
+      }
+      oeli::input_check_response(
+        check = oeli::check_numeric_vector(
+          x, any.missing = FALSE, len = n_parameters
+        ),
+        var_name = var_name
+      )
+      x
+    },
+
+    .check_initial_values = function(at, source) {
+      for (i in seq_along(at)) {
+        error <- tryCatch(
+          {
+            private$.check_target(at = at[[i]], verbose = FALSE)
+            NULL
+          },
+          error = function(e) e
+        )
+        if (!is.null(error)) {
+          cli::cli_abort(
+            c(
+              "Initial value {i} from {source} is invalid.",
+              "i" = paste(
+                "Each initial value must be a numeric vector of length",
+                "{sum(self$npar)}."
+              ),
+              "x" = conditionMessage(error)
+            ),
+            call = NULL
+          )
+        }
+      }
+      invisible(at)
     },
 
     .check_which_optimizer = function(

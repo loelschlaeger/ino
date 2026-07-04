@@ -30,7 +30,7 @@ The `{ino}` R package provides a framework for analyzing the role of initializat
 
 You can install the released version from [CRAN](https://CRAN.R-project.org) with:
 
-```{r install_released}
+```{r install_released, eval = FALSE}
 install.packages("ino")
 ```
 
@@ -82,7 +82,7 @@ Nop_ackley$results |>
 Nop_ackley$optima(digits = 2, group_by = "optimizer")
 ```
 
-Overall, (only) `r Nop_ackley$optima(digits = 2) |> dplyr::filter(value == 0) |> dplyr::select(n) |> dplyr::slice(1) |> as.numeric()`% of of the initializations successfully converged to the global minimum.
+Overall, (only) `r Nop_ackley$optima(digits = 2) |> dplyr::filter(value == 0) |> dplyr::select(n) |> dplyr::slice(1) |> as.numeric()`% of the initializations successfully converged to the global minimum.
 
 ## Contact
 

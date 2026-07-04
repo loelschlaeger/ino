@@ -62,6 +62,14 @@ Call \code{object$optimize()} for the optimization.
 }
 }
 
+\section{Input validation and errors}{
+Public methods validate selector arguments, parameter bounds, and initial
+values before they are passed to optimizers. Invalid user input aborts with
+an error that identifies the affected argument. Errors raised by optimizers
+are captured in \verb{$results} via the \code{error} and \code{error_message} columns when
+supported by the selected \code{Optimizer}.
+}
+
 \section{Progress during optimization}{
 Displaying progress during multiple optimization runs via the
 \code{{progressr}} package is supported. To get started, run
@@ -96,14 +104,14 @@ Nop_ackley$minimum
 
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{initial_values}}{[\code{list()}, read-only]\cr
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{initial_values}}{[\code{list()}, read-only]\cr
 The currently defined initial values.
 
 Use the \verb{initialize_*()} methods to add, transform, and reset values.}
 
-\item{\code{results}}{[\code{tibble}, read-only]\cr
+    \item{\code{results}}{[\code{tibble}, read-only]\cr
 Optimization results with identifiers:
 \itemize{
 \item \code{".optimization_label"} (identifies the optimization run)
@@ -114,63 +122,64 @@ Optimization results with identifiers:
 
 The output has an associated \code{\link[ggplot2]{autoplot}} method.}
 
-\item{\code{minimum}}{[\code{list(2)}, read-only]\cr
+    \item{\code{minimum}}{[\code{list(2)}, read-only]\cr
 Best value and parameter across all (original) minimizations.}
 
-\item{\code{maximum}}{[\code{list(2)}, read-only]\cr
+    \item{\code{maximum}}{[\code{list(2)}, read-only]\cr
 Best value and parameter across all (original) maximizations.}
 
-\item{\code{npar}}{[\code{integer()}, read-only]\cr
+    \item{\code{npar}}{[\code{integer()}, read-only]\cr
 The length of each target argument.}
 
-\item{\code{verbose}}{[\code{logical(1)}]\cr
+    \item{\code{verbose}}{[\code{logical(1)}]\cr
 Print progress and details?}
 
-\item{\code{fresh_label}}{[\code{character(1)}, read-only]\cr
+    \item{\code{fresh_label}}{[\code{character(1)}, read-only]\cr
 An optimization label that has not been used yet.}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-Nop-new}{\code{Nop$new()}}
-\item \href{#method-Nop-fixed_argument}{\code{Nop$fixed_argument()}}
-\item \href{#method-Nop-reduce_argument}{\code{Nop$reduce_argument()}}
-\item \href{#method-Nop-standardize_argument}{\code{Nop$standardize_argument()}}
-\item \href{#method-Nop-print}{\code{Nop$print()}}
-\item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
-\item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
-\item \href{#method-Nop-initialize_fixed}{\code{Nop$initialize_fixed()}}
-\item \href{#method-Nop-initialize_random}{\code{Nop$initialize_random()}}
-\item \href{#method-Nop-initialize_grid}{\code{Nop$initialize_grid()}}
-\item \href{#method-Nop-initialize_custom}{\code{Nop$initialize_custom()}}
-\item \href{#method-Nop-initialize_continue}{\code{Nop$initialize_continue()}}
-\item \href{#method-Nop-initialize_filter}{\code{Nop$initialize_filter()}}
-\item \href{#method-Nop-initialize_promising}{\code{Nop$initialize_promising()}}
-\item \href{#method-Nop-initialize_transform}{\code{Nop$initialize_transform()}}
-\item \href{#method-Nop-initialize_reset}{\code{Nop$initialize_reset()}}
-\item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
-\item \href{#method-Nop-optima}{\code{Nop$optima()}}
-\item \href{#method-Nop-deviation}{\code{Nop$deviation()}}
-\item \href{#method-Nop-clone}{\code{Nop$clone()}}
-}
+  \itemize{
+    \item \href{#method-Nop-initialize}{\code{Nop$new()}}
+    \item \href{#method-Nop-fixed_argument}{\code{Nop$fixed_argument()}}
+    \item \href{#method-Nop-reduce_argument}{\code{Nop$reduce_argument()}}
+    \item \href{#method-Nop-standardize_argument}{\code{Nop$standardize_argument()}}
+    \item \href{#method-Nop-print}{\code{Nop$print()}}
+    \item \href{#method-Nop-evaluate}{\code{Nop$evaluate()}}
+    \item \href{#method-Nop-set_optimizer}{\code{Nop$set_optimizer()}}
+    \item \href{#method-Nop-initialize_fixed}{\code{Nop$initialize_fixed()}}
+    \item \href{#method-Nop-initialize_random}{\code{Nop$initialize_random()}}
+    \item \href{#method-Nop-initialize_grid}{\code{Nop$initialize_grid()}}
+    \item \href{#method-Nop-initialize_custom}{\code{Nop$initialize_custom()}}
+    \item \href{#method-Nop-initialize_continue}{\code{Nop$initialize_continue()}}
+    \item \href{#method-Nop-initialize_filter}{\code{Nop$initialize_filter()}}
+    \item \href{#method-Nop-initialize_promising}{\code{Nop$initialize_promising()}}
+    \item \href{#method-Nop-initialize_transform}{\code{Nop$initialize_transform()}}
+    \item \href{#method-Nop-initialize_reset}{\code{Nop$initialize_reset()}}
+    \item \href{#method-Nop-optimize}{\code{Nop$optimize()}}
+    \item \href{#method-Nop-optima}{\code{Nop$optima()}}
+    \item \href{#method-Nop-deviation}{\code{Nop$deviation()}}
+    \item \href{#method-Nop-clone}{\code{Nop$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Nop-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Nop-new}{}}}
-\subsection{Method \code{new()}}{
-Creates a new \code{Nop} object.
+\if{html}{\out{<a id="method-Nop-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-Nop-initialize}{}}}
+\subsection{\code{Nop$new()}}{
+  Creates a new \code{Nop} object.
 
 The output has an associated \code{\link[ggplot2]{autoplot}} method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$new(f, target = NULL, npar, gradient = NULL, hessian = NULL, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{f}}{[\code{function}]\cr
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$new(f, target = NULL, npar, gradient = NULL, hessian = NULL, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{f}}{[\code{function}]\cr
 A \code{function} to be optimized (the so-called objective function).
 
 It is expected that
@@ -178,51 +187,48 @@ It is expected that
 \item \code{f} has at least one \code{numeric} argument,
 \item the return value of \code{f} is of the structure \code{numeric(1)}.
 }}
-
-\item{\code{target}}{[\code{character()}]\cr
+      \item{\code{target}}{[\code{character()}]\cr
 The argument name(s) that get optimized (the so-called target arguments).
 
 All target arguments must be \code{numeric}.
 
 Can be \code{NULL} (default), then the first function argument is selected.}
-
-\item{\code{npar}}{[\code{integer()}]\cr
+      \item{\code{npar}}{[\code{integer()}]\cr
 The length of each target argument, i.e., the length(s) of the
 argument(s) specified via \code{target}.}
-
-\item{\code{gradient}}{[\code{function} | \code{NULL}]\cr
+      \item{\code{gradient}}{[\code{function} | \code{NULL}]\cr
 Optionally a \code{function} that returns the gradient of \code{f}.
 
 The function call of \code{gradient} must be identical to \code{f}.
 
 Ignored for optimizers that do not support user-supplied gradient.}
-
-\item{\code{hessian}}{[\code{function} | \code{NULL}]\cr
+      \item{\code{hessian}}{[\code{function} | \code{NULL}]\cr
 Optionally a \code{function} that returns the Hessian of \code{f}.
 
 The function call of \code{hessian} must be identical to \code{f}.
 
 Ignored for optimizers that do not support user-supplied Hessian.}
-
-\item{\code{...}}{Optionally additional function arguments passed to \code{f} (and \code{gradient}
+      \item{\code{...}}{Optionally additional function arguments passed to \code{f} (and \code{gradient}
 and \code{hessian}, if specified) that are fixed during the optimization.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-fixed_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-fixed_argument}{}}}
-\subsection{Method \code{fixed_argument()}}{
-Manages fixed arguments for the objective function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$fixed_argument(action, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{action}}{[\code{character(1)}]\cr
+\subsection{\code{Nop$fixed_argument()}}{
+  Manages fixed arguments for the objective function.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$fixed_argument(action, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{action}}{[\code{character(1)}]\cr
 One of:
 \itemize{
 \item \code{"set"} to set an argument,
@@ -234,292 +240,304 @@ One of:
 
 Note that \code{"set"} overrides an argument value, while \code{"modify"} preserves
 the original value, which can be recovered via \code{"reset"}.}
-
-\item{\code{...}}{Additional parameters depending on \code{action}:
+      \item{\code{...}}{Additional parameters depending on \code{action}:
 \itemize{
 \item named arguments if \code{action = "set"} or \code{"modify"},
 \item a single argument name if \code{action = "get"}, \code{"remove"}, or \code{"reset"}.
 }}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-reduce_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-reduce_argument}{}}}
-\subsection{Method \code{reduce_argument()}}{
-Reduces a fixed argument for the objective function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$reduce_argument(
+\subsection{\code{Nop$reduce_argument()}}{
+  Reduces a fixed argument for the objective function.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$reduce_argument(
   argument_name,
   proportion = 0.5,
   how = "random",
   centers = 2L,
   byrow = TRUE,
   ignore = integer()
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{argument_name}}{[\code{character(1)}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{argument_name}}{[\code{character(1)}]\cr
 The name of a fixed argument for the objective function.}
+      \item{\code{proportion, how, centers, byrow, ignore}}{Passed on to \code{\link[portion]{portion}}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
 
-\item{\code{proportion, how, centers, byrow, ignore}}{Passed on to \code{\link[portion]{portion}}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-standardize_argument"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-standardize_argument}{}}}
-\subsection{Method \code{standardize_argument()}}{
-Standardizes a fixed argument for the objective function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$standardize_argument(
+\subsection{\code{Nop$standardize_argument()}}{
+  Standardizes a fixed argument for the objective function.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$standardize_argument(
   argument_name,
   center = TRUE,
   scale = TRUE,
   byrow = FALSE,
   ignore = integer(),
   jointly = list()
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{argument_name}}{[\code{character(1)}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{argument_name}}{[\code{character(1)}]\cr
 The name of a fixed argument for the objective function.}
+      \item{\code{center, scale, byrow, ignore, jointly}}{Passed on to \code{\link[normalize]{normalize}}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
 
-\item{\code{center, scale, byrow, ignore, jointly}}{Passed on to \code{\link[normalize]{normalize}}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-print}{}}}
-\subsection{Method \code{print()}}{
-Prints details of the \code{Nop} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$print(...)}\if{html}{\out{</div>}}
+\subsection{\code{Nop$print()}}{
+  Prints details of the \code{Nop} object.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$print(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Currently not used.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Currently not used.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-evaluate"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-evaluate}{}}}
-\subsection{Method \code{evaluate()}}{
-Evaluates the objective function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$evaluate(
+\subsection{\code{Nop$evaluate()}}{
+  Evaluates the objective function.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$evaluate(
   at = rep(0, sum(self$npar)),
   .gradient_as_attribute = FALSE,
   .hessian_as_attribute = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{at}}{[\code{numeric()}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{at}}{[\code{numeric()}]\cr
 The values for the target argument(s), written in a single vector.
 
 Must be of length \code{sum(self$npar)}.}
-
-\item{\code{.gradient_as_attribute, .hessian_as_attribute}}{[\code{logical(1)}]\cr
+      \item{\code{.gradient_as_attribute, .hessian_as_attribute}}{[\code{logical(1)}]\cr
 Add gradient and / or Hessian value as attributes?
 
 If gradient and / or Hessian function is not specified, numerical
 approximation is used.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-set_optimizer"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-set_optimizer}{}}}
-\subsection{Method \code{set_optimizer()}}{
-Specifies a numerical optimizer.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$set_optimizer(optimizer, optimizer_label = optimizer$label)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{optimizer}}{[\code{Optimizer}]\cr
+\subsection{\code{Nop$set_optimizer()}}{
+  Specifies a numerical optimizer.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$set_optimizer(optimizer, optimizer_label = optimizer$label)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{optimizer}}{[\code{Optimizer}]\cr
 An \code{Optimizer} object, which can be created via
 \code{\link[optimizeR]{Optimizer}}.}
-
-\item{\code{optimizer_label}}{[\code{character(1)}]\cr
+      \item{\code{optimizer_label}}{[\code{character(1)}]\cr
 A (unique) label for the optimizer.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_fixed"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_fixed}{}}}
-\subsection{Method \code{initialize_fixed()}}{
-Defines fixed initial values for the optimization.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_fixed(at)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{at}}{[\code{integer(self$sum(npar))} | \code{list()}]\cr
+\subsection{\code{Nop$initialize_fixed()}}{
+  Defines fixed initial values for the optimization.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_fixed(at)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{at}}{[\code{numeric(sum(self$npar))} | \code{list()}]\cr
 The fixed initial parameter vector.
 
 It can also be a \code{list} of such vectors.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_random"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_random}{}}}
-\subsection{Method \code{initialize_random()}}{
-Defines random initial values for the optimization.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_random(
+\subsection{\code{Nop$initialize_random()}}{
+  Defines random initial values for the optimization.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_random(
   runs = 1L,
   sampler = function() stats::rnorm(sum(self$npar))
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{runs}}{[\code{integer(1)}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{runs}}{[\code{integer(1)}]\cr
 The number of optimization runs.}
-
-\item{\code{sampler}}{[\code{function}]\cr
+      \item{\code{sampler}}{[\code{function}]\cr
 A \code{function} without any arguments that returns a \code{numeric}
 vector of length \code{sum(self$npar)}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_grid"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_grid}{}}}
-\subsection{Method \code{initialize_grid()}}{
-Defines a grid of initial values for the optimization.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_grid(lower = 0, upper = 1, breaks = 3, jitter = FALSE, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{lower, upper}}{[\code{numeric(1)} | \code{numeric(self$sum(npar))}]\cr
+\subsection{\code{Nop$initialize_grid()}}{
+  Defines a grid of initial values for the optimization.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_grid(lower = 0, upper = 1, breaks = 3, jitter = FALSE, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{lower, upper}}{[\code{numeric(1)} | \code{numeric(sum(self$npar))}]\cr
 Lower and upper grid bounds for each parameter dimension.}
-
-\item{\code{breaks}}{[\code{integer(1)} | \code{integer(self$sum(npar))}]\cr
+      \item{\code{breaks}}{[\code{integer(1)} | \code{integer(sum(self$npar))}]\cr
 The number of breaks for each parameter dimension.}
+      \item{\code{jitter}}{Add noise to the grid points for a random grid layout?}
+      \item{\code{...}}{Optional parameters passed to \code{\link[base]{jitter}}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
 
-\item{\code{jitter}}{Add noise to the grid points for a random grid layout?}
-
-\item{\code{...}}{Optional parameters passed to \code{\link[base]{jitter}}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_custom"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_custom}{}}}
-\subsection{Method \code{initialize_custom()}}{
-Defines custom initial values for the optimization.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_custom(at, seconds = rep(0, length(at)), type = "custom")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{at}}{[\code{list()}]\cr
+\subsection{\code{Nop$initialize_custom()}}{
+  Defines custom initial values for the optimization.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_custom(at, seconds = rep(0, length(at)), type = "custom")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{at}}{[\code{list()}]\cr
 A \code{list} of initial parameter vectors.}
-
-\item{\code{seconds}}{[\code{numeric(length(at))}]\cr
+      \item{\code{seconds}}{[\code{numeric(length(at))}]\cr
 The number of seconds it took to obtain each initial value in \code{at},
 which is added to the overall optimization time.}
-
-\item{\code{type}}{[\code{character(1)}]\cr
+      \item{\code{type}}{[\code{character(1)}]\cr
 The type of the initial values.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_continue"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_continue}{}}}
-\subsection{Method \code{initialize_continue()}}{
-Defines initial values based on results from previous optimizations.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_continue(optimization_label)}\if{html}{\out{</div>}}
+\subsection{\code{Nop$initialize_continue()}}{
+  Defines initial values based on results from previous optimizations.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_continue(optimization_label)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{optimization_label}}{[\code{character(1)}]\cr
+Label of optimization runs from which to select.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{optimization_label}}{[\code{character(1)}]\cr
-Label of optimization runs from which to select.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_filter"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_filter}{}}}
-\subsection{Method \code{initialize_filter()}}{
-Filters initial values from the defined initial values.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_filter(condition)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{condition}}{[\code{character(1)}]\cr
+\subsection{\code{Nop$initialize_filter()}}{
+  Filters initial values from the defined initial values.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_filter(condition)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{condition}}{[\code{character(1)}]\cr
 Defines the condition on which the initial values are filtered, one of:
 \itemize{
-\item \verb{"gradient_negative} for points where the gradient is negative,
-\item \verb{"gradient_positive} for points where the gradient is negative,
+\item \code{"gradient_negative"} for points where the gradient is negative,
+\item \code{"gradient_positive"} for points where the gradient is positive,
 \item \code{"hessian_negative"} for points where the Hessian is negative definite,
 \item \code{"hessian_positive"} for points where the Hessian is positive definite.
 }}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_promising"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_promising}{}}}
-\subsection{Method \code{initialize_promising()}}{
-Selects promising initial values from the defined initial values.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_promising(proportion, condition)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{proportion}}{[\code{numeric(1)}]\cr
+\subsection{\code{Nop$initialize_promising()}}{
+  Selects promising initial values from the defined initial values.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_promising(proportion, condition)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{proportion}}{[\code{numeric(1)}]\cr
 The proportion of selected from the defined initial values.}
-
-\item{\code{condition}}{[\code{character(1)}]\cr
+      \item{\code{condition}}{[\code{character(1)}]\cr
 Defines the condition on which the initial values are selected, one of:
 \itemize{
 \item \code{"value_small"} for points where the function value is smallest,
@@ -529,46 +547,52 @@ Defines the condition on which the initial values are selected, one of:
 \item \code{"condition_small"} for points where the Hessian condition is smallest,
 \item \code{"condition_large"} for points where the Hessian condition is largest.
 }}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_transform"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_transform}{}}}
-\subsection{Method \code{initialize_transform()}}{
-Transforms the currently defined initial values.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_transform(transformer = function(x) x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{transformer}}{[\verb{function()}]\cr
+\subsection{\code{Nop$initialize_transform()}}{
+  Transforms the currently defined initial values.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_transform(transformer = function(x) x)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{transformer}}{[\code{function}]\cr
 A \code{function} that receives and returns a \code{numeric()} of length
 \code{sum(self$npar)}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-initialize_reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-initialize_reset}{}}}
-\subsection{Method \code{initialize_reset()}}{
-Resets the currently defined initial values.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$initialize_reset()}\if{html}{\out{</div>}}
+\subsection{\code{Nop$initialize_reset()}}{
+  Resets the currently defined initial values.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$initialize_reset()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optimize"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optimize}{}}}
-\subsection{Method \code{optimize()}}{
-Optimizes the target function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optimize(
+\subsection{\code{Nop$optimize()}}{
+  Optimizes the target function.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$optimize(
   optimization_label = self$fresh_label,
   which_optimizer = "all",
   which_direction = "min",
@@ -577,178 +601,169 @@ Optimizes the target function.
   seconds = Inf,
   hide_warnings = TRUE,
   reset_initial_afterwards = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{optimization_label}}{[\code{character(1)}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{optimization_label}}{[\code{character(1)}]\cr
 A label for the optimization to distinguish optimization runs.
 
 Setting a label is useful when using the \verb{$initialize_continue()} method.}
-
-\item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
+      \item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
 Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item specific optimizer labels,
 \item specified optimizer ids as defined in the \code{print()} output.
 }}
-
-\item{\code{which_direction}}{[\code{character()}]\cr
+      \item{\code{which_direction}}{[\code{character()}]\cr
 Selects the direction of optimization. One or both of:
 \itemize{
 \item \code{"min"} for minimization,
 \item \code{"max"} for maximization.
 }}
-
-\item{\code{lower, upper}}{[\code{numeric()} | \code{NULL}]\cr
+      \item{\code{lower, upper}}{[\code{numeric()} | \code{NULL}]\cr
 Optionally lower and upper parameter bounds.
 
 Ignored for optimizers that do not support parameter bounds.}
-
-\item{\code{seconds}}{[\code{numeric(1)}]\cr
+      \item{\code{seconds}}{[\code{numeric(1)}]\cr
 A time limit in seconds.
 
 Optimization is interrupted prematurely if \code{seconds} is exceeded.
 
 Note the limitations documented in \code{\link[base]{setTimeLimit}}.}
-
-\item{\code{hide_warnings}}{[\code{logical(1)}]\cr
+      \item{\code{hide_warnings}}{[\code{logical(1)}]\cr
 Hide any warnings during optimization?}
-
-\item{\code{reset_initial_afterwards}}{[\code{logical(1)}]\cr
+      \item{\code{reset_initial_afterwards}}{[\code{logical(1)}]\cr
 Reset the initial values after the optimization?}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-Supports:
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    Supports:
 \itemize{
 \item Parallel computation of multiple optimization runs via \code{{future}}
 \item Progress messages via \code{{progressr}}
 }
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-optima"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-optima}{}}}
-\subsection{Method \code{optima()}}{
-Lists all identified optima.
+\subsection{\code{Nop$optima()}}{
+  Lists all identified optima.
 
 The output has an associated \code{\link[ggplot2]{autoplot}} method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$optima(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$optima(
   which_direction = "min",
   only_original = TRUE,
   group_by = NULL,
   sort_by_value = FALSE,
   digits = getOption("digits", default = 7)
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_direction}}{[\code{character()}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{which_direction}}{[\code{character()}]\cr
 Selects the direction of optimization. One or both of:
 \itemize{
 \item \code{"min"} for minimization,
 \item \code{"max"} for maximization.
 }}
-
-\item{\code{only_original}}{[`logical(1)]\cr
+      \item{\code{only_original}}{[\code{logical(1)}]\cr
 Include only optima obtained on the original problem?}
-
-\item{\code{group_by}}{[`character(1)]\cr
+      \item{\code{group_by}}{[\code{character(1)}]\cr
 Selects how the output is grouped. Either:
 \itemize{
 \item \code{NULL} to not group,
 \item \code{"optimization"} to group by optimization label,
-\item `"optimizer"`` to group by optimizer label.
+\item \code{"optimizer"} to group by optimizer label.
 }}
-
-\item{\code{sort_by_value}}{[`logical(1)]\cr
+      \item{\code{sort_by_value}}{[\code{logical(1)}]\cr
 Sort by value? Else, sort by frequency.}
-
-\item{\code{digits}}{[`integer(1)]\cr
+      \item{\code{digits}}{[\code{integer(1)}]\cr
 The number of decimal places.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-deviation"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-deviation}{}}}
-\subsection{Method \code{deviation()}}{
-Compute deviations with respect to a reference parameter.
+\subsection{\code{Nop$deviation()}}{
+  Compute deviations with respect to a reference parameter.
 
 The output has an associated \code{\link[ggplot2]{autoplot}} method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$deviation(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$deviation(
   reference = rep(0, sum(self$npar)),
   which_element = "initial",
   which_direction = "min",
   which_optimizer = "all",
   only_original = TRUE,
   parameter_labels = paste0("x", seq_len(sum(self$npar)))
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{reference}}{[\code{numeric()}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{reference}}{[\code{numeric()}]\cr
 The reference vector of length \code{sum(self$npar)}.}
-
-\item{\code{which_element}}{[`character(1)]\cr
+      \item{\code{which_element}}{[\code{character(1)}]\cr
 Either
 \itemize{
 \item \code{"initial"} for deviations with respect to the initial values, or
 \item \code{"parameter"} for deviations with respect to the estimated parameters.
 }}
-
-\item{\code{which_direction}}{[\code{character()}]\cr
+      \item{\code{which_direction}}{[\code{character()}]\cr
 Selects the direction of optimization. One or both of:
 \itemize{
 \item \code{"min"} for minimization,
 \item \code{"max"} for maximization.
 }}
-
-\item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
+      \item{\code{which_optimizer}}{[\code{character()} | \code{integer()}]\cr
 Selects numerical optimizers. Either:
 \itemize{
 \item \code{"all"} for all specified optimizers,
 \item specific optimizer labels,
 \item specified optimizer ids as defined in the \code{print()} output.
 }}
-
-\item{\code{only_original}}{[`logical(1)]\cr
+      \item{\code{only_original}}{[\code{logical(1)}]\cr
 Include only optima obtained on the original problem?}
-
-\item{\code{parameter_labels}}{[\code{character()}]\cr
+      \item{\code{parameter_labels}}{[\code{character()}]\cr
 Labels for the parameters of length \code{sum(self$npar)}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Nop-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-Nop-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Nop$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{Nop$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Nop$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

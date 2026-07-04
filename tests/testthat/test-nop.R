@@ -83,6 +83,20 @@ test_that("Example 1: Results can be accessed", {
   }
 })
 
+test_that("Example 1: Deviation honors optimizer filters", {
+  Nop_deviation <- Nop$new(f = function(x) sum(x^2), npar = 1)
+  Nop_deviation$verbose <- FALSE
+  Nop_deviation$
+    set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"), "nlm")$
+    set_optimizer(optimizeR::Optimizer$new(which = "stats::optim"), "optim")$
+    initialize_fixed(1)$
+    optimize(reset_initial_afterwards = FALSE)
+
+  expect_equal(nrow(Nop_deviation$deviation(which_optimizer = "nlm")), 1)
+  expect_equal(nrow(Nop_deviation$deviation(which_optimizer = "optim")), 1)
+  expect_equal(nrow(Nop_deviation$deviation(which_optimizer = "all")), 2)
+})
+
 test_that("Example 1: Maximization works", {
   Nop_ackley$
     initialize_random(sampler = function() stats::runif(sum(Nop_ackley$npar)))$
@@ -104,7 +118,9 @@ test_that("Example 1: Plotting works", {
   Nop_ackley$initialize_random(runs = 10)
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley)))
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_ackley$optima())))
-  autoplot_optima_group <- ggplot2::autoplot(Nop_ackley$optima(group_by = "optimizer"))
+  autoplot_optima_group <- ggplot2::autoplot(
+    Nop_ackley$optima(group_by = "optimizer")
+  )
   expect_true(is.list(autoplot_optima_group))
   expect_length(autoplot_optima_group, 2)
   expect_true(ggplot2::is_ggplot(autoplot_optima_group[[1]]))
@@ -147,6 +163,37 @@ test_that("Example 1: Initials can be filtered and promising values selected", {
   expect_length(Nop_ackley$initial_values, 1)
   Nop_ackley$initialize_filter("hessian_positive")
   expect_length(Nop_ackley$initial_values, 0)
+})
+
+test_that("Example 1: Promising large values select descending order", {
+  Nop_rank <- Nop$new(f = function(x) x, npar = 1)
+  Nop_rank$verbose <- FALSE
+  Nop_rank$
+    initialize_fixed(list(1, 2, 3))$
+    initialize_promising(proportion = 1 / 3, condition = "value_large")
+
+  expect_identical(Nop_rank$initial_values, list(3))
+})
+
+test_that("Example 1: Initial value validation is informative", {
+  Nop_initials <- Nop$new(f = function(x) sum(x^2), npar = 2)
+  Nop_initials$verbose <- FALSE
+
+  expect_error(
+    Nop_initials$initialize_random(sampler = function() stop("boom")),
+    "sampler.*failed"
+  )
+  expect_error(
+    Nop_initials$initialize_random(sampler = function() 1),
+    "Initial value 1 from argument `sampler` is invalid"
+  )
+
+  Nop_initials$initialize_fixed(1:2)
+  expect_error(
+    Nop_initials$initialize_transform(function(x) x[1]),
+    "Initial value 1 from argument `transformer` is invalid"
+  )
+  expect_identical(Nop_initials$initial_values, list(1:2))
 })
 
 # Example 2: Mixture model ------------------------------------------------
@@ -240,6 +287,35 @@ test_that("Example 2: Initialization can be continued", {
   )
 })
 
+test_that("Example 2: Scalar bounds work for multiple target arguments", {
+  Nop_bounds <- Nop$new(
+    f = function(a, b) sum(a^2) + sum(b^2),
+    target = c("a", "b"),
+    npar = c(2, 1)
+  )
+  Nop_bounds$verbose <- FALSE
+  Nop_bounds$
+    set_optimizer(optimizeR::Optimizer$new(which = "stats::nlm"))$
+    initialize_fixed(c(0.5, 0.5, 0.5))
+
+  expect_no_error(Nop_bounds$optimize(lower = -1, upper = 1))
+  Nop_bounds$initialize_fixed(c(0.5, 0.5, 0.5))
+  expect_error(
+    Nop_bounds$optimize(lower = 1, upper = 0),
+    "invalid bounds"
+  )
+})
+
 test_that("Example 2: Plotting results works", {
   expect_true(ggplot2::is_ggplot(ggplot2::autoplot(Nop_mixture$results)))
+  expect_error(
+    ggplot2::autoplot(
+      structure(
+        data.frame(seconds = c(0, 0), .optimization_label = c("a", "b")),
+        class = c("Nop_results", "data.frame")
+      ),
+      relative = TRUE
+    ),
+    "Cannot compute relative values"
+  )
 })

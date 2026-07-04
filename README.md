@@ -54,7 +54,7 @@ library("ggplot2")
 Nop_ackley |> autoplot()
 ```
 
-<img src="man/figures/README-ackley_plot-1.png" width="70%" />
+<img src="man/figures/README-ackley_plot-1.png" alt="" width="70%" />
 
 Next, we optimize the function via the previously defined initial values
 and optimizers:
@@ -75,7 +75,7 @@ Nop_ackley$results |>
   )
 ```
 
-<img src="man/figures/README-ackley_time-1.png" width="70%" />
+<img src="man/figures/README-ackley_time-1.png" alt="" width="70%" />
 
 … and more effective at locating the global minimum:
 
@@ -105,8 +105,8 @@ Nop_ackley$optima(digits = 2, group_by = "optimizer")
 #> [1] "Nop_optima" "group_by"   "list"
 ```
 
-Overall, (only) 25% of of the initializations successfully converged to
-the global minimum.
+Overall, (only) 25% of the initializations successfully converged to the
+global minimum.
 
 ## Contact
 
